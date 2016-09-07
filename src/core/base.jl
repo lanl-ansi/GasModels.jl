@@ -50,11 +50,12 @@ end
 
 # function for augmenting the data sets
 function process_raw_data(data::Dict{AbstractString,Any})
-    # TODO, process the data about share paths etc. 
-    add_network_structure(data)
   
     sets = build_sets(data)
 
+    # TODO, process the data about share paths etc. 
+    add_network_structure(data)
+    
     return data, sets
 end
 
@@ -111,7 +112,29 @@ function build_sets(data :: Dict{AbstractString,Any})
 end
 
 # Add some necessary data structures for constructing various constraints and variables
-function add_network_structure(data :: Dict{AbstractString,Any})
-
+function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataSets)
+    max_flow = 0
+  
+    for junction in data["junction"]
+      if junction["qmax"] > 0
+        max_flow = max_flow + junction["qmax"]
+      end
+    end
+    data["max_flow"] = max_flow
+    
+  
+    for connection in data["connection"]
+        i_idx = connection["f_junction"]
+        j_idx = connection["t_junction"]
+      
+        i = set.junctions[i_idx]  
+        j = set.junctions[j_idx]  
+                
+        pd_max = i["p_max"]^2 - j["p_min"]^2
+        pd_min = i["p_min"]^2 - j["p_max"]^2
+                 
+        branch["pd_max"] =  pd_max
+        branch["pd_min"] =  pd_min
+     end
 end
 
