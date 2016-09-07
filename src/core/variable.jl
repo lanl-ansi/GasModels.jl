@@ -53,13 +53,13 @@ end
 
 # variables associated with building pipes
 function variable_pipe_expansion{T}(gm::GenericGasModel{T})
-    @variable(gm.model, 0 <= zp[l in pm.set.pipe_indexes] <= 1, Int, start = getstart(pm.set.connections, l, "zp_start", 0.0))
+    @variable(gm.model, 0 <= zp[l in pm.set.new_pipes] <= 1, Int, start = getstart(pm.set.connections, l, "zp_start", 0.0))
     return zp
 end
 
 # variables associated with building compressors
 function variable_compressor_expansion{T}(gm::GenericGasModel{T})
-    @variable(gm.model, 0 <= zc[l in pm.set.compressor_indexes] <= 1, Int, start = getstart(pm.set.connections, l, "zc_start", 0.0))
+    @variable(gm.model, 0 <= zc[l in pm.set.new_compressors] <= 1, Int, start = getstart(pm.set.connections, l, "zc_start", 0.0))
     return zc
 end
 

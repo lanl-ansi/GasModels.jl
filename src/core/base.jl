@@ -16,6 +16,9 @@ type GasDataSets
     valve_indexes
     control_valve_indexes
     resistor_indexes
+    new_pipes
+    new_compressors 
+    junction_connections       
 end
 
 abstract AbstractGasModel
@@ -108,7 +111,20 @@ function build_sets(data :: Dict{AbstractString,Any})
     control_valve_idxs = i in filter((i, connection) -> connection["type"] == "control_valve", connection_lookup)
     resistor_idxs = i in filter((i, connection) -> connection["type"] == "resistor", connection_lookup)
 
-    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs      
+    new_pipes = i in filter((i, connection) -> connection["type"] == "pipe" && (hasKey("construction_cost",connection]) && connection["construction_cost"] != 0), connection_lookup)
+    new_compressors = i in filter((i, connection) -> connection["type"] == "compressor" && (hasKey("construction_cost",connection]) && connection["construction_cost"] != 0), connection_lookup)
+    
+    junction_connections = [i => [] for (i,junction) in junction_lookup]
+    for connection in data["connection"]
+        i = connection["f_junction"]
+        j = connection["t_junction"]
+        idx = connection["idx"]
+                      
+        push!(junction_branches[i], idx)
+        push!(junction_branches[j], idx)
+    end
+                
+    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, new_pipes, new_compressors, junction_connections      
 end
 
 # Add some necessary data structures for constructing various constraints and variables

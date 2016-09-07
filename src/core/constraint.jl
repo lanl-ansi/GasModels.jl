@@ -10,7 +10,7 @@ function constraint_flow_direction_choice{T}(gm::GenericGasModel{T}, connection)
     yp = getvariable(gm.model, :yp)[i]
     yn = getvariable(gm.model, :yn)[i]
               
-    c = @constraint(gm.model, yp + yn = 1)
+    c = @constraint(gm.model, yp + yn == 1)
     return Set([c])
 end
 
@@ -81,6 +81,21 @@ function constraint_on_off_compressor_ratios{T}(gm::GenericGasModel{T}, compress
     return Set([c1,c2,c3,c4])          
 end
 
+# standard flow balance equation where demand and production is fixed
+function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
+    i = junction["index"]
+    junction_branches = pm.set.junction_branches[i]
+    bus_gens = pm.set.bus_gens[i]
+
+    v = getvariable(pm.model, :v)
+    p = getvariable(pm.model, :p)
+    pg = getvariable(pm.model, :pg)
+
+    c = @constraint(gm.model, bus["qmax"] == sum{f[a], a in junction_branches && gm.set.connection_lookup[a]["f_junction"] == i} - sum{f[a], a in junction_branches && gm.set.connection_lookup[a]["t_junction"] == i} )
+    return Set([c])
+end
+
+
 
 # constraints on flow across short pipes
 function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
@@ -105,7 +120,7 @@ function constraint_short_pipe_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
     pi = getvariable(gm.model, :p)[i_junction_idx]
     pj = getvariable(gm.model, :p)[j_junction_idx]
 
-    c = @constraint(gm.model,  pi = pj)
+    c = @constraint(gm.model,  pi == pj)
     return Set([c])  
 end
 
@@ -136,8 +151,6 @@ subject to flow_dir_M4{(id,i,j) in ALLpipes}: l[id,i,j] <= p[i] - p[j] + pd_min[
 subject to conv_flow {(id,i,j) in orig_pipes}: w[id]*l[id,i,j] >= f[id,i,j]^2;
 subject to on_off_flow {(id,i,j) in new_pipes}: zp[id]*w[id]*l[id,i,j] >= f[id,i,j]^2;
 
-######## Common Constraints ########
-subject to conservation {i in nodes}: load_c*ql[i] + sum{(id,j,i) in lines} f[id,j,i] = sum{(id,i,j) in lines} f[id,i,j];
 
 
 
@@ -191,8 +204,6 @@ subject to cons_flow{i in nodes: deg[i]==2 && ql[i]==0}: sum{(id,j,i) in lines d
 subject to parallel_dir {(id,i,j) in lines}: sum{(id0,i,j) in parallel_all[id]} yp[id0,i,j] = (card(parallel_all[id]))*yp[id,i,j];
 
 
-######## Common Constraints ########
-subject to conservation {i in nodes}: load_c*ql[i] + sum{(id,j,i) in lines} f[id,j,i] = sum{(id,i,j) in lines} f[id,i,j];
 
 
 ######## Non-Convex flow Constraints ########

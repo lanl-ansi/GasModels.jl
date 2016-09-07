@@ -22,6 +22,9 @@ function post_expansion{T}(gm::GenericGasModel{T})
     # expansion cost objective
     objective_min_expansion_cost(gm)
       
+    for (i,junction) in pm.set.junctions
+      constraint_junction_flow_balance(gm, junction)
+    end
     
     for (i,connection) in pm.set.connections
         constraint_flow_direction_choice(gm, connection)
