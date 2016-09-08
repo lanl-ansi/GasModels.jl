@@ -126,6 +126,87 @@ end
 
 
 
+# constraints on flow across valves
+function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve)
+    valve_idx = valve["index"]
+    i_junction_idx = valve["f_junction"]
+    j_junction_idx = valve["t_junction"]
+
+    yp = getvariable(gm.model, :yp)[valve_idx]
+    yn = getvariable(gm.model, :yn)[valve_idx]
+    f = getvariable(gm.model, :f)[valve_idx]
+    v = getvariable(gm.model, :v)[valve_idx]
+        
+    c1 = @constraint(gm.model, -gm.data["max_flow"]*(1-yp) <= f <= gm.data["max_flow"]*(1-yn))
+    c2 = @constraint(gm.model, -gm.data["max_flow"]*v <= f <= gm.data["max_flow"]*v)
+      
+    return Set([c1, c2])    
+end
+
+
+# constraints on pressure drop across valves
+function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
+    valve_idx = valve["index"]
+    i_junction_idx = valve["f_junction"]
+    j_junction_idx = valve["t_junction"]
+  
+    i = gm.data.junctions[i_junction_idx]  
+    j = gm.data.junctions[j_junction_idx]  
+        
+    pi = getvariable(gm.model, :p)[i_junction_idx]
+    pj = getvariable(gm.model, :p)[j_junction_idx]
+
+    v = getvariable(gm.model, :v)[valve_idx]
+    c = @constraint(gm.model,  pj - ((1-v)*j["p_max"]^2) <= pi <= pj + ((1-v)*i["p_max"]^2)
+    return Set([c])  
+end
+
+
+# constraints on flow across control valves
+function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve)
+    valve_idx = valve["index"]
+    i_junction_idx = valve["f_junction"]
+    j_junction_idx = valve["t_junction"]
+
+    yp = getvariable(gm.model, :yp)[valve_idx]
+    yn = getvariable(gm.model, :yn)[valve_idx]
+    f = getvariable(gm.model, :f)[valve_idx]
+    v = getvariable(gm.model, :v)[valve_idx]
+
+    c1 = @constraint(gm.model, -gm.data["max_flow"]*(1-yp) <= f <= gm.data["max_flow"]*(1-yn)
+    c2 = @constraint(gm.model, -gm.data["max_flow"]*v <= f <= gm.data["max_flow"]*v)
+      
+    return Set([c1, c2])    
+end
+
+
+# constraints on pressure drop across control valves
+function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
+    valve_idx = valve["index"]
+    i_junction_idx = valve["f_junction"]
+    j_junction_idx = valve["t_junction"]
+  
+    i = gm.data.junctions[i_junction_idx]  
+    j = gm.data.junctions[j_junction_idx]  
+        
+    pi = getvariable(gm.model, :p)[i_junction_idx]
+    pj = getvariable(gm.model, :p)[j_junction_idx]
+    yp = getvariable(gm.model, :yp)[valve_idx]
+    yn = getvariable(gm.model, :yn)[valve_idx]
+    
+    v = getvariable(gm.model, :v)[valve_idx]
+    
+    c1 = @constraint(gm.model,  pj - (valve["max_ratio"]*pi) <= (2-yp-v)*j["p_max"]^2)
+    c2 = @constraint(gm.model,  (valve["min_ratio"]*pi) - pj <= (2-yp-v)*(valve["min_ratio"]*i["p_min"]^2) )
+    c3 = @constraint(gm.model,  pi - (valve["max_ratio"]*pj) <= (2-yn-v)*i["p_max"]^2)
+    c4 = @constraint(gm.model,  (valve["min_ratio"]*pj) - pi <= (2-yn-v)*(valve["min_ratio"]*j["p_min"]^2))
+    
+    return Set([c1, c2, c3, c4])  
+end
+
+
+
+
 #MISCOP constraints
 
 # Expansion
@@ -153,40 +234,6 @@ subject to on_off_flow {(id,i,j) in new_pipes}: zp[id]*w[id]*l[id,i,j] >= f[id,i
 
 
 
-
-
-
-########    Valves   ########
-subject to flow_valves1LHS {(id,i,j) in orig_valves}: -max_flow*(1-yp[id,i,j]) <= f[id,i,j];
-subject to flow_valves1RHS {(id,i,j) in orig_valves}: f[id,i,j] <= max_flow*(1-yn[id,i,j]);
-
-subject to flow_valves2LHS {(id,i,j) in orig_valves}: -max_flow*v1[id,i,j] <= f[id,i,j];
-subject to flow_valves2RHS {(id,i,j) in orig_valves}: f[id,i,j] <= max_flow*v1[id,i,j];
-
-subject to pressure_valvesLHS {(id,i,j) in orig_valves}: p[j] - ( (1-v1[id,i,j])*p_max[j]^2) <= p[i];
-subject to pressure_valvesRHS {(id,i,j) in orig_valves}: p[i] <= p[j] + ( (1-v1[id,i,j])*p_max[i]^2);
-
-####### Control Valves #######
-subject to flow_cValves1LHS {(id,i,j) in orig_controlValves}: -max_flow*(1-yp[id,i,j]) <= f[id,i,j];
-subject to flow_cValves1RHS {(id,i,j) in orig_controlValves}: f[id,i,j] <= max_flow*(1-yn[id,i,j]);
-
-subject to flow_cValves2LHS {(id,i,j) in orig_controlValves}: -max_flow*v2[id,i,j] <= f[id,i,j];
-subject to flow_cValves2RHS {(id,i,j) in orig_controlValves}: f[id,i,j] <= max_flow*v2[id,i,j];
-
-subject to pressure_cValves1 {(id,i,j) in orig_controlValves}: p[j] - (max_ratioCV[id]*p[i]) <= (2-yp[id,i,j]-v2[id,i,j])*p_max[j]^2;
-subject to pressure_cValves2 {(id,i,j) in orig_controlValves}: (min_ratioCV[id]*p[i]) - p[j] <= (2-yp[id,i,j]-v2[id,i,j])*(min_ratioCV[id]*p_min[i]^2);
-
-subject to pressure_cValves3 {(id,i,j) in orig_controlValves}: p[i] - (max_ratioCV[id]*p[j]) <= (2-yn[id,i,j]-v2[id,i,j])*p_max[i]^2;
-subject to pressure_cValves4 {(id,i,j) in orig_controlValves}: (min_ratioCV[id]*p[j]) - p[i] <= (2-yn[id,i,j]-v2[id,i,j])*(min_ratioCV[id]*p_min[j]^2);
-#-----------------------------------------------------------------------------------
-
-
-
-  
- 
-  
-  
-  
   
   
   #MINLP constraints
@@ -219,32 +266,6 @@ subject to flow_newn_ {(id,i,j) in new_pipes}: w[id]*(p[j] - p[i]) <= f[id,i,j]^
 
 
 
-########    Valves   ########
-subject to flow_valves1LHS {(id,i,j) in orig_valves}: -max_flow*(1-yp[id,i,j]) <= f[id,i,j];
-subject to flow_valves1RHS {(id,i,j) in orig_valves}: f[id,i,j] <= max_flow*(1-yn[id,i,j]);
-
-subject to flow_valves2LHS {(id,i,j) in orig_valves}: -max_flow*v1[id,i,j] <= f[id,i,j];
-subject to flow_valves2RHS {(id,i,j) in orig_valves}: f[id,i,j] <= max_flow*v1[id,i,j];
-
-subject to pressure_valvesLHS {(id,i,j) in orig_valves}: p[j] - ( (1-v1[id,i,j])*p_max[j]^2) <= p[i];
-subject to pressure_valvesRHS {(id,i,j) in orig_valves}: p[i] <= p[j] + ( (1-v1[id,i,j])*p_max[i]^2);
-
-####### Control Valves #######
-subject to flow_cValves1LHS {(id,i,j) in orig_controlValves}: -max_flow*(1-yp[id,i,j]) <= f[id,i,j];
-subject to flow_cValves1RHS {(id,i,j) in orig_controlValves}: f[id,i,j] <= max_flow*(1-yn[id,i,j]);
-
-subject to flow_cValves2LHS {(id,i,j) in orig_controlValves}: -max_flow*v2[id,i,j] <= f[id,i,j];
-subject to flow_cValves2RHS {(id,i,j) in orig_controlValves}: f[id,i,j] <= max_flow*v2[id,i,j];
-
-subject to pressure_cValves1 {(id,i,j) in orig_controlValves}: p[j] - (max_ratioCV[id]*p[i]) <= (2-yp[id,i,j]-v2[id,i,j])*p_max[j]^2;
-subject to pressure_cValves2 {(id,i,j) in orig_controlValves}: (min_ratioCV[id]*p[i]) - p[j] <= (2-yp[id,i,j]-v2[id,i,j])*(min_ratioCV[id]*p_min[i]^2);
-
-subject to pressure_cValves3 {(id,i,j) in orig_controlValves}: p[i] - (max_ratioCV[id]*p[j]) <= (2-yn[id,i,j]-v2[id,i,j])*p_max[i]^2;
-subject to pressure_cValves4 {(id,i,j) in orig_controlValves}: (min_ratioCV[id]*p[j]) - p[i] <= (2-yn[id,i,j]-v2[id,i,j])*(min_ratioCV[id]*p_min[j]^2);
-  
-  
-  
-  
   
   
   

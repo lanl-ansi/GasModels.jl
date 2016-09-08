@@ -22,16 +22,16 @@ function post_expansion{T}(gm::GenericGasModel{T})
     # expansion cost objective
     objective_min_expansion_cost(gm)
       
-    for (i,junction) in pm.set.junctions
+    for (i,junction) in gm.set.junctions
       constraint_junction_flow_balance(gm, junction)
     end
     
-    for (i,connection) in pm.set.connections
+    for (i,connection) in gm.set.connections
         constraint_flow_direction_choice(gm, connection)
     end
 
-    for i in pm.set.pipe_indexes || pm.set.resistor_indexes
-        pipe = pm.set.connections[i]
+    for i in gm.set.pipe_indexes || pm.set.resistor_indexes
+        pipe = gm.set.connections[i]
       
         constraint_on_off_pressure_drop(gm, pipe)
         constraint_on_off_pipe_flow_direction(gm,pipe)        
@@ -39,19 +39,34 @@ function post_expansion{T}(gm::GenericGasModel{T})
     end
     
     for i in pm.set.short_pipe_indexes
-        pipe = pm.set.connections[i]
+        pipe = gm.set.connections[i]
       
         constraint_short_pipe_pressure_drop(gm, pipe)
         constraint_on_off_short_pipe_flow_direction(gm,pipe)      
     end
     
   
-    for i in pm.set.compressor_indexes
-        compressor = pm.set.connections[i]
+    for i in gm.set.compressor_indexes
+        compressor = gm.set.connections[i]
         
         constraint_on_off_compressor_flow_direction(gm, compressor)
         constraint_on_off_compressor_ratios(gm, compressor)        
     end  
+    
+    for i in gm.set.valve_indexes    
+        valve = gm.set.connections[i]
+      
+        constraint_on_off_valve_flow_direction{T}(gm, valve)
+        constraint_on_off_valve_pressure_drop{T}(gm, valve)  
+    end
+    
+    for i in gm.set.control_valve_indexes    
+        valve = gm.set.connections[i]
+      
+        constraint_on_off_control_valve_flow_direction{T}(gm, valve)
+        constraint_on_off_control_valve_pressure_drop{T}(gm, valve)  
+    end
+    
     
   
 end
