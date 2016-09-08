@@ -204,20 +204,67 @@ function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}
     return Set([c1, c2, c3, c4])  
 end
 
+# Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes)
+function constraint_source_flow{T}(gm::GenericGasModel{T}, junction)
+   c = @constraint(gm.model, sum{yp[a], a in gm.set.connection_lookup && gm.set.connection_lookup[a]["f_junction"] == junction["index"]} + sum{yn[a], a in gm.set.connection_lookup && gm.set.connection_lookup[a]["t_junction"] == junction["index"]} >= 1)
+   return Set([c])  
+end
+
+# Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes)
+function constraint_sink_flow{T}(gm::GenericGasModel{T}, junction)
+   c = @constraint(gm.model, sum{yn[a], a in gm.set.connection_lookup && gm.set.connection_lookup[a]["f_junction"] == junction["index"]} + sum{yp[a], a in gm.set.connection_lookup && gm.set.connection_lookup[a]["t_junction"] == junction["index"]} >= 1)
+   return Set([c])  
+end
+
+# This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption
+function constraint_conserve_flow{T}(gm::GenericGasModel{T}, junction)
+    idx = junction["index"]
+    first = nothing
+    last = nothing
+    
+    for i in gm.sets.junction_connections[idx] 
+        connection = gm.sets.connection_lookup[i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        else if first != other
+            last = other    
+        end      
+    end
+      
+  
+    c = @constraint(gm.model, sum{yp[i], i in gm.sets.junction_connections[idx] && gm.sets.connection_lookup[i]["f_junction"] == first} +  
+                              sum{yn[i], i in gm.sets.junction_connections[idx] && gm.sets.connection_lookup[i]["t_junction"] == first} ==
+                              sum{yp[i], i in gm.sets.junction_connections[idx] && gm.sets.connection_lookup[i]["t_junction"] == last} +
+                              sum{yn[i], i in gm.sets.junction_connections[idx] && gm.sets.connection_lookup[i]["f_junction"] == last})     
+   return Set([c])  
+end
+
+# ensures that parallel lines have flow in the same direction
+function constraint_parallel_flow{T}(gm::GenericGasModel{T}, connection)
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+    idx = connection{"index"]
+      
+        
+    c = @constraint(gm.model, sum{yp[i], i in gm.sets.parallel_connections[(i,j)] && gm.connection_lookup[i]["f_junction"] == connection["f_junction"} +        
+                          sum{yn[i], i in gm.sets.parallel_connections[(i,j)] && gm.connection_lookup[i]["f_junction"] != connection["f_junction"} ==
+                          yp[idx] * size(gm.sets.parallel_connections[(i,j)]) )
+    return Set([c])    
+end
+
 
 
 
 #MISCOP constraints
 
-# Expansion
-subject to exclusive {id in new_pid}: sum{(id0,i,j) in parallel[id] diff orig_pipes} zp[id0] + zp[id] <= 1;
 
-
-######## MIP Cuts ########
-subject to source_flow{i in nodes: ql[i] > 0}: sum{(id,i,j) in lines diff new_pipes_in_parallel_with_existing_lines} yp[id,i,j] + sum{(id,j,i) in lines diff new_pipes} yn[id,j,i] >= 1;
-subject to sink_flow{i in nodes: ql[i] < 0}: sum{(id,j,i) in lines diff new_pipes_in_parallel_with_existing_lines} yp[id,j,i] + sum{(id,i,j) in lines diff new_pipes} yn[id,i,j] >= 1;
-subject to cons_flow{i in nodes: deg[i]==2 && ql[i]==0}: sum{(id,j,i) in lines diff new_pipes: j == first(neighb[i])} yp[id,j,i] + sum{(id,i,j) in lines diff new_pipes: j == first(neighb[i])} yn[id,i,j] == sum{(id,i,j) in lines diff new_pipes: j == last(neighb[i])} yp[id,i,j] + sum{(id,j,i) in lines diff new_pipes: j == last(neighb[i])} yn[id,j,i];
-subject to parallel_dir {(id,i,j) in lines}: sum{(id0,i,j) in parallel_all[id]} yp[id0,i,j] = (card(parallel_all[id]))*yp[id,i,j];
+variable l....
   
 ### SOC only???  
 subject to lbound_l{(id,i,j) in ALLpipes}: l[id,i,j] >= -1/w[id]*(max_flow)^2;
@@ -236,34 +283,6 @@ subject to on_off_flow {(id,i,j) in new_pipes}: zp[id]*w[id]*l[id,i,j] >= f[id,i
 
   
   
-  #MINLP constraints
-  
-
-
-
-subject to exclusive {id in new_pid}: sum{(id0,i,j) in parallel[id] diff orig_pipes} zp[id0] + zp[id] <= 1;
-
-
-######## MIP Cuts ########
-subject to source_flow{i in nodes: ql[i] > 0}: sum{(id,i,j) in lines diff new_pipes_in_parallel_with_existing_lines} yp[id,i,j] + sum{(id,j,i) in lines diff new_pipes} yn[id,j,i] >= 1;
-subject to sink_flow{i in nodes: ql[i] < 0}: sum{(id,j,i) in lines diff new_pipes_in_parallel_with_existing_lines} yp[id,j,i] + sum{(id,i,j) in lines diff new_pipes} yn[id,i,j] >= 1;
-subject to cons_flow{i in nodes: deg[i]==2 && ql[i]==0}: sum{(id,j,i) in lines diff new_pipes: j == first(neighb[i])} yp[id,j,i] + sum{(id,i,j) in lines diff new_pipes: j == first(neighb[i])} yn[id,i,j] == sum{(id,i,j) in lines diff new_pipes: j == last(neighb[i])} yp[id,i,j] + sum{(id,j,i) in lines diff new_pipes: j == last(neighb[i])} yn[id,j,i];
-subject to parallel_dir {(id,i,j) in lines}: sum{(id0,i,j) in parallel_all[id]} yp[id0,i,j] = (card(parallel_all[id]))*yp[id,i,j];
-
-
-
-
-######## Non-Convex flow Constraints ########
-subject to flowp {(id,i,j) in orig_pipes}: w[id]*(p[i] - p[j]) >= f[id,i,j]^2 - (1-yp[id,i,j])*max_flow^2;
-subject to flowp_ {(id,i,j) in orig_pipes}: w[id]*(p[i] - p[j]) <= f[id,i,j]^2 + (1-yp[id,i,j])*max_flow^2;
-subject to flown {(id,i,j) in orig_pipes}: w[id]*(p[j] - p[i]) >= f[id,i,j]^2 - (1-yn[id,i,j])*max_flow^2;
-subject to flown_ {(id,i,j) in orig_pipes}: w[id]*(p[j] - p[i]) <= f[id,i,j]^2 + (1-yn[id,i,j])*max_flow^2;
-
-subject to flow_newp {(id,i,j) in new_pipes}: w[id]*(p[i] - p[j]) >= f[id,i,j]^2 - (2 - yp[id,i,j] - zp[id])*max_flow^2;
-subject to flow_newp_ {(id,i,j) in new_pipes}: w[id]*(p[i] - p[j]) <= f[id,i,j]^2 + (2 - yp[id,i,j] - zp[id])*max_flow^2;
-subject to flow_newn {(id,i,j) in new_pipes}: w[id]*(p[j] - p[i]) >= f[id,i,j]^2 - (2 - yn[id,i,j] - zp[id])*max_flow^2;
-subject to flow_newn_ {(id,i,j) in new_pipes}: w[id]*(p[j] - p[i]) <= f[id,i,j]^2 + (2 - yn[id,i,j] - zp[id])*max_flow^2;
-
 
 
   

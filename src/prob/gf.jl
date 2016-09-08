@@ -1,5 +1,8 @@
 # Definitions for running a feasible gas flow
 
+# Note that this particular formulation assumes the binary variable implementation of flow direction
+# We would need to do some abstraction to support the absolute value formulation
+
 export run_gf
 
 # entry point into running the gas flow feasability problem
@@ -16,11 +19,25 @@ function post_gf{T}(gm::GenericGasModel{T})
     variable_valve_operation(gm)
 
     for (i,junction) in gm.set.junctions
-      constraint_junction_flow_balance(gm, junction)
+        constraint_junction_flow_balance(gm, junction)
+      
+        if junction["q_max"] > 0 && junction["q_min"] >= 0 
+            constraint_source_flow(gm, junction)
+        end      
+        
+        if junction["q_max"] < 0 && junction["q_min"] < 0 
+            constraint_sink_flow(gm, junction)
+        end      
+                
+        if junction["q_max"] == 0 && junction["q_min"] == 0 && junction["degree"] == 2
+            constraint_conserve_flow{T}(gm, junction)
+        end
+        
     end
     
     for (i,connection) in gm.set.connections
         constraint_flow_direction_choice(gm, connection)
+        constraint_parallel_flow(gm,connection)
     end
 
     for i in gm.set.pipe_indexes || gm.set.resistor_indexes
@@ -28,6 +45,7 @@ function post_gf{T}(gm::GenericGasModel{T})
       
         constraint_on_off_pressure_drop(gm, pipe)
         constraint_on_off_pipe_flow_direction(gm,pipe)
+        constraint_weymouth(gm,pipe)        
     end
 
     for i in gm.set.short_pipe_indexes

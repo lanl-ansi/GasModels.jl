@@ -18,7 +18,8 @@ type GasDataSets
     resistor_indexes
     new_pipes
     new_compressors 
-    junction_connections       
+    junction_connections
+    parallel_connections       
 end
 
 abstract AbstractGasModel
@@ -113,8 +114,14 @@ function build_sets(data :: Dict{AbstractString,Any})
 
     new_pipes = i in filter((i, connection) -> connection["type"] == "pipe" && (hasKey("construction_cost",connection]) && connection["construction_cost"] != 0), connection_lookup)
     new_compressors = i in filter((i, connection) -> connection["type"] == "compressor" && (hasKey("construction_cost",connection]) && connection["construction_cost"] != 0), connection_lookup)
-    
+      
+    arcs_from = [(i,connection["f_junction"],connection["t_junction"]) for (i,connection) in connection_lookup]
+    arcs_to   = [(i,connection["t_junction"],connection["f_junction"]) for (i,connection) in connection_lookup]
+    arcs = [arcs_from; arcs_to]
+      
+    parallel_connections = [(i,j) => [] for (l,i,j) in arcs && i < j]     
     junction_connections = [i => [] for (i,junction) in junction_lookup]
+
     for connection in data["connection"]
         i = connection["f_junction"]
         j = connection["t_junction"]
@@ -122,9 +129,12 @@ function build_sets(data :: Dict{AbstractString,Any})
                       
         push!(junction_branches[i], idx)
         push!(junction_branches[j], idx)
+        
+        push!(parallel_connections[ (min(i,j), max(i,j))], idx)
+        
     end
                 
-    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, new_pipes, new_compressors, junction_connections      
+    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, new_pipes, new_compressors, junction_connections,parallel_connections      
 end
 
 # Add some necessary data structures for constructing various constraints and variables
@@ -132,10 +142,20 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
     max_flow = 0
   
     for junction in data["junction"]
-      if junction["qmax"] > 0
-        max_flow = max_flow + junction["qmax"]
-      end
+        if junction["qmax"] > 0
+          max_flow = max_flow + junction["qmax"]
+        end
+        junction["degree"] = 0
     end
+
+    for (i,j) in keys(set.paralell_connections)
+        if size(set.paralell_connections) > 0
+          set.junctionlookup[i]["degree"] = set.junctionlookup[i]["degree"] + 1
+          set.junctionlookup[j]["degree"] = set.junctionlookup[j]["degree"] + 1          
+        end
+    end
+    
+    
     data["max_flow"] = max_flow
     
   
@@ -152,5 +172,7 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
         branch["pd_max"] =  pd_max
         branch["pd_min"] =  pd_min
      end
+     
+     
 end
 
