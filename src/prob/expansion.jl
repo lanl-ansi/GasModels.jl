@@ -186,3 +186,8 @@ function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasMod
     end  
 end
 
+# Special function for whether or not a connection is added
+function add_connection_expansion{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "connection", "index", "built", :zp; default_value = (item) -> 1)
+end
+
