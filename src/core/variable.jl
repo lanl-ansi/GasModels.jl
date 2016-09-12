@@ -24,7 +24,7 @@ end
 # variables associated with flux
 function variable_flux{T}(gm::GenericGasModel{T}; bounded = true)
     if bounded
-        max_flow = sum{ gm.set.junctions[i]["qmax"], i in gm.set.junction_indexes : gm.set.junctions[i]["qmax"] > 0}
+        max_flow = gm.data["max_flow"]
         @variable(gm.model, -max_flow <= f[i in gm.set.connection_indexes] <= max_flow, start = getstart(pm.set.connections, i, "f_start", 0))
     else
         @variable(gm.model, f[i in gm.set.connection_indexes], start = getstart(pm.set.connections, i, "f_start", 0))

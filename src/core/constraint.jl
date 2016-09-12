@@ -258,36 +258,3 @@ function constraint_parallel_flow{T}(gm::GenericGasModel{T}, connection)
     return Set([c])    
 end
 
-
-
-
-#MISCOP constraints
-
-
-variable l....
-  
-### SOC only???  
-subject to lbound_l{(id,i,j) in ALLpipes}: l[id,i,j] >= -1/w[id]*(max_flow)^2;
-subject to ubound_l{(id,i,j) in ALLpipes}: l[id,i,j] <= 1/w[id]*(max_flow)^2;
-######## McCormick ########
-subject to flow_dir_M1{(id,i,j) in ALLpipes}: l[id,i,j] >= p[j] - p[i] + pd_min[id,i,j]*(yp[id,i,j] - yn[id,i,j] + 1);
-subject to flow_dir_M2{(id,i,j) in ALLpipes}: l[id,i,j] >= p[i] - p[j] + pd_max[id,i,j]*(yp[id,i,j] - yn[id,i,j] - 1);
-subject to flow_dir_M3{(id,i,j) in ALLpipes}: l[id,i,j] <= p[j] - p[i] + pd_max[id,i,j]*(yp[id,i,j] - yn[id,i,j] + 1);
-subject to flow_dir_M4{(id,i,j) in ALLpipes}: l[id,i,j] <= p[i] - p[j] + pd_min[id,i,j]*(yp[id,i,j] - yn[id,i,j] - 1);
-
-######## SOCP Flow  ########
-subject to conv_flow {(id,i,j) in orig_pipes}: w[id]*l[id,i,j] >= f[id,i,j]^2;
-subject to on_off_flow {(id,i,j) in new_pipes}: zp[id]*w[id]*l[id,i,j] >= f[id,i,j]^2;
-
-
-
-  
-  
-
-
-  
-  
-  
-   
-  
-  
