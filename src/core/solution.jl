@@ -18,9 +18,8 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
             "memory" => string(Sys.total_memory()/2^30, " Gb")
             ),
         "data" => Dict(
-            "name" => gm.data["name"],
             "junction_count" => length(gm.data["junction"]),
-            "connection_count" => length(pm.data["connection"])
+            "connection_count" => length(gm.data["connection"])
             )
         )
 
@@ -32,8 +31,8 @@ end
 # Get all the solution values
 function get_solution{T}(gm::GenericGasModel{T})
     sol = Dict{AbstractString,Any}()
-    add_junction_pressure_setpoint(sol, pm)
-    add_connection_flow_setpoint(sol, pm)
+    add_junction_pressure_sqr_setpoint(sol, gm)
+    add_connection_flow_setpoint(sol, gm)
     return sol
 end
 

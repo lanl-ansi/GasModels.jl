@@ -13,8 +13,21 @@ if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices")
     using AmplNLWriter
     using CoinOptServices
     bonmin_solver = BonminNLSolver()
-    couenne_solver = CouenneNLSolver()
+    couenne_solver = CouenneNLSolver()    
+#    bonmin_solver = OsilBonminSolver()
+#    couenne_solver = OsilCouenneSolver()
 end
+
+if Pkg.installed("Gurobi") != nothing
+    using Gurobi
+    gurobi_solver = GurobiSolver()
+end
+
+if Pkg.installed("CPLEX") != nothing
+    using CPLEX
+    cplex_solver = CplexSolver()
+end
+
 
 if VERSION >= v"0.5.0-dev+7720"
     using Base.Test

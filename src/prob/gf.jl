@@ -21,16 +21,16 @@ function post_gf{T}(gm::GenericGasModel{T})
     for (i,junction) in gm.set.junctions
         constraint_junction_flow_balance(gm, junction)
       
-        if junction["q_max"] > 0 && junction["q_min"] >= 0 
+        if junction["qmax"] > 0 && junction["qmin"] >= 0 
             constraint_source_flow(gm, junction)
         end      
         
-        if junction["q_max"] < 0 && junction["q_min"] < 0 
+        if junction["qmax"] < 0 && junction["qmin"] < 0 
             constraint_sink_flow(gm, junction)
         end      
                 
-        if junction["q_max"] == 0 && junction["q_min"] == 0 && junction["degree"] == 2
-            constraint_conserve_flow{T}(gm, junction)
+        if junction["qmax"] == 0 && junction["qmin"] == 0 && junction["degree"] == 2
+           constraint_conserve_flow(gm, junction)
         end
         
     end
@@ -41,7 +41,7 @@ function post_gf{T}(gm::GenericGasModel{T})
     end
     
     for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
-        pipe = pm.set.connections[i]
+        pipe = gm.set.connections[i]
       
         constraint_on_off_pressure_drop(gm, pipe)
         constraint_on_off_pipe_flow_direction(gm,pipe)
@@ -49,14 +49,14 @@ function post_gf{T}(gm::GenericGasModel{T})
     end
 
     for i in gm.set.short_pipe_indexes
-        pipe = pm.set.connections[i]
+        pipe = gm.set.connections[i]
       
         constraint_short_pipe_pressure_drop(gm, pipe)
         constraint_on_off_short_pipe_flow_direction(gm,pipe)      
     end
         
     for i in gm.set.compressor_indexes
-        compressor = pm.set.connections[i]
+        compressor = gm.set.connections[i]
         
         constraint_on_off_compressor_flow_direction(gm, compressor)
         constraint_on_off_compressor_ratios(gm, compressor)    

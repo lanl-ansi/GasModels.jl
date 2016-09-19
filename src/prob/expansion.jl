@@ -52,7 +52,7 @@ function post_expansion{T}(gm::GenericGasModel{T})
         constraint_new_pipe_weymouth(gm,pipe)
     end
     
-    for i in pm.set.short_pipe_indexes
+    for i in gm.set.short_pipe_indexes
         pipe = gm.set.connections[i]
       
         constraint_short_pipe_pressure_drop(gm, pipe)
