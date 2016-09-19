@@ -54,6 +54,8 @@ end
 
 # function for augmenting the data sets
 function process_raw_data(data::Dict{AbstractString,Any})
+    add_default_data(data)
+  
   
     sets = build_sets(data)
 
@@ -105,15 +107,16 @@ function build_sets(data :: Dict{AbstractString,Any})
     junction_idxs = collect(keys(junction_lookup))
     connection_idxs = collect(keys(connection_lookup))
     
-    pipe_idxs = i in filter((i, connection) -> connection["type"] == "pipe", connection_lookup)
-    short_pipe_idxs = i in filter((i, connection) -> connection["type"] == "short_pipe", connection_lookup)
-    compressor_idxs = i in filter((i, connection) -> connection["type"] == "compressor", connection_lookup)
-    valve_idxs = i in filter((i, connection) -> connection["type"] == "valve", connection_lookup)
-    control_valve_idxs = i in filter((i, connection) -> connection["type"] == "control_valve", connection_lookup)
-    resistor_idxs = i in filter((i, connection) -> connection["type"] == "resistor", connection_lookup)
+    
+    pipe_idxs =  collect(keys(filter((i, connection) -> connection["type"] == "pipe", connection_lookup)))
+    short_pipe_idxs = collect(keys(filter((i, connection) -> connection["type"] == "short_pipe", connection_lookup)))
+    compressor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "compressor", connection_lookup)))
+    valve_idxs = collect(keys(filter((i, connection) -> connection["type"] == "valve", connection_lookup)))
+    control_valve_idxs = collect(keys(filter((i, connection) -> connection["type"] == "control_valve", connection_lookup)))
+    resistor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "resistor", connection_lookup)))
 
-    new_pipes       = i in filter((i, connection) -> connection["type"] == "pipe"       && connection["construction_cost"] != 0 && hasKey("construction_cost",connection), connection_lookup) 
-    new_compressors = i in filter((i, connection) -> connection["type"] == "compressor" && connection["construction_cost"] != 0 && hasKey("construction_cost",connection), connection_lookup)
+    new_pipes       = collect(keys(filter((i, connection) -> connection["type"] == "pipe"       && connection["construction_cost"] != 0 && hasKey("construction_cost",connection), connection_lookup))) 
+    new_compressors = collect(keys(filter((i, connection) -> connection["type"] == "compressor" && connection["construction_cost"] != 0 && hasKey("construction_cost",connection), connection_lookup)))
       
     arcs_from = [(i,connection["f_junction"],connection["t_junction"]) for (i,connection) in connection_lookup]
     arcs_to   = [(i,connection["t_junction"],connection["f_junction"]) for (i,connection) in connection_lookup]
@@ -129,18 +132,28 @@ function build_sets(data :: Dict{AbstractString,Any})
          
     junction_connections = [i => [] for (i,junction) in junction_lookup]
 
+      
     for connection in data["connection"]
         i = connection["f_junction"]
         j = connection["t_junction"]
-        idx = connection["idx"]
-                      
-        push!(junction_branches[i], idx)
-        push!(junction_branches[j], idx)
+        idx = connection["index"]
+          
+        push!(junction_connections[i], idx)
+        push!(junction_connections[j], idx)
         
         push!(parallel_connections[(min(i,j), max(i,j))], idx)       
     end
                 
     return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, new_pipes, new_compressors, junction_connections,parallel_connections)      
+end
+
+function add_default_data(data :: Dict{AbstractString,Any})
+    for connection in data["connection"]
+        if !haskey(connection,"status")
+            connection["status"] = 1
+        end
+      
+    end
 end
 
 # Add some necessary data structures for constructing various constraints and variables
