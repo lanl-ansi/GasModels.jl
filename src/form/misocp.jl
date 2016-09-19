@@ -3,31 +3,27 @@
 export 
     MISOCPGasModel, StandardMISOCPForm
 
-abstract AbstractMISCOPForm <: AbstractGasFormulation
+abstract AbstractMISOCPForm <: AbstractGasFormulation
 
 type StandardMISOCPForm <: AbstractMISOCPForm end
 typealias MISOCPGasModel GenericGasModel{StandardMISOCPForm}
 
 # default MISOCP constructor
-function MISOCPPowerModel(data::Dict{AbstractString,Any}; kwargs...)
+function MISOCPGasModel(data::Dict{AbstractString,Any}; kwargs...)
     return GenericGasModel(data, StandardMISOCPForm(); kwargs...)
 end
 
-
 # variables associated with flux, the second order cone adds the relaxed variation of flux squared to get the second order cone constraint
 function variable_flux{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}; bounded = true)
+    @variable(gm.model, 0 <= l[i in gm.set.connection_indexes] <= 1/gm.set.connection_lookup[i]["resistance"]*(max_flow)^2, start = getstart(gm.set.connections, i, "l_start", 0))  
     if bounded
         max_flow = gm.data["max_flow"]
-        @variable(gm.model, -max_flow <= f[i in gm.set.connection_indexes] <= max_flow, start = getstart(pm.set.connections, i, "f_start", 0))
-        @variable(gm.model, 0 <= l[i in gm.set.connection_indexes] <= 1/gm.set.connection_lookup[i]["resistance"]*(max_flow)^2, start = getstart(pm.set.connections, i, "l_start", 0))  
+        @variable(gm.model, -max_flow <= f[i in gm.set.connection_indexes] <= max_flow, start = getstart(gm.set.connections, i, "f_start", 0))
     else
-        @variable(gm.model, f[i in gm.set.connection_indexes], start = getstart(pm.set.connections, i, "f_start", 0))
-        @variable(gm.model, 0 <= l[i in gm.set.connection_indexes], start = getstart(pm.set.connections, i, "l_start", 0))          
+        @variable(gm.model,      f[i in gm.set.connection_indexes], start = getstart(gm.set.connections, i, "f_start", 0))
     end
     return f,l
 end
-
-
 
 #Weymouth equation with discrete direction variables
 function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
@@ -55,7 +51,6 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     c5 = @constraint(gm.model, pipe["resistance"]*l >= f^2)
             
     return Set([c1, c2, c3, c4, c5])
-  
 end
 
 

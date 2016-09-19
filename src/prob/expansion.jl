@@ -43,7 +43,7 @@ function post_expansion{T}(gm::GenericGasModel{T})
         constraint_parallel_flow(gm,connection)
     end
 
-    for i in gm.set.pipe_indexes || pm.set.resistor_indexes
+    for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
         pipe = gm.set.connections[i]
       
         constraint_on_off_pressure_drop(gm, pipe)
@@ -87,15 +87,12 @@ function post_expansion{T}(gm::GenericGasModel{T})
         i = min(pipe["f_junction"],pipe["t_junction"])
         j = max(pipe["f_junction"],pipe["t_junction"])
     
-        if exclusive[(i,j) == nothing  
+        if exclusive[(i,j)] == nothing  
             constraint_exclusive_new_pipes(gm, i, j)         
             exclusive[(i,j)] = true
         end  
            
-    end
-    
-    
-  
+    end  
 end
 
 
@@ -107,17 +104,22 @@ function constraint_on_off_pipe_flow_expansion{T}(gm::GenericGasModel{T}, pipe)
 
     zp = getvariable(gm.model, :zp)[pipe_idx]
     f = getvariable(gm.model, :f)[pipe_idx]
-  
-    c = @constraint(gm.model, -(1-zp)*min(gm.data["max_flow"], sqrt(pipe["resistance"]*max(pipe["pd_max"], abs(pipe["pd_min"])))) <= f <= (1-zp)*min(gm.data["max_flow"], sqrt(pipe["resistance"]*max(pipe["pd_max"], abs(pipe["pd_min"])))
+    
+    max_flow = gm.data["max_flow"]
+    pd_max = pipe["pd_max"]  
+    pd_min = pipe["pd_min"]  
+    w = pipe["resistance"]
+          
+    c = @constraint(gm.model, -(1-zp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))) <= f <= (1-zp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))
     return Set([c])    
 end
 
 # This function ensures at most one pipe in parallel is selected
 function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)
-    c = @constraint(gm.model, sum{zp[connection["index"], connection in gm.set.parallel_connections[(i,j)] && contains(gm.new_pipes(connection["index"])) } <= 1)
+    parallel = filter(connection -> i in connection in gm.set.parallel_connections[(i,j)] && contains(gm.new_pipes(connection["index"])))
+    c = @constraint(gm.model, sum{zp[connection["index"]], connection in parallel} <= 1)
     return Set([c])    
 end
-
 
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe)
@@ -148,8 +150,6 @@ function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasMode
         return Set([c1, c2, c3, c4])
     end  
 end
-
-
 
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)

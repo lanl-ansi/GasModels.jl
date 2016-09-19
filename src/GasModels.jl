@@ -9,21 +9,17 @@ using JuMP
 include("io/json.jl")
 include("io/common.jl")
 
-#include("core/base.jl")
-#include("core/variable.jl")
-#include("core/constraint.jl")
-#include("core/relaxation_scheme.jl")
-#include("core/objective.jl")
-#include("core/solution.jl")
+include("core/base.jl")
+include("core/variable.jl")
+include("core/constraint.jl")
+include("core/relaxation_scheme.jl")
+include("core/objective.jl")
+include("core/solution.jl")
 
-#include("form/acp.jl")
-#include("form/dcp.jl")
-#include("form/wr.jl")
-#include("form/wrm.jl")
+include("form/minlp.jl")
+include("form/misocp.jl")
 
-#include("prob/pf.jl")
-#include("prob/opf.jl")
-#include("prob/ots.jl")
-#include("prob/misc.jl")
+include("prob/gf.jl")
+include("prob/expansion.jl")
 
 end

@@ -4,7 +4,7 @@ misocp_solver = bonmin_solver # Paper used CPLEX - switch to Pajirito
 
 @testset "test minlp gf" begin
     @testset "gaslib 40 case" begin
-        result = run_gf("../test/data/gaslib-40.json", minlp_solver)
+        result = run_gf("../test/data/gaslib-40.json", MINLPGasModel, minlp_solver)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
@@ -32,7 +32,7 @@ end
 
 @testset "test misocp gf" begin
     @testset "gaslib 40 case" begin
-        result = run_gf("../test/data/gaslib-40.json", minsocp_solver)
+        result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, minsocp_solver)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 0; atol = 1e-6)

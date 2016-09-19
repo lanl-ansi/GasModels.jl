@@ -9,7 +9,7 @@ type StandardMINLPForm <: AbstractMINLPForm end
 typealias MINLPGasModel GenericGasModel{StandardMINLPForm}
 
 # default MINLP constructor
-function MINLPPowerModel(data::Dict{AbstractString,Any}; kwargs...)
+function MINLPGasModel(data::Dict{AbstractString,Any}; kwargs...)
     return GenericGasModel(data, StandardMINLPForm(); kwargs...)
 end
 

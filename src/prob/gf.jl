@@ -39,8 +39,8 @@ function post_gf{T}(gm::GenericGasModel{T})
         constraint_flow_direction_choice(gm, connection)
         constraint_parallel_flow(gm,connection)
     end
-
-    for i in gm.set.pipe_indexes || gm.set.resistor_indexes
+    
+    for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
         pipe = pm.set.connections[i]
       
         constraint_on_off_pressure_drop(gm, pipe)

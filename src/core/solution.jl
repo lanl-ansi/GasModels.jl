@@ -29,19 +29,21 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
     return solution
 end
 
-function get_solution{T}(gm::GasPowerModel{T})
+# Get all the solution values
+function get_solution{T}(gm::GenericGasModel{T})
     sol = Dict{AbstractString,Any}()
     add_junction_pressure_setpoint(sol, pm)
     add_connection_flow_setpoint(sol, pm)
     return sol
 end
 
+# Get the pressure squared solutions
 function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "junction", "index", "p_sqr", :p)
 end
 
-
-function add_connection_flow_setpoint{T}(sol, gm::GenericPowerModel{T})
+# Add the flow solutions
+function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "index", "f", :f)  
 end
 
