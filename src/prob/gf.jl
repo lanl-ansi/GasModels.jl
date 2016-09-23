@@ -41,8 +41,7 @@ function post_gf{T}(gm::GenericGasModel{T})
     end
     
     for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
-        pipe = gm.set.connections[i]
-      
+        pipe = gm.set.connections[i]      
         constraint_on_off_pressure_drop(gm, pipe)
         constraint_on_off_pipe_flow_direction(gm,pipe)
         constraint_weymouth(gm,pipe)        
@@ -50,30 +49,27 @@ function post_gf{T}(gm::GenericGasModel{T})
 
     for i in gm.set.short_pipe_indexes
         pipe = gm.set.connections[i]
-      
         constraint_short_pipe_pressure_drop(gm, pipe)
         constraint_on_off_short_pipe_flow_direction(gm,pipe)      
     end
         
     for i in gm.set.compressor_indexes
-        compressor = gm.set.connections[i]
-        
+        compressor = gm.set.connections[i]        
         constraint_on_off_compressor_flow_direction(gm, compressor)
         constraint_on_off_compressor_ratios(gm, compressor)    
     end
     
     for i in gm.set.valve_indexes    
         valve = gm.set.connections[i]
-      
-        constraint_on_off_valve_flow_direction{T}(gm, valve)
-        constraint_on_off_valve_pressure_drop{T}(gm, valve)  
+        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_valve_pressure_drop(gm, valve)  
     end
     
     for i in gm.set.control_valve_indexes    
-        valve = gm.set.connections[i]
-      
-        constraint_on_off_control_valve_flow_direction{T}(gm, valve)
-        constraint_on_off_control_valve_pressure_drop{T}(gm, valve)  
+        valve = gm.set.connections[i]      
+        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_control_valve_pressure_drop(gm, valve)  
     end
+    
 end
 

@@ -121,13 +121,16 @@ function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, 
     pipe_idx = pipe["index"]
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
-
+      
     yp = getvariable(gm.model, :yp)[pipe_idx]
     yn = getvariable(gm.model, :yn)[pipe_idx]
-    f = getvariable(gm.model, :f)[pipe_idx]
-  
-    c = @constraint(gm.model, -gm.data["max_flow"]*(1-yp) <= f <= gm.data["max_flow"]*(1-yn))
-    return Set([c])    
+    f = getvariable(gm.model, :f)[pipe_idx]  
+    max_flow = gm.data["max_flow"]
+    
+    c1 = @constraint(gm.model, -max_flow*(1-yp) <= f)
+    c2 = @constraint(gm.model, f <= max_flow*(1-yn))
+      
+    return Set([c1, c2])    
 end
 
 # constraints on pressure drop across pipes
@@ -153,9 +156,11 @@ function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve
     yn = getvariable(gm.model, :yn)[valve_idx]
     f = getvariable(gm.model, :f)[valve_idx]
     v = getvariable(gm.model, :v)[valve_idx]
-        
-    c1 = @constraint(gm.model, -gm.data["max_flow"]*(1-yp) <= f <= gm.data["max_flow"]*(1-yn))
-    c2 = @constraint(gm.model, -gm.data["max_flow"]*v <= f <= gm.data["max_flow"]*v)
+
+    max_flow = gm.data["max_flow"]
+            
+    c1 = @constraint(gm.model, -max_flow*(1-yp) <= f <= max_flow*(1-yn))
+    c2 = @constraint(gm.model, -max_flow*v <= f <= max_flow*v)
       
     return Set([c1, c2])    
 end
@@ -166,15 +171,18 @@ function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
     i_junction_idx = valve["f_junction"]
     j_junction_idx = valve["t_junction"]
   
-    i = gm.data.junctions[i_junction_idx]  
-    j = gm.data.junctions[j_junction_idx]  
+    i = gm.set.junctions[i_junction_idx]  
+    j = gm.set.junctions[j_junction_idx]  
         
     pi = getvariable(gm.model, :p)[i_junction_idx]
     pj = getvariable(gm.model, :p)[j_junction_idx]
 
     v = getvariable(gm.model, :v)[valve_idx]
-    c = @constraint(gm.model,  pj - ((1-v)*j["p_max"]^2) <= pi <= pj + ((1-v)*i["p_max"]^2))
-    return Set([c])  
+
+    c1 = @constraint(gm.model,  pj - ((1-v)*j["pmax"]^2) <= pi)
+    c2 = @constraint(gm.model,  pi <= pj + ((1-v)*i["pmax"]^2))
+    
+    return Set([c1, c2])  
 end
 
 # constraints on flow across control valves
@@ -187,13 +195,14 @@ function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve
     yn = getvariable(gm.model, :yn)[valve_idx]
     f = getvariable(gm.model, :f)[valve_idx]
     v = getvariable(gm.model, :v)[valve_idx]
-    
     max_flow = gm.data["max_flow"]
 
-    c1 = @constraint(gm.model, -max_flow*(1-yp) <= f <= max_flow*(1-yn))
-    c2 = @constraint(gm.model, -max_flow*v <= f <= max_flow*v)
-      
-    return Set([c1, c2])    
+    c1 = @constraint(gm.model, -max_flow*(1-yp) <= f)
+    c2 = @constraint(gm.model, f <= max_flow*(1-yn))      
+    c3 = @constraint(gm.model, -max_flow*v <= f )
+    c4 = @constraint(gm.model, f <= max_flow*v)
+          
+    return Set([c1, c2, c3, c4])    
 end
 
 # constraints on pressure drop across control valves
@@ -202,20 +211,22 @@ function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}
     i_junction_idx = valve["f_junction"]
     j_junction_idx = valve["t_junction"]
   
-    i = gm.data.junctions[i_junction_idx]  
-    j = gm.data.junctions[j_junction_idx]  
+    i = gm.set.junctions[i_junction_idx]  
+    j = gm.set.junctions[j_junction_idx]  
         
     pi = getvariable(gm.model, :p)[i_junction_idx]
     pj = getvariable(gm.model, :p)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[valve_idx]
-    yn = getvariable(gm.model, :yn)[valve_idx]
-    
+    yn = getvariable(gm.model, :yn)[valve_idx]    
     v = getvariable(gm.model, :v)[valve_idx]
     
-    c1 = @constraint(gm.model,  pj - (valve["max_ratio"]*pi) <= (2-yp-v)*j["p_max"]^2)
-    c2 = @constraint(gm.model,  (valve["min_ratio"]*pi) - pj <= (2-yp-v)*(valve["min_ratio"]*i["p_min"]^2) )
-    c3 = @constraint(gm.model,  pi - (valve["max_ratio"]*pj) <= (2-yn-v)*i["p_max"]^2)
-    c4 = @constraint(gm.model,  (valve["min_ratio"]*pj) - pi <= (2-yn-v)*(valve["min_ratio"]*j["p_min"]^2))
+    max_ratio = valve["c_ratio_max"]
+    min_ratio = valve["c_ratio_min"]
+    
+    c1 = @constraint(gm.model,  pj - (max_ratio*pi) <= (2-yp-v)*j["pmax"]^2)
+    c2 = @constraint(gm.model,  (min_ratio*pi) - pj <= (2-yp-v)*(min_ratio*i["pmin"]^2) )
+    c3 = @constraint(gm.model,  pi - (max_ratio*pj) <= (2-yn-v)*i["pmax"]^2)
+    c4 = @constraint(gm.model,  (min_ratio*pj) - pi <= (2-yn-v)*(min_ratio*j["pmin"]^2))
     
     return Set([c1, c2, c3, c4])  
 end

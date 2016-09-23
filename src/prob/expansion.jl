@@ -70,15 +70,15 @@ function post_expansion{T}(gm::GenericGasModel{T})
     for i in gm.set.valve_indexes    
         valve = gm.set.connections[i]
       
-        constraint_on_off_valve_flow_direction{T}(gm, valve)
-        constraint_on_off_valve_pressure_drop{T}(gm, valve)  
+        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_valve_pressure_drop(gm, valve)  
     end
     
     for i in gm.set.control_valve_indexes    
         valve = gm.set.connections[i]
       
-        constraint_on_off_control_valve_flow_direction{T}(gm, valve)
-        constraint_on_off_control_valve_pressure_drop{T}(gm, valve)  
+        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_control_valve_pressure_drop(gm, valve)  
     end
     
     exclusive = Dict{}

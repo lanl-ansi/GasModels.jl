@@ -39,18 +39,6 @@ function variable_connection_direction{T}(gm::GenericGasModel{T})
     return yp, yn
 end
 
-# variables associated with the flux squared
-#function variable_flux_square{T}(gm::GenericGasModel{T}; bounded = true)
- #   if bounded
-  #      max_flow = gm.data["max_flow"]
-   #     @variable(gm.model, -max_flow^2 <= l[i in gm.set.pipe_indexes,gm.set.resistor_indexes] <= max_flow^2, start = getstart(gm.set.connections, i, "l_start", 0))
-   # else
-    #    @variable(gm.model, l[i in gm.set.connection_indexes], start = getstart(gm.set.connections, i, "l_start", 0))
-    #end
-     #return l
-#end
-
-
 # variables associated with building pipes
 function variable_pipe_expansion{T}(gm::GenericGasModel{T})
     @variable(gm.model, 0 <= zp[l in gm.set.new_pipes] <= 1, Int, start = getstart(gm.set.connections, l, "zp_start", 0.0))
@@ -65,6 +53,6 @@ end
 
 # 0-1 variables associated with operating valves
 function variable_valve_operation{T}(gm::GenericGasModel{T})
-    @variable(gm.model, 0 <= v[l in gm.set.valve_indexes, gm.set.control_valve_indexes] <= 1, Int, start = getstart(gm.set.connections, l, "v_start", 1.0))
+    @variable(gm.model, 0 <= v[l in [gm.set.valve_indexes; gm.set.control_valve_indexes]] <= 1, Int, start = getstart(gm.set.connections, l, "v_start", 1.0))
     return v
 end
