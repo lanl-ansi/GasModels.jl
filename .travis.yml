@@ -16,6 +16,7 @@ addons:
     - libgmp-dev
     - libglpk-dev
 
+
 before_install:
     # don't keep an old version of the code in the cache
   - julia -e 'if "GasModels" in keys(Pkg.installed()) Pkg.rm("GasModels"); Pkg.rm("GasModels") end'
