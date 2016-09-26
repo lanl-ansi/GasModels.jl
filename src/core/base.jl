@@ -151,12 +151,7 @@ function add_default_data(data :: Dict{AbstractString,Any})
     for connection in data["connection"]
         if !haskey(connection,"status")
             connection["status"] = 1
-        end
-      
-#        if !haskey(connection,"resistance")
- #           connection["resistance"] = 1
-  #      end
-        
+        end      
     end
 end
 

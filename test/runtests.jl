@@ -40,13 +40,18 @@ end
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
 
+# The paper used cplex 12.6.0
+if Pkg.installed("Gurobi") != nothing
+   misocp_solver = gurobi_solver
+else if Pkg.installed("CPLEX") != nothing
+   misocp_solver = cplex_solver
+else
+   misocp_solver = bonmin_solver
+end   
+   
 minlp_solver = couenne_solver # Paper used SCIP
-misocp_solver = cplex_solver # Paper used CPLEX 
-
-#scs_solver = SCSSolver(max_iters=1000000, verbose=0)
 
 
-
-
-include("gf.jl")
+#include("gf.jl")
+include("expansion.jl")
 

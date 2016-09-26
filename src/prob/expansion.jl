@@ -25,16 +25,16 @@ function post_expansion{T}(gm::GenericGasModel{T})
     for (i,junction) in gm.set.junctions
         constraint_junction_flow_balance(gm, junction)
       
-        if junction["q_max"] > 0 && junction["q_min"] > 0 
+        if junction["qmax"] > 0 && junction["qmin"] > 0 
             constraint_source_flow(gm, junction)
         end
         
-        if junction["q_max"] < 0 && junction["q_min"] < 0 
+        if junction["qmax"] < 0 && junction["qmin"] < 0 
             constraint_sink_flow(gm, junction)
         end      
            
-        if junction["q_max"] == 0 && junction["q_min"] == 0 && junction["degree"] == 2
-            constraint_conserve_flow{T}(gm, junction)
+        if junction["qmax"] == 0 && junction["qmin"] == 0 && junction["degree"] == 2
+           constraint_conserve_flow(gm, junction)
         end           
     end
     
@@ -44,54 +44,53 @@ function post_expansion{T}(gm::GenericGasModel{T})
     end
 
     for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
-        pipe = gm.set.connections[i]
-      
+        pipe = gm.set.connections[i]      
         constraint_on_off_pressure_drop(gm, pipe)
-        constraint_on_off_pipe_flow_direction(gm,pipe)        
-        constraint_on_off_pipe_flow_expansion(gm, pipe)
+        constraint_on_off_pipe_flow_direction(gm,pipe)
+        if haskey(gm.set.connections[i], "construction_cost")           
+            constraint_on_off_pipe_flow_expansion(gm, pipe)
+        end
         constraint_new_pipe_weymouth(gm,pipe)
     end
     
     for i in gm.set.short_pipe_indexes
-        pipe = gm.set.connections[i]
-      
+        pipe = gm.set.connections[i]      
         constraint_short_pipe_pressure_drop(gm, pipe)
         constraint_on_off_short_pipe_flow_direction(gm,pipe)      
     end
-    
-  
+     
     for i in gm.set.compressor_indexes
-        compressor = gm.set.connections[i]
-        
+        compressor = gm.set.connections[i]        
         constraint_on_off_compressor_flow_direction(gm, compressor)
         constraint_on_off_compressor_ratios(gm, compressor)        
     end  
     
     for i in gm.set.valve_indexes    
-        valve = gm.set.connections[i]
-      
+        valve = gm.set.connections[i]      
         constraint_on_off_valve_flow_direction(gm, valve)
         constraint_on_off_valve_pressure_drop(gm, valve)  
     end
     
     for i in gm.set.control_valve_indexes    
-        valve = gm.set.connections[i]
-      
+        valve = gm.set.connections[i]      
         constraint_on_off_valve_flow_direction(gm, valve)
         constraint_on_off_control_valve_pressure_drop(gm, valve)  
     end
     
-    exclusive = Dict{}
+    exclusive = Dict()
     for idx in gm.set.new_pipes
-        pipe = gm.set.connection_lookup[idx]
+        pipe = gm.set.connections[idx]
         i = min(pipe["f_junction"],pipe["t_junction"])
         j = max(pipe["f_junction"],pipe["t_junction"])
-    
-        if exclusive[(i,j)] == nothing  
-            constraint_exclusive_new_pipes(gm, i, j)         
-            exclusive[(i,j)] = true
+   
+        if haskey(exclusive, i) == false  
+            exclusive[i] = Dict()
         end  
            
+        if haskey(exclusive[i], j) == false 
+            constraint_exclusive_new_pipes(gm, i, j)         
+            exclusive[i][j] = true
+        end             
     end  
 end
 
@@ -110,21 +109,23 @@ function constraint_on_off_pipe_flow_expansion{T}(gm::GenericGasModel{T}, pipe)
     pd_min = pipe["pd_min"]  
     w = pipe["resistance"]
           
-    c = @constraint(gm.model, -(1-zp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))) <= f <= (1-zp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))
-    return Set([c])    
+    c1 = @constraint(gm.model, f <= zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))
+    c2 = @constraint(gm.model, f >= -zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))            
+    return Set([c1, c2])    
 end
 
 # This function ensures at most one pipe in parallel is selected
-function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)
-    parallel = filter(connection -> i in connection in gm.set.parallel_connections[(i,j)] && contains(gm.new_pipes(connection["index"])))
-    c = @constraint(gm.model, sum{zp[connection["index"]], connection in parallel} <= 1)
+function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)  
+    parallel = collect(filter( connection -> in(connection, gm.set.new_pipes), gm.set.parallel_connections[(i,j)] ))
+    zp = getvariable(gm.model, :zp)            
+    c = @constraint(gm.model, sum{zp[i], i in parallel} <= 1)
     return Set([c])    
 end
 
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]
-    if contains(gm.sets.new_pipes, pipe_idx)  
+    if !haskey(gm.set.connections[pipe_idx], "construction_cost")           
         return constraint_weymouth(gm, pipe)
     else
         i_junction_idx = pipe["f_junction"]
@@ -154,35 +155,39 @@ end
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]
-    if contains(gm.sets.new_pipes, pipe_idx)  
+      
+    #if pipe_idx in gm.set.new_pipes, pipe_idx
+    if !haskey(gm.set.connections[pipe_idx], "construction_cost")           
         return constraint_weymouth(gm, pipe)
     else
         pipe_idx = pipe["index"]
         i_junction_idx = pipe["f_junction"]
         j_junction_idx = pipe["t_junction"]
   
-        i = gm.data.junctions[i_junction_idx]  
-        j = gm.data.junctions[j_junction_idx]  
+        i = gm.set.junctions[i_junction_idx]  
+        j = gm.set.junctions[j_junction_idx]  
         
         pi = getvariable(gm.model, :p)[i_junction_idx]
         pj = getvariable(gm.model, :p)[j_junction_idx]
         yp = getvariable(gm.model, :yp)[pipe_idx]
         yn = getvariable(gm.model, :yn)[pipe_idx]
-        zp = getvariable(gm.model, :zp)[pipe_idx]
-        
+        zp = getvariable(gm.model, :zp)[pipe_idx]       
         l  = getvariable(gm.model, :l)[pipe_idx]
+        f  = getvariable(gm.model, :f)[pipe_idx]
     
-        pd_max = i["p_max"]^2 - j["p_min"]^2;
-        pd_min = i["p_min"]^2 - j["p_max"]^2;    
+        pd_max = pipe["pd_max"] #i["pmax"]^2 - j["pmin"]^2;
+        pd_min = pipe["pd_min"] #i["pmin"]^2 - j["pmax"]^2;    
         max_flow = gm.data["max_flow"]
 
         c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
         c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
         c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
         c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
-        c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) # may need to be transformed if the solver does not support rotated SOC
-            
-        return Set([c1, c2, c3, c4, c5])
+        c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
+        
+          
+                        
+        return Set([c1, c2, c3, c4, c5])  
     end  
 end
 

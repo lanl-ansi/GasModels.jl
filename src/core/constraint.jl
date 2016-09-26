@@ -10,8 +10,8 @@ function constraint_flow_direction_choice{T}(gm::GenericGasModel{T}, connection)
     yp = getvariable(gm.model, :yp)[i]
     yn = getvariable(gm.model, :yn)[i]
               
-    c = @constraint(gm.model, yp + yn == 1)
-    return Set([c])
+    c = @constraint(gm.model, yp + yn == 1)    
+    return Set([c]) # checked
 end
 
 # constraints on pressure drop across pipes
@@ -32,9 +32,8 @@ function constraint_on_off_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
       
     c1 = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
     c2 = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
-    
-        
-    return Set([c1,c2])  
+            
+    return Set([c1,c2])  # checked (though one is reversed of the other)
 end
 
 # constraints on flow across pipes
@@ -54,8 +53,8 @@ function constraint_on_off_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
     
     c1 = @constraint(gm.model, -(1-yp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))) <= f)      
     c2 = @constraint(gm.model, f <= (1-yn)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))      
-         
-    return Set([c1, c2])    
+    
+    return Set([c1, c2])    # checked (though one is reveresed of the other)
 end
 
 # constraints on flow across compressors
@@ -70,8 +69,8 @@ function constraint_on_off_compressor_flow_direction{T}(gm::GenericGasModel{T}, 
 
     c1 = @constraint(gm.model, -(1-yp)*gm.data["max_flow"] <= f)
     c2 = @constraint(gm.model, f <= (1-yn)*gm.data["max_flow"])
-            
-    return Set([c1, c2])      
+      
+    return Set([c1, c2])      # checked (though 1 is reversed)
 end 
 
 # enforces pressure changes bounds that obey compression ratios
