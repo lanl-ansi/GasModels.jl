@@ -1,12 +1,11 @@
 
-
-@testset "test minlp gf" begin
-    @testset "gaslib 40 5% case" begin
-#        result = run_gf("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
- #       @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-  #      @test isapprox(result["objective"], 11.92; atol = 1e-2)
-    end
-    if minlp_solver != couenne_solver    
+if minlp_solver != couenne_solver
+    @testset "test minlp gf" begin
+        @testset "gaslib 40 5% case" begin
+            result = run_gf("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 11.92; atol = 1e-2)
+        end  
         @testset "gaslib 40 10% case" begin
             result = run_gf("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
@@ -54,7 +53,7 @@
         @testset "gaslib 135 125% case" begin
             result = run_gf("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
-            enddoc
+        end
         @testset "gaslib 135 150% case" begin
             result = run_gf("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
@@ -70,9 +69,9 @@ end
 if minlp_solver != bonmin_solver
     @testset "test misocp expansion" begin
         @testset "gaslib 40 case 5%" begin
-            result = run_expansion("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 11.92; atol = 1e-2)
+           result = run_expansion("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver)
+           @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+           @test isapprox(result["objective"], 11.92; atol = 1e-2)
         end
         @testset "gaslib 40 case 10%" begin
             result = run_expansion("../test/data/gaslib-40-10.json", MISOCPGasModel, misocp_solver)

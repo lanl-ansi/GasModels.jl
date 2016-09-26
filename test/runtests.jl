@@ -60,11 +60,11 @@ end
 
 # The paper used SCIP
 if scip_solver != nothing
-    minlp_solver = couenne_solver #scip_solver
+    minlp_solver = couenne_solver #scip_solver - will fix this once the bugs in the NLWriter are fixed
 else
     minlp_solver = couenne_solver   
 end
-   
+
 include("gf.jl")
 include("expansion.jl")
 
