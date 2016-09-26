@@ -143,10 +143,10 @@ function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasMode
     
         max_flow = gm.data["max_flow"]
 
-        c1 = @constraint(gm.model, pipe["resistance"]*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
-        c2 = @constraint(gm.model, pipe["resistance"]*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
-        c3 = @constraint(gm.model, pipe["resistance"]*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
-        c4 = @constraint(gm.model, pipe["resistance"]*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
+        c1 = @NLconstraint(gm.model, pipe["resistance"]*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
+        c2 = @NLconstraint(gm.model, pipe["resistance"]*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
+        c3 = @NLconstraint(gm.model, pipe["resistance"]*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
+        c4 = @NLconstraint(gm.model, pipe["resistance"]*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
         
         return Set([c1, c2, c3, c4])
     end  

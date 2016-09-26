@@ -15,7 +15,11 @@ if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices")
  #   bonmin_solver = BonminNLSolver()
  #   couenne_solver = CouenneNLSolver()    
     bonmin_solver = OsilBonminSolver()
-   couenne_solver = OsilCouenneSolver()
+    couenne_solver = OsilCouenneSolver()
+    if isfile("../bin/scipampl.exe")      
+        AmplNLWriter.setdebug(true)
+        scip_solver = AmplNLSolver("../bin/scipampl.exe")
+    end 
 end
 
 if Pkg.installed("Gurobi") != nothing
@@ -43,15 +47,19 @@ pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_s
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing
    misocp_solver = gurobi_solver
-else if Pkg.installed("CPLEX") != nothing
+elseif Pkg.installed("CPLEX") != nothing
    misocp_solver = cplex_solver
 else
    misocp_solver = bonmin_solver
 end   
+
+# The paper used SCIP
+if scip_solver != nothing
+    minlp_solver = couenne_solver #scip_solver
+else
+    minlp_solver = couenne_solver   
+end
    
-minlp_solver = couenne_solver # Paper used SCIP
-
-
-#include("gf.jl")
+include("gf.jl")
 include("expansion.jl")
 

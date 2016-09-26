@@ -32,14 +32,16 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pip
     yp = getvariable(gm.model, :yp)[pipe_idx]
     yn = getvariable(gm.model, :yn)[pipe_idx]
     f  = getvariable(gm.model, :f)[pipe_idx]
-    
-    max_flow = gm.data["max_flow"]
 
-    c1 = @constraint(gm.model, pipe["resistance"]*(pi - pj) >= f^2 - (1-yp)*max_flow^2)
-    c2 = @constraint(gm.model, pipe["resistance"]*(pi - pj) <= f^2 + (1-yp)*max_flow^2)
-    c3 = @constraint(gm.model, pipe["resistance"]*(pj - pi) >= f^2 - (1-yn)*max_flow^2)
-    c4 = @constraint(gm.model, pipe["resistance"]*(pj - pi) <= f^2 + (1-yn)*max_flow^2)
         
+    max_flow = gm.data["max_flow"]
+    w = pipe["resistance"]
+
+    c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (1-yp)*max_flow^2)
+    c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*max_flow^2)
+    c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*max_flow^2)
+    c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*max_flow^2)
+ 
     return Set([c1, c2, c3, c4])
   
 end
