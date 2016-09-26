@@ -1,12 +1,12 @@
 
 
-if minlp_solver != couenne_solver
-    @testset "test minlp gf" begin
-        @testset "gaslib 40 5% case" begin
-            result = run_gf("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 11.92; atol = 1e-2)
-        end
+@testset "test minlp gf" begin
+    @testset "gaslib 40 5% case" begin
+#        result = run_gf("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
+ #       @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+  #      @test isapprox(result["objective"], 11.92; atol = 1e-2)
+    end
+    if minlp_solver != couenne_solver    
         @testset "gaslib 40 10% case" begin
             result = run_gf("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
@@ -54,7 +54,7 @@ if minlp_solver != couenne_solver
         @testset "gaslib 135 125% case" begin
             result = run_gf("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
-        end
+            enddoc
         @testset "gaslib 135 150% case" begin
             result = run_gf("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
@@ -62,8 +62,7 @@ if minlp_solver != couenne_solver
         @testset "gaslib 135 200% case" begin
             result = run_gf("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
-        end
-        
+        end        
     end
 end 
 

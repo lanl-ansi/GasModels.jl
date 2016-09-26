@@ -8,7 +8,12 @@ using Ipopt
 #using GLPKMathProgInterface
 #using SCS
 
-# needed for Non-convex OTS tests
+scip_solver = nothing
+bonmin_solver = nothing
+couenne_solver = nothing
+cplex_solver = nothing
+gurobi_solver = nothing
+
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
     using CoinOptServices
