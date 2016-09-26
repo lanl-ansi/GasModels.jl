@@ -4,8 +4,8 @@ using Logging
 Logging.configure(level=ERROR)
 
 using Ipopt
-using Pajarito
-using GLPKMathProgInterface
+#using Pajarito
+#using GLPKMathProgInterface
 #using SCS
 
 # needed for Non-convex OTS tests
@@ -42,7 +42,7 @@ end
 
 # default setup for solvers
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
+#pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
 
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing

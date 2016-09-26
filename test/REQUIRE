@@ -1,6 +1,8 @@
 julia 0.4.6
 
-Bonmin
+Ipopt
+AmplNLWriter
+CoinOptServices
 
 BaseTestNext
 Logging

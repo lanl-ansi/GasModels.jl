@@ -49,7 +49,7 @@ if minlp_solver != couenne_solver
         @testset "gaslib 135 25% case" begin
             result = run_gf("../test/data/gaslib-135-25.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 60.4; atol = 1e-`)
+            @test isapprox(result["objective"], 60.4; atol = 1e-1)
         end
         @testset "gaslib 135 125% case" begin
             result = run_gf("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
