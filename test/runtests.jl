@@ -60,7 +60,8 @@ end
 
 # The paper used SCIP
 if scip_solver != nothing
-    minlp_solver = scip_solver
+    #minlp_solver = scip_solver
+    minlp_solver = couenne_solver       
 else
     minlp_solver = couenne_solver   
 end

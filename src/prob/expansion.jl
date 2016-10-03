@@ -62,7 +62,10 @@ function post_expansion{T}(gm::GenericGasModel{T})
     for i in gm.set.compressor_indexes
         compressor = gm.set.connections[i]        
         constraint_on_off_compressor_flow_direction(gm, compressor)
-        constraint_on_off_compressor_ratios(gm, compressor)        
+        constraint_on_off_new_compressor_ratios(gm, compressor)
+        if haskey(gm.set.connections[i], "construction_cost")           
+            constraint_on_off_compressor_flow_expansion(gm, compressor)
+        end                
     end  
     
     for i in gm.set.valve_indexes    
@@ -114,6 +117,27 @@ function constraint_on_off_pipe_flow_expansion{T}(gm::GenericGasModel{T}, pipe)
     return Set([c1, c2])    
 end
 
+
+# on/off constraints on flow across compressors for expansion variables
+function constraint_on_off_compressor_flow_expansion{T}(gm::GenericGasModel{T}, compressor)
+    c_idx = compressor["index"]
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+
+    zc = getvariable(gm.model, :zc)[c_idx]
+    f = getvariable(gm.model, :f)[c_idx]
+    
+    max_flow = gm.data["max_flow"]
+          
+    c1 = @constraint(gm.model, -max_flow*zc <= f)
+    c2 = @constraint(gm.model, f <= max_flow*zc)            
+    return Set([c1, c2])    
+end
+
+
+
+
+
 # This function ensures at most one pipe in parallel is selected
 function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)  
     parallel = collect(filter( connection -> in(connection, gm.set.new_pipes), gm.set.parallel_connections[(i,j)] ))
@@ -144,13 +168,12 @@ function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasMode
         max_flow = gm.data["max_flow"]
         w = pipe["resistance"]
           
-
-       c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
-       c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
-       c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
-       c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
+        c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
+        c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
+        c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
+        c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
                
-       return Set([c1, c2, c3, c4])
+        return Set([c1, c2, c3, c4])
     end  
 end
 
@@ -161,7 +184,6 @@ function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasMod
     if !haskey(gm.set.connections[pipe_idx], "construction_cost")           
         return constraint_weymouth(gm, pipe)
     else
-        pipe_idx = pipe["index"]
         i_junction_idx = pipe["f_junction"]
         j_junction_idx = pipe["t_junction"]
   
@@ -194,3 +216,36 @@ function add_connection_expansion{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "index", "built", :zp; default_value = (item) -> 1)
 end
 
+#compressor rations have on off for direction and expansion
+function constraint_on_off_new_compressor_ratios{T}(gm::GenericGasModel{T}, compressor)
+    c_idx = compressor["index"]  
+    if !haskey(gm.set.connections[c_idx], "construction_cost")           
+        return constraint_on_off_compressor_ratios(gm, compressor)
+    else
+        i_junction_idx = compressor["f_junction"]
+        j_junction_idx = compressor["t_junction"]
+      
+        i = gm.set.junctions[i_junction_idx]  
+        j = gm.set.junctions[j_junction_idx]  
+
+        pi = getvariable(gm.model, :p)[i_junction_idx]
+        pj = getvariable(gm.model, :p)[j_junction_idx]
+        yp = getvariable(gm.model, :yp)[c_idx]
+        yn = getvariable(gm.model, :yn)[c_idx]
+        zc = getvariable(gm.model, :zc)[c_idx]
+            
+        max_ratio = compressor["c_ratio_max"]
+        min_ratio = compressor["c_ratio_min"]
+        p_maxj = j["pmax"]
+        p_maxi = i["pmax"]
+        p_minj = j["pmin"]
+        p_mini = i["pmin"]
+                     
+        c1 = @constraint(gm.model, pj - (max_ratio^2*pi) <= (2-yp-zc)*p_maxj^2)
+        c2 = @constraint(gm.model, (min_ratio^2*pi) - pj <= (2-yp-zc)*(min_ratio^2*p_maxi^2 - p_minj^2))
+        c3 = @constraint(gm.model, pi - (max_ratio^2*pj) <= (2-yn-zc)*p_maxi^2)
+        c4 = @constraint(gm.model, (min_ratio^2*pj) - pi <= (2-yn-zc)*(min_ratio^2*p_maxj^2 - p_mini^2))
+      
+        return Set([c1, c2, c3, c4])  
+    end
+end
