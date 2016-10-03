@@ -17,12 +17,12 @@ gurobi_solver = nothing
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
     using CoinOptServices
- #   bonmin_solver = BonminNLSolver()
- #   couenne_solver = CouenneNLSolver()    
-    bonmin_solver = OsilBonminSolver()
-    couenne_solver = OsilCouenneSolver()
+#    bonmin_solver = BonminNLSolver()
+    couenne_solver = CouenneNLSolver()    
+    bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
+ #   couenne_solver = OsilCouenneSolver()
     if isfile("../bin/scipampl.exe")      
-        AmplNLWriter.setdebug(true)
+#        AmplNLWriter.setdebug(true)
         scip_solver = AmplNLSolver("../bin/scipampl.exe", ["../scip.set"])
     end 
 end
@@ -60,19 +60,10 @@ end
 
 # The paper used SCIP
 if scip_solver != nothing
-    minlp_solver = couenne_solver #scip_solver
+    minlp_solver = scip_solver
 else
     minlp_solver = couenne_solver   
 end
-
-
-#        @testset "gaslib 40 5% case" begin
- #           result = run_expansion("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
-  #          println(result["status"])
-   #         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-    #        @test isapprox(result["objective"], 11.92; atol = 1e-2)
-    #    end  
-
 
 include("gf.jl")
 include("expansion.jl")
