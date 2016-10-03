@@ -131,8 +131,8 @@ function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasMode
         i_junction_idx = pipe["f_junction"]
         j_junction_idx = pipe["t_junction"]
   
-        i = gm.data.junctions[i_junction_idx]  
-        j = gm.data.junctions[j_junction_idx]  
+        i = gm.set.junctions[i_junction_idx]  
+        j = gm.set.junctions[j_junction_idx]  
         
         pi = getvariable(gm.model, :p)[i_junction_idx]
         pj = getvariable(gm.model, :p)[j_junction_idx]
@@ -142,12 +142,14 @@ function constraint_new_pipe_weymouth{T <: AbstractMINLPForm}(gm::GenericGasMode
         f  = getvariable(gm.model, :f)[pipe_idx]
     
         max_flow = gm.data["max_flow"]
+        w = pipe["resistance"]
+          
 
-        c1 = @NLconstraint(gm.model, pipe["resistance"]*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
-        c2 = @NLconstraint(gm.model, pipe["resistance"]*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
-        c3 = @NLconstraint(gm.model, pipe["resistance"]*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
-        c4 = @NLconstraint(gm.model, pipe["resistance"]*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
-        
+        c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
+        c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
+        c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
+        c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
+               
         return Set([c1, c2, c3, c4])
     end  
 end
@@ -155,7 +157,6 @@ end
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]
-      
     #if pipe_idx in gm.set.new_pipes, pipe_idx
     if !haskey(gm.set.connections[pipe_idx], "construction_cost")           
         return constraint_weymouth(gm, pipe)
@@ -184,9 +185,6 @@ function constraint_new_pipe_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasMod
         c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
         c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
         c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
-        
-          
-                        
         return Set([c1, c2, c3, c4, c5])  
     end  
 end

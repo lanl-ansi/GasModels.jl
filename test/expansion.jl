@@ -2,64 +2,64 @@
 if minlp_solver != couenne_solver
     @testset "test minlp gf" begin
         @testset "gaslib 40 5% case" begin
-            result = run_gf("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 11.92; atol = 1e-2)
         end  
         @testset "gaslib 40 10% case" begin
-            result = run_gf("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 32.83; atol = 1e-2)
         end
         @testset "gaslib 40 25% case" begin
-            result = run_gf("../test/data/gaslib-40-25.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-25.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 41.08; atol = 1e-2)
         end
         @testset "gaslib 40 50% case" begin
-            result = run_gf("../test/data/gaslib-40-50.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-50.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 156.06; atol = 1e-2)
         end
         @testset "gaslib 40 75% case" begin
-            result = run_gf("../test/data/gaslib-40-75.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-75.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 333.01; atol = 1e-2)
         end
         @testset "gaslib 40 100% case" begin
-            result = run_gf("../test/data/gaslib-40-100.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-100.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 551.64; atol = 1e-2)
         end
         @testset "gaslib 40 125% case" begin
-            result = run_gf("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
         end
         @testset "gaslib 40 150% case" begin
-            result = run_gf("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
         end
         
         @testset "gaslib 135 5% case" begin
-            result = run_gf("../test/data/gaslib-135-5.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-135-5.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 0.0; atol = 1e-2)
         end
         @testset "gaslib 135 25% case" begin
-            result = run_gf("../test/data/gaslib-135-25.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-135-25.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 60.4; atol = 1e-1)
         end
         @testset "gaslib 135 125% case" begin
-            result = run_gf("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
         end
         @testset "gaslib 135 150% case" begin
-            result = run_gf("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
         end
         @testset "gaslib 135 200% case" begin
-            result = run_gf("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
+            result = run_expansion("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
             @test result["status"] == :Infeasible
         end        
     end

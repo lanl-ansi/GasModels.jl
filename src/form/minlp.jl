@@ -41,7 +41,7 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pip
     c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*max_flow^2)
     c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*max_flow^2)
     c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*max_flow^2)
- 
+    
     return Set([c1, c2, c3, c4])
   
 end
