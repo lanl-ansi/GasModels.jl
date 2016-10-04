@@ -58,14 +58,15 @@ function post_expansion{T}(gm::GenericGasModel{T})
         constraint_short_pipe_pressure_drop(gm, pipe)
         constraint_on_off_short_pipe_flow_direction(gm,pipe)      
     end
-     
+    
+    # We assume that we already have a short pipe connecting two nodes 
+    # and we just want to add a compressor to it.  Use constraint 
+    # constraint_on_off_compressor_flow_expansion to disallow flow
+    # if the compressor is not built 
     for i in gm.set.compressor_indexes
         compressor = gm.set.connections[i]        
         constraint_on_off_compressor_flow_direction(gm, compressor)
         constraint_on_off_new_compressor_ratios(gm, compressor)
-        if haskey(gm.set.connections[i], "construction_cost")           
-            constraint_on_off_compressor_flow_expansion(gm, compressor)
-        end                
     end  
     
     for i in gm.set.valve_indexes    
@@ -121,8 +122,8 @@ end
 # on/off constraints on flow across compressors for expansion variables
 function constraint_on_off_compressor_flow_expansion{T}(gm::GenericGasModel{T}, compressor)
     c_idx = compressor["index"]
-    i_junction_idx = pipe["f_junction"]
-    j_junction_idx = pipe["t_junction"]
+    i_junction_idx = compressor["f_junction"]
+    j_junction_idx = compressor["t_junction"]
 
     zc = getvariable(gm.model, :zc)[c_idx]
     f = getvariable(gm.model, :f)[c_idx]
@@ -133,9 +134,6 @@ function constraint_on_off_compressor_flow_expansion{T}(gm::GenericGasModel{T}, 
     c2 = @constraint(gm.model, f <= max_flow*zc)            
     return Set([c1, c2])    
 end
-
-
-
 
 
 # This function ensures at most one pipe in parallel is selected

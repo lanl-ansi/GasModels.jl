@@ -1,6 +1,26 @@
+@testset "test minlp gf" begin
+    @testset "A1 MINLP case" begin
+        result = run_expansion("../test/data/A1.json", MINLPGasModel, couenne_solver)
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.444e-4; atol = 1e-2)
+    end
 
-if minlp_solver != couenne_solver
-    @testset "test minlp gf" begin
+    @testset "A2 MINLP case" begin
+        result = run_expansion("../test/data/A2.json", MINLPGasModel, couenne_solver)
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.687e-3; atol = 1e-2)
+    end
+
+    @testset "A3 MINLP case" begin
+        result = run_expansion("../test/data/A3.json", MINLPGasModel, couenne_solver)
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.781e-3; atol = 1e-2)
+    end
+    
+    if minlp_solver != couenne_solver    
         @testset "gaslib 40 5% case" begin
             println("gaslib 40 - 5%")
             result = run_expansion("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
@@ -80,12 +100,37 @@ end
 
 
 @testset "test misocp expansion" begin
-    if misocp_solver != bonmin_solver    
+    @testset "A1 MISCOP case" begin
+        result = run_expansion("../test/data/A1.json", MISOCPGasModel, misocp_solver)
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.444e-4; atol = 1e-2)
+    end        
+
+    @testset "A2 MISCOP case" begin
+        result = run_expansion("../test/data/A2.json", MISOCPGasModel, misocp_solver) 
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.687e-3; atol = 1e-2)
+    end        
+
+    @testset "A3 MISCOP case" begin
+        result = run_expansion("../test/data/A3.json", MISOCPGasModel, misocp_solver)
+        println(result["objective"])
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.781e-3; atol = 1e-2)
+    end
+
+
+    if misocp_solver != bonmin_solver && misocp_solver != pajarito_solver   
         @testset "gaslib 40 case 5%" begin
             result = run_expansion("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 11.92; atol = 1e-2)
         end
+    end
+    
+    if misocp_solver != bonmin_solver  && misocp_solver != pajarito_solver        
         @testset "gaslib 40 case 10%" begin
             result = run_expansion("../test/data/gaslib-40-10.json", MISOCPGasModel, misocp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal

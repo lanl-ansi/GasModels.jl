@@ -4,8 +4,8 @@ using Logging
 Logging.configure(level=ERROR)
 
 using Ipopt
-#using Pajarito
-#using GLPKMathProgInterface
+using Pajarito
+using GLPKMathProgInterface
 #using SCS
 
 scip_solver = nothing
@@ -17,7 +17,7 @@ gurobi_solver = nothing
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
     using CoinOptServices
-#    bonmin_solver = BonminNLSolver()
+ #   bonmin_solver = BonminNLSolver()
     couenne_solver = CouenneNLSolver()    
     bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
  #   couenne_solver = OsilCouenneSolver()
@@ -47,7 +47,7 @@ end
 
 # default setup for solvers
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-#pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
+pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
 
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing
@@ -55,7 +55,7 @@ if Pkg.installed("Gurobi") != nothing
 elseif Pkg.installed("CPLEX") != nothing
    misocp_solver = cplex_solver
 else
-   misocp_solver = bonmin_solver
+   misocp_solver = pajarito_solver
 end   
 
 # The paper used SCIP
@@ -65,6 +65,13 @@ if scip_solver != nothing
 else
     minlp_solver = couenne_solver   
 end
+
+
+        
+
+        
+
+
 
 include("gf.jl")
 include("expansion.jl")
