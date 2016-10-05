@@ -4,7 +4,7 @@ os:
   - osx
 julia:
   - 0.4
-  - 0.5 - times out at the moment
+  - 0.5 
 cache:
  directories:
    - /home/travis/.julia
@@ -23,10 +23,10 @@ before_install:
   - julia -e 'Pkg.update()' #make sure we get the latest version of METADATA
   - julia -e 'if !("Coverage" in keys(Pkg.installed())) Pkg.add("Coverage") end'
 
-script: travis_wait
+script: 
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.test("GasModels", coverage=true)'
+  - travis_wait julia -e 'Pkg.test("GasModels", coverage=true)'
 
 after_success:
   - echo $TRAVIS_JULIA_VERSION
