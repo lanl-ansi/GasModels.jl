@@ -43,6 +43,7 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, pipe["resistance"]*l >= f^2)
+#    c5 = @constraint(gm.model, pipe["resistance"]*l >= norm(f))
       
     return Set([c1, c2, c3, c4, c5])
 end

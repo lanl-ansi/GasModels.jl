@@ -2,9 +2,10 @@ language: julia
 os:
   - linux
   - osx
+  - windows
 julia:
   - 0.4
-#  - 0.5 - times out at the moment
+  - 0.5 - times out at the moment
 cache:
  directories:
    - /home/travis/.julia

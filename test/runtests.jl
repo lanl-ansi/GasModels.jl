@@ -7,6 +7,8 @@ using Ipopt
 using Pajarito
 using GLPKMathProgInterface
 #using SCS
+using ECOS
+using SCS
 
 scip_solver = nothing
 bonmin_solver = nothing
@@ -47,7 +49,9 @@ end
 
 # default setup for solvers
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver)
+ecos_solver = ECOSSolver(maxit=10000)
+scs_solver = SCSSolver
+pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=2)
 
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing
@@ -65,12 +69,6 @@ if scip_solver != nothing
 else
     minlp_solver = couenne_solver   
 end
-
-
-        
-
-        
-
 
 
 include("gf.jl")

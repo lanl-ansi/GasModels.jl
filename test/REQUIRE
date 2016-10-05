@@ -4,8 +4,11 @@ Ipopt
 AmplNLWriter
 CoinOptServices
 
+
 BaseTestNext
 Logging
 
 Pajarito
 GLPKMathProgInterface
+ECOS
+SCS

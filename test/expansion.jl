@@ -122,20 +122,20 @@ end
     end
 
 
-    if misocp_solver != bonmin_solver && misocp_solver != pajarito_solver   
-        @testset "gaslib 40 case 5%" begin
-            result = run_expansion("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 11.92; atol = 1e-2)
-        end
-    end
-    
-    if misocp_solver != bonmin_solver  && misocp_solver != pajarito_solver        
+    if misocp_solver != bonmin_solver  
         @testset "gaslib 40 case 10%" begin
             result = run_expansion("../test/data/gaslib-40-10.json", MISOCPGasModel, misocp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 32.83; atol = 1e-2)
-        end    
+        end            
+    end
+    
+    if misocp_solver != bonmin_solver  && misocp_solver != pajarito_solver        
+        @testset "gaslib 40 case 5%" begin
+            result = run_expansion("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 11.92; atol = 1e-2)              
+        end
         @testset "gaslib 40 case 25%" begin
             result = run_expansion("../test/data/gaslib-40-25.json", MISOCPGasModel, misocp_solver)
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
