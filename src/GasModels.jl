@@ -20,6 +20,6 @@ include("form/minlp.jl")
 include("form/misocp.jl")
 
 include("prob/gf.jl")
-include("prob/expansion.jl")
+include("prob/ne.jl")
 
 end

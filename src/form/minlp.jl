@@ -16,6 +16,8 @@ end
 # variables associated with the flux squared
 function variable_flux_square{T <: AbstractMINLPForm}(gm::GenericGasModel{T}; bounded = true)
 end
+function variable_flux_square_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}; bounded = true)
+end
 
 
 #Weymouth equation with discrete direction variables

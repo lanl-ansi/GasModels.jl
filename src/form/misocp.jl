@@ -20,6 +20,13 @@ function variable_flux_square{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
     return l
 end
 
+# variables associated with the flux squared
+function variable_flux_square_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
+    max_flow = gm.data["max_flow"] 
+    @variable(gm.model, 0 <= l_ne[i in gm.set.new_pipe_indexes] <= 1/gm.set.new_connections[i]["resistance"] * max_flow^2, start = getstart(gm.set.new_connections, i, "l_start", 0))  
+    return l_ne
+end
+
 #Weymouth equation with discrete direction variables
 function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
   
@@ -43,7 +50,6 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, pipe["resistance"]*l >= f^2)
-#    c5 = @constraint(gm.model, pipe["resistance"]*l >= norm(f))
       
     return Set([c1, c2, c3, c4, c5])
 end

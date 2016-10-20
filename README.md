@@ -13,8 +13,8 @@ The code is engineered to decouple problem specifications (e.g. Gas Flow, Expans
 This enables the definition of a wide variety of gas network formulations and their comparison on common problem specifications.
 
 **Core Problem Specifications**
-* Gas Flow
-* Expansion Planning
+* Gas Flow (gf)
+* Expansion Planning (ne)
 
 **Core Network Formulations**
 * MINLP 

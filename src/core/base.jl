@@ -16,17 +16,18 @@ type GasDataSets
     valve_indexes
     control_valve_indexes
     resistor_indexes
-    new_pipes
-    new_compressors 
     junction_connections
-    parallel_connections       
+    parallel_connections    
+    new_connections
+    new_connection_indexes
+    new_pipe_indexes
+    new_compressor_indexes
+    all_parallel_connections # all parallel connections, new and old    
+    junction_new_connections
 end
 
 abstract AbstractGasModel
 abstract AbstractGasFormulation
-#abstract AbstractConicGasFormulation <: AbstractGasFormulation
-
-
 
 type GenericGasModel{T<:AbstractGasFormulation} <: AbstractGasModel
     model::Model
@@ -55,13 +56,10 @@ end
 # function for augmenting the data sets
 function process_raw_data(data::Dict{AbstractString,Any})
     add_default_data(data)
-  
-  
     sets = build_sets(data)
 
     # TODO, process the data about share paths etc. 
     add_network_structure(data, sets)
-    
     return data, sets
 end
 
@@ -86,13 +84,9 @@ end
 # do the run on the abstract model
 function run_generic_model(file, model_constructor, solver, post_method; solution_builder = get_solution, kwargs...)
     data = GasModels.parse_file(file)
-
     gm = model_constructor(data; solver = solver, kwargs...)
-
     post_method(gm)
-
     status, solve_time = solve(gm)
-
     return build_solution(gm, status, solve_time; solution_builder = solution_builder)
 end
 
@@ -100,14 +94,16 @@ end
 function build_sets(data :: Dict{AbstractString,Any})
     junction_lookup = [ Int(junction["index"]) => junction for junction in data["junction"] ]
     connection_lookup = [ Int(connection["index"]) => connection for connection in data["connection"] ]
-                
+    new_connection_lookup = [ Int(connection["index"]) => connection for connection in data["new_connection"] ]
+                      
     # filter turned off stuff 
     connection_lookup = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(junction_lookup) && connection["t_junction"] in keys(junction_lookup), connection_lookup)
-
+    new_connection_lookup = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(junction_lookup) && connection["t_junction"] in keys(junction_lookup), new_connection_lookup)
+      
     junction_idxs = collect(keys(junction_lookup))
     connection_idxs = collect(keys(connection_lookup))
-    
-    
+    new_connection_idxs = collect(keys(new_connection_lookup))
+        
     pipe_idxs =  collect(keys(filter((i, connection) -> connection["type"] == "pipe", connection_lookup)))
     short_pipe_idxs = collect(keys(filter((i, connection) -> connection["type"] == "short_pipe", connection_lookup)))
     compressor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "compressor", connection_lookup)))
@@ -115,23 +111,34 @@ function build_sets(data :: Dict{AbstractString,Any})
     control_valve_idxs = collect(keys(filter((i, connection) -> connection["type"] == "control_valve", connection_lookup)))
     resistor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "resistor", connection_lookup)))
 
-    new_pipes       = collect(keys(filter((i, connection) -> connection["type"] == "pipe"       && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup))) 
-    new_compressors = collect(keys(filter((i, connection) -> connection["type"] == "compressor" && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup)))
+    new_pipe_idxs =  collect(keys(filter((i, connection) -> connection["type"] == "pipe", new_connection_lookup)))
+    new_compressor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "new_compressor", connection_lookup)))
+            
+    #new_pipes       = collect(keys(filter((i, connection) -> connection["type"] == "pipe"       && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup))) 
+    #new_compressors = collect(keys(filter((i, connection) -> connection["type"] == "compressor" && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup)))
       
-    arcs_from = [(i,connection["f_junction"],connection["t_junction"]) for (i,connection) in connection_lookup]
-    arcs_to   = [(i,connection["t_junction"],connection["f_junction"]) for (i,connection) in connection_lookup]
-    arcs = [arcs_from; arcs_to]
+#    arcs_from = [(i,connection["f_junction"],connection["t_junction"]) for (i,connection) in connection_lookup]
+ #   arcs_to   = [(i,connection["t_junction"],connection["f_junction"]) for (i,connection) in connection_lookup]
+  #  arcs = [arcs_from; arcs_to]
       
     parallel_connections = Dict()
-    for connection in data["connection"]
+    all_parallel_connections = Dict()
+    
+    for connection in [data["connection"]; data["new_connection"]]
         i = connection["f_junction"]
         j = connection["t_junction"]      
         parallel_connections[(min(i,j), max(i,j))] = []
+        all_parallel_connections[(min(i,j), max(i,j))] = []          
     end
-    
-         
+#    for connection in data["new_connection"]
+ #       i = connection["f_junction"]
+  #      j = connection["t_junction"]      
+   #     parallel_connections[(min(i,j), max(i,j))] = []  
+    #    all_parallel_connections[(min(i,j), max(i,j))] = []                
+    #end
+                 
     junction_connections = [i => [] for (i,junction) in junction_lookup]
-
+    junction_new_connections = [i => [] for (i,junction) in junction_lookup]
       
     for connection in data["connection"]
         i = connection["f_junction"]
@@ -141,18 +148,43 @@ function build_sets(data :: Dict{AbstractString,Any})
         push!(junction_connections[i], idx)
         push!(junction_connections[j], idx)
         
-        push!(parallel_connections[(min(i,j), max(i,j))], idx)       
+        push!(parallel_connections[(min(i,j), max(i,j))], idx)
+        push!(all_parallel_connections[(min(i,j), max(i,j))], idx)                        
     end
+    
+    for connection in data["new_connection"]
+        i = connection["f_junction"]
+        j = connection["t_junction"]
+        idx = connection["index"]
+          
+        push!(junction_new_connections[i], idx)
+        push!(junction_new_connections[j], idx)
+        
+        push!(all_parallel_connections[(min(i,j), max(i,j))], idx)                        
+    end
+    
                 
-    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, new_pipes, new_compressors, junction_connections,parallel_connections)      
+    return GasDataSets(junction_lookup, junction_idxs, connection_lookup, connection_idxs, pipe_idxs, short_pipe_idxs, compressor_idxs, valve_idxs, control_valve_idxs, resistor_idxs, junction_connections,parallel_connections,new_connection_lookup,new_connection_idxs,new_pipe_idxs,new_compressor_idxs,all_parallel_connections,junction_new_connections)      
+    
 end
 
 function add_default_data(data :: Dict{AbstractString,Any})
-    for connection in data["connection"]
+    if !haskey(data, "new_connection")
+        data["new_connection"] = []
+    end
+  
+    for connection in [data["connection"]; data["new_connection"]]
         if !haskey(connection,"status")
             connection["status"] = 1
         end      
     end
+    
+    
+    for connection in data["new_connection"]
+        if !haskey(connection,"construction_cost")
+            connection["construction_cost"] = 0
+        end      
+    end    
 end
 
 # Add some necessary data structures for constructing various constraints and variables
@@ -164,6 +196,7 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
           max_flow = max_flow + junction["qmax"]
         end
         junction["degree"] = 0
+        junction["degree_all"] = 0 
     end
 
     for (i,j) in keys(set.parallel_connections)
@@ -172,10 +205,18 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
             set.junctions[j]["degree"] = set.junctions[j]["degree"] + 1          
         end
     end
+    
+    for (i,j) in keys(set.all_parallel_connections)
+        if length(set.parallel_connections) > 0
+            set.junctions[i]["degree_all"] = set.junctions[i]["degree_all"] + 1
+            set.junctions[j]["degree_all"] = set.junctions[j]["degree_all"] + 1          
+        end
+    end
+    
         
     data["max_flow"] = max_flow
       
-    for connection in data["connection"]
+    for connection in [data["connection"]; data["new_connection"]]
         i_idx = connection["f_junction"]
         j_idx = connection["t_junction"]
       

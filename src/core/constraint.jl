@@ -14,6 +14,18 @@ function constraint_flow_direction_choice{T}(gm::GenericGasModel{T}, connection)
     return Set([c]) # checked
 end
 
+# Constraint that states a flow direction must be chosen
+function constraint_flow_direction_choice_ne{T}(gm::GenericGasModel{T}, connection)
+    i = connection["index"]
+
+    yp = getvariable(gm.model, :yp_ne)[i]
+    yn = getvariable(gm.model, :yn_ne)[i]
+              
+    c = @constraint(gm.model, yp + yn == 1)    
+    return Set([c]) # checked
+end
+
+
 # constraints on pressure drop across pipes
 function constraint_on_off_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]
@@ -28,7 +40,27 @@ function constraint_on_off_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
     
     pd_min = pipe["pd_min"]
     pd_max = pipe["pd_max"]
+      
+    c1 = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
+    c2 = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
+            
+    return Set([c1,c2])  # checked (though one is reversed of the other)
+end
 
+# constraints on pressure drop across pipes
+function constraint_on_off_pressure_drop_ne{T}(gm::GenericGasModel{T}, pipe)
+    pipe_idx = pipe["index"]
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+
+    yp = getvariable(gm.model, :yp_ne)[pipe_idx]
+    yn = getvariable(gm.model, :yn_ne)[pipe_idx]
+  
+    pi = getvariable(gm.model, :p)[i_junction_idx]
+    pj = getvariable(gm.model, :p)[j_junction_idx]
+    
+    pd_min = pipe["pd_min"]
+    pd_max = pipe["pd_max"]
       
     c1 = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
     c2 = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
@@ -57,6 +89,28 @@ function constraint_on_off_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
     return Set([c1, c2])    # checked (though one is reveresed of the other)
 end
 
+# constraints on flow across pipes
+function constraint_on_off_pipe_flow_direction_ne{T}(gm::GenericGasModel{T}, pipe)
+    pipe_idx = pipe["index"]
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+
+    yp = getvariable(gm.model, :yp_ne)[pipe_idx]
+    yn = getvariable(gm.model, :yn_ne)[pipe_idx]
+    f = getvariable(gm.model, :f_ne)[pipe_idx]
+    
+    max_flow = gm.data["max_flow"]
+    pd_max = pipe["pd_max"]
+    pd_min = pipe["pd_min"]
+    w = pipe["resistance"]  
+    
+    c1 = @constraint(gm.model, -(1-yp)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))) <= f)      
+    c2 = @constraint(gm.model, f <= (1-yn)*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))      
+    
+    return Set([c1, c2])    # checked (though one is reveresed of the other)
+end
+
+
 # constraints on flow across compressors
 function constraint_on_off_compressor_flow_direction{T}(gm::GenericGasModel{T}, compressor)
     c_idx = compressor["index"]
@@ -72,6 +126,23 @@ function constraint_on_off_compressor_flow_direction{T}(gm::GenericGasModel{T}, 
       
     return Set([c1, c2])      # checked (though 1 is reversed)
 end 
+
+# constraints on flow across compressors
+function constraint_on_off_compressor_flow_direction_ne{T}(gm::GenericGasModel{T}, compressor)
+    c_idx = compressor["index"]
+    i_junction_idx = compressor["f_junction"]
+    j_junction_idx = compressor["t_junction"]
+
+    yp = getvariable(gm.model, :yp_ne)[c_idx]
+    yn = getvariable(gm.model, :yn_ne)[c_idx]
+    f = getvariable(gm.model, :f_ne)[c_idx]
+
+    c1 = @constraint(gm.model, -(1-yp)*gm.data["max_flow"] <= f)
+    c2 = @constraint(gm.model, f <= (1-yn)*gm.data["max_flow"])
+      
+    return Set([c1, c2])      # checked (though 1 is reversed)
+end 
+
 
 # enforces pressure changes bounds that obey compression ratios
 function constraint_on_off_compressor_ratios{T}(gm::GenericGasModel{T}, compressor)
@@ -106,7 +177,6 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
     f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.connections)))
     t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.connections)))
       
-    v = getvariable(gm.model, :v)
     p = getvariable(gm.model, :p)
     f = getvariable(gm.model, :f)
 
@@ -114,6 +184,26 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
                   
     return Set([c])
 end
+
+# standard flow balance equation where demand and production is fixed
+function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, junction)
+    i = junction["index"]
+    junction_branches = gm.set.junction_connections[i]
+    
+    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.connections)))
+    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.connections)))
+
+    f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.new_connections)))
+    t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.new_connections)))
+                  
+    p = getvariable(gm.model, :p)
+    f = getvariable(gm.model, :f)
+    f_ne = getvariable(gm.model, :f_ne)
+    c = @constraint(gm.model, junction["qmax"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+                  
+    return Set([c])
+end
+
 
 # constraints on flow across short pipes
 function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
@@ -242,6 +332,24 @@ function constraint_source_flow{T}(gm::GenericGasModel{T}, junction)
     return Set([c])  
 end
 
+# Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes)
+function constraint_source_flow_ne{T}(gm::GenericGasModel{T}, junction)
+    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == junction["index"], gm.set.connections)))
+    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == junction["index"], gm.set.connections))) 
+
+    f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == junction["index"], gm.set.new_connections)))
+    t_branches_ne = collect(keys(filter( (a,connection) -> connection["t_junction"] == junction["index"], gm.set.new_connections))) 
+            
+    yp = getvariable(gm.model, :yp)
+    yn = getvariable(gm.model, :yn)
+   
+    yp_ne = getvariable(gm.model, :yp_ne)
+    yn_ne = getvariable(gm.model, :yn_ne)
+             
+    c = @constraint(gm.model, sum{yp[a], a in f_branches} + sum{yn[a], a in t_branches} + sum{yp_ne[a], a in f_branches_ne} + sum{yn_ne[a], a in t_branches_ne} >= 1)
+    return Set([c])  
+end
+
 # Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes)
 function constraint_sink_flow{T}(gm::GenericGasModel{T}, junction)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == junction["index"], gm.set.connections)))
@@ -251,6 +359,22 @@ function constraint_sink_flow{T}(gm::GenericGasModel{T}, junction)
     yn = getvariable(gm.model, :yn)
           
     c = @constraint(gm.model, sum{yn[a], a in f_branches} + sum{yp[a], a in t_branches} >= 1)
+    return Set([c])  
+end
+
+# Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes)
+function constraint_sink_flow_ne{T}(gm::GenericGasModel{T}, junction)
+    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == junction["index"], gm.set.connections)))
+    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == junction["index"], gm.set.connections))) 
+    f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == junction["index"], gm.set.new_connections)))
+    t_branches_ne = collect(keys(filter( (a,connection) -> connection["t_junction"] == junction["index"], gm.set.new_connections))) 
+      
+    yp = getvariable(gm.model, :yp)
+    yn = getvariable(gm.model, :yn)
+    yp_ne = getvariable(gm.model, :yp_ne)
+    yn_ne = getvariable(gm.model, :yn_ne)
+          
+    c = @constraint(gm.model, sum{yn[a], a in f_branches} + sum{yp[a], a in t_branches} + sum{yn_ne[a], a in f_branches_ne} + sum{yp_ne[a], a in t_branches_ne}>= 1)
     return Set([c])  
 end
 
@@ -321,6 +445,101 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, junction)
         end      
     end  
 
+    return c      
+end
+
+
+# This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption
+function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, junction)
+    idx = junction["index"]
+    first = nothing
+    last = nothing
+    
+    for i in gm.set.junction_connections[idx] 
+        connection = gm.set.connections[i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        elseif first != other
+            last = other    
+        end      
+    end
+    
+    for i in gm.set.junction_new_connections[idx] 
+        connection = gm.set.new_connections[i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        elseif first != other
+            last = other    
+        end      
+    end
+    
+      
+    yp_first = [filter(i -> gm.set.connections[i]["f_junction"] == first, gm.set.junction_connections[idx]); filter(i -> gm.set.new_connections[i]["f_junction"] == first, gm.set.junction_new_connections[idx])]
+    yn_first = [filter(i -> gm.set.connections[i]["t_junction"] == first, gm.set.junction_connections[idx]); filter(i -> gm.set.new_connections[i]["t_junction"] == first, gm.set.junction_new_connections[idx])]
+    yp_last  = [filter(i -> gm.set.connections[i]["t_junction"] == last,  gm.set.junction_connections[idx]); filter(i -> gm.set.new_connections[i]["t_junction"] == last,  gm.set.junction_new_connections[idx])]
+    yn_last  = [filter(i -> gm.set.connections[i]["f_junction"] == last,  gm.set.junction_connections[idx]); filter(i -> gm.set.new_connections[i]["f_junction"] == last,  gm.set.junction_new_connections[idx])]
+
+    yp = getvariable(gm.model, :yp)
+    yn = getvariable(gm.model, :yn)
+    yp_ne = getvariable(gm.model, :yp_ne)
+    yn_ne = getvariable(gm.model, :yn_ne)
+
+    c =  Set([])           
+    if length(yn_first) > 0 && length(yp_last) > 0
+        for i1 in yn_first
+            for i2 in yp_last
+                yn1 = haskey(gm.set.connections,i1) ? yn[i1] : yn_ne[i1]
+                yp2 = haskey(gm.set.connections,i2) ? yp[i2] : yp_ne[i2]    
+                c1 = @constraint(gm.model, yn1  == yp2)
+                c = Set([c;c1])
+            end 
+        end      
+    end  
+        
+    if length(yn_first) > 0 && length(yn_last) > 0
+        for i1 in yn_first
+            for i2 in yn_last
+                yn1 = haskey(gm.set.connections,i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(gm.set.connections,i2) ? yn[i2] : yn_ne[i2]               
+                c1 = @constraint(gm.model, yn1 == yn2)
+                c = Set([c;c1])              
+            end 
+        end      
+    end  
+              
+    if length(yp_first) > 0 && length(yp_last) > 0
+        for i1 in yp_first
+            for i2 in yp_last
+                yp1 = haskey(gm.set.connections,i1) ? yp[i1] : yp_ne[i1]
+                yp2 = haskey(gm.set.connections,i2) ? yp[i2] : yp_ne[i2]                             
+                c1 = @constraint(gm.model, yp1  == yp2)
+                c = Set([c;c1])              
+            end 
+        end      
+    end  
+      
+    if length(yp_first) > 0 && length(yn_last) > 0
+        for i1 in yp_first
+            for i2 in yn_last
+                yp1 = haskey(gm.set.connections,i1) ? yp[i1] : yp_ne[i1]
+                yn2 = haskey(gm.set.connections,i2) ? yn[i2] : yn_ne[i2]                  
+                c1 = @constraint(gm.model, yp1 == yn2)
+                c = Set([c;c1])              
+            end 
+        end      
+    end  
 
     return c      
 end
@@ -338,6 +557,32 @@ function constraint_parallel_flow{T}(gm::GenericGasModel{T}, connection)
     yn = getvariable(gm.model, :yn)
                                   
     c = @constraint(gm.model, sum{yp[i], i in f_connections} + sum{yn[i], i in t_connections} == yp[idx] * length(gm.set.parallel_connections[(i,j)]))
+    return Set([c])    
+end
+
+
+# ensures that parallel lines have flow in the same direction
+function constraint_parallel_flow_ne{T}(gm::GenericGasModel{T}, connection)
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+    idx = connection["index"]
+ 
+#    f_connections = filter(i -> gm.set.connections[i]["f_junction"] == connection["f_junction"], gm.set.all_parallel_connections[(i,j)])
+ #   t_connections = filter(i -> gm.set.connections[i]["f_junction"] != connection["f_junction"], gm.set.all_parallel_connections[(i,j)])
+            
+    f_connections = filter(i -> gm.set.connections[i]["f_junction"] == connection["f_junction"], intersect(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
+    t_connections = filter(i -> gm.set.connections[i]["f_junction"] != connection["f_junction"], intersect(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
+    f_connections_ne = filter(i -> gm.set.new_connections[i]["f_junction"] == connection["f_junction"], setdiff(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
+    t_connections_ne = filter(i -> gm.set.new_connections[i]["f_junction"] != connection["f_junction"], setdiff(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
+        
+    yp = getvariable(gm.model, :yp)
+    yn = getvariable(gm.model, :yn)
+    yp_ne = getvariable(gm.model, :yp_ne)
+    yn_ne = getvariable(gm.model, :yn_ne)
+    yp_i = haskey(gm.set.connections, idx) ? yp[idx] : yp_ne[idx]   
+                                          
+#    c = @constraint(gm.model, sum{yp[i], i in intersect(f_connections, gm.set.connection_indexes)} + sum{yn[i], i in intersect(t_connections, gm.set.connection_indexes)} + sum{yp_ne[i], i in intersect(f_connections, gm.set.new_connection_indexes) } + sum{yn_ne[i], i in intersect(t_connections, gm.set.new_connection_indexes)} == yp_i * length(gm.set.all_parallel_connections[(i,j)]))
+    c = @constraint(gm.model, sum{yp[i], i in f_connections} + sum{yn[i], i in t_connections} + sum{yp_ne[i], i in f_connections_ne} + sum{yn_ne[i], i in t_connections_ne} == yp_i * length(gm.set.all_parallel_connections[(i,j)]))
     return Set([c])    
 end
 
