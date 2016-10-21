@@ -13,8 +13,8 @@ end
 
 # variables associated with pressure squared
 function variable_pressure_sqr{T}(gm::GenericGasModel{T})
-    @variable(gm.model, gm.set.junctions[i]["pmin"]^2 <= p[i in gm.set.junction_indexes] <= gm.set.junctions[i]["pmax"]^2, start = getstart(gm.set.junctions, i, "p_start", gm.set.junctions[i]["pmin"]^2))
-    return p
+    @variable(gm.model, gm.set.junctions[i]["pmin"]^2 <= p_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["pmax"]^2, start = getstart(gm.set.junctions, i, "p_start", gm.set.junctions[i]["pmin"]^2))
+    return p_gas
 end
 
 # variables associated with flux

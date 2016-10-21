@@ -34,8 +34,8 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[pipe_idx]
     yn = getvariable(gm.model, :yn)[pipe_idx]    
     l  = getvariable(gm.model, :l)[pipe_idx]

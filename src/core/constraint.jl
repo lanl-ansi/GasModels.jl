@@ -35,8 +35,8 @@ function constraint_on_off_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
     yp = getvariable(gm.model, :yp)[pipe_idx]
     yn = getvariable(gm.model, :yn)[pipe_idx]
   
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     
     pd_min = pipe["pd_min"]
     pd_max = pipe["pd_max"]
@@ -56,8 +56,8 @@ function constraint_on_off_pressure_drop_ne{T}(gm::GenericGasModel{T}, pipe)
     yp = getvariable(gm.model, :yp_ne)[pipe_idx]
     yn = getvariable(gm.model, :yn_ne)[pipe_idx]
   
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     
     pd_min = pipe["pd_min"]
     pd_max = pipe["pd_max"]
@@ -153,8 +153,8 @@ function constraint_on_off_compressor_ratios{T}(gm::GenericGasModel{T}, compress
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
 
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[c_idx]
     yn = getvariable(gm.model, :yn)[c_idx]
     
@@ -177,7 +177,7 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
     f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.connections)))
     t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.connections)))
       
-    p = getvariable(gm.model, :p)
+    p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
 
     c = @constraint(gm.model, junction["qmax"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
@@ -196,7 +196,7 @@ function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, junction
     f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.new_connections)))
     t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.new_connections)))
                   
-    p = getvariable(gm.model, :p)
+    p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
     f_ne = getvariable(gm.model, :f_ne)
     c = @constraint(gm.model, junction["qmax"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
@@ -228,8 +228,8 @@ function constraint_short_pipe_pressure_drop{T}(gm::GenericGasModel{T}, pipe)
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
 
     c = @constraint(gm.model,  pi == pj)
     return Set([c])  
@@ -263,8 +263,8 @@ function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
         
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
 
     v = getvariable(gm.model, :v)[valve_idx]
 
@@ -303,8 +303,8 @@ function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
         
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[valve_idx]
     yn = getvariable(gm.model, :yn)[valve_idx]    
     v = getvariable(gm.model, :v)[valve_idx]

@@ -29,8 +29,8 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pip
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
         
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[pipe_idx]
     yn = getvariable(gm.model, :yn)[pipe_idx]
     f  = getvariable(gm.model, :f)[pipe_idx]

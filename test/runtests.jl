@@ -70,7 +70,6 @@ else
     minlp_solver = couenne_solver   
 end
 
-
 include("gf.jl")
 include("ne.jl")
 
