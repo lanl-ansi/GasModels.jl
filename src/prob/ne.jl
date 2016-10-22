@@ -170,8 +170,8 @@ function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, 
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
         
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp_ne)[pipe_idx]
     zp = getvariable(gm.model, :zp)[pipe_idx]
     yn = getvariable(gm.model, :yn_ne)[pipe_idx]
@@ -197,8 +197,8 @@ function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T},
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
         
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp_ne)[pipe_idx]
     yn = getvariable(gm.model, :yn_ne)[pipe_idx]
     zp = getvariable(gm.model, :zp)[pipe_idx]       
@@ -231,8 +231,8 @@ function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T}, compress
     i = gm.set.junctions[i_junction_idx]  
     j = gm.set.junctions[j_junction_idx]  
 
-    pi = getvariable(gm.model, :p)[i_junction_idx]
-    pj = getvariable(gm.model, :p)[j_junction_idx]
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp_ne)[c_idx]
     yn = getvariable(gm.model, :yn_ne)[c_idx]
     zc = getvariable(gm.model, :zc)[c_idx]
