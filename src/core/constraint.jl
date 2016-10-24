@@ -180,7 +180,7 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
 
-    c = @constraint(gm.model, junction["qmax"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
+    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
                   
     return Set([c])
 end
@@ -199,7 +199,7 @@ function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, junction
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
     f_ne = getvariable(gm.model, :f_ne)
-    c = @constraint(gm.model, junction["qmax"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
                   
     return Set([c])
 end

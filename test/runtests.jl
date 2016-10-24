@@ -15,6 +15,7 @@ bonmin_solver = nothing
 couenne_solver = nothing
 cplex_solver = nothing
 gurobi_solver = nothing
+cbc_solver = nothing
 
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
@@ -39,6 +40,12 @@ if Pkg.installed("CPLEX") != nothing
     cplex_solver = CplexSolver()
 end
 
+if Pkg.installed("Cbc") != nothing
+    using Cbc
+    cbc_solver = CbcSolver()
+end
+
+
 
 if VERSION >= v"0.5.0-dev+7720"
     using Base.Test
@@ -52,6 +59,8 @@ ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 ecos_solver = ECOSSolver(maxit=10000)
 scs_solver = SCSSolver
 pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
+#pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
+
 
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing

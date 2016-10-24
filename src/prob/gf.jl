@@ -21,15 +21,15 @@ function post_gf{T}(gm::GenericGasModel{T})
     for (i,junction) in gm.set.junctions
         constraint_junction_flow_balance(gm, junction)
       
-        if junction["qmax"] > 0 && junction["qmin"] >= 0 
+        if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0 
             constraint_source_flow(gm, junction)
         end      
         
-        if junction["qmax"] < 0 && junction["qmin"] < 0 
+        if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 
             constraint_sink_flow(gm, junction)
         end      
                 
-        if junction["qmax"] == 0 && junction["qmin"] == 0 && junction["degree"] == 2
+        if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree"] == 2
            constraint_conserve_flow(gm, junction)
         end
         

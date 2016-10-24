@@ -192,8 +192,8 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
     max_flow = 0
   
     for junction in data["junction"]
-        if junction["qmax"] > 0
-          max_flow = max_flow + junction["qmax"]
+        if junction["qgmax"] > 0
+          max_flow = max_flow + junction["qgmax"]
         end
         junction["degree"] = 0
         junction["degree_all"] = 0 
