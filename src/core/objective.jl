@@ -10,5 +10,11 @@ function objective_min_ne_cost{T}(gm::GenericGasModel{T}; normalization=1000000.
     return obj
  end
 
-
+# function for maximizing load
+function objective_max_load{T}(gm::GenericGasModel{T})
+    ql = getvariable(gm.model, :ql_gas)
+    obj = @objective(gm.model, Max, sum{ql[i], (i,junction) in gm.set.junctions})      
+    return obj
+ end
+ 
 

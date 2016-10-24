@@ -205,6 +205,55 @@ function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, junction
 end
 
 
+
+
+# standard flow balance equation where demand and production is fixed
+function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, junction)
+    i = junction["index"]
+    junction_branches = gm.set.junction_connections[i]
+    
+    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.connections)))
+    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.connections)))
+      
+    p = getvariable(gm.model, :p_gas)
+    f = getvariable(gm.model, :f)
+    ql = getvariable(gm.model, :ql_gas)[i]
+    qg = getvariable(gm.model, :qg_gas)[i]
+
+    c = @constraint(gm.model, qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
+                  
+    return Set([c])
+end
+
+# standard flow balance equation where demand and production is fixed
+function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junction)
+    i = junction["index"]
+    junction_branches = gm.set.junction_connections[i]
+    
+    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.connections)))
+    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.connections)))
+
+    f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.set.new_connections)))
+    t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.set.new_connections)))
+                  
+    p = getvariable(gm.model, :p_gas)
+    f = getvariable(gm.model, :f)
+    f_ne = getvariable(gm.model, :f_ne)
+    ql = getvariable(gm.model, :ql_gas)[i]
+    qg = getvariable(gm.model, :qg_gas)[i]
+    
+    c = @constraint(gm.model, qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+                  
+    return Set([c])
+end
+
+
+
+
+
+
+
+
 # constraints on flow across short pipes
 function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]

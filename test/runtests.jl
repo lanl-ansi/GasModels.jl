@@ -81,4 +81,6 @@ end
 
 include("gf.jl")
 include("ne.jl")
+include("ls.jl")
+include("nels.jl")
 
