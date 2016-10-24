@@ -71,8 +71,6 @@ else
    misocp_solver = pajarito_solver
 end   
 
-misocp_solver = pajarito_solver
-
 
 # The paper used SCIP
 if scip_solver != nothing
