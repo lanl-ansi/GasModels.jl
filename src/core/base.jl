@@ -39,7 +39,7 @@ end
 
 
 # default generic constructor
-function GenericGasModel{T}(data::Dict{AbstractString,Any}, vars::T; setting = Dict{AbstractString,Any}(), solver = JuMP.UnsetSolver())
+function GenericGasModel{T}(data::Dict{AbstractString,Any}, vars::T; setting = Dict{AbstractString,Any}(), solver = JuMP.UnsetSolver(), kwargs...)
     data, sets = process_raw_data(data)
 
     gm = GenericGasModel{T}(

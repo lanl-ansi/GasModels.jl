@@ -41,6 +41,11 @@ function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "junction", "index", "p_sqr", :p_gas)
 end
 
+# Get the pressure squared solutions
+function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "junction", "index", "ql", :ql_gas)
+end
+
 # Add the flow solutions
 function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "index", "f", :f)  
