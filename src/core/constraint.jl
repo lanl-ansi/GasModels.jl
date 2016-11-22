@@ -219,8 +219,10 @@ function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, junction
     f = getvariable(gm.model, :f)
     ql = getvariable(gm.model, :ql_gas)[i]
     qg = getvariable(gm.model, :qg_gas)[i]
+    ql_firm = junction["qlfirm"]
+    qg_firm = junction["qgfirm"]
 
-    c = @constraint(gm.model, qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
+    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
                   
     return Set([c])
 end
@@ -242,17 +244,13 @@ function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junct
     ql = getvariable(gm.model, :ql_gas)[i]
     qg = getvariable(gm.model, :qg_gas)[i]
     
-    c = @constraint(gm.model, qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
-                  
+    ql_firm = junction["qlfirm"]
+    qg_firm = junction["qgfirm"]
+        
+    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+                      
     return Set([c])
 end
-
-
-
-
-
-
-
 
 # constraints on flow across short pipes
 function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, pipe)
@@ -293,7 +291,7 @@ function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve
     yp = getvariable(gm.model, :yp)[valve_idx]
     yn = getvariable(gm.model, :yn)[valve_idx]
     f = getvariable(gm.model, :f)[valve_idx]
-    v = getvariable(gm.model, :v)[valve_idx]
+    v = getvariable(gm.model, :valve)[valve_idx]
 
     max_flow = gm.data["max_flow"]
             
@@ -315,7 +313,7 @@ function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
     pi = getvariable(gm.model, :p_gas)[i_junction_idx]
     pj = getvariable(gm.model, :p_gas)[j_junction_idx]
 
-    v = getvariable(gm.model, :v)[valve_idx]
+    v = getvariable(gm.model, :valve)[valve_idx]
 
     c1 = @constraint(gm.model,  pj - ((1-v)*j["pmax"]^2) <= pi)
     c2 = @constraint(gm.model,  pi <= pj + ((1-v)*i["pmax"]^2))
@@ -332,7 +330,7 @@ function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve
     yp = getvariable(gm.model, :yp)[valve_idx]
     yn = getvariable(gm.model, :yn)[valve_idx]
     f = getvariable(gm.model, :f)[valve_idx]
-    v = getvariable(gm.model, :v)[valve_idx]
+    v = getvariable(gm.model, :valve)[valve_idx]
     max_flow = gm.data["max_flow"]
 
     c1 = @constraint(gm.model, -max_flow*(1-yp) <= f)
@@ -356,7 +354,7 @@ function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}
     pj = getvariable(gm.model, :p_gas)[j_junction_idx]
     yp = getvariable(gm.model, :yp)[valve_idx]
     yn = getvariable(gm.model, :yn)[valve_idx]    
-    v = getvariable(gm.model, :v)[valve_idx]
+    v = getvariable(gm.model, :valve)[valve_idx]
     
     max_ratio = valve["c_ratio_max"]
     min_ratio = valve["c_ratio_min"]

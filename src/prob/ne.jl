@@ -28,7 +28,7 @@ function post_ne{T}(gm::GenericGasModel{T})
 
     for (i,junction) in gm.set.junctions
         constraint_junction_flow_balance_ne(gm, junction) 
-        if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0 
+        if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0
             constraint_source_flow_ne(gm, junction) 
         end
         if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 

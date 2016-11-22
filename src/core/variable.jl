@@ -59,18 +59,20 @@ end
 
 # 0-1 variables associated with operating valves
 function variable_valve_operation{T}(gm::GenericGasModel{T})
-    @variable(gm.model, 0 <= v[l in [gm.set.valve_indexes; gm.set.control_valve_indexes]] <= 1, Int, start = getstart(gm.set.connections, l, "v_start", 1.0))
-    return v
+    @variable(gm.model, 0 <= valve[l in [gm.set.valve_indexes; gm.set.control_valve_indexes]] <= 1, Int, start = getstart(gm.set.connections, l, "v_start", 1.0))
+    return valve
 end
 
 # variables associated with demand
 function variable_load{T}(gm::GenericGasModel{T})
-    @variable(gm.model, max(gm.set.junctions[i]["qlmin"], gm.set.junctions[i]["qlfirm"]) <= ql_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qlmax"], start = getstart(gm.set.junctions, i, "ql_start", gm.set.junctions[i]["qlfirm"]))
+#    @variable(gm.model, max(gm.set.junctions[i]["qlmin"], gm.set.junctions[i]["qlfirm"]) <= ql_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qlmax"], start = getstart(gm.set.junctions, i, "ql_start", gm.set.junctions[i]["qlfirm"]))
+    @variable(gm.model, gm.set.junctions[i]["qlmin"] <= ql_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qlmax"], start = getstart(gm.set.junctions, i, "ql_start", 0.0))   
     return ql_gas
 end
 
 # variables associated with production
 function variable_production{T}(gm::GenericGasModel{T})
-    @variable(gm.model, max(gm.set.junctions[i]["qgmin"], gm.set.junctions[i]["qgfirm"]) <= qg_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qgmax"], start = getstart(gm.set.junctions, i, "qg_start", gm.set.junctions[i]["qgfirm"]))
+#    @variable(gm.model, max(gm.set.junctions[i]["qgmin"], gm.set.junctions[i]["qgfirm"]) <= qg_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qgmax"], start = getstart(gm.set.junctions, i, "qg_start", gm.set.junctions[i]["qgfirm"]))
+    @variable(gm.model, gm.set.junctions[i]["qgmin"] <= qg_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qgmax"], start = getstart(gm.set.junctions, i, "qg_start", 0.0))  
     return qg_gas
 end
