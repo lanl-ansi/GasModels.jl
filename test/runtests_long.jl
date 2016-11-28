@@ -63,25 +63,22 @@ pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_s
 
 
 # The paper used cplex 12.6.0
-#if Pkg.installed("Gurobi") != nothing
-#   misocp_solver = gurobi_solver
-#elseif Pkg.installed("CPLEX") != nothing
- #  misocp_solver = cplex_solver
-#else
+if Pkg.installed("Gurobi") != nothing
+   misocp_solver = gurobi_solver
+elseif Pkg.installed("CPLEX") != nothing
+   misocp_solver = cplex_solver
+else
    misocp_solver = pajarito_solver
-#end   
+end   
 
 
 # The paper used SCIP
-#if scip_solver != nothing
-    #minlp_solver = scip_solver
- #   minlp_solver = couenne_solver       
-#else
+if scip_solver != nothing
+    minlp_solver = scip_solver
+else
     minlp_solver = couenne_solver   
-#end
+end
 
-include("gf.jl")
-include("ne.jl")
-include("ls.jl")
-include("nels.jl")
+include("long_tests_gf.jl")
+include("long_tests_ne.jl")
 

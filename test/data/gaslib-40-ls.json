@@ -5,7 +5,7 @@
             "index":0,
             "pmin":1.01325,
             "pmax":81.01325,
-            "qgmin":17.4,
+            "qgmin":0.0,
             "qgmax":100.0,
             "qgfirm":17.4,
             "qlmin":0.0,
@@ -16,7 +16,7 @@
             "index":1,
             "pmin":31.01325,
             "pmax":81.01325,
-            "qgmin":17.4,
+            "qgmin":0.0,
             "qgmax":17.4,
             "qgfirm":17.4,
             "qlmin":0.0,
@@ -27,7 +27,7 @@
             "index":2,
             "pmin":31.01325,
             "pmax":81.01325,
-            "qgmin":17.4,
+            "qgmin":0.0,
             "qgmax":17.4,
             "qgfirm":17.4,
             "qlmin":0.0,
@@ -41,7 +41,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -52,7 +52,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":100.0,
             "qlfirm":1.8
         },
@@ -63,7 +63,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -74,7 +74,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -85,7 +85,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -96,7 +96,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -107,7 +107,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -118,7 +118,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -129,7 +129,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -140,7 +140,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -151,7 +151,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -162,7 +162,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -173,7 +173,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -184,7 +184,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -195,7 +195,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -206,7 +206,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -217,7 +217,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -228,7 +228,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -239,7 +239,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -250,7 +250,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -261,7 +261,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -272,7 +272,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -283,7 +283,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -294,7 +294,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -305,7 +305,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -316,7 +316,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -327,7 +327,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -338,7 +338,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
@@ -349,7 +349,7 @@
             "qgmin":0.0,
             "qgmax":0.0,
             "qgfirm":0.0,
-            "qlmin":1.8,
+            "qlmin":0.0,
             "qlmax":1.8,
             "qlfirm":1.8
         },
