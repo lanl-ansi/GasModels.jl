@@ -180,7 +180,7 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, junction)
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
 
-    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
+    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) )
                   
     return Set([c])
 end
@@ -199,7 +199,7 @@ function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, junction
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
     f_ne = getvariable(gm.model, :f_ne)
-    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+    c = @constraint(gm.model, junction["qgfirm"] - junction["qlfirm"] == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne) )
                   
     return Set([c])
 end
@@ -222,7 +222,7 @@ function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, junction
     ql_firm = junction["qlfirm"]
     qg_firm = junction["qgfirm"]
 
-    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} )
+    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) )
                   
     return Set([c])
 end
@@ -247,7 +247,7 @@ function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junct
     ql_firm = junction["qlfirm"]
     qg_firm = junction["qgfirm"]
         
-    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum{f[a], a in f_branches} - sum{f[a], a in t_branches} + sum{f_ne[a], a in f_branches_ne} - sum{f_ne[a], a in t_branches_ne} )
+    c = @constraint(gm.model, qg_firm - ql_firm + qg - ql == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne) )
                       
     return Set([c])
 end
@@ -375,7 +375,7 @@ function constraint_source_flow{T}(gm::GenericGasModel{T}, junction)
     yp = getvariable(gm.model, :yp)
     yn = getvariable(gm.model, :yn)
          
-    c = @constraint(gm.model, sum{yp[a], a in f_branches} + sum{yn[a], a in t_branches} >= 1)
+    c = @constraint(gm.model, sum(yp[a] for a in f_branches) + sum(yn[a] for a in t_branches) >= 1)
     return Set([c])  
 end
 
@@ -393,7 +393,7 @@ function constraint_source_flow_ne{T}(gm::GenericGasModel{T}, junction)
     yp_ne = getvariable(gm.model, :yp_ne)
     yn_ne = getvariable(gm.model, :yn_ne)
              
-    c = @constraint(gm.model, sum{yp[a], a in f_branches} + sum{yn[a], a in t_branches} + sum{yp_ne[a], a in f_branches_ne} + sum{yn_ne[a], a in t_branches_ne} >= 1)
+    c = @constraint(gm.model, sum(yp[a] for a in f_branches) + sum(yn[a] for a in t_branches) + sum(yp_ne[a] for a in f_branches_ne) + sum(yn_ne[a] for a in t_branches_ne) >= 1)
     return Set([c])  
 end
 
@@ -405,7 +405,7 @@ function constraint_sink_flow{T}(gm::GenericGasModel{T}, junction)
     yp = getvariable(gm.model, :yp)
     yn = getvariable(gm.model, :yn)
           
-    c = @constraint(gm.model, sum{yn[a], a in f_branches} + sum{yp[a], a in t_branches} >= 1)
+    c = @constraint(gm.model, sum(yn[a] for a in f_branches) + sum(yp[a] for a in t_branches) >= 1)
     return Set([c])  
 end
 
@@ -421,7 +421,7 @@ function constraint_sink_flow_ne{T}(gm::GenericGasModel{T}, junction)
     yp_ne = getvariable(gm.model, :yp_ne)
     yn_ne = getvariable(gm.model, :yn_ne)
           
-    c = @constraint(gm.model, sum{yn[a], a in f_branches} + sum{yp[a], a in t_branches} + sum{yn_ne[a], a in f_branches_ne} + sum{yp_ne[a], a in t_branches_ne}>= 1)
+    c = @constraint(gm.model, sum(yn[a] for a in f_branches) + sum(yp[a] for a in t_branches) + sum(yn_ne[a] for a in f_branches_ne) + sum(yp_ne[a] for a in t_branches_ne) >= 1)
     return Set([c])  
 end
 
@@ -603,7 +603,7 @@ function constraint_parallel_flow{T}(gm::GenericGasModel{T}, connection)
     yp = getvariable(gm.model, :yp)
     yn = getvariable(gm.model, :yn)
                                   
-    c = @constraint(gm.model, sum{yp[i], i in f_connections} + sum{yn[i], i in t_connections} == yp[idx] * length(gm.set.parallel_connections[(i,j)]))
+    c = @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) == yp[idx] * length(gm.set.parallel_connections[(i,j)]))
     return Set([c])    
 end
 
@@ -628,8 +628,7 @@ function constraint_parallel_flow_ne{T}(gm::GenericGasModel{T}, connection)
     yn_ne = getvariable(gm.model, :yn_ne)
     yp_i = haskey(gm.set.connections, idx) ? yp[idx] : yp_ne[idx]   
                                           
-#    c = @constraint(gm.model, sum{yp[i], i in intersect(f_connections, gm.set.connection_indexes)} + sum{yn[i], i in intersect(t_connections, gm.set.connection_indexes)} + sum{yp_ne[i], i in intersect(f_connections, gm.set.new_connection_indexes) } + sum{yn_ne[i], i in intersect(t_connections, gm.set.new_connection_indexes)} == yp_i * length(gm.set.all_parallel_connections[(i,j)]))
-    c = @constraint(gm.model, sum{yp[i], i in f_connections} + sum{yn[i], i in t_connections} + sum{yp_ne[i], i in f_connections_ne} + sum{yn_ne[i], i in t_connections_ne} == yp_i * length(gm.set.all_parallel_connections[(i,j)]))
+    c = @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) + sum(yp_ne[i] for i in f_connections_ne) + sum(yn_ne[i] for i in t_connections_ne) == yp_i * length(gm.set.all_parallel_connections[(i,j)]))
     return Set([c])    
 end
 

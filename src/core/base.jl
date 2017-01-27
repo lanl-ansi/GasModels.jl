@@ -92,9 +92,9 @@ end
 
 # build all the sets that we need for making things easier
 function build_sets(data :: Dict{AbstractString,Any})
-    junction_lookup = [ Int(junction["index"]) => junction for junction in data["junction"] ]
-    connection_lookup = [ Int(connection["index"]) => connection for connection in data["connection"] ]
-    new_connection_lookup = [ Int(connection["index"]) => connection for connection in data["new_connection"] ]
+    junction_lookup = Dict( Int(junction["index"]) => junction for junction in data["junction"] )
+    connection_lookup = Dict( Int(connection["index"]) => connection for connection in data["connection"] )
+    new_connection_lookup = Dict( Int(connection["index"]) => connection for connection in data["new_connection"] )
                       
     # filter turned off stuff 
     connection_lookup = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(junction_lookup) && connection["t_junction"] in keys(junction_lookup), connection_lookup)
@@ -113,14 +113,7 @@ function build_sets(data :: Dict{AbstractString,Any})
 
     new_pipe_idxs =  collect(keys(filter((i, connection) -> connection["type"] == "pipe", new_connection_lookup)))
     new_compressor_idxs = collect(keys(filter((i, connection) -> connection["type"] == "new_compressor", connection_lookup)))
-            
-    #new_pipes       = collect(keys(filter((i, connection) -> connection["type"] == "pipe"       && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup))) 
-    #new_compressors = collect(keys(filter((i, connection) -> connection["type"] == "compressor" && haskey(connection, "construction_cost") && connection["construction_cost"] != 0, connection_lookup)))
-      
-#    arcs_from = [(i,connection["f_junction"],connection["t_junction"]) for (i,connection) in connection_lookup]
- #   arcs_to   = [(i,connection["t_junction"],connection["f_junction"]) for (i,connection) in connection_lookup]
-  #  arcs = [arcs_from; arcs_to]
-      
+                  
     parallel_connections = Dict()
     all_parallel_connections = Dict()
     
@@ -130,15 +123,9 @@ function build_sets(data :: Dict{AbstractString,Any})
         parallel_connections[(min(i,j), max(i,j))] = []
         all_parallel_connections[(min(i,j), max(i,j))] = []          
     end
-#    for connection in data["new_connection"]
- #       i = connection["f_junction"]
-  #      j = connection["t_junction"]      
-   #     parallel_connections[(min(i,j), max(i,j))] = []  
-    #    all_parallel_connections[(min(i,j), max(i,j))] = []                
-    #end
                  
-    junction_connections = [i => [] for (i,junction) in junction_lookup]
-    junction_new_connections = [i => [] for (i,junction) in junction_lookup]
+    junction_connections = Dict(i => [] for (i,junction) in junction_lookup)
+    junction_new_connections = Dict(i => [] for (i,junction) in junction_lookup)
       
     for connection in data["connection"]
         i = connection["f_junction"]

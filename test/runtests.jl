@@ -58,8 +58,8 @@ end
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 ecos_solver = ECOSSolver(maxit=10000)
 scs_solver = SCSSolver
-pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
-#pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
+#pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
+pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
 
 
 # The paper used cplex 12.6.0

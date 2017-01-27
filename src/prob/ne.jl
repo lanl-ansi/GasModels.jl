@@ -157,7 +157,7 @@ end
 function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)  
     parallel = collect(filter( connection -> in(connection, gm.set.new_pipe_indexes), gm.set.all_parallel_connections[(i,j)] ))
     zp = getvariable(gm.model, :zp)            
-    c = @constraint(gm.model, sum{zp[i], i in parallel} <= 1)
+    c = @constraint(gm.model, sum(zp[i] for i in parallel) <= 1)
     return Set([c])    
 end
 
