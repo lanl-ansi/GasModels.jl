@@ -94,7 +94,7 @@ function post_ne{T}(gm::GenericGasModel{T})
     
     for i in gm.set.control_valve_indexes    
         valve = gm.set.connections[i]      
-        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_control_valve_flow_direction(gm, valve)
         constraint_on_off_control_valve_pressure_drop(gm, valve)  
     end
     
@@ -220,6 +220,12 @@ end
 # Special function for whether or not a connection is added
 function add_connection_ne{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "new_connection", "index", "built", :zp; default_value = (item) -> 1)
+end
+
+# Get the direction solutions
+function add_direction_ne_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "new_connection", "index", "yp", :yp_ne)
+    add_setpoint(sol, gm, "new_connection", "index", "yn", :yn_ne)    
 end
 
 #compressor rations have on off for direction and expansion

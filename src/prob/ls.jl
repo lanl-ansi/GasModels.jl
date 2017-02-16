@@ -72,7 +72,7 @@ function post_ls{T}(gm::GenericGasModel{T})
     
     for i in gm.set.control_valve_indexes    
         valve = gm.set.connections[i]      
-        constraint_on_off_valve_flow_direction(gm, valve)
+        constraint_on_off_control_valve_flow_direction(gm, valve)
         constraint_on_off_control_valve_pressure_drop(gm, valve)  
     end
     

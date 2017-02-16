@@ -322,7 +322,7 @@ function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, valve)
 end
 
 # constraints on flow across control valves
-function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, valve)
+function constraint_on_off_control_valve_flow_direction{T}(gm::GenericGasModel{T}, valve)
     valve_idx = valve["index"]
     i_junction_idx = valve["f_junction"]
     j_junction_idx = valve["t_junction"]
@@ -613,10 +613,7 @@ function constraint_parallel_flow_ne{T}(gm::GenericGasModel{T}, connection)
     i = min(connection["f_junction"], connection["t_junction"])
     j = max(connection["f_junction"], connection["t_junction"])
     idx = connection["index"]
- 
-#    f_connections = filter(i -> gm.set.connections[i]["f_junction"] == connection["f_junction"], gm.set.all_parallel_connections[(i,j)])
- #   t_connections = filter(i -> gm.set.connections[i]["f_junction"] != connection["f_junction"], gm.set.all_parallel_connections[(i,j)])
-            
+             
     f_connections = filter(i -> gm.set.connections[i]["f_junction"] == connection["f_junction"], intersect(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
     t_connections = filter(i -> gm.set.connections[i]["f_junction"] != connection["f_junction"], intersect(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))
     f_connections_ne = filter(i -> gm.set.new_connections[i]["f_junction"] == connection["f_junction"], setdiff(gm.set.all_parallel_connections[(i,j)], gm.set.parallel_connections[(i,j)]))

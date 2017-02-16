@@ -46,6 +46,17 @@ function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "junction", "index", "ql", :ql_gas)
 end
 
+# Get the direction solutions
+function add_direction_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "connection", "index", "yp", :yp)
+    add_setpoint(sol, gm, "connection", "index", "yn", :yn)    
+end
+
+# Get the valve solutions
+function add_valve_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "connection", "index", "valve", :valve)
+end
+
 # Add the flow solutions
 function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "index", "f", :f)  
