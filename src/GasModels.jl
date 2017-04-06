@@ -23,5 +23,6 @@ include("prob/gf.jl")
 include("prob/ne.jl")
 include("prob/ls.jl")
 include("prob/nels.jl")
+include("prob/nelsfd.jl")
 
 end

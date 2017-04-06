@@ -188,6 +188,35 @@ function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, 
     return Set([c1, c2, c3, c4])
 end
 
+#Weymouth equation with fixed directions for MINLP
+function constraint_weymouth_ne_fixed_direction{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe)
+    pipe_idx = pipe["index"]
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+  
+    i = gm.set.junctions[i_junction_idx]  
+    j = gm.set.junctions[j_junction_idx]  
+        
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
+    yp = pipe["yp"]
+    zp = getvariable(gm.model, :zp)[pipe_idx]
+    yn = pipe["yn"]
+    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+        
+    max_flow = gm.data["max_flow"]
+    w = pipe["resistance"]
+          
+    c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
+    c2 = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*max_flow^2)
+    c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
+    c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
+               
+    return Set([c1, c2, c3, c4])
+end
+
+
+
 #Weymouth equation with discrete direction variables for MINLP
 function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
     pipe_idx = pipe["index"]
@@ -216,6 +245,38 @@ function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T},
     c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
     return Set([c1, c2, c3, c4, c5])  
 end
+
+
+#Weymouth equation with fixed direction
+function constraint_weymouth_ne_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
+    pipe_idx = pipe["index"]
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+  
+    i = gm.set.junctions[i_junction_idx]  
+    j = gm.set.junctions[j_junction_idx]  
+        
+    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
+    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
+    yp = pipe["yp"]
+    yn = pipe["yn"]
+    zp = getvariable(gm.model, :zp)[pipe_idx]       
+    l  = getvariable(gm.model, :l_ne)[pipe_idx]
+    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+    
+    pd_max = pipe["pd_max"] 
+    pd_min = pipe["pd_min"]     
+    max_flow = gm.data["max_flow"]
+
+    c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
+    c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
+    c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
+    c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
+    c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
+    return Set([c1, c2, c3, c4, c5])  
+end
+
+
 
 # Special function for whether or not a connection is added
 function add_connection_ne{T}(sol, gm::GenericGasModel{T})
@@ -264,5 +325,7 @@ function get_ne_solution{T}(gm::GenericGasModel{T})
     add_junction_pressure_sqr_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_connection_ne(sol, gm)
+    add_direction_setpoint(sol, gm)
+    add_direction_ne_setpoint(sol, gm)
     return sol
 end
