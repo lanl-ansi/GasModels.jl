@@ -9,7 +9,4 @@ BaseTestNext
 Logging
 
 Pajarito
-GLPKMathProgInterface
-ECOS
-SCS
 Cbc

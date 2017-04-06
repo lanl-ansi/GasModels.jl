@@ -1,5 +1,5 @@
 #Check the second order code model
-if misocp_solver == gurobi_solver  
+if misocp_solver != pajarito_solver  
     @testset "test misocp nels" begin
         @testset "gaslib 40 case" begin
             result = run_nels("../test/data/gaslib-40-nels.json", MISOCPGasModel, misocp_solver)

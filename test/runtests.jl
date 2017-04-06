@@ -3,46 +3,20 @@ using Logging
 # suppress warnings during testing
 Logging.configure(level=ERROR)
 
-using Ipopt
 using Pajarito
-using GLPKMathProgInterface
-#using SCS
-using ECOS
-using SCS
 
-scip_solver = nothing
-bonmin_solver = nothing
 couenne_solver = nothing
-cplex_solver = nothing
-gurobi_solver = nothing
 cbc_solver = nothing
+ipopt_solver = nothing
 
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
     using CoinOptServices
- #   bonmin_solver = BonminNLSolver()
-    couenne_solver = CouenneNLSolver()    
-    bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
+    using Ipopt
+    
+    couenne_solver = CouenneNLSolver() 
+    ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)   
  #   couenne_solver = OsilCouenneSolver()
-    if isfile("../bin/scipampl.exe")      
-#        AmplNLWriter.setdebug(true)
-        scip_solver = AmplNLSolver("../bin/scipampl.exe", ["../scip.set"])
-    end 
-end
-
-if Pkg.installed("Gurobi") != nothing
-    using Gurobi
-    gurobi_solver = GurobiSolver()
-end
-
-if Pkg.installed("CPLEX") != nothing
-    using CPLEX
-    cplex_solver = CplexSolver()
-end
-
-if Pkg.installed("Cbc") != nothing
-    using Cbc
-    cbc_solver = CbcSolver()
 end
 
 if VERSION >= v"0.5.0-dev+7720"
@@ -52,12 +26,14 @@ else
     const Test = BaseTestNext
 end
 
-# default setup for solvers
-ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-ecos_solver = ECOSSolver(maxit=10000)
-scs_solver = SCSSolver
-pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 
+if Pkg.installed("Cbc") != nothing
+    using Cbc
+    cbc_solver = CbcSolver()
+end
+
+# default setup for solvers
+pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 misocp_solver = pajarito_solver
 minlp_solver = couenne_solver   
 
