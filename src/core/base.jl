@@ -90,6 +90,14 @@ function run_generic_model(file, model_constructor, solver, post_method; solutio
     return build_solution(gm, status, solve_time; solution_builder = solution_builder)
 end
 
+# do the run on an already dictionarized model
+function run_generic_model(data::Dict{AbstractString,Any}, model_constructor, solver, post_method; solution_builder = get_solution, kwargs...)
+    gm = model_constructor(data; solver = solver, kwargs...)
+    post_method(gm)
+    status, solve_time = solve(gm)
+    return build_solution(gm, status, solve_time; solution_builder = solution_builder)
+end
+
 # build all the sets that we need for making things easier
 function build_sets(data :: Dict{AbstractString,Any})
     junction_lookup = Dict( Int(junction["index"]) => junction for junction in data["junction"] )
@@ -181,6 +189,9 @@ function add_network_structure(data :: Dict{AbstractString,Any}, set :: GasDataS
     for junction in data["junction"]
         if junction["qgmax"] > 0
           max_flow = max_flow + junction["qgmax"]
+        end
+        if junction["qgfirm"] > 0
+          max_flow = max_flow + junction["qgfirm"]
         end
         junction["degree"] = 0
         junction["degree_all"] = 0 

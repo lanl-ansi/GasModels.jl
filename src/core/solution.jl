@@ -43,7 +43,11 @@ end
 
 # Get the pressure squared solutions
 function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "index", "ql", :ql_gas)
+    add_setpoint(sol, gm, "junction", "index", "ql", :ql_gas; default_value = (item) -> 0)
+end
+
+function add_production_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "junction", "index", "qg", :qg_gas; default_value = (item) -> 0)
 end
 
 # Get the direction solutions

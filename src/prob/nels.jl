@@ -116,4 +116,3 @@ function post_nels{T}(gm::GenericGasModel{T})
     end  
 end
 
-
