@@ -359,8 +359,14 @@ function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, junction
       
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
-    ql = getvariable(gm.model, :ql_gas)[i]
-    qg = getvariable(gm.model, :qg_gas)[i]
+    ql = 0
+    qg = 0
+    if junction["qlmin"] != junction["qlmax"]
+        ql = getvariable(gm.model, :ql_gas)[i]
+    end
+    if junction["qgmin"] != junction["qgmax"]   
+        qg = getvariable(gm.model, :qg_gas)[i]
+    end
     ql_firm = junction["qlfirm"]
     qg_firm = junction["qgfirm"]
 
@@ -370,7 +376,7 @@ function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, junction
 end
 
 # standard flow balance equation where demand and production is fixed
-function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junction)
+function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junction)  
     i = junction["index"]
     junction_branches = gm.set.junction_connections[i]
     
@@ -383,8 +389,15 @@ function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, junct
     p = getvariable(gm.model, :p_gas)
     f = getvariable(gm.model, :f)
     f_ne = getvariable(gm.model, :f_ne)
-    ql = getvariable(gm.model, :ql_gas)[i]
-    qg = getvariable(gm.model, :qg_gas)[i]
+    
+    ql = 0
+    qg = 0
+    if junction["qlmin"] != junction["qlmax"]
+        ql = getvariable(gm.model, :ql_gas)[i]
+    end
+    if junction["qgmin"] != junction["qgmax"]
+        qg = getvariable(gm.model, :qg_gas)[i]
+    end
     
     ql_firm = junction["qlfirm"]
     qg_firm = junction["qgfirm"]

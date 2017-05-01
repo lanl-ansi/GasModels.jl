@@ -65,12 +65,14 @@ end
 
 # variables associated with demand
 function variable_load{T}(gm::GenericGasModel{T})
-    @variable(gm.model, gm.set.junctions[i]["qlmin"] <= ql_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qlmax"], start = getstart(gm.set.junctions, i, "ql_start", 0.0))   
+    load_set = filter(i -> gm.set.junctions[i]["qlmin"] != gm.set.junctions[i]["qlmax"], gm.set.junction_indexes)    
+    @variable(gm.model, gm.set.junctions[i]["qlmin"] <= ql_gas[i in load_set] <= gm.set.junctions[i]["qlmax"], start = getstart(gm.set.junctions, i, "ql_start", 0.0))   
     return ql_gas
 end
 
 # variables associated with production
 function variable_production{T}(gm::GenericGasModel{T})
-    @variable(gm.model, gm.set.junctions[i]["qgmin"] <= qg_gas[i in gm.set.junction_indexes] <= gm.set.junctions[i]["qgmax"], start = getstart(gm.set.junctions, i, "qg_start", 0.0))  
+    prod_set = filter(i -> gm.set.junctions[i]["qgmin"] != gm.set.junctions[i]["qgmax"], gm.set.junction_indexes)        
+    @variable(gm.model, gm.set.junctions[i]["qgmin"] <= qg_gas[i in prod_set] <= gm.set.junctions[i]["qgmax"], start = getstart(gm.set.junctions, i, "qg_start", 0.0))  
     return qg_gas
 end
