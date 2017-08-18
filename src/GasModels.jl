@@ -5,11 +5,13 @@ module GasModels
 using JSON
 using MathProgBase
 using JuMP
+using Compat
 
 include("io/json.jl")
 include("io/common.jl")
 
 include("core/base.jl")
+include("core/data.jl")
 include("core/variable.jl")
 include("core/constraint.jl")
 include("core/relaxation_scheme.jl")

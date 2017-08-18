@@ -1,9 +1,10 @@
-julia 0.4.6
+julia 0.6.0
 
 Ipopt
 AmplNLWriter
 CoinOptServices
 
+Compat
 
 BaseTestNext
 Logging

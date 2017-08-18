@@ -8,7 +8,7 @@ function run_nels(file, model_constructor, solver; kwargs...)
 end
 
 # construct the gas flow expansion problem to maximize load
-function post_nels{T}(gm::GenericGasModel{T})
+function post_nels(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
     variable_flux_ne(gm)  
@@ -27,81 +27,73 @@ function post_nels{T}(gm::GenericGasModel{T})
     # expansion cost objective
     objective_max_load(gm)
 
-    for (i,junction) in gm.set.junctions
-        constraint_junction_flow_balance_ne_ls(gm, junction) 
+    for (i,junction) in gm.ref[:junction]
+        constraint_junction_flow_balance_ne_ls(gm, i) 
         if max(junction["qgmin"],junction["qgfirm"]) > 0.0  && junction["qlmin"] == 0.0 && junction["qlmax"] == 0.0 && junction["qlfirm"] == 0.0 && junction["qgmin"] >= 0.0
-            constraint_source_flow_ne(gm, junction) 
+            constraint_source_flow_ne(gm, i) 
         end
         if junction["qgmax"] == 0.0 && junction["qgmin"] == 0.0 && junction["qgfirm"] == 0.0 && max(junction["qlmin"],junction["qlfirm"]) > 0.0 && junction["qlmin"] >= 0.0
-            constraint_sink_flow_ne(gm, junction)
+            constraint_sink_flow_ne(gm, i)
         end              
         if junction["qgmax"] == 0 && junction["qgmin"] == 0 && junction["qgfirm"] == 0 && junction["qlmax"] == 0 && junction["qlmin"] == 0 && junction["qlfirm"] == 0 && junction["degree_all"] == 2
-           constraint_conserve_flow_ne(gm, junction)
+           constraint_conserve_flow_ne(gm, i)
         end            
     end
 
-    for (i,connection) in gm.set.connections
-        constraint_flow_direction_choice(gm, connection) 
-        constraint_parallel_flow_ne(gm,connection)  
+    for (i,connection) in gm.ref[:connection]
+        constraint_flow_direction_choice(gm, i) 
+        constraint_parallel_flow_ne(gm, i)  
     end
     
-    for (i,connection) in gm.set.new_connections
-        constraint_flow_direction_choice_ne(gm, connection) 
-        constraint_parallel_flow_ne(gm,connection)  
+    for (i,connection) in gm.ref[:ne_connection]
+        constraint_flow_direction_choice_ne(gm, i) 
+        constraint_parallel_flow_ne(gm, i)  
     end
 
-    for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
-        pipe = gm.set.connections[i]      
-        constraint_on_off_pressure_drop(gm, pipe) 
-        constraint_on_off_pipe_flow_direction(gm,pipe) 
-        constraint_weymouth(gm,pipe)
+    for i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
+        constraint_on_off_pressure_drop(gm, i) 
+        constraint_on_off_pipe_flow_direction(gm, i) 
+        constraint_weymouth(gm, i)
     end
 
-    for i in gm.set.new_pipe_indexes
-        pipe = gm.set.new_connections[i]      
-        constraint_on_off_pressure_drop_ne(gm, pipe) 
-        constraint_on_off_pipe_flow_direction_ne(gm,pipe) 
-        constraint_on_off_pipe_flow_ne(gm, pipe) 
-        constraint_weymouth_ne(gm,pipe) 
+    for (i, pipe) in gm.ref[:ne_pipe]
+        constraint_on_off_pressure_drop_ne(gm, i) 
+        constraint_on_off_pipe_flow_direction_ne(gm, i) 
+        constraint_on_off_pipe_flow_ne(gm, i) 
+        constraint_weymouth_ne(gm, i) 
     end
     
-    for i in gm.set.short_pipe_indexes
-        pipe = gm.set.connections[i]      
-        constraint_short_pipe_pressure_drop(gm, pipe)
-        constraint_on_off_short_pipe_flow_direction(gm,pipe)      
+    for (i, pipe) in gm.ref[:short_pipe]
+        constraint_short_pipe_pressure_drop(gm, i)
+        constraint_on_off_short_pipe_flow_direction(gm, i)      
     end
     
     # We assume that we already have a short pipe connecting two nodes 
     # and we just want to add a compressor to it.  Use constraint 
     # constraint_on_off_compressor_flow_expansion to disallow flow
     # if the compressor is not built 
-    for i in gm.set.compressor_indexes
-        compressor = gm.set.connections[i]        
-        constraint_on_off_compressor_flow_direction(gm, compressor) 
-        constraint_on_off_compressor_ratios(gm, compressor)         
+    for (i, compressor) in gm.ref[:compressor]
+        constraint_on_off_compressor_flow_direction(gm, i) 
+        constraint_on_off_compressor_ratios(gm, i)         
     end
-    for i in gm.set.new_compressor_indexes
-        compressor = gm.set.new_connections[i]        
-        constraint_on_off_compressor_flow_direction_ne(gm, compressor) 
-        constraint_on_off_compressor_ratios_ne(gm, compressor) 
+ 
+    for (i, compressor) in gm.ref[:ne_compressor]
+        constraint_on_off_compressor_flow_direction_ne(gm, i) 
+        constraint_on_off_compressor_ratios_ne(gm, i) 
     end  
-      
-    
-    for i in gm.set.valve_indexes    
-        valve = gm.set.connections[i]      
-        constraint_on_off_valve_flow_direction(gm, valve)
-        constraint_on_off_valve_pressure_drop(gm, valve)  
+          
+    for (i, valve) in gm.ref[:valve]    
+        constraint_on_off_valve_flow_direction(gm, i)
+        constraint_on_off_valve_pressure_drop(gm, i)  
     end
     
-    for i in gm.set.control_valve_indexes    
-        valve = gm.set.connections[i]      
-        constraint_on_off_control_valve_flow_direction(gm, valve)
-        constraint_on_off_control_valve_pressure_drop(gm, valve)  
+    for (i, valve) in gm.ref[:control_valve]    
+        constraint_on_off_control_valve_flow_direction(gm, i)
+        constraint_on_off_control_valve_pressure_drop(gm, i)  
     end
     
     exclusive = Dict()
-    for idx in gm.set.new_pipe_indexes
-        pipe = gm.set.new_connections[idx]
+    for (idx, pipe) in gm.ref[:ne_pipe]
         i = min(pipe["f_junction"],pipe["t_junction"])
         j = max(pipe["f_junction"],pipe["t_junction"])
    

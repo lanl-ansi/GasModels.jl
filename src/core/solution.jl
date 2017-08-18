@@ -1,18 +1,20 @@
 
-# Build a gas solution
+"Build a gas solution"
 function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective = NaN, solution_builder = get_solution)
     if status != :Error
         objective = getobjectivevalue(gm.model)
-        status = solver_status_dict(typeof(gm.model.solver), status)
+        status = solver_status_dict(Symbol(typeof(gm.model.solver).name.module), status)
     end
 
+    sol = solution_builder(gm)
+    
     solution = Dict{AbstractString,Any}(
         "solver" => string(typeof(gm.model.solver)), 
         "status" => status, 
         "objective" => objective, 
         "objective_lb" => guard_getobjbound(gm.model),
         "solve_time" => solve_time,
-        "solution" => solution_builder(gm),
+        "solution" => sol,
         "machine" => Dict(
             "cpu" => Sys.cpu_info()[1].model,
             "memory" => string(Sys.total_memory()/2^30, " Gb")
@@ -28,9 +30,14 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
     return solution
 end
 
-# Get all the solution values
+""
+function init_solution(gm::GenericGasModel)
+    return Dict{String,Any}()
+end
+
+" Get all the solution values "
 function get_solution{T}(gm::GenericGasModel{T})
-    sol = Dict{AbstractString,Any}()
+    sol = init_solution(gm)
     add_junction_pressure_sqr_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     return sol
@@ -68,28 +75,16 @@ end
 
 
 function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, index_name, param_name, variable_symbol; default_value = (item) -> NaN, scale = (x,item) -> x, extract_var = (var,idx,item) -> var[idx])
-    sol_dict = nothing
-    if !haskey(sol, dict_name)
-        sol_dict = Dict{Int,Any}()
+    sol_dict = get(sol, dict_name, Dict{String,Any}())
+    if length(gm.data[dict_name]) > 0
         sol[dict_name] = sol_dict
-    else
-        sol_dict = sol[dict_name]
     end
-
-    for item in gm.data[dict_name]
-        idx = Int(item[index_name])
-
-        sol_item = nothing
-        if !haskey(sol_dict, idx)
-            sol_item = Dict{AbstractString,Any}()
-            sol_dict[idx] = sol_item
-        else
-            sol_item = sol_dict[idx]
-        end
+    for (i,item) in gm.data[dict_name]
+        idx = i#Int(item[index_name])
+        sol_item = sol_dict[i] = get(sol_dict, i, Dict{String,Any}())
         sol_item[param_name] = default_value(item)
-
         try
-            var = extract_var(getvariable(gm.model, variable_symbol), idx, item)
+            var = extract_var(gm.var[variable_symbol], idx, item)
             sol_item[param_name] = scale(getvalue(var), item)
         catch
         end

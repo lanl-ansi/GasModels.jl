@@ -16,6 +16,7 @@ couenne_solver = nothing
 cplex_solver = nothing
 gurobi_solver = nothing
 cbc_solver = nothing
+baron_solver = nothing
 
 if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
     using AmplNLWriter
@@ -45,7 +46,10 @@ if Pkg.installed("Cbc") != nothing
     cbc_solver = CbcSolver()
 end
 
-
+if Pkg.installed("Baron") != nothing
+    using Baron
+    baron_solver = BaronSolver()
+end
 
 if VERSION >= v"0.5.0-dev+7720"
     using Base.Test
@@ -61,7 +65,6 @@ scs_solver = SCSSolver
 pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
 #pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
 
-
 # The paper used cplex 12.6.0
 if Pkg.installed("Gurobi") != nothing
    misocp_solver = gurobi_solver
@@ -71,9 +74,10 @@ else
    misocp_solver = pajarito_solver
 end   
 
-
 # The paper used SCIP
-if scip_solver != nothing
+if baron_solver != nothing
+    minlp_solver = baron_solver
+elseif scip_solver != nothing
     minlp_solver = scip_solver
 else
     minlp_solver = couenne_solver   

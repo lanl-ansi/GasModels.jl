@@ -8,7 +8,7 @@ function run_ne(file, model_constructor, solver; kwargs...)
 end
 
 # construct the gas flow feasbility problem 
-function post_ne{T}(gm::GenericGasModel{T})
+function post_ne(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
     variable_flux_ne(gm)  
@@ -26,81 +26,72 @@ function post_ne{T}(gm::GenericGasModel{T})
     # expansion cost objective
     objective_min_ne_cost(gm)
 
-    for (i,junction) in gm.set.junctions
-        constraint_junction_flow_balance_ne(gm, junction) 
+    for (i,junction) in gm.ref[:junction]
+        constraint_junction_flow_balance_ne(gm, i) 
         if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0
-            constraint_source_flow_ne(gm, junction) 
+            constraint_source_flow_ne(gm, i) 
         end
         if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 
-            constraint_sink_flow_ne(gm, junction)
+            constraint_sink_flow_ne(gm, i)
         end              
         if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree_all"] == 2
-           constraint_conserve_flow_ne(gm, junction)
+           constraint_conserve_flow_ne(gm, i)
         end            
     end
 
-    for (i,connection) in gm.set.connections
-        constraint_flow_direction_choice(gm, connection) 
-        constraint_parallel_flow_ne(gm,connection)  
+    for (i,connection) in gm.ref[:connection]
+        constraint_flow_direction_choice(gm, i) 
+        constraint_parallel_flow_ne(gm, i)  
     end
     
-    for (i,connection) in gm.set.new_connections
-        constraint_flow_direction_choice_ne(gm, connection) 
-        constraint_parallel_flow_ne(gm,connection)  
+    for (i,connection) in gm.ref[:ne_connection]
+        constraint_flow_direction_choice_ne(gm, i) 
+        constraint_parallel_flow_ne(gm, i)  
     end
 
-    for i in [gm.set.pipe_indexes; gm.set.resistor_indexes]
-        pipe = gm.set.connections[i]      
-        constraint_on_off_pressure_drop(gm, pipe) 
-        constraint_on_off_pipe_flow_direction(gm,pipe) 
-        constraint_weymouth(gm,pipe)
+    for i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
+        constraint_on_off_pressure_drop(gm, i) 
+        constraint_on_off_pipe_flow_direction(gm, i) 
+        constraint_weymouth(gm, i)
     end
 
-    for i in gm.set.new_pipe_indexes
-        pipe = gm.set.new_connections[i]      
-        constraint_on_off_pressure_drop_ne(gm, pipe) 
-        constraint_on_off_pipe_flow_direction_ne(gm,pipe) 
-        constraint_on_off_pipe_flow_ne(gm, pipe) 
-        constraint_weymouth_ne(gm,pipe) 
+    for (i, pipe) in gm.ref[:ne_pipe]
+        constraint_on_off_pressure_drop_ne(gm, i) 
+        constraint_on_off_pipe_flow_direction_ne(gm, i) 
+        constraint_on_off_pipe_flow_ne(gm, i) 
+        constraint_weymouth_ne(gm, i) 
     end
     
-    for i in gm.set.short_pipe_indexes
-        pipe = gm.set.connections[i]      
-        constraint_short_pipe_pressure_drop(gm, pipe)
-        constraint_on_off_short_pipe_flow_direction(gm,pipe)      
+    for (i, pipe) in gm.ref[:short_pipe]
+        constraint_short_pipe_pressure_drop(gm, i)
+        constraint_on_off_short_pipe_flow_direction(gm, i)      
     end
     
     # We assume that we already have a short pipe connecting two nodes 
     # and we just want to add a compressor to it.  Use constraint 
     # constraint_on_off_compressor_flow_expansion to disallow flow
     # if the compressor is not built 
-    for i in gm.set.compressor_indexes
-        compressor = gm.set.connections[i]        
-        constraint_on_off_compressor_flow_direction(gm, compressor) 
-        constraint_on_off_compressor_ratios(gm, compressor)         
+    for (i, compressor) in gm.ref[:compressor]
+        constraint_on_off_compressor_flow_direction(gm, i) 
+        constraint_on_off_compressor_ratios(gm, i)         
     end
-    for i in gm.set.new_compressor_indexes
-        compressor = gm.set.new_connections[i]        
-        constraint_on_off_compressor_flow_direction_ne(gm, compressor) 
-        constraint_on_off_compressor_ratios_ne(gm, compressor) 
+    for (i,compressor) in gm.ref[:ne_compressor]
+        constraint_on_off_compressor_flow_direction_ne(gm, i) 
+        constraint_on_off_compressor_ratios_ne(gm, i) 
     end  
-      
-    
-    for i in gm.set.valve_indexes    
-        valve = gm.set.connections[i]      
-        constraint_on_off_valve_flow_direction(gm, valve)
-        constraint_on_off_valve_pressure_drop(gm, valve)  
+         
+    for (i, valve) in gm.ref[:valve]    
+        constraint_on_off_valve_flow_direction(gm, i)
+        constraint_on_off_valve_pressure_drop(gm, i)  
     end
     
-    for i in gm.set.control_valve_indexes    
-        valve = gm.set.connections[i]      
-        constraint_on_off_control_valve_flow_direction(gm, valve)
-        constraint_on_off_control_valve_pressure_drop(gm, valve)  
+    for (i, valve) in gm.ref[:control_valve]    
+        constraint_on_off_control_valve_flow_direction(gm, i)
+        constraint_on_off_control_valve_pressure_drop(gm, i)  
     end
     
     exclusive = Dict()
-    for idx in gm.set.new_pipe_indexes
-        pipe = gm.set.new_connections[idx]
+    for (idx, pipe) in gm.ref[:ne_pipe]
         i = min(pipe["f_junction"],pipe["t_junction"])
         j = max(pipe["f_junction"],pipe["t_junction"])
    
@@ -115,17 +106,18 @@ function post_ne{T}(gm::GenericGasModel{T})
     end  
 end
 
-
 # on/off constraints on flow across pipes for expansion variables
-function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, pipe)
-    pipe_idx = pipe["index"]
+function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, pipe_idx)
+    #pipe = haskey(gm.ref[:connection], pipe_idx) ? gm.ref[:connection][pipe_idx] : gm.ref[:ne_connection][pipe_idx]
+    pipe = gm.ref[:ne_connection][pipe_idx]
+      
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
 
-    zp = getvariable(gm.model, :zp)[pipe_idx]
-    f = getvariable(gm.model, :f_ne)[pipe_idx]
+    zp = getindex(gm.model, :zp)[pipe_idx]
+    f = getindex(gm.model, :f_ne)[pipe_idx]
     
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
     pd_max = pipe["pd_max"]  
     pd_min = pipe["pd_min"]  
     w = pipe["resistance"]
@@ -137,47 +129,50 @@ end
 
 
 # on/off constraints on flow across compressors for expansion variables
-function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T}, compressor)
-    c_idx = compressor["index"]
+function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T}, c_idx)
+    #compressor = haskey(gm.ref[:connection], c_idx) ? gm.ref[:connection][c_idx] : gm.ref[:ne_connection][c_idx]
+    compressor = gm.ref[:ne_connection][c_idx]
+            
     i_junction_idx = compressor["f_junction"]
     j_junction_idx = compressor["t_junction"]
 
-    zc = getvariable(gm.model, :zc)[c_idx]
-    f = getvariable(gm.model, :f)[c_idx]
+    zc = getindex(gm.model, :zc)[c_idx]
+    f = getindex(gm.model, :f)[c_idx]
     
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
           
     c1 = @constraint(gm.model, -max_flow*zc <= f)
     c2 = @constraint(gm.model, f <= max_flow*zc)            
     return Set([c1, c2])    
 end
 
-
 # This function ensures at most one pipe in parallel is selected
 function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)  
-    parallel = collect(filter( connection -> in(connection, gm.set.new_pipe_indexes), gm.set.all_parallel_connections[(i,j)] ))
-    zp = getvariable(gm.model, :zp)            
+    parallel = collect(filter( connection -> in(connection, collect(keys(gm.ref[:ne_pipe]))), gm.ref[:all_parallel_connections][(i,j)] ))
+    zp = getindex(gm.model, :zp)            
     c = @constraint(gm.model, sum(zp[i] for i in parallel) <= 1)
     return Set([c])    
 end
 
 #Weymouth equation with discrete direction variables for MINLP
-function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe)
-    pipe_idx = pipe["index"]
+function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe_idx)
+    #pipe = haskey(gm.ref[:connection], pipe_idx) ? gm.ref[:connection][pipe_idx] : gm.ref[:ne_connection][pipe_idx]
+    pipe = gm.ref[:ne_connection][pipe_idx]
+            
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    i = gm.set.junctions[i_junction_idx]  
-    j = gm.set.junctions[j_junction_idx]  
+    i = gm.ref[:junction][i_junction_idx]  
+    j = gm.ref[:junction][j_junction_idx]  
         
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
-    yp = getvariable(gm.model, :yp_ne)[pipe_idx]
-    zp = getvariable(gm.model, :zp)[pipe_idx]
-    yn = getvariable(gm.model, :yn_ne)[pipe_idx]
-    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
+    yp = getindex(gm.model, :yp_ne)[pipe_idx]
+    zp = getindex(gm.model, :zp)[pipe_idx]
+    yn = getindex(gm.model, :yn_ne)[pipe_idx]
+    f  = getindex(gm.model, :f_ne)[pipe_idx]
         
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
     w = pipe["resistance"]
           
     c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
@@ -189,22 +184,25 @@ function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, 
 end
 
 #Weymouth equation with fixed directions for MINLP
-function constraint_weymouth_ne_fixed_direction{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe)
-    pipe_idx = pipe["index"]
+function constraint_weymouth_ne_fixed_direction{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe_idx)
+    #pipe = haskey(gm.ref[:connection], pipe_idx) ? gm.ref[:connection][pipe_idx] : gm.ref[:ne_connection][pipe_idx]
+    pipe = gm.ref[:ne_connection][pipe_idx]
+      
+      
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    i = gm.set.junctions[i_junction_idx]  
-    j = gm.set.junctions[j_junction_idx]  
+    i = gm.ref[:junction][i_junction_idx]  
+    j = gm.ref[:junction][j_junction_idx]  
         
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
     yp = pipe["yp"]
-    zp = getvariable(gm.model, :zp)[pipe_idx]
+    zp = getindex(gm.model, :zp)[pipe_idx]
     yn = pipe["yn"]
-    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+    f  = getindex(gm.model, :f_ne)[pipe_idx]
         
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
     w = pipe["resistance"]
           
     c1 = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*max_flow^2)
@@ -215,28 +213,28 @@ function constraint_weymouth_ne_fixed_direction{T <: AbstractMINLPForm}(gm::Gene
     return Set([c1, c2, c3, c4])
 end
 
-
-
 #Weymouth equation with discrete direction variables for MINLP
-function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
-    pipe_idx = pipe["index"]
+function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe_idx)
+    #pipe = haskey(gm.ref[:connection], pipe_idx) ? gm.ref[:connection][pipe_idx] : gm.ref[:ne_connection][pipe_idx] 
+    pipe = gm.ref[:ne_connection][pipe_idx] 
+      
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    i = gm.set.junctions[i_junction_idx]  
-    j = gm.set.junctions[j_junction_idx]  
+    i = gm.ref[:junction][i_junction_idx]  
+    j = gm.ref[:junction][j_junction_idx]  
         
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
-    yp = getvariable(gm.model, :yp_ne)[pipe_idx]
-    yn = getvariable(gm.model, :yn_ne)[pipe_idx]
-    zp = getvariable(gm.model, :zp)[pipe_idx]       
-    l  = getvariable(gm.model, :l_ne)[pipe_idx]
-    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
+    yp = getindex(gm.model, :yp_ne)[pipe_idx]
+    yn = getindex(gm.model, :yn_ne)[pipe_idx]
+    zp = getindex(gm.model, :zp)[pipe_idx]       
+    l  = getindex(gm.model, :l_ne)[pipe_idx]
+    f  = getindex(gm.model, :f_ne)[pipe_idx]
     
     pd_max = pipe["pd_max"] 
     pd_min = pipe["pd_min"]     
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
     c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
@@ -248,25 +246,27 @@ end
 
 
 #Weymouth equation with fixed direction
-function constraint_weymouth_ne_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
-    pipe_idx = pipe["index"]
+function constraint_weymouth_ne_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe_idx)
+    #pipe = haskey(gm.ref[:connection], pipe_idx) ? gm.ref[:connection][pipe_idx] : gm.ref[:ne_connection][pipe_idx]
+    pipe = gm.ref[:ne_connection][pipe_idx]
+      
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    i = gm.set.junctions[i_junction_idx]  
-    j = gm.set.junctions[j_junction_idx]  
+    i = gm.ref[:junction][i_junction_idx]  
+    j = gm.ref[:junction][j_junction_idx]  
         
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
     yp = pipe["yp"]
     yn = pipe["yn"]
-    zp = getvariable(gm.model, :zp)[pipe_idx]       
-    l  = getvariable(gm.model, :l_ne)[pipe_idx]
-    f  = getvariable(gm.model, :f_ne)[pipe_idx]
+    zp = getindex(gm.model, :zp)[pipe_idx]       
+    l  = getindex(gm.model, :l_ne)[pipe_idx]
+    f  = getindex(gm.model, :f_ne)[pipe_idx]
     
     pd_max = pipe["pd_max"] 
     pd_min = pipe["pd_min"]     
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
     c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
@@ -276,33 +276,33 @@ function constraint_weymouth_ne_fixed_direction{T <: AbstractMISOCPForm}(gm::Gen
     return Set([c1, c2, c3, c4, c5])  
 end
 
-
-
 # Special function for whether or not a connection is added
 function add_connection_ne{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "new_connection", "index", "built", :zp; default_value = (item) -> 1)
+    add_setpoint(sol, gm, "ne_connection", "index", "built", :zp; default_value = (item) -> 1)
 end
 
 # Get the direction solutions
 function add_direction_ne_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "new_connection", "index", "yp", :yp_ne)
-    add_setpoint(sol, gm, "new_connection", "index", "yn", :yn_ne)    
+    add_setpoint(sol, gm, "ne_connection", "index", "yp", :yp_ne)
+    add_setpoint(sol, gm, "ne_connection", "index", "yn", :yn_ne)    
 end
 
 #compressor rations have on off for direction and expansion
-function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T}, compressor)
-    c_idx = compressor["index"]  
+function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T}, c_idx)
+    #compressor = haskey(gm.ref[:connection], c_idx) ? gm.ref[:connection][c_idx] : gm.ref[:ne_connection][c_idx]
+    compressor = gm.ref[:ne_connection][c_idx]
+      
     i_junction_idx = compressor["f_junction"]
     j_junction_idx = compressor["t_junction"]
       
-    i = gm.set.junctions[i_junction_idx]  
-    j = gm.set.junctions[j_junction_idx]  
+    i = gm.ref[:junction][i_junction_idx]  
+    j = gm.ref[:junction][j_junction_idx]  
 
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
-    yp = getvariable(gm.model, :yp_ne)[c_idx]
-    yn = getvariable(gm.model, :yn_ne)[c_idx]
-    zc = getvariable(gm.model, :zc)[c_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
+    yp = getindex(gm.model, :yp_ne)[c_idx]
+    yn = getindex(gm.model, :yn_ne)[c_idx]
+    zc = getindex(gm.model, :zc)[c_idx]
             
     max_ratio = compressor["c_ratio_max"]
     min_ratio = compressor["c_ratio_min"]

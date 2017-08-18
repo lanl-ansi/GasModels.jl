@@ -3,47 +3,47 @@
 export 
     MISOCPGasModel, StandardMISOCPForm
 
-abstract AbstractMISOCPForm <: AbstractGasFormulation
+""
+@compat abstract type AbstractMISOCPForm <: AbstractGasFormulation end
 
-type StandardMISOCPForm <: AbstractMISOCPForm end
-typealias MISOCPGasModel GenericGasModel{StandardMISOCPForm}
+""
+@compat abstract type StandardMISOCPForm <: AbstractMISOCPForm end
 
-# default MISOCP constructor
-function MISOCPGasModel(data::Dict{AbstractString,Any}; kwargs...)
-    return GenericGasModel(data, StandardMISOCPForm(); kwargs...)
-end
+const MISOCPGasModel = GenericGasModel{StandardMISOCPForm}
 
-# variables associated with the flux squared
+"default MISOCP constructor"
+MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm; kwargs...)
+
+"variables associated with the flux squared"
 function variable_flux_square{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
-    max_flow = gm.data["max_flow"] 
-    @variable(gm.model, 0 <= l[i in [gm.set.pipe_indexes; gm.set.resistor_indexes]] <= 1/gm.set.connections[i]["resistance"] * max_flow^2, start = getstart(gm.set.connections, i, "l_start", 0))  
+    max_flow = gm.ref[:max_flow] 
+    @variable(gm.model, 0 <= l[i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor])) ]] <= 1/gm.ref[:connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:connection], i, "l_start", 0))  
     return l
 end
 
 # variables associated with the flux squared
 function variable_flux_square_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
-    max_flow = gm.data["max_flow"] 
-    @variable(gm.model, 0 <= l_ne[i in gm.set.new_pipe_indexes] <= 1/gm.set.new_connections[i]["resistance"] * max_flow^2, start = getstart(gm.set.new_connections, i, "l_start", 0))  
+    max_flow = gm.ref[:max_flow] 
+    @variable(gm.model, 0 <= l_ne[i in keys(gm.ref[:ne_pipe])] <= 1/gm.ref[:ne_connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:ne_connection], i, "l_start", 0))  
     return l_ne
 end
 
 #Weymouth equation with discrete direction variables
-function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
-  
-    pipe_idx = pipe["index"]
+function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe_idx)  
+    pipe = gm.ref[:connection][pipe_idx]
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
-    yp = getvariable(gm.model, :yp)[pipe_idx]
-    yn = getvariable(gm.model, :yn)[pipe_idx]    
-    l  = getvariable(gm.model, :l)[pipe_idx]
-    f  = getvariable(gm.model, :f)[pipe_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
+    yp = getindex(gm.model, :yp)[pipe_idx]
+    yn = getindex(gm.model, :yn)[pipe_idx]    
+    l  = getindex(gm.model, :l)[pipe_idx]
+    f  = getindex(gm.model, :f)[pipe_idx]
             
     pd_max = pipe["pd_max"] #i["pmax"]^2 - j["pmin"]^2;
     pd_min = pipe["pd_min"] # i["pmin"]^2 - j["pmax"]^2;    
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
     c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
@@ -55,22 +55,21 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
 end
 
 #Weymouth equation with fixed direction
-function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe)
-  
-    pipe_idx = pipe["index"]
+function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe_idx)  
+    pipe = gm.ref[:connection][pipe_idx]
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = getvariable(gm.model, :p_gas)[i_junction_idx]
-    pj = getvariable(gm.model, :p_gas)[j_junction_idx]
+    pi = getindex(gm.model, :p_gas)[i_junction_idx]
+    pj = getindex(gm.model, :p_gas)[j_junction_idx]
     yp = pipe["yp"]
     yn = pipe["yn"]    
-    l  = getvariable(gm.model, :l)[pipe_idx]
-    f  = getvariable(gm.model, :f)[pipe_idx]
+    l  = getindex(gm.model, :l)[pipe_idx]
+    f  = getindex(gm.model, :f)[pipe_idx]
             
     pd_max = pipe["pd_max"] #i["pmax"]^2 - j["pmin"]^2;
     pd_min = pipe["pd_min"] # i["pmin"]^2 - j["pmax"]^2;    
-    max_flow = gm.data["max_flow"]
+    max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
     c2 = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
