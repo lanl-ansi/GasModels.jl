@@ -5,12 +5,12 @@
 
 export run_ls
 
-# entry point into running the gas flow feasability problem
+" entry point into running the gas flow feasability problem "
 function run_ls(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_ls; kwargs...) 
 end
 
-# construct the gas flow feasbility problem 
+" construct the gas flow feasbility problem "
 function post_ls(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
@@ -19,7 +19,6 @@ function post_ls(gm::GenericGasModel)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-
   
     objective_max_load(gm)
             

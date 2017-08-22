@@ -5,12 +5,12 @@
 
 export run_gf
 
-# entry point into running the gas flow feasability problem
+" entry point into running the gas flow feasability problem "
 function run_gf(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_gf; kwargs...) 
 end
 
-# construct the gas flow feasbility problem 
+" construct the gas flow feasbility problem "
 function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)

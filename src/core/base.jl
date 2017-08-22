@@ -5,9 +5,6 @@ export
     setdata, setsolver, solve,
     run_generic_model, build_generic_model, solve_generic_model
 
-#""    
-#@compat abstract type AbstractGasModel end
-
 ""
 @compat abstract type AbstractGasFormulation end
         
@@ -62,12 +59,12 @@ function GenericGasModel(data::Dict{String,Any}, T::DataType; setting = Dict{Str
     return gm
 end
 
-# Set the solver
+" Set the solver "
 function JuMP.setsolver(gm::GenericGasModel, solver::MathProgBase.AbstractMathProgSolver)
     setsolver(gm.model, solver)
 end
 
-# Do a solve of the problem
+" Do a solve of the problem "
 function JuMP.solve(gm::GenericGasModel)
     status, solve_time, solve_bytes_alloc, sec_in_gc = @timed solve(gm.model)
 

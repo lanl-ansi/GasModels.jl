@@ -2,12 +2,12 @@
 
 export run_nels
 
-# entry point into running the gas flow feasability problem
+" entry point into running the gas flow feasability problem "
 function run_nels(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_nels; solution_builder = get_ne_solution, kwargs...) 
 end
 
-# construct the gas flow expansion problem to maximize load
+" construct the gas flow expansion problem to maximize load "
 function post_nels(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
