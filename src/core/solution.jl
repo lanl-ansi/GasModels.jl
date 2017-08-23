@@ -45,42 +45,45 @@ end
 
 # Get the pressure squared solutions
 function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "index", "p_sqr", :p_gas)
+    add_setpoint(sol, gm, "junction", "p_sqr", :p_gas)
 end
 
 # Get the pressure squared solutions
 function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "index", "ql", :ql_gas; default_value = (item) -> 0)
+    add_setpoint(sol, gm, "junction", "ql", :ql_gas; default_value = (item) -> 0)
 end
 
 function add_production_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "index", "qg", :qg_gas; default_value = (item) -> 0)
+    add_setpoint(sol, gm, "junction", "qg", :qg_gas; default_value = (item) -> 0)
 end
 
 # Get the direction solutions
 function add_direction_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "connection", "index", "yp", :yp)
-    add_setpoint(sol, gm, "connection", "index", "yn", :yn)    
+    add_setpoint(sol, gm, "connection", "yp", :yp)
+    add_setpoint(sol, gm, "connection", "yn", :yn)    
 end
 
 # Get the valve solutions
 function add_valve_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "connection", "index", "valve", :valve)
+    add_setpoint(sol, gm, "connection", "valve", :valve)
 end
 
 # Add the flow solutions
 function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "connection", "index", "f", :f)  
+    add_setpoint(sol, gm, "connection", "f", :f)  
 end
 
 
-function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, index_name, param_name, variable_symbol; default_value = (item) -> NaN, scale = (x,item) -> x, extract_var = (var,idx,item) -> var[idx])
+function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> x, extract_var = (var,idx,item) -> var[idx])
     sol_dict = get(sol, dict_name, Dict{String,Any}())
     if length(gm.data[dict_name]) > 0
         sol[dict_name] = sol_dict
     end
     for (i,item) in gm.data[dict_name]
-        idx = i#Int(item[index_name])
+        idx = i
+        if index_name != nothing
+            idx = Int(item[index_name])
+        end
         sol_item = sol_dict[i] = get(sol_dict, i, Dict{String,Any}())
         sol_item[param_name] = default_value(item)
         try

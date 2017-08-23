@@ -270,13 +270,13 @@ end
 
 # Special function for whether or not a connection is added
 function add_connection_ne{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "ne_connection", "index", "built", :zp; default_value = (item) -> 1)
+    add_setpoint(sol, gm, "ne_connection", "built", :zp; default_value = (item) -> 1)
 end
 
 # Get the direction solutions
 function add_direction_ne_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "ne_connection", "index", "yp", :yp_ne)
-    add_setpoint(sol, gm, "ne_connection", "index", "yn", :yn_ne)    
+    add_setpoint(sol, gm, "ne_connection", "yp", :yp_ne)
+    add_setpoint(sol, gm, "ne_connection", "yn", :yn_ne)    
 end
 
 #compressor rations have on off for direction and expansion
