@@ -30,7 +30,7 @@ function post_gf(gm::GenericGasModel)
         end      
                 
         if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree"] == 2
-           constraint_conserve_flow(gm, i)
+           constraint_conserve_flow(gm, i)           
         end        
     end
     

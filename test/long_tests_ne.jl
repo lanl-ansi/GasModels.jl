@@ -56,12 +56,12 @@
         @testset "gaslib 40 125% case" begin
             println("gaslib 40 - 125%")        
             result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
         end
         @testset "gaslib 40 150% case" begin
             println("gaslib 40 - 150%")        
             result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
         end
         
         @testset "gaslib 135 5% case" begin
@@ -79,17 +79,17 @@
         @testset "gaslib 135 125% case" begin
             println("gaslib 135 - 125%")                
             result = run_ne("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
         end
         @testset "gaslib 135 150% case" begin
             println("gaslib 135 - 150%")                
             result = run_ne("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
         end
         @testset "gaslib 135 200% case" begin
             println("gaslib 135 - 200%")                
             result = run_ne("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
         end        
 end 
 

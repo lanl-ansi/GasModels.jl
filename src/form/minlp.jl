@@ -30,11 +30,11 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pip
     i = gm.ref[:junction][i_junction_idx]  
     j = gm.ref[:junction][j_junction_idx]  
         
-    pi = gm.var[:p][i_junction_idx] # getindex(gm.model, :p_gas)[i_junction_idx]
-    pj = gm.var[:p][j_junction_idx] # getindex(gm.model, :p_gas)[j_junction_idx]
-    yp = gm.var[:yp][pipe_idx] # getindex(gm.model, :yp)[pipe_idx]
-    yn = gm.var[:yn][pipe_idx] # getindex(gm.model, :yn)[pipe_idx]
-    f  = gm.var[:f][pipe_idx] # getindex(gm.model, :f)[pipe_idx]
+    pi = gm.var[:p][i_junction_idx] 
+    pj = gm.var[:p][j_junction_idx] 
+    yp = gm.var[:yp][pipe_idx] 
+    yn = gm.var[:yn][pipe_idx] 
+    f  = gm.var[:f][pipe_idx] 
         
     max_flow = gm.ref[:max_flow]
     w = pipe["resistance"]
@@ -57,11 +57,11 @@ function constraint_weymouth_fixed_direction{T <: AbstractMINLPForm}(gm::Generic
     i = gm.ref[:junction][i_junction_idx]  
     j = gm.ref[:junction][j_junction_idx]  
         
-    pi = gm.var[:p][i_junction_idx] # getindex(gm.model, :p_gas)[i_junction_idx]
-    pj = gm.var[:p][j_junction_idx] # getindex(gm.model, :p_gas)[j_junction_idx]
+    pi = gm.var[:p][i_junction_idx] 
+    pj = gm.var[:p][j_junction_idx] 
     yp = pipe["yp"]
     yn = pipe["yn"]
-    f  = gm.var[:f][pipe_idx] # getindex(gm.model, :f)[pipe_idx]
+    f  = gm.var[:f][pipe_idx] 
         
     max_flow = gm.ref[:max_flow]
     w = pipe["resistance"]

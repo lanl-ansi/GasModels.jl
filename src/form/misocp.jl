@@ -34,15 +34,15 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = gm.var[:p][i_junction_idx] # getindex(gm.model, :p_gas)[i_junction_idx]
-    pj = gm.var[:p][j_junction_idx] # getindex(gm.model, :p_gas)[j_junction_idx]
-    yp = gm.var[:yp][pipe_idx] # getindex(gm.model, :yp)[pipe_idx]
-    yn = gm.var[:yn][pipe_idx] # getindex(gm.model, :yn)[pipe_idx]    
-    l  = gm.var[:l][pipe_idx] # getindex(gm.model, :l)[pipe_idx]
-    f  = gm.var[:f][pipe_idx] # getindex(gm.model, :f)[pipe_idx]
+    pi = gm.var[:p][i_junction_idx] 
+    pj = gm.var[:p][j_junction_idx] 
+    yp = gm.var[:yp][pipe_idx] 
+    yn = gm.var[:yn][pipe_idx]     
+    l  = gm.var[:l][pipe_idx] 
+    f  = gm.var[:f][pipe_idx]
             
-    pd_max = pipe["pd_max"] #i["pmax"]^2 - j["pmin"]^2;
-    pd_min = pipe["pd_min"] # i["pmin"]^2 - j["pmax"]^2;    
+    pd_max = pipe["pd_max"] 
+    pd_min = pipe["pd_min"]     
     max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
@@ -60,15 +60,15 @@ function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::Generi
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
-    pi = gm.var[:p][i_junction_idx] # getindex(gm.model, :p_gas)[i_junction_idx]
-    pj = gm.var[:p][j_junction_idx] # getindex(gm.model, :p_gas)[j_junction_idx]
+    pi = gm.var[:p][i_junction_idx] 
+    pj = gm.var[:p][j_junction_idx] 
     yp = pipe["yp"]
     yn = pipe["yn"]    
-    l  = gm.var[:l][pipe_idx] # getindex(gm.model, :l)[pipe_idx]
-    f  = gm.var[:f][pipe_idx] # getindex(gm.model, :f)[pipe_idx]
+    l  = gm.var[:l][pipe_idx] 
+    f  = gm.var[:f][pipe_idx] 
             
-    pd_max = pipe["pd_max"] #i["pmax"]^2 - j["pmin"]^2;
-    pd_min = pipe["pd_min"] # i["pmin"]^2 - j["pmax"]^2;    
+    pd_max = pipe["pd_max"] 
+    pd_min = pipe["pd_min"]     
     max_flow = gm.ref[:max_flow]
 
     c1 = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))

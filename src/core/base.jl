@@ -192,7 +192,7 @@ function build_ref(data::Dict{String,Any})
       
     for (idx, connection) in ref[:connection]
         i = connection["f_junction"]
-        j = connection["t_junction"]          
+        j = connection["t_junction"]   
         push!(ref[:junction_connections][i], idx)
         push!(ref[:junction_connections][j], idx)        
         push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
