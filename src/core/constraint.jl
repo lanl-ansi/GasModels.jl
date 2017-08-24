@@ -704,6 +704,9 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx)
         if first == nothing
             first = other
         elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end
             last = other    
         end      
     end
@@ -715,13 +718,20 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx)
           
     yp = gm.var[:yp] 
     yn = gm.var[:yn] 
-                
+    
     c =  Set([])           
     if length(yn_first) > 0 && length(yp_last) > 0
         for i1 in yn_first
             for i2 in yp_last
-              c1 = @constraint(gm.model, yn[i1]  == yp[i2])
-              c = Set([c;c1])
+                c1 = @constraint(gm.model, yn[i1]  == yp[i2])
+                c2 = @constraint(gm.model, yp[i1]  == yn[i2])              
+                c3 = @constraint(gm.model, yn[i1] + yn[i2] == 1)
+                c4 = @constraint(gm.model, yp[i1] + yp[i2] == 1)
+              
+                union!(c, [c1])
+                union!(c, [c2])                                          
+                union!(c, [c3])
+                union!(c, [c4])                                                        
             end 
         end      
     end  
@@ -730,8 +740,15 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx)
    if length(yn_first) > 0 && length(yn_last) > 0
         for i1 in yn_first
             for i2 in yn_last
-              c1 = @constraint(gm.model, yn[i1] == yn[i2])
-              c = Set([c;c1])              
+                c1 = @constraint(gm.model, yn[i1] == yn[i2])
+                c2 = @constraint(gm.model, yp[i1] == yp[i2])
+                c3 = @constraint(gm.model, yn[i1] + yp[i2] == 1)
+                c4 = @constraint(gm.model, yp[i1] + yn[i2] == 1)
+              
+                union!(c, [c1])                                         
+                union!(c, [c2])                                          
+                union!(c, [c3])                                         
+                union!(c, [c4])                                          
             end 
         end      
     end  
@@ -739,8 +756,15 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx)
     if length(yp_first) > 0 && length(yp_last) > 0
         for i1 in yp_first
             for i2 in yp_last
-              c1 = @constraint(gm.model, yp[i1]  == yp[i2])
-              c = Set([c;c1])              
+                c1 = @constraint(gm.model, yp[i1]  == yp[i2])
+                c2 = @constraint(gm.model, yn[i1]  == yn[i2]) 
+                c3 = @constraint(gm.model, yp[i1] + yn[i2] == 1)
+                c4 = @constraint(gm.model, yn[i1] + yp[i2] == 1)
+                
+                union!(c, [c1])                                         
+                union!(c, [c2])                                          
+                union!(c, [c3])                                         
+                union!(c, [c4])                                          
             end 
         end      
     end  
@@ -748,14 +772,25 @@ function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx)
     if length(yp_first) > 0 && length(yn_last) > 0
         for i1 in yp_first
             for i2 in yn_last
-              c1 = @constraint(gm.model, yp[i1] == yn[i2])
-              c = Set([c;c1])              
+                c1 = @constraint(gm.model, yp[i1] == yn[i2])
+                c2 = @constraint(gm.model, yn[i1] == yp[i2])      
+                c3 = @constraint(gm.model, yp[i1] + yp[i2] == 1)
+                c4 = @constraint(gm.model, yn[i1] + yn[i2] == 1)
+                
+                union!(c, [c1])                                         
+                union!(c, [c2])                                          
+                union!(c, [c3])                                         
+                union!(c, [c4])                                          
             end 
         end      
     end  
 
     return c      
 end
+
+function constraint_conserve_flow{T}(gm::GenericGasModel{T}, idx, first, last)
+end
+
 
 " This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
@@ -773,6 +808,9 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
         if first == nothing
             first = other
         elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end          
             last = other    
         end      
     end
@@ -788,6 +826,9 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
         if first == nothing
             first = other
         elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end          
             last = other    
         end      
     end
@@ -808,9 +849,19 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
         for i1 in yn_first
             for i2 in yp_last
                 yn1 = haskey(gm.ref[:connection],i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]  
                 yp2 = haskey(gm.ref[:connection],i2) ? yp[i2] : yp_ne[i2]    
+
                 c1 = @constraint(gm.model, yn1  == yp2)
-                c = Set([c;c1])
+                c2 = @constraint(gm.model, yp1  == yn2)
+                c3 = @constraint(gm.model, yn1 + yn2 == 1)
+                c4 = @constraint(gm.model, yp1 + yp2 == 1)
+               
+                union!(c, [c1])               
+                union!(c, [c2])               
+                union!(c, [c3])               
+                union!(c, [c4])                               
             end 
         end      
     end  
@@ -819,9 +870,19 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
         for i1 in yn_first
             for i2 in yn_last
                 yn1 = haskey(gm.ref[:connection],i1) ? yn[i1] : yn_ne[i1]
-                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]               
+                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]  
+                yp2 = haskey(gm.ref[:connection],i2) ? yp[i2] : yp_ne[i2]    
+               
                 c1 = @constraint(gm.model, yn1 == yn2)
-                c = Set([c;c1])              
+                c2 = @constraint(gm.model, yp1 == yp2)
+                c3 = @constraint(gm.model, yn1 + yp2 == 1)
+                c4 = @constraint(gm.model, yp1 + yn2 == 1)
+
+                union!(c, [c1])               
+                union!(c, [c2])               
+                union!(c, [c3])               
+                union!(c, [c4])                               
             end 
         end      
     end  
@@ -829,10 +890,20 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
     if length(yp_first) > 0 && length(yp_last) > 0
         for i1 in yp_first
             for i2 in yp_last
-                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]
-                yp2 = haskey(gm.ref[:connection],i2) ? yp[i2] : yp_ne[i2]                             
-                c1 = @constraint(gm.model, yp1  == yp2)
-                c = Set([c;c1])              
+                yn1 = haskey(gm.ref[:connection],i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]  
+                yp2 = haskey(gm.ref[:connection],i2) ? yp[i2] : yp_ne[i2]    
+                
+                c1 = @constraint(gm.model, yp1 == yp2)
+                c2 = @constraint(gm.model, yn1 == yn2)
+                c3 = @constraint(gm.model, yp1 + yn2 == 1)
+                c4 = @constraint(gm.model, yn1 + yp2 == 1)
+                
+                union!(c, [c1])               
+                union!(c, [c2])               
+                union!(c, [c3])               
+                union!(c, [c4])                               
             end 
         end      
     end  
@@ -840,10 +911,20 @@ function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, idx)
     if length(yp_first) > 0 && length(yn_last) > 0
         for i1 in yp_first
             for i2 in yn_last
-                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]
-                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]                  
+                yn1 = haskey(gm.ref[:connection],i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(gm.ref[:connection],i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(gm.ref[:connection],i1) ? yp[i1] : yp_ne[i1]  
+                yp2 = haskey(gm.ref[:connection],i2) ? yp[i2] : yp_ne[i2]    
+                
                 c1 = @constraint(gm.model, yp1 == yn2)
-                c = Set([c;c1])              
+                c2 = @constraint(gm.model, yn1 == yp2)
+                c3 = @constraint(gm.model, yp1 + yp2 == 1)
+                c4 = @constraint(gm.model, yn1 + yn2 == 1)
+
+                union!(c, [c1])               
+                union!(c, [c2])               
+                union!(c, [c3])               
+                union!(c, [c4])                               
             end 
         end      
     end  

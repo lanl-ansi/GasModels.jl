@@ -66,10 +66,10 @@ pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_s
 #pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
 
 # The paper used cplex 12.6.0
-if Pkg.installed("Gurobi") != nothing
-   misocp_solver = gurobi_solver
-elseif Pkg.installed("CPLEX") != nothing
+if Pkg.installed("CPLEX") != nothing
    misocp_solver = cplex_solver
+elseif Pkg.installed("Gurobi") != nothing
+   misocp_solver = gurobi_solver
 else
    misocp_solver = pajarito_solver
 end   
