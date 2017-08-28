@@ -1,3 +1,106 @@
+
+
+
+
+@testset "test minlp ne" begin
+    @testset "A1 MINLP case" begin
+        println("A1 MINLP")
+        result = run_ne("../test/data/A1.json", MINLPGasModel, couenne_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.444e-4; atol = 1e-2)
+    end
+
+    @testset "A2 MINLP case" begin
+        println("A2 MINLP")  
+        result = run_ne("../test/data/A2.json", MINLPGasModel, couenne_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.687e-3; atol = 1e-2)
+    end
+
+    @testset "A3 MINLP case" begin
+        println("A3 MINLP")  
+        result = run_ne("../test/data/A3.json", MINLPGasModel, couenne_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 1.781e-3; atol = 1e-2)
+    end
+    
+    @testset "gaslib 40 5% case" begin
+        println("gaslib 40 - MINLP 5%")
+        result = run_ne("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 11.92; atol = 1e-2)
+    end  
+        @testset "gaslib 40 10% case" begin
+            println("gaslib 40 - MINLP 10%")        
+            result = run_ne("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 32.83; atol = 1e-2)
+        end
+        @testset "gaslib 40 25% case" begin
+            println("gaslib 40 - MINLP 25%")        
+            result = run_ne("../test/data/gaslib-40-25.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 41.08; atol = 1e-2)
+        end
+        @testset "gaslib 40 50% case" begin
+            println("gaslib 40 - MINLP 50%")        
+            result = run_ne("../test/data/gaslib-40-50.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 156.06; atol = 1e-2)
+        end
+        @testset "gaslib 40 75% case" begin
+            println("gaslib 40 - MINLP 75%")        
+            result = run_ne("../test/data/gaslib-40-75.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 333.01; atol = 1e-2)
+        end
+        @testset "gaslib 40 100% case" begin
+            println("gaslib 40 - MINLP 100%")        
+            result = run_ne("../test/data/gaslib-40-100.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 551.64; atol = 1e-2)
+        end
+        @testset "gaslib 40 125% case" begin
+            println("gaslib 40 - MINLP 125%")        
+            result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
+        end
+        @testset "gaslib 40 150% case" begin
+            println("gaslib 40 - MINLP 150%")        
+            result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
+        end
+        
+        @testset "gaslib 135 5% case" begin
+            println("gaslib 135 - MINLP 5%")        
+            result = run_ne("../test/data/gaslib-135-5.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 0.0; atol = 1e-2)
+        end
+        @testset "gaslib 135 25% case" begin
+            println("gaslib 135 - MINLP 25%")                
+            result = run_ne("../test/data/gaslib-135-25.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+            @test isapprox(result["objective"], 60.4; atol = 1e-1)
+        end
+        @testset "gaslib 135 125% case" begin
+            println("gaslib 135 - MINLP 125%")                
+            result = run_ne("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
+        end
+        @testset "gaslib 135 150% case" begin
+            println("gaslib 135 - MINLP 150%")                
+            result = run_ne("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
+        end
+        @testset "gaslib 135 200% case" begin
+            println("gaslib 135 - MINLP 200%")                
+            result = run_ne("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
+            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
+        end        
+end 
+
+
 @testset "test misocp ne" begin
     @testset "A1 MISCOP case" begin
         result = run_ne("../test/data/A1.json", MISOCPGasModel, misocp_solver)
@@ -162,103 +265,3 @@
             @test result["status"] == :Infeasible
         end
 end
-
-
-
-
-@testset "test minlp ne" begin
-    @testset "A1 MINLP case" begin
-        result = run_ne("../test/data/A1.json", MINLPGasModel, couenne_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 1.444e-4; atol = 1e-2)
-    end
-
-    @testset "A2 MINLP case" begin
-        result = run_ne("../test/data/A2.json", MINLPGasModel, couenne_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 1.687e-3; atol = 1e-2)
-    end
-
-    @testset "A3 MINLP case" begin
-        result = run_ne("../test/data/A3.json", MINLPGasModel, couenne_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 1.781e-3; atol = 1e-2)
-    end
-    
-    @testset "gaslib 40 5% case" begin
-        println("gaslib 40 - MINLP 5%")
-        result = run_ne("../test/data/gaslib-40-5.json", MINLPGasModel, minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 11.92; atol = 1e-2)
-    end  
-        @testset "gaslib 40 10% case" begin
-            println("gaslib 40 - MINLP 10%")        
-            result = run_ne("../test/data/gaslib-40-10.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 32.83; atol = 1e-2)
-        end
-        @testset "gaslib 40 25% case" begin
-            println("gaslib 40 - MINLP 25%")        
-            result = run_ne("../test/data/gaslib-40-25.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 41.08; atol = 1e-2)
-        end
-        @testset "gaslib 40 50% case" begin
-            println("gaslib 40 - MINLP 50%")        
-            result = run_ne("../test/data/gaslib-40-50.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 156.06; atol = 1e-2)
-        end
-        @testset "gaslib 40 75% case" begin
-            println("gaslib 40 - MINLP 75%")        
-            result = run_ne("../test/data/gaslib-40-75.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 333.01; atol = 1e-2)
-        end
-        @testset "gaslib 40 100% case" begin
-            println("gaslib 40 - MINLP 100%")        
-            result = run_ne("../test/data/gaslib-40-100.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 551.64; atol = 1e-2)
-        end
-        @testset "gaslib 40 125% case" begin
-            println("gaslib 40 - MINLP 125%")        
-            result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
-        end
-        @testset "gaslib 40 150% case" begin
-            println("gaslib 40 - MINLP 150%")        
-            result = run_ne("../test/data/gaslib-40-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
-        end
-        
-        @testset "gaslib 135 5% case" begin
-            println("gaslib 135 - MINLP 5%")        
-            result = run_ne("../test/data/gaslib-135-5.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 0.0; atol = 1e-2)
-        end
-        @testset "gaslib 135 25% case" begin
-            println("gaslib 135 - MINLP 25%")                
-            result = run_ne("../test/data/gaslib-135-25.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 60.4; atol = 1e-1)
-        end
-        @testset "gaslib 135 125% case" begin
-            println("gaslib 135 - MINLP 125%")                
-            result = run_ne("../test/data/gaslib-135-125.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
-        end
-        @testset "gaslib 135 150% case" begin
-            println("gaslib 135 - MINLP 150%")                
-            result = run_ne("../test/data/gaslib-135-150.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
-        end
-        @testset "gaslib 135 200% case" begin
-            println("gaslib 135 - MINLP 200%")                
-            result = run_ne("../test/data/gaslib-135-200.json", MINLPGasModel, minlp_solver)
-            @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
-        end        
-end 
-
-

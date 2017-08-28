@@ -20,8 +20,8 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
             "memory" => string(Sys.total_memory()/2^30, " Gb")
             ),
         "data" => Dict(
-            "junction_count" => length(gm.data["junction"]),
-            "connection_count" => length(gm.data["connection"])
+            "junction_count" => length(gm.ref[:junction]),
+            "connection_count" => length(gm.ref[:connection])
             )
         )
 
@@ -43,32 +43,33 @@ function get_solution{T}(gm::GenericGasModel{T})
     return sol
 end
 
-# Get the pressure squared solutions
+" Get the pressure squared solutions "
 function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "p_sqr", :p_gas)
+    add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(x))
 end
 
-# Get the pressure squared solutions
+" Get the pressure squared solutions "
 function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "ql", :ql_gas; default_value = (item) -> 0)
+    add_setpoint(sol, gm, "junction", "ql", :ql; default_value = (item) -> 0)
 end
 
+" Get the production set point " 
 function add_production_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "qg", :qg_gas; default_value = (item) -> 0)
+    add_setpoint(sol, gm, "junction", "qg", :qg; default_value = (item) -> 0)
 end
 
-# Get the direction solutions
+" Get the direction set points"
 function add_direction_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "yp", :yp)
     add_setpoint(sol, gm, "connection", "yn", :yn)    
 end
 
-# Get the valve solutions
+" Get the valve solutions "
 function add_valve_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "connection", "valve", :valve)
+    add_setpoint(sol, gm, "connection", "valve", :v)
 end
 
-# Add the flow solutions
+" Add the flow solutions "
 function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "f", :f)  
 end
@@ -79,8 +80,9 @@ function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, var
     if length(gm.data[dict_name]) > 0
         sol[dict_name] = sol_dict
     end
+    
     for (i,item) in gm.data[dict_name]
-        idx = i
+        idx = parse(Int64,i)        
         if index_name != nothing
             idx = Int(item[index_name])
         end
