@@ -38,13 +38,16 @@ Once GasModels is installed, a solver is installed, and a network data file  has
 using GasModels
 using <solver_package>
 
-run_gf("foo.json", <>Solver())
+run_gf("foo.json", FooGasModel, FooSolver())
 ```
 
 Similarly, an expansion solver can be executed with,
 ```
-run_expansion("foo,.son", <>Solver())
+run_ne("foo.json", FooGasModel, FooSolver())
 ```
+
+where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. MINLPGasModel) and FooSolver is the JuMP solver you want to use to solve the optimization problem (i.e. IpoptSolver).
+
 
 ## Acknowledgments
 
