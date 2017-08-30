@@ -213,239 +213,622 @@ end
         end
     end
     @test is_ok == true
-   
-    
-    
-    
-    
-    
-    
-                      
-   for (i,connection) in gm.ref[:connection]
-       set = GasModels.constraint_flow_direction_choice(gm, i)
-       for constraint in set
-           if i == 178
-   #            @test string(constraint) == "yp[178] + yn[178] == 1"       
-           end
-       end
-       set = GasModels.constraint_parallel_flow(gm, i)
-    #   @test set == nothing       
-   end
-
-    performed_test1 = false       
-    performed_test2 = false        
-    performed_test3 = false   
-    for i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
-        set = GasModels.constraint_on_off_pressure_drop(gm, i)
-        if i == 161
-            is_ok1 = false
-            is_ok2 = false
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "5038.8285000000005 yp[161] - p[503] + p[415] <= 5038.8285000000005"
-                is_ok2 = is_ok2 || string(constraint) == "p[503] - p[415] + 5038.8285000000005 yn[161] <= 5038.8285000000005"                
-            end
-     #       @test is_ok1 && is_ok2 == true
-            performed_test1 = true
-        end                          
-        
-        set = GasModels.constraint_on_off_pipe_flow_direction(gm, i)
-        if i == 186
-            is_ok1 = false
-            is_ok2 = false
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "19.877719475620037 yp[186] - f[186] <= 19.877719475620037"
-                is_ok2 = is_ok2 || string(constraint) == "f[186] + 19.877719475620037 yn[186] <= 19.877719475620037"                
-            end
-      #      @test is_ok1 && is_ok2 == true
-            performed_test2 = true
-        end 
-           
-        set = GasModels.constraint_weymouth(gm, i)
-        if i == 222
-            is_ok1 = false
-            is_ok2 = false
-            is_ok3 = false
-            is_ok4 = false            
-
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) >= 0"
-                is_ok2 = is_ok2 || string(constraint) == "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 + (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) <= 0"                
-                is_ok3 = is_ok3 || string(constraint) == "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 + (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) <= 0"                
-                is_ok4 = is_ok4 || string(constraint) == "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) >= 0"                                
-            end
-       #     @test is_ok1 == true
-        #    @test is_ok2 == true
-         #   @test is_ok3 == true
-          #  @test is_ok4 == true
-            performed_test3 = true
-        end 
-    end
-#    @test performed_test1 == true
- #   @test performed_test2 == true
-  #  @test performed_test3 == true
-    
-    count = 0
-    performed_test1 = false      
-    performed_test2 = false      
-    
-    for (i,pipe) in gm.ref[:short_pipe]
-        count = count + 1
-        set = GasModels.constraint_short_pipe_pressure_drop(gm, i)
-        for constraint in set
-            if i == 423
-   #             @test string(constraint) == "p[302] - p[83] == 0"                     
-                performed_test1 = true
+      
+    # yp[178] + yn[178] == 1
+    set = GasModels.constraint_flow_direction_choice(gm, 178)
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.lb, 1.0; atol = 1e-4)
+        @test JuMP.sense(c) == :(==)
+        @test length(c.terms.coeffs) == 2                
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][178]
+                @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:yn][178]
+                @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                @test true == false
             end
         end
-
-        set = GasModels.constraint_on_off_short_pipe_flow_direction(gm, i)      
-        if i == 321
-            is_ok1 = false
-            is_ok2 = false
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "325.31057760000004 yp[321] - f[321] <= 325.31057760000004"  
-                is_ok2 = is_ok2 || string(constraint) == "f[321] + 325.31057760000004 yn[321] <= 325.31057760000004"           
-            end
-#            @test is_ok1 && isok_2 == true
-            performed_test2 = true
-        end
     end
-    #@test count == 269
-    #@test performed_test1 == true
-    #@test performed_test2 == true
+    
+    # 5038.8285000000005 yp[161] - p[503] + p[415] <= 5038.8285000000005
+    # p[503] - p[415] + 5038.8285000000005 yn[161] <= 5038.8285000000005
+    set = GasModels.constraint_on_off_pressure_drop(gm, 161)
+    constraint1 = false
+    constraint2 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 5038.8285000000005; atol = 1e-4)
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 3                
 
-    performed_test1 = false            
-    performed_test2 = false                
-    for (i, compressor) in gm.ref[:compressor]
-        set = GasModels.constraint_on_off_compressor_flow_direction(gm, i)
-        
-        if i == 549
-            is_ok1 = false
-            is_ok2 = false
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "325.31057760000004 yp[549] - f[549] <= 325.31057760000004"  
-                is_ok2 = is_ok2 || string(constraint) == "f[549] + 325.31057760000004 yn[549] <= 325.31057760000004"            
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yn][161]
+                ok = ok && isapprox(c.terms.coeffs[i], 5038.8285000000005; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][503]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:p][415]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)          
+            else
+                ok == false
             end
- #           @test is_ok1 == true
-  #          @test is_ok2 == true
-            performed_test1 = true                        
+        end
+        if ok
+            constraint2 = true
         end
                 
-        set = GasModels.constraint_on_off_compressor_ratios(gm, i)  
-        if i == 551
-            is_ok1 = false
-            is_ok2 = false
-            is_ok3 = false
-            is_ok4 = false
-
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "p[560] - p[561] + 5038.8285000000005 yp[551] <= 5038.8285000000005"  
-                is_ok2 = is_ok2 || string(constraint) == "p[560] - 25 p[561] + 4941.5522865 yn[551] <= 4941.5522865"            
-                is_ok3 = is_ok3 || string(constraint) == "p[561] - 25 p[560] - 32931.465056159606 yp[551] <= -32931.465056159606"  
-                is_ok4 = is_ok4 || string(constraint) == "p[561] - p[560] + 5474.778423202535 yn[551] <= 5474.778423202535"             
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][161]
+                ok = ok && isapprox(c.terms.coeffs[i], 5038.8285000000005; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][503]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:p][415]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)          
+            else
+                ok == false
             end
-                        
-   #         @test is_ok1 == true
-    #        @test is_ok2 == true
-     #       @test is_ok3 == true
-      #      @test is_ok4 == true       
-            performed_test2 = true                                       
-        end        
-    end
-    #@test performed_test1 == true
-    #@test performed_test2 == true
-
-    performed_test1 = false                  
-    performed_test2 = false                      
-    for (i,valve) in gm.ref[:valve]    
-        set = GasModels.constraint_on_off_valve_flow_direction(gm, i)
-        if i == 558
-            is_ok1 = false
-            is_ok2 = false
-            is_ok3 = false
-            is_ok4 = false
-
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "f[558] - 325.31057760000004 v[558] <= 0"  
-                is_ok2 = is_ok2 || string(constraint) == "-325.31057760000004 v[558] - f[558] <= 0"            
-                is_ok3 = is_ok3 || string(constraint) == "325.31057760000004 yp[558] - f[558] <= 325.31057760000004"  
-                is_ok4 = is_ok4 || string(constraint) == "f[558] + 325.31057760000004 yn[558] <= 325.31057760000004"             
-            end
-                        
-     #       @test is_ok1 == true
-      #      @test is_ok2 == true
-       #     @test is_ok3 == true
-        #    @test is_ok4 == true       
-            performed_test1 = true                                       
-        end        
-        
-        set = GasModels.constraint_on_off_valve_pressure_drop(gm, i)  
-        if i == 571
-            is_ok1 = false
-            is_ok2 = false
-
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "p[164] + 7398.2791755625 v[571] - p[170] <= 7398.2791755625"  
-                is_ok2 = is_ok2 || string(constraint) == "p[170] - p[164] + 7398.2791755625 v[571] <= 7398.2791755625"            
-            end
-                        
-         #   @test is_ok1 == true
-          #  @test is_ok2 == true
-            performed_test2 = true                                       
-        end        
-    end
-#    @test performed_test1 == true
- #   @test performed_test2 == true
+        end
+        if ok
+            constraint1 = true
+        end                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+   
     
-    performed_test1 == false    
-    performed_test2 == false    
-    for (i, valve) in gm.ref[:control_valve]    
-        set = GasModels.constraint_on_off_control_valve_flow_direction(gm, i)
 
-        if i == 591
-            is_ok1 = false
-            is_ok2 = false
-            is_ok3 = false
-            is_ok4 = false
+    # 19.877719475620037 yp[186] - f[186] <= 19.877719475620037
+    # f[186] + 19.877719475620037 yn[186] <= 19.877719475620037
+    set = GasModels.constraint_on_off_pipe_flow_direction(gm, 186)
+    constraint1 = false
+    constraint2 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 19.877719475620037; atol = 1e-4)
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 2                
 
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "-325.31057760000004 v[591] - f[591] <= 0"  
-                is_ok2 = is_ok2 || string(constraint) == "f[591] + 325.31057760000004 yn[591] <= 325.31057760000004"            
-                is_ok3 = is_ok3 || string(constraint) == "325.31057760000004 yp[591] - f[591] <= 325.31057760000004"  
-                is_ok4 = is_ok4 || string(constraint) == "f[591] - 325.31057760000004 v[591] <= 0"             
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][186]
+                ok = ok && isapprox(c.terms.coeffs[i], 19.877719475620037; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][186]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            else
+                ok == false
             end
-                        
-  #          @test is_ok1 == true
-   #         @test is_ok2 == true
-    #        @test is_ok3 == true
-     #       @test is_ok4 == true       
-            performed_test1 = true                                       
-        end        
+        end
+        if ok
+            constraint1 = true
+        end
+                
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yn][186]
+                ok = ok && isapprox(c.terms.coeffs[i], 19.877719475620037; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][186]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = true
+        end                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    
+ 
+    # "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) >= 0"
+    # "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 + (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) <= 0"                
+    # "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 + (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) <= 0"                
+    # "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) >= 0"                                
+    set = GasModels.constraint_weymouth(gm, 222)
+    ok1 = false
+    ok2 = false
+    ok3 = false
+    ok4 = false           
+    for ref in set
+        c = gm.model.nlpdata.nlconstr[ref.idx]
+        if JuMP.sense(c) == :<=
+             @test isapprox(c.ub, 0.0; atol = 1e-4)
+        elseif JuMP.sense(c) == :>=
+             @test isapprox(c.lb, 0.0; atol = 1e-4)
+        else
+             @test true == false
+        end
+        @test length(c.terms.nd) == 17 
         
-        set = GasModels.constraint_on_off_control_valve_pressure_drop(gm, i)  
-        if i == 585
-            is_ok1 = false
-            is_ok2 = false
-            is_ok3 = false
-            is_ok4 = false
+        ok1 = ok1 || string(ref) == "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) >= 0"
+        ok2 = ok2 || string(ref) == "6.124894594 * (p[498] - p[129]) - (f[222] ^ 2.0 + (1.0 - yp[222]) * 325.31057760000004 ^ 2.0) <= 0"
+        ok3 = ok3 || string(ref) == "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 + (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) <= 0"
+        ok4 = ok4 || string(ref) == "6.124894594 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 325.31057760000004 ^ 2.0) >= 0"
+    end                  
+    @test ok1 = true
+    @test ok2 = true
+    @test ok3 = true
+    @test ok4 = true
+        
+    
+    # p[302] - p[83] == 0
+    set = GasModels.constraint_short_pipe_pressure_drop(gm, 423) 
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 0.0; atol = 1e-4)
+        @test JuMP.sense(c) == :(==)
+        @test length(c.terms.coeffs) == 2                
 
-            for constraint in set
-                is_ok1 = is_ok1 || string(constraint) == "p[217] - p[524] + 7398.2791755625 yn[585] + 7398.2791755625 v[585] <= 14796.558351125"  
-                is_ok2 = is_ok2 || string(constraint) == "p[524] - p[217] + 72.47543368414073 yp[585] + 72.47543368414073 v[585] <= 144.95086736828145"            
-                is_ok3 = is_ok3 || string(constraint) == "-p[217] <= 0"  
-                is_ok4 = is_ok4 || string(constraint) == "-p[524] <= 0"             
+         for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][302]
+                @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][83]
+                @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)                            
+            else
+                ok == false
             end
-                        
-      #      @test is_ok1 == true
-       #     @test is_ok2 == true
-        #    @test is_ok3 == true
-         #   @test is_ok4 == true       
-            performed_test2 = true                                       
-        end        
-    end
-#    @test performed_test1 == true
- #   @test performed_test2 == true
-              
+        end
+   end                  
+    
+    # 325.31057760000004 yp[321] - f[321] <= 325.31057760000004
+    # f[321] + 325.31057760000004 yn[321] <= 325.31057760000004
+    set = GasModels.constraint_on_off_short_pipe_flow_direction(gm, 321)
+    constraint1 = false
+    constraint2 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 2                
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][321]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][186]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = true
+        end
+                
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yn][321]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][321]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = true
+        end                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+   
+    # 325.31057760000004 yp[549] - f[549] <= 325.31057760000004
+    # f[549] + 325.31057760000004 yn[549] <= 325.31057760000004
+    set = GasModels.constraint_on_off_compressor_flow_direction(gm, 549)
+    constraint1 = false
+    constraint2 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 2                
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][549]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][549]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = true
+        end
+                
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yn][549]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][549]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = true
+        end                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+       
+    # p[560] - p[561] + 5038.8285000000005 yp[551] <= 5038.8285000000005
+    # p[560] - 25 p[561] + 4941.5522865 yn[551] <= 4941.5522865
+    # p[561] - 25 p[560] - 32931.465056159606 yp[551] <= -32931.465056159606
+    # p[561] - p[560] + 5474.778423202535 yn[551] <= 5474.778423202535
+    set = GasModels.constraint_on_off_compressor_ratios(gm, 551)
+    constraint1 = false
+    constraint2 = false
+    constraint3 = false
+    constraint4 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 3                
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][561]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][560]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yn][551]
+                ok = ok && isapprox(c.terms.coeffs[i], 5474.778423202535; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint4 = isapprox(c.ub, 5474.778423202535; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][561]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][560]
+                ok = ok && isapprox(c.terms.coeffs[i], -25.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yp][551]
+                ok = ok && isapprox(c.terms.coeffs[i], -32931.465056159606; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint3 = isapprox(c.ub, -32931.465056159606; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][560]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][561]
+                ok = ok && isapprox(c.terms.coeffs[i], -25.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yn][551]
+                ok = ok && isapprox(c.terms.coeffs[i], 4941.5522865; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = isapprox(c.ub, 4941.5522865; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][560]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][561]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yp][551]
+                ok = ok && isapprox(c.terms.coeffs[i], 5038.8285000000005; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = isapprox(c.ub, 5038.8285000000005; atol = 1e-4)
+        end
+                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    @test constraint3 = true
+    @test constraint4 = true
+    
+    # f[558] - 325.31057760000004 v[558] <= 0
+    # -325.31057760000004 v[558] - f[558] <= 0
+    # 325.31057760000004 yp[558] - f[558] <= 325.31057760000004
+    # f[558] + 325.31057760000004 yn[558] <= 325.31057760000004
+    set = GasModels.constraint_on_off_valve_flow_direction(gm, 558)
+    constraint1 = false
+    constraint2 = false
+    constraint3 = false
+    constraint4 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 2                
+
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:f][558]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:yn][558]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint4 = isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        end
+        
+        
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:f][558]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:yp][558]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint3 = isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        end
+        
+        
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:f][558]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:v][558]
+                ok = ok && isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = isapprox(c.ub, 0.0; atol = 1e-4)
+        end
+                
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:f][558]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:v][558]
+                ok = ok && isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = isapprox(c.ub, 0.0; atol = 1e-4)
+        end
+        
+                  
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    @test constraint3 = true
+    @test constraint4 = true
+    
+    
+    
+    # p[164] + 7398.2791755625 v[571] - p[170] <= 7398.2791755625
+    # p[170] - p[164] + 7398.2791755625 v[571] <= 7398.2791755625
+    set = GasModels.constraint_on_off_valve_pressure_drop(gm, 571)
+    constraint1 = false
+    constraint2 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test isapprox(c.ub, 7398.2791755625; atol = 1e-4)
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 3                
+
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][164]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:v][571]
+                ok = ok && isapprox(c.terms.coeffs[i], 7398.2791755625; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:p][170]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)          
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = true
+        end
+        
+        
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][164]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:v][571]
+                ok = ok && isapprox(c.terms.coeffs[i], 7398.2791755625; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:p][170]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)          
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = true
+        end
+                
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    
+    # -325.31057760000004 v[591] - f[591] <= 0
+    # f[591] + 325.31057760000004 yn[591] <= 325.31057760000004
+    # 325.31057760000004 yp[591] - f[591] <= 325.31057760000004
+    # f[591] - 325.31057760000004 v[591] <= 0
+    set = GasModels.constraint_on_off_control_valve_flow_direction(gm, 591)
+    constraint1 = false
+    constraint2 = false
+    constraint3 = false
+    constraint4 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test JuMP.sense(c) == :<=
+        @test length(c.terms.coeffs) == 2                
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:v][591]
+                ok = ok && isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][591]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint4 = isapprox(c.ub, 0.0; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yp][591]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][591]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint3 = isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:yn][591]
+                ok = ok && isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][591]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:v][591]
+                ok = ok && isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:f][591]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = isapprox(c.ub, 0.0; atol = 1e-4)
+        end                  
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    @test constraint3 = true
+    @test constraint4 = true
+    
+    # p[217] - p[524] + 7398.2791755625 yn[585] + 7398.2791755625 v[585] <= 14796.558351125
+    # p[524] - p[217] + 72.47543368414073 yp[585] + 72.47543368414073 v[585] <= 144.95086736828145 
+    # -p[217] <= 0
+    # -p[524] <= 0
+    set = GasModels.constraint_on_off_control_valve_pressure_drop(gm, 585)
+    constraint1 = false
+    constraint2 = false
+    constraint3 = false
+    constraint4 = false
+    for ref in set
+        c = gm.model.linconstr[ref.idx]      
+        @test JuMP.sense(c) == :<=
+
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][524]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint4 = isapprox(c.ub, 0.0; atol = 1e-4) && length(c.terms.coeffs) == 1
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][217]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint3 = isapprox(c.ub, 0.0; atol = 1e-4) && length(c.terms.coeffs) == 1
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][217]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][524]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yp][585]
+                ok = ok && isapprox(c.terms.coeffs[i], 72.47543368414073; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:v][585]
+                ok = ok && isapprox(c.terms.coeffs[i], 72.47543368414073; atol = 1e-4)          
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint2 = isapprox(c.ub, 144.95086736828145; atol = 1e-4) && length(c.terms.coeffs) == 4
+        end
+        
+        ok = true
+        for i = 1:length(c.terms.vars)
+            if c.terms.vars[i] == gm.var[:p][217]
+                ok = ok && isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
+            elseif c.terms.vars[i] == gm.var[:p][524]
+                ok = ok && isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:yn][585]
+                ok = ok && isapprox(c.terms.coeffs[i], 7398.2791755625; atol = 1e-4)       
+            elseif c.terms.vars[i] == gm.var[:v][585]
+                ok = ok && isapprox(c.terms.coeffs[i], 7398.2791755625; atol = 1e-4)          
+            else
+                ok == false
+            end
+        end
+        if ok
+            constraint1 = isapprox(c.ub, 14796.558351125; atol = 1e-4) && length(c.terms.coeffs) == 4
+        end
+        
+    end                  
+    @test constraint1 = true
+    @test constraint2 = true
+    @test constraint3 = true
+    @test constraint4 = true
+    
 end
 
 
