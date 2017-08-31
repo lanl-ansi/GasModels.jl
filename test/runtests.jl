@@ -1,32 +1,19 @@
 using GasModels
 using Logging
+
 # suppress warnings during testing
 Logging.configure(level=ERROR)
 
 using Pajarito
+using Ipopt
+using AmplNLWriter
 
-couenne_solver = nothing
+couenne_solver = CouenneNLSolver()
+ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
+
+using Base.Test
+
 cbc_solver = nothing
-ipopt_solver = nothing
-
-if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
-    using AmplNLWriter
-    using CoinOptServices
-    using Ipopt
-    
-    couenne_solver = CouenneNLSolver() 
-    ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)   
- #   couenne_solver = OsilCouenneSolver()
-end
-
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-else
-    using BaseTestNext
-    const Test = BaseTestNext
-end
-
-
 if Pkg.installed("Cbc") != nothing
     using Cbc
     cbc_solver = CbcSolver()

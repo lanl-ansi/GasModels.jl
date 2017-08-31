@@ -4,3 +4,4 @@
 deps/deps.jl
 bin
 .project
+scip.set
