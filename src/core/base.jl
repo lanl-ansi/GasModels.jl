@@ -136,7 +136,7 @@ Some of the common keys include:
 
 If `:ne_connection` does not exist, then an empty reference is added
 If `status` does not exist in the data, then 1 is added
-If `construction cost` does not exist in the `:new_connection`, then 0 is added
+If `construction cost` does not exist in the `:ne_connection`, then 0 is added
 """
 function build_ref(data::Dict{String,Any})
     # Do some robustness on the data to add missing fields
