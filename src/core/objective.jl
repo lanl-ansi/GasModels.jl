@@ -13,7 +13,7 @@ end
 
 " function for maximizing load "
 function objective_max_load{T}(gm::GenericGasModel{T})
-    load_set = Iterators.filter(i -> gm.ref[:junction][i]["qlmin"] != gm.ref[:junction][i]["qlmax"], keys(gm.ref[:junction]))    
+    load_set = filter(i -> gm.ref[:junction][i]["qlmin"] != gm.ref[:junction][i]["qlmax"], keys(gm.ref[:junction]))    
     ql = gm.var[:ql] 
     obj = @objective(gm.model, Max, sum(ql[i] for i in load_set))      
     return obj
