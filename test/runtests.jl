@@ -6,7 +6,9 @@ Logging.configure(level=ERROR)
 
 using Pajarito
 using Ipopt
+using CoinOptServices
 using AmplNLWriter
+
 
 couenne_solver = CouenneNLSolver()
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)

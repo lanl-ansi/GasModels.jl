@@ -2,6 +2,7 @@ julia 0.5
 
 Ipopt
 AmplNLWriter
+CoinOptServices
 Compat
 Logging
 Pajarito
