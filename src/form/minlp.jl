@@ -44,8 +44,16 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pip
     c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*max_flow^2)
     c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*max_flow^2)
     
-    return Set([c1, c2, c3, c4])
-  
+   if !haskey(gm.constraint, :weymouth1)
+        gm.constraint[:weymouth1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:weymouth1][pipe_idx] = c1              
+    gm.constraint[:weymouth2][pipe_idx] = c2
+    gm.constraint[:weymouth3][pipe_idx] = c3              
+    gm.constraint[:weymouth4][pipe_idx] = c4                               
 end
 
 "Weymouth equation with fixed direction variables"
@@ -71,8 +79,16 @@ function constraint_weymouth_fixed_direction{T <: AbstractMINLPForm}(gm::Generic
     c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*max_flow^2)
     c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*max_flow^2)
     
-    return Set([c1, c2, c3, c4])
-  
+   if !haskey(gm.constraint, :weymouth_fixed_direction1)
+        gm.constraint[:weymouth_fixed_direction1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_fixed_direction2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_fixed_direction3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_fixed_direction4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:weymouth_fixed_direction1][pipe_idx] = c1              
+    gm.constraint[:weymouth_fixed_direction2][pipe_idx] = c2
+    gm.constraint[:weymouth_fixed_direction3][pipe_idx] = c3              
+    gm.constraint[:weymouth_fixed_direction4][pipe_idx] = c4                               
 end
 
 

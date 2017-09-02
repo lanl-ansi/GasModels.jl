@@ -51,7 +51,18 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, pipe["resistance"]*l >= f^2)
       
-    return Set([c1, c2, c3, c4, c5])
+    if !haskey(gm.constraint, :weymouth1)
+        gm.constraint[:weymouth1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth4] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth5] = Dict{Int,ConstraintRef}()                              
+    end    
+    gm.constraint[:weymouth1][pipe_idx] = c1              
+    gm.constraint[:weymouth2][pipe_idx] = c2
+    gm.constraint[:weymouth3][pipe_idx] = c3              
+    gm.constraint[:weymouth4][pipe_idx] = c4                              
+    gm.constraint[:weymouth5][pipe_idx] = c5                                    
 end
 
 #Weymouth equation with fixed direction
@@ -77,7 +88,18 @@ function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::Generi
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, pipe["resistance"]*l >= f^2)
       
-    return Set([c1, c2, c3, c4, c5])
+    if !haskey(gm.constraint, :weymouth_fixed_direction1)
+        gm.constraint[:weymouth_fixed_direction1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_fixed_direction2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_fixed_direction3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_fixed_direction4] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_fixed_direction5] = Dict{Int,ConstraintRef}()                              
+    end    
+    gm.constraint[:weymouth_fixed_direction1][pipe_idx] = c1              
+    gm.constraint[:weymouth_fixed_direction2][pipe_idx] = c2
+    gm.constraint[:weymouth_fixed_direction3][pipe_idx] = c3              
+    gm.constraint[:weymouth_fixed_direction4][pipe_idx] = c4                              
+    gm.constraint[:weymouth_fixed_direction5][pipe_idx] = c5                                    
 end
 
 

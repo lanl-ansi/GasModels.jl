@@ -16,6 +16,7 @@ type GenericGasModel{T<:AbstractGasFormulation}
     setting::Dict{String,Any}
     solution::Dict{String,Any}
     var::Dict{Symbol,Any} # model variable lookup
+    constraint::Dict{Symbol, Dict{Any, ConstraintRef}} # model constraint lookup
     ref::Dict{Symbol,Any} # reference data
     ext::Dict{Symbol,Any} # user extentions
 end
@@ -41,6 +42,7 @@ type GenericGasModel{T<:AbstractGasFormulation}
     solution::Dict{String,Any}
     ref::Dict{Symbol,Any} # data reference data
     var::Dict{Symbol,Any} # JuMP variables
+    constraint::Dict{Symbol,Dict{Any, ConstraintRef}} # data reference data    
     ext::Dict{Symbol,Any} 
 end
 
@@ -54,6 +56,7 @@ function GenericGasModel(data::Dict{String,Any}, T::DataType; setting = Dict{Str
         Dict{String,Any}(), # solution
         build_ref(data), # reference data
         Dict{Symbol,Any}(), # vars
+        Dict{Symbol,Dict{Any, ConstraintRef}}(), # constraints
         Dict{Symbol,Any}() # ext
     )
     return gm

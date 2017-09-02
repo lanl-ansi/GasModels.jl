@@ -123,9 +123,13 @@ function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, pipe_idx)
           
     c1 = @constraint(gm.model, f <= zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))
     c2 = @constraint(gm.model, f >= -zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))            
-    return Set([c1, c2])    
+    if !haskey(gm.constraint, :on_off_pipe_flow_ne1)
+        gm.constraint[:on_off_pipe_flow_ne1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:on_off_pipe_flow_ne2] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:on_off_pipe_flow_ne1][pipe_idx] = c1              
+    gm.constraint[:on_off_pipe_flow_ne2][pipe_idx] = c2              
 end
-
 
 " on/off constraints on flow across compressors for expansion variables "
 function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T}, c_idx)
@@ -141,7 +145,12 @@ function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T}, c_idx)
           
     c1 = @constraint(gm.model, -max_flow*zc <= f)
     c2 = @constraint(gm.model, f <= max_flow*zc)            
-    return Set([c1, c2])    
+    if !haskey(gm.constraint, :on_off_compressor_flow_ne1)
+        gm.constraint[:on_off_compressor_flow_ne1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:on_off_compressor_flow_ne2] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:on_off_compressor_flow_ne1][c_idx] = c1              
+    gm.constraint[:on_off_compressor_flow_ne2][c_idx] = c2              
 end
 
 " This function ensures at most one pipe in parallel is selected "
@@ -149,7 +158,10 @@ function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T}, i, j)
     parallel = collect(filter( connection -> in(connection, collect(keys(gm.ref[:ne_pipe]))), gm.ref[:all_parallel_connections][(i,j)] ))
     zp = gm.var[:zp]             
     c = @constraint(gm.model, sum(zp[i] for i in parallel) <= 1)
-    return Set([c])    
+    if !haskey(gm.constraint, :exclusive_new_pipes)
+        gm.constraint[:exclusive_new_pipes] = Dict{Int,ConstraintRef}()
+    end    
+    gm.constraint[:exclusive_new_pipes][(i,j)] = c              
 end
 
 " Weymouth equation with discrete direction variables for MINLP "
@@ -177,7 +189,16 @@ function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, 
     c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
     c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
                
-    return Set([c1, c2, c3, c4])
+    if !haskey(gm.constraint, :weymouth_ne1)
+        gm.constraint[:weymouth_ne1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_ne3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:weymouth_ne1][pipe_idx] = c1              
+    gm.constraint[:weymouth_ne2][pipe_idx] = c2
+    gm.constraint[:weymouth_ne3][pipe_idx] = c3              
+    gm.constraint[:weymouth_ne4][pipe_idx] = c4                               
 end
 
 "Weymouth equation with fixed directions for MINLP"
@@ -205,7 +226,16 @@ function constraint_weymouth_ne_fixed_direction{T <: AbstractMINLPForm}(gm::Gene
     c3 = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*max_flow^2)
     c4 = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*max_flow^2)
                
-    return Set([c1, c2, c3, c4])
+    if !haskey(gm.constraint, :weymouth_ne_fixed_direction1)
+        gm.constraint[:weymouth_ne_fixed_direction1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne_fixed_direction2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_ne_fixed_direction3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne_fixed_direction4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:weymouth_ne_fixed_direction1][pipe_idx] = c1              
+    gm.constraint[:weymouth_ne_fixed_direction2][pipe_idx] = c2
+    gm.constraint[:weymouth_ne_fixed_direction3][pipe_idx] = c3              
+    gm.constraint[:weymouth_ne_fixed_direction4][pipe_idx] = c4                               
 end
 
 "Weymouth equation with discrete direction variables for MINLP"
@@ -235,7 +265,19 @@ function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T},
     c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
-    return Set([c1, c2, c3, c4, c5])  
+
+    if !haskey(gm.constraint, :weymouth_ne1)
+        gm.constraint[:weymouth_ne1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_ne3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne4] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne5] = Dict{Int,ConstraintRef}()                              
+    end    
+    gm.constraint[:weymouth_ne1][pipe_idx] = c1              
+    gm.constraint[:weymouth_ne2][pipe_idx] = c2
+    gm.constraint[:weymouth_ne3][pipe_idx] = c3              
+    gm.constraint[:weymouth_ne4][pipe_idx] = c4                              
+    gm.constraint[:weymouth_ne5][pipe_idx] = c5                                    
 end
 
 "Weymouth equation with fixed direction"
@@ -265,7 +307,19 @@ function constraint_weymouth_ne_fixed_direction{T <: AbstractMISOCPForm}(gm::Gen
     c3 = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
     c4 = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
     c5 = @constraint(gm.model, zp*pipe["resistance"]*l >= f^2) 
-    return Set([c1, c2, c3, c4, c5])  
+
+    if !haskey(gm.constraint, :weymouth_ne_fixed_direction1)
+        gm.constraint[:weymouth_ne_fixed_direction1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne_fixed_direction2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:weymouth_ne_fixed_direction3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne_fixed_direction4] = Dict{Int,ConstraintRef}()
+        gm.constraint[:weymouth_ne_fixed_direction5] = Dict{Int,ConstraintRef}()                              
+    end    
+    gm.constraint[:weymouth_ne_fixed_direction1][pipe_idx] = c1              
+    gm.constraint[:weymouth_ne_fixed_direction2][pipe_idx] = c2
+    gm.constraint[:weymouth_ne_fixed_direction3][pipe_idx] = c3              
+    gm.constraint[:weymouth_ne_fixed_direction4][pipe_idx] = c4                              
+    gm.constraint[:weymouth_ne_fixed_direction5][pipe_idx] = c5                                    
 end
 
 # Special function for whether or not a connection is added
@@ -307,7 +361,16 @@ function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T}, c_idx)
     c3 = @constraint(gm.model, pi - (max_ratio^2*pj) <= (2-yn-zc)*p_maxi^2)
     c4 = @constraint(gm.model, (min_ratio^2*pj) - pi <= (2-yn-zc)*(min_ratio^2*p_maxj^2 - p_mini^2))
       
-    return Set([c1, c2, c3, c4])  
+    if !haskey(gm.constraint, :new_compressor_ratios_ne1)
+        gm.constraint[:new_compressor_ratios_ne1] = Dict{Int,ConstraintRef}()
+        gm.constraint[:new_compressor_ratios_ne2] = Dict{Int,ConstraintRef}()          
+        gm.constraint[:new_compressor_ratios_ne3] = Dict{Int,ConstraintRef}()
+        gm.constraint[:new_compressor_ratios_ne4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.constraint[:new_compressor_ratios_ne1][c_idx] = c1              
+    gm.constraint[:new_compressor_ratios_ne2][c_idx] = c2
+    gm.constraint[:new_compressor_ratios_ne3][c_idx] = c3              
+    gm.constraint[:new_compressor_ratios_ne4][c_idx] = c4                               
 end
 
 # Get all the solution values
