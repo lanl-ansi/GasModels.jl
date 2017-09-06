@@ -10,6 +10,16 @@ function run_gf(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_gf; kwargs...) 
 end
 
+""
+function run_soc_gf(file, solver; kwargs...)
+    return run_pf(file, MISOCPGasModel, solver; kwargs...)
+end
+
+""
+function run_nl_gf(file, solver; kwargs...)
+    return run_pf(file, MINLPGasModel, solver; kwargs...)
+end
+
 " construct the gas flow feasbility problem "
 function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
