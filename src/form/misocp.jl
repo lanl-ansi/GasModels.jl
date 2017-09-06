@@ -17,8 +17,7 @@ MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standa
 "variables associated with the flux squared"
 function variable_flux_square{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
     max_flow = gm.ref[:max_flow] 
-    gm.var[:l] = @variable(gm.model, 0 <= l[i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor])) ]] <= 1/gm.ref[:connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:connection], i, "l_start", 0))  
-    return gm.var[:l]
+    gm.var[:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor])) ]], basename="l", lowerbound=0.0, upperbound=1/gm.ref[:connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:connection], i, "l_start", 0))  
 end
 
 " variables associated with the flux squared "
