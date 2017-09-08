@@ -14,8 +14,6 @@ function post_ne(gm::GenericGasModel)
     variable_flux_ne(gm)  
     variable_connection_direction(gm) 
     variable_connection_direction_ne(gm)     
-    variable_flux_square(gm) 
-    variable_flux_square_ne(gm) 
     
     variable_valve_operation(gm)
 

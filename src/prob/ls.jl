@@ -15,11 +15,13 @@ function post_ls(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
     variable_connection_direction(gm)
-    variable_flux_square(gm)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-  
+    variable_flux(gm)
+    
+#    variable_flux_square(gm)
+      
     objective_max_load(gm)
             
     for (i,junction) in gm.ref[:junction]

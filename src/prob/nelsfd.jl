@@ -13,12 +13,10 @@ function post_nelsfd(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
     variable_flux_ne(gm)  
-    variable_flux_square(gm) 
-    variable_flux_square_ne(gm)         
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-    
+        
     # expansion variables
     variable_pipe_ne(gm)
     variable_compressor_ne(gm)

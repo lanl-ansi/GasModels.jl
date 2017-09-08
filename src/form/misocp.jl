@@ -14,17 +14,18 @@ const MISOCPGasModel = GenericGasModel{StandardMISOCPForm}
 "default MISOCP constructor"
 MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm; kwargs...)
 
-"variables associated with the flux squared"
-function variable_flux_square{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
+""
+function variable_flux{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
     max_flow = gm.ref[:max_flow] 
     gm.var[:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor])) ]], basename="l", lowerbound=0.0, upperbound=1/gm.ref[:connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:connection], i, "l_start", 0))  
+    gm.var[:f] = @variable(gm.model, [i in keys(gm.ref[:connection])], basename="f", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:connection], i, "f_start", 0))                        
 end
 
-" variables associated with the flux squared "
-function variable_flux_square_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
+""
+function variable_flux_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T})
     max_flow = gm.ref[:max_flow] 
-    gm.var[:l_ne] = @variable(gm.model, 0 <= l_ne[i in keys(gm.ref[:ne_pipe])] <= 1/gm.ref[:ne_connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:ne_connection], i, "l_start", 0))  
-    return gm.var[:l_ne]
+    gm.var[:l_ne] = @variable(gm.model, [i in keys(gm.ref[:ne_pipe])], basename="l_ne", lowerbound=0.0, upperbound=1/gm.ref[:ne_connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:ne_connection], i, "l_start", 0))      
+    gm.var[:f_ne] = @variable(gm.model, [i in keys(gm.ref[:ne_connection])], basename="f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:ne_connection], i, "f_start", 0))                        
 end
 
 " Weymouth equation with discrete direction variables "
@@ -64,7 +65,7 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pi
     gm.constraint[:weymouth5][pipe_idx] = c5                                    
 end
 
-#Weymouth equation with fixed direction
+"Weymouth equation with fixed direction"
 function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, pipe_idx)  
     pipe = gm.ref[:connection][pipe_idx]
     i_junction_idx = pipe["f_junction"]

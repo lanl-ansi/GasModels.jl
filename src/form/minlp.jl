@@ -13,15 +13,7 @@ const MINLPGasModel = GenericGasModel{StandardMINLPForm}
 "default MINLP constructor"
 MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPForm; kwargs...)
 
-"variables associated with the flux squared"
-function variable_flux_square{T <: AbstractMINLPForm}(gm::GenericGasModel{T}; bounded = true)
-end
-
-""
-function variable_flux_square_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}; bounded = true)
-end
-
- "Weymouth equation with discrete direction variables "
+"Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, pipe_idx)
     pipe = gm.ref[:connection][pipe_idx]
     i_junction_idx = pipe["f_junction"]

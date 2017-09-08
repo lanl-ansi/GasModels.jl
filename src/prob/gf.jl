@@ -25,9 +25,9 @@ function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flux(gm)
     variable_connection_direction(gm)
-    variable_flux_square(gm)
     variable_valve_operation(gm)
-
+ #   variable_flux_square(gm)
+    
     for (i,junction) in gm.ref[:junction]
         constraint_junction_flow_balance(gm, i)
       

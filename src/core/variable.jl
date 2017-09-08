@@ -21,7 +21,7 @@ end
 " variables associated with flux in expansion planning "
 function variable_flux_ne{T}(gm::GenericGasModel{T})
     max_flow = gm.ref[:max_flow]
-    gm.var[:f_ne] = @variable(gm.model, [i in keys(gm.ref[:ne_connection])], basename="f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:ne_connection], i, "f_start", 0))                        
+    gm.var[:f_ne] = @variable(gm.model, [i in keys(gm.ref[:ne_connection])], basename="f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:ne_connection], i, "f_start", 0))                       
 end
 
 " variables associated with direction of flow on the connections "
