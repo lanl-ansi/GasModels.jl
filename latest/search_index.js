@@ -242,15 +242,15 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "model.html#",
-    "page": "PowerModel",
-    "title": "PowerModel",
+    "page": "GasModel",
+    "title": "GasModel",
     "category": "page",
     "text": ""
 },
 
 {
     "location": "model.html#Gas-Model-1",
-    "page": "PowerModel",
+    "page": "GasModel",
     "title": "Gas Model",
     "category": "section",
     "text": "Todo"
