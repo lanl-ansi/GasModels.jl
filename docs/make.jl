@@ -17,7 +17,7 @@ makedocs(
             "Network Formulations" => "formulations.md",
             "Problem Specifications" => "specifications.md",
             "Modeling Components" => [
-                "PowerModel" => "model.md",
+                "GasModel" => "model.md",
                 "Objective" => "objective.md",
                 "Variables" => "variables.md",
                 "Constraints" => "constraints.md"
