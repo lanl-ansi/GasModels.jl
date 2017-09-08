@@ -4,5 +4,6 @@ Ipopt
 AmplNLWriter
 CoinOptServices
 Compat
-Logging
+Logging 0.2
 Pajarito
+
