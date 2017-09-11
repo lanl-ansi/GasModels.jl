@@ -374,7 +374,7 @@ end
 # Get all the solution values
 function get_ne_solution{T}(gm::GenericGasModel{T})
     sol = Dict{AbstractString,Any}()
-    add_junction_pressure_sqr_setpoint(sol, gm)
+    add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_connection_ne(sol, gm)
     add_direction_setpoint(sol, gm)

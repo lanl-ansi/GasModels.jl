@@ -38,13 +38,13 @@ end
 " Get all the solution values "
 function get_solution{T}(gm::GenericGasModel{T})
     sol = init_solution(gm)
-    add_junction_pressure_sqr_setpoint(sol, gm)
+    add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     return sol
 end
 
 " Get the pressure squared solutions "
-function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_junction_pressure_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(x))
 end
 
