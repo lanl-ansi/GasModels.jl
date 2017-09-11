@@ -8,24 +8,19 @@ using Pajarito
 using Ipopt
 using CoinOptServices
 using AmplNLWriter
+using Cbc
 
 bonmin_solver = BonminNLSolver()
 couenne_solver = CouenneNLSolver()
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
+cbc_solver = CbcSolver()
+pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 
 using Base.Test
 
-cbc_solver = nothing
-if Pkg.installed("Cbc") != nothing
-    using Cbc
-    cbc_solver = CbcSolver()
-end
-
 # default setup for solvers
-pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 misocp_solver = pajarito_solver
 minlp_solver = couenne_solver   
-
 
 include("gf.jl")
 include("ne.jl")

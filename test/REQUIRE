@@ -6,4 +6,5 @@ CoinOptServices
 Compat
 Logging 0.2
 Pajarito
+Cbc
 

@@ -96,28 +96,12 @@ function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, var
     end
 end
 
-
-
-# TODO figure out how to do this properly, stronger types?
-#importall MathProgBase.SolverInterface
-solver_status_lookup = Dict{Any, Dict{Symbol, Symbol}}()
-
-if (Pkg.installed("Ipopt") != nothing)
-    using Ipopt
-    solver_status_lookup[Ipopt.IpoptSolver] = Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible)
-end
-
-if (Pkg.installed("ConicNonlinearBridge") != nothing)
-    using ConicNonlinearBridge
-    solver_status_lookup[ConicNonlinearBridge.ConicNLPWrapper] = Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible)
-end
-
-if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices") != nothing)
+solver_status_lookup = Dict{Any, Dict{Symbol, Symbol}}(
+    :Ipopt => Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible),
+    :ConicNonlinearBridge => Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible),
     # note that AmplNLWriter.AmplNLSolver is the solver type of bonmin
-    using AmplNLWriter
-    using CoinOptServices
-    solver_status_lookup[AmplNLWriter.AmplNLSolver] = Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible)
-end
+    :AmplNLWriter => Dict(:Optimal => :LocalOptimal, :Infeasible => :LocalInfeasible)
+)
 
 # translates solver status codes to our status codes
 function solver_status_dict(solver_type, status)
