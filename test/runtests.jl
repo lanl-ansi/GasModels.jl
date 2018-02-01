@@ -10,8 +10,8 @@ using CoinOptServices
 using AmplNLWriter
 using Cbc
 
-bonmin_solver = BonminNLSolver()
-couenne_solver = CouenneNLSolver()
+bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
+couenne_solver =  AmplNLSolver(CoinOptServices.couenne)
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 cbc_solver = CbcSolver()
 pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)

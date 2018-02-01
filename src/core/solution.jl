@@ -6,8 +6,29 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
         status = solver_status_dict(Symbol(typeof(gm.model.solver).name.module), status)
     end
 
-    sol = solution_builder(gm)
-    
+    sol = init_solution(gm)
+    data = Dict{String,Any}("name" => haskey(gm.data, "name") ? gm.data["name"] : "none")
+      
+    if gm.data["multinetwork"]
+        sol_nws = sol["nw"] = Dict{String,Any}()
+        data_nws = data["nw"] = Dict{String,Any}()
+
+        for (n,nw_data) in gm.data["nw"]
+            sol_nw = sol_nws[n] = Dict{String,Any}()
+            gm.cnw = parse(Int, n)
+            solution_builder(gm, sol_nw)
+            data_nws[n] = Dict(
+                "name" => nw_data["name"],
+                "junction_count" => length(nw_data["junction"]),
+                "connection_count" => length(nw_data["connection"])
+            )
+        end
+    else
+        solution_builder(gm, sol)
+        data["junction_count"] = length(gm.data["junction"])
+        data["connection_count"] = length(gm.data["connection"])
+    end
+          
     solution = Dict{AbstractString,Any}(
         "solver" => string(typeof(gm.model.solver)), 
         "status" => status, 
@@ -19,10 +40,7 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
             "cpu" => Sys.cpu_info()[1].model,
             "memory" => string(Sys.total_memory()/2^30, " Gb")
             ),
-        "data" => Dict(
-            "junction_count" => length(gm.ref[:junction]),
-            "connection_count" => length(gm.ref[:connection])
-            )
+        "data" => data
         )
 
     gm.solution = solution
@@ -32,20 +50,24 @@ end
 
 ""
 function init_solution(gm::GenericGasModel)
-    return Dict{String,Any}()
+    data_keys = ["multinetwork"]
+    return Dict{String,Any}(key => gm.data[key] for key in data_keys)
 end
 
 " Get all the solution values "
-function get_solution{T}(gm::GenericGasModel{T})
-    sol = init_solution(gm)
+function get_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
     add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
-    return sol
+end
+
+" Get the pressure solutions "
+function add_junction_pressure_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(x))
 end
 
 " Get the pressure squared solutions "
-function add_junction_pressure_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(x))
+function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "junction", "p", :p)
 end
 
 " Get the pressure squared solutions "
@@ -74,14 +96,20 @@ function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "connection", "f", :f)  
 end
 
-
 function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> x, extract_var = (var,idx,item) -> var[idx])
     sol_dict = get(sol, dict_name, Dict{String,Any}())
-    if length(gm.data[dict_name]) > 0
+      
+    if gm.data["multinetwork"]
+        data_dict = gm.data["nw"]["$(gm.cnw)"][dict_name]
+    else
+        data_dict = gm.data[dict_name]
+    end
+        
+    if length(data_dict) > 0
         sol[dict_name] = sol_dict
     end
     
-    for (i,item) in gm.data[dict_name]
+    for (i,item) in data_dict
         idx = parse(Int64,i)        
         if index_name != nothing
             idx = Int(item[index_name])
@@ -89,8 +117,8 @@ function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, var
         sol_item = sol_dict[i] = get(sol_dict, i, Dict{String,Any}())
         sol_item[param_name] = default_value(item)
         try
-            var = extract_var(gm.var[variable_symbol], idx, item)
-            sol_item[param_name] = scale(getvalue(var), item)
+            variable = extract_var(var(gm, variable_symbol), idx, item)
+            sol_item[param_name] = scale(getvalue(variable), item)
         catch
         end
     end
