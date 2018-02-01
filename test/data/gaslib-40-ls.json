@@ -1,6 +1,7 @@
 
 
 {
+  "multinetwork": false,
   "junction": {
     "24": {
       "qlmax": 1.8,

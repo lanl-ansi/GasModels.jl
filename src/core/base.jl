@@ -42,25 +42,62 @@ type GenericGasModel{T<:AbstractGasFormulation}
     solution::Dict{String,Any}
     ref::Dict{Symbol,Any} # data reference data
     var::Dict{Symbol,Any} # JuMP variables
-    constraint::Dict{Symbol,Dict{Any, ConstraintRef}} # data reference data    
-    ext::Dict{Symbol,Any} 
+    con::Dict{Symbol,Any} # data reference data    
+
+    cnw::Int # current network index value     
+    ext::Dict{Symbol,Any}    
 end
 
-
 "default generic constructor"
-function GenericGasModel(data::Dict{String,Any}, T::DataType; setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
+function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
+    ref = build_ref(data) # refrence data
+
+    var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
+    con = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
+    for nw_id in keys(ref[:nw])
+        var[:nw][nw_id] = Dict{Symbol,Any}()
+        con[:nw][nw_id] = Dict{Symbol,Any}()
+    end
+
+    cnw = minimum([k for k in keys(ref[:nw])])
+    
     gm = GenericGasModel{T}(
         Model(solver = solver), # model
         data, # data
         setting, # setting
         Dict{String,Any}(), # solution
-        build_ref(data), # reference data
-        Dict{Symbol,Any}(), # vars
-        Dict{Symbol,Dict{Any, ConstraintRef}}(), # constraints
-        Dict{Symbol,Any}() # ext
+        ref,
+        var, # vars
+        con,
+        cnw,
+        ext # ext
     )
     return gm
 end
+
+### Helper functions for ignoring multinetwork support
+ids(gm::GenericGasModel, key::Symbol) = ids(gm, gm.cnw, key)
+ids(gm::GenericGasModel, n::Int, key::Symbol) = keys(gm.ref[:nw][n][key])
+
+ref(gm::GenericGasModel, key::Symbol) = ref(gm, gm.cnw, key)
+ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
+ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
+ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
+
+Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+
+con(gm::GenericGasModel, key::Symbol) = con(gm, gm.cnw, key)
+con(gm::GenericGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
+con(gm::GenericGasModel, n::Int, key::Symbol) = gm.con[:nw][n][key]
+con(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.con[:nw][n][key][idx]
+
+ext(gm::GenericGasModel, key::Symbol) = ext(gm, gm.cnw, key)
+ext(gm::GenericGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
+ext(gm::GenericGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
+ext(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
 
 " Set the solver "
 function JuMP.setsolver(gm::GenericGasModel, solver::MathProgBase.AbstractMathProgSolver)
@@ -101,8 +138,13 @@ end
 
 
 ""
-function build_generic_model(data::Dict{String,Any}, model_constructor, post_method; kwargs...)
+function build_generic_model(data::Dict{String,Any}, model_constructor, post_method; multinetwork=false, kwargs...)
     gm = model_constructor(data; kwargs...)
+    
+    if !multinetwork && data["multinetwork"]
+        warn("building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
+    end
+    
     post_method(gm)
     return gm
 end
@@ -147,77 +189,89 @@ function build_ref(data::Dict{String,Any})
     add_default_status(data)
     add_default_construction_cost(data)
       
-    ref = Dict{Symbol,Any}()
-    for (key, item) in data
-        if isa(item, Dict)
-            item_lookup = Dict([(parse(Int, k), v) for (k,v) in item])
-            ref[Symbol(key)] = item_lookup
-        else
-            ref[Symbol(key)] = item
-        end
-    end
+    refs = Dict{Symbol,Any}()
+    nws = refs[:nw] = Dict{Int,Any}()
+      
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
     
-    # filter turned off stuff
-    ref[:connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:connection])
-    ref[:ne_connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:ne_connection])
+    for (n,nw_data) in nws_data
+        nw_id = parse(Int, n)
+        ref = nws[nw_id] = Dict{Symbol,Any}()
+        
+        for (key, item) in data
+            if isa(item, Dict)
+                item_lookup = Dict([(parse(Int, k), v) for (k,v) in item])
+                ref[Symbol(key)] = item_lookup
+            else
+                ref[Symbol(key)] = item
+            end
+        end
+    
+        # filter turned off stuff
+        ref[:connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:connection])
+        ref[:ne_connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:ne_connection])
 
-    # compute the maximum flow  
-    max_flow = calc_max_flow(data)
-    ref[:max_flow] = max_flow  
+        # compute the maximum flow  
+        max_flow = calc_max_flow(data)
+        ref[:max_flow] = max_flow  
             
-    # create some sets based on connection types
-    ref[:pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:connection])
-    ref[:short_pipe] = filter((i, connection) -> connection["type"] == "short_pipe", ref[:connection])
-    ref[:compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:connection])
-    ref[:valve] = filter((i, connection) -> connection["type"] == "valve", ref[:connection])
-    ref[:control_valve] = filter((i, connection) -> connection["type"] == "control_valve", ref[:connection])
-    ref[:resistor] = filter((i, connection) -> connection["type"] == "resistor", ref[:connection])
+        # create some sets based on connection types
+        ref[:pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:connection])
+        ref[:short_pipe] = filter((i, connection) -> connection["type"] == "short_pipe", ref[:connection])
+        ref[:compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:connection])
+        ref[:valve] = filter((i, connection) -> connection["type"] == "valve", ref[:connection])
+        ref[:control_valve] = filter((i, connection) -> connection["type"] == "control_valve", ref[:connection])
+        ref[:resistor] = filter((i, connection) -> connection["type"] == "resistor", ref[:connection])
 
-    ref[:ne_pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:ne_connection])
-    ref[:ne_compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:ne_connection])
-      
-      
-    # collect all the parallel connections and connections of a junction
-    # These are split by new connections and existing connections
-    ref[:parallel_connections] = Dict()
-    ref[:all_parallel_connections] = Dict()              
-    for entry in [ref[:connection]; ref[:ne_connection]]
-        for (idx, connection) in entry   
-            i = connection["f_junction"]
-            j = connection["t_junction"]
-            ref[:parallel_connections][(min(i,j), max(i,j))] = []
-            ref[:all_parallel_connections][(min(i,j), max(i,j))] = []
+        ref[:ne_pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:ne_connection])
+        ref[:ne_compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:ne_connection])
+            
+        # collect all the parallel connections and connections of a junction
+        # These are split by new connections and existing connections
+        ref[:parallel_connections] = Dict()
+        ref[:all_parallel_connections] = Dict()              
+        for entry in [ref[:connection]; ref[:ne_connection]]
+            for (idx, connection) in entry   
+                i = connection["f_junction"]
+                j = connection["t_junction"]
+                ref[:parallel_connections][(min(i,j), max(i,j))] = []
+                ref[:all_parallel_connections][(min(i,j), max(i,j))] = []
+            end
         end
-    end
  
-    ref[:junction_connections] = Dict(i => [] for (i,junction) in ref[:junction])
-    ref[:junction_ne_connections] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:junction_connections] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:junction_ne_connections] = Dict(i => [] for (i,junction) in ref[:junction])
       
-    for (idx, connection) in ref[:connection]
-        i = connection["f_junction"]
-        j = connection["t_junction"]   
-        push!(ref[:junction_connections][i], idx)
-        push!(ref[:junction_connections][j], idx)        
-        push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
-        push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
-    end
+        for (idx, connection) in ref[:connection]
+            i = connection["f_junction"]
+            j = connection["t_junction"]   
+            push!(ref[:junction_connections][i], idx)
+            push!(ref[:junction_connections][j], idx)        
+            push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
+            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
+        end
     
-    for (idx,connection) in ref[:ne_connection]
-        i = connection["f_junction"]
-        j = connection["t_junction"]          
-        push!(ref[:junction_ne_connections][i], idx)
-        push!(ref[:junction_ne_connections][j], idx)        
-        push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
-    end
+        for (idx,connection) in ref[:ne_connection]
+            i = connection["f_junction"]
+            j = connection["t_junction"]          
+            push!(ref[:junction_ne_connections][i], idx)
+            push!(ref[:junction_ne_connections][j], idx)        
+            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
+        end
       
-    add_degree(ref)    
-    add_pd_bounds_sqr(ref)    
-    return ref
+        add_degree(ref)    
+        add_pd_bounds_sqr(ref)  
+    end          
+    return refs
 end
 
 "Just make sure there is an empty set for new connections if it does not exist"
 function add_default_data(data :: Dict{String,Any})
-    if !haskey(data, "ne_connection")
-        data["ne_connection"] = []
-    end               
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
+  
+    for (n,data) in nws_data    
+        if !haskey(data, "ne_connection")
+            data["ne_connection"] = []
+        end               
+    end
 end

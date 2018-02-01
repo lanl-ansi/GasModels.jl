@@ -17,7 +17,7 @@ using Base.Test
 
 
 #baron_solver = BaronSolver() # has too many backward dependecies
-couenne_solver = CouenneNLSolver()    
+couenne_solver =  AmplNLSolver(CoinOptServices.couenne)
 bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
 gurobi_solver = GurobiSolver()
 scip_solver =  isfile("../bin/scipampl.exe") ? AmplNLSolver("../bin/scipampl.exe", ["../scip.set"]) : nothing     

@@ -1,6 +1,7 @@
 
 
 {
+  "multinetwork": false,
   "ne_connection": {
     "724": {
       "length": 1.833149184,

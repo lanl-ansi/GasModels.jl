@@ -1,6 +1,8 @@
 
 
 {
+  "multinetwork": false,
+  "name": "gaslib 582",  
   "junction": {
     "306": {
       "qlmax": 0,

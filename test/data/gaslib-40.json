@@ -1,6 +1,8 @@
 
 
 {
+  "multinetwork": false,
+  "name": "gaslib 40",
   "junction": {
     "24": {
       "qlmax": 1.8,

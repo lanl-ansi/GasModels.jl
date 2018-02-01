@@ -16,22 +16,30 @@ end
 
 "Ensures that status exists as a field in connections"
 function add_default_status(data::Dict{String,Any})
-    for entry in [data["connection"]; data["ne_connection"]]
-        for (idx,connection) in entry
-            if !haskey(connection,"status")
-                connection["status"] = 1
-            end          
-        end    
-    end  
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
+    
+    for (n,data) in nws_data  
+        for entry in [data["connection"]; data["ne_connection"]]
+            for (idx,connection) in entry
+                if !haskey(connection,"status")
+                    connection["status"] = 1
+                end          
+            end    
+        end
+    end      
 end
 
 "Ensures that construction cost exists as a field for new connections"
 function add_default_construction_cost(data::Dict{String,Any})
-    for (idx, connection) in data["ne_connection"]
-        if !haskey(connection,"construction_cost")
-            connection["construction_cost"] = 0
-        end
-    end    
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
+    
+    for (n,data) in nws_data      
+        for (idx, connection) in data["ne_connection"]
+            if !haskey(connection,"construction_cost")
+                connection["construction_cost"] = 0
+            end
+        end    
+    end
 end
 
 "Add the degree information"
