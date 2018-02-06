@@ -40,7 +40,7 @@ end
 
 " Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int, pipe_idx)  
-    pipe = gm.ref[:nw][n][:connection][pipe_idx]
+    pipe = ref(gm,n,:connection,pipe_idx)
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
@@ -78,7 +78,7 @@ end
 
 "Weymouth equation with fixed direction"
 function constraint_weymouth_fixed_direction{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int, pipe_idx)  
-    pipe = gm.ref[:nw][n][:connection][pipe_idx]
+    pipe = ref(gm,n,:connection,pipe_idx)
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   

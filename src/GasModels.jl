@@ -14,6 +14,7 @@ include("core/base.jl")
 include("core/data.jl")
 include("core/variable.jl")
 include("core/constraint.jl")
+include("core/constraint_template.jl")
 include("core/objective.jl")
 include("core/solution.jl")
 

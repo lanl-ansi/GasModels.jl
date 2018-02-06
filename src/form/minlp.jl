@@ -15,7 +15,7 @@ MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standar
 
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int, pipe_idx)
-    pipe = gm.ref[:nw][n][:connection][pipe_idx]
+    pipe = ref(gm,n,:connection,pipe_idx)
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
@@ -47,11 +47,11 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::
     gm.con[:nw][n][:weymouth3][pipe_idx] = c3              
     gm.con[:nw][n][:weymouth4][pipe_idx] = c4                               
 end
-constraint_weymouth(gm::GenericGasModel, i::Int) = constraint_weymouth(gm, gm.cnw, i::Int)
+constraint_weymouth(gm::GenericGasModel, i::Int) = constraint_weymouth(gm, gm.cnw, i)
 
 "Weymouth equation with fixed direction variables"
 function constraint_weymouth_fixed_direction{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int, pipe_idx)
-    pipe = gm.ref[:nw][n][:connection][pipe_idx]
+    pipe = ref(gm,n,:connection,pipe_idx)
     i_junction_idx = pipe["f_junction"]
     j_junction_idx = pipe["t_junction"]
   
@@ -83,5 +83,5 @@ function constraint_weymouth_fixed_direction{T <: AbstractMINLPForm}(gm::Generic
     gm.con[:nw][n][:weymouth_fixed_direction3][pipe_idx] = c3              
     gm.con[:nw][n][:weymouth_fixed_direction4][pipe_idx] = c4                               
 end
-constraint_weymouth_fixed_direction(gm::GenericGasModel, i::Int) = constraint_weymouth_fixed_direction(gm, gm.cnw, i::Int)
+constraint_weymouth_fixed_direction(gm::GenericGasModel, i::Int) = constraint_weymouth_fixed_direction(gm, gm.cnw, i)
 
