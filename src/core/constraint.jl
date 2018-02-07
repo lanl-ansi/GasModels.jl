@@ -300,77 +300,8 @@ function constraint_on_off_compressor_ratios_fixed_direction{T}(gm::GenericGasMo
     gm.con[:nw][n][:on_off_compressor_ratios_fixed_direction4][c_idx] = c4                             
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
 " standard flow balance equation where demand and production is fixed "
 function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, qgfirm, qlfirm)
-#    junction = ref(gm,n,:junction,i)  
- #   junction_branches = gm.ref[:nw][n][:junction_connections][i]
-    
-  #  f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-  #  t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
-      
     p = gm.var[:nw][n][:p] 
     f = gm.var[:nw][n][:f] 
 
@@ -381,7 +312,69 @@ function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, n::Int, i, 
     end    
     gm.con[:nw][n][:junction_flow_balance][i] = c              
 end
-#constraint_junction_flow_balance(gm::GenericGasModel, i::Int) = constraint_junction_flow_balance(gm, gm.cnw, i)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
 
 " standard flow balance equation where demand and production is fixed "
 function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, n::Int, i)
