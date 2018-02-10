@@ -458,3 +458,143 @@ function constraint_source_flow_ne{T}(gm::GenericGasModel{T}, n::Int, i)
     constraint_source_flow_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne)  
 end
 constraint_source_flow_ne(gm::GenericGasModel, i::Int) = constraint_source_flow_ne(gm, gm.cnw, i)
+
+" Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
+function constraint_sink_flow{T}(gm::GenericGasModel{T}, n::Int, i)
+    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
+    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
+
+    constraint_sink_flow(gm, n, i, f_branches, t_branches)  
+end
+constraint_sink_flow(gm::GenericGasModel, i::Int) = constraint_sink_flow(gm, gm.cnw, i)
+
+" Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
+function constraint_sink_flow_ne{T}(gm::GenericGasModel{T}, n::Int, i)
+    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
+    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
+    f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
+    t_branches_ne = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection]))) 
+    
+    constraint_sink_flow_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne)          
+end
+constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(gm, gm.cnw, i)
+
+" This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
+function constraint_conserve_flow{T}(gm::GenericGasModel{T}, n::Int, idx)
+    first = nothing
+    last = nothing
+    
+    for i in gm.ref[:nw][n][:junction_connections][idx]
+        connection = gm.ref[:nw][n][:connection][i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end
+            last = other    
+        end      
+    end
+    
+    yp_first = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_connections][idx])
+    yn_first = filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_connections][idx])
+    yp_last  = filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx])
+    yn_last  = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx])
+    
+    constraint_conserve_flow(gm, n, idx, yp_first, yn_first, yp_last, yn_last)              
+end
+constraint_conserve_flow(gm::GenericGasModel, i::Int) = constraint_conserve_flow(gm, gm.cnw, i)
+
+" This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
+function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, n::Int, idx)
+    first = nothing
+    last = nothing
+    
+    for i in gm.ref[:nw][n][:junction_connections][idx] 
+        connection = gm.ref[:nw][n][:connection][i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end          
+            last = other    
+        end      
+    end
+    
+    for i in gm.ref[:nw][n][:junction_ne_connections][idx] 
+        connection = gm.ref[:nw][n][:ne_connection][i]
+        if connection["f_junction"] == idx
+            other = connection["t_junction"]
+        else
+            other = connection["f_junction"]
+        end
+        
+        if first == nothing
+            first = other
+        elseif first != other
+            if last != nothing && last != other
+                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+            end          
+            last = other    
+        end      
+    end
+          
+    yp_first = [filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])]
+    yn_first = [filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])]
+    yp_last  = [filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])]
+    yn_last  = [filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])]
+
+    constraint_conserve_flow_ne(gm, n, idx, yp_first, yn_first, yp_last, yn_last)  
+      
+end
+constraint_conserve_flow_ne(gm::GenericGasModel, i::Int) = constraint_conserve_flow_ne(gm, gm.cnw, i)
+
+" ensures that parallel lines have flow in the same direction "
+function constraint_parallel_flow{T}(gm::GenericGasModel{T}, n::Int, idx)
+    connection = ref(gm,n,:connection,idx)
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+    
+    f_connections = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == connection["f_junction"], gm.ref[:nw][n][:parallel_connections][(i,j)])
+    t_connections = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] != connection["f_junction"], gm.ref[:nw][n][:parallel_connections][(i,j)])
+
+    if length(gm.ref[:nw][n][:parallel_connections][(i,j)]) <= 1
+        return nothing
+    end  
+      
+    constraint_parallel_flow(gm, n, idx, i, j, f_connections, t_connections)        
+end
+constraint_parallel_flow(gm::GenericGasModel, i::Int) = constraint_parallel_flow(gm, gm.cnw, i)
+
+" ensures that parallel lines have flow in the same direction "
+function constraint_parallel_flow_ne{T}(gm::GenericGasModel{T}, n::Int, idx)    
+    connection = haskey(gm.ref[:nw][n][:connection], idx) ? gm.ref[:nw][n][:connection][idx] : gm.ref[:nw][n][:ne_connection][idx] 
+      
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+      
+    if length(gm.ref[:nw][n][:all_parallel_connections][(i,j)]) <= 1
+        return nothing
+    end    
+              
+    f_connections = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == connection["f_junction"], intersect(gm.ref[:nw][n][:all_parallel_connections][(i,j)], gm.ref[:nw][n][:parallel_connections][(i,j)]))
+    t_connections = filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] != connection["f_junction"], intersect(gm.ref[:nw][n][:all_parallel_connections][(i,j)], gm.ref[:nw][n][:parallel_connections][(i,j)]))
+    f_connections_ne = filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == connection["f_junction"], setdiff(gm.ref[:nw][n][:all_parallel_connections][(i,j)], gm.ref[:nw][n][:parallel_connections][(i,j)]))
+    t_connections_ne = filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] != connection["f_junction"], setdiff(gm.ref[:nw][n][:all_parallel_connections][(i,j)], gm.ref[:nw][n][:parallel_connections][(i,j)]))
+        
+    constraint_parallel_flow_ne(gm, n, idx, i, j, f_connections, t_connections, f_connections_ne, t_connections_ne)  
+end
+constraint_parallel_flow_ne(gm::GenericGasModel, i::Int) = constraint_parallel_flow_ne(gm, gm.cnw, i)
