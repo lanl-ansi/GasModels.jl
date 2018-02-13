@@ -816,3 +816,53 @@ function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, pipe_
     gm.con[:nw][n][:on_off_pipe_flow_ne1][pipe_idx] = c1              
     gm.con[:nw][n][:on_off_pipe_flow_ne2][pipe_idx] = c2              
 end
+
+" on/off constraints on flow across compressors for expansion variables "
+function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, c_idx, max_flow)
+    zc = gm.var[:nw][n][:zc][c_idx] 
+    f = gm.var[:nw][n][:f][c_idx] 
+    
+    c1 = @constraint(gm.model, -max_flow*zc <= f)
+    c2 = @constraint(gm.model, f <= max_flow*zc)            
+    if !haskey(gm.con[:nw][n], :on_off_compressor_flow_ne1)
+        gm.con[:nw][n][:on_off_compressor_flow_ne1] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:on_off_compressor_flow_ne2] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.con[:nw][n][:on_off_compressor_flow_ne1][c_idx] = c1              
+    gm.con[:nw][n][:on_off_compressor_flow_ne2][c_idx] = c2              
+end
+
+" This function ensures at most one pipe in parallel is selected "
+function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T},  n::Int, i, j, parallel)  
+    zp = gm.var[:nw][n][:zp]             
+    c = @constraint(gm.model, sum(zp[i] for i in parallel) <= 1)
+    if !haskey(gm.con[:nw][n], :exclusive_new_pipes)
+        gm.con[:nw][n][:exclusive_new_pipes] = Dict{Any,ConstraintRef}()
+    end    
+    gm.con[:nw][n][:exclusive_new_pipes][(i,j)] = c              
+end
+
+"compressor rations have on off for direction and expansion"
+function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T},  n::Int, c_idx, i_junction_idx, j_junction_idx, min_ratio, max_ratio, p_mini, p_maxi, p_minj, p_maxj)
+    pi = gm.var[:nw][n][:p][i_junction_idx] 
+    pj = gm.var[:nw][n][:p][j_junction_idx] 
+    yp = gm.var[:nw][n][:yp][c_idx] 
+    yn = gm.var[:nw][n][:yn][c_idx] 
+    zc = gm.var[:nw][n][:zc][c_idx] 
+            
+    c1 = @constraint(gm.model, pj - (max_ratio^2*pi) <= (2-yp-zc)*p_maxj^2)
+    c2 = @constraint(gm.model, (min_ratio^2*pi) - pj <= (2-yp-zc)*(min_ratio^2*p_maxi^2 - p_minj^2))
+    c3 = @constraint(gm.model, pi - (max_ratio^2*pj) <= (2-yn-zc)*p_maxi^2)
+    c4 = @constraint(gm.model, (min_ratio^2*pj) - pi <= (2-yn-zc)*(min_ratio^2*p_maxj^2 - p_mini^2))
+      
+    if !haskey(gm.con[:nw][n], :new_compressor_ratios_ne1)
+        gm.con[:nw][n][:new_compressor_ratios_ne1] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:new_compressor_ratios_ne2] = Dict{Int,ConstraintRef}()          
+        gm.con[:nw][n][:new_compressor_ratios_ne3] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:new_compressor_ratios_ne4] = Dict{Int,ConstraintRef}()          
+    end    
+    gm.con[:nw][n][:new_compressor_ratios_ne1][c_idx] = c1              
+    gm.con[:nw][n][:new_compressor_ratios_ne2][c_idx] = c2
+    gm.con[:nw][n][:new_compressor_ratios_ne3][c_idx] = c3              
+    gm.con[:nw][n][:new_compressor_ratios_ne4][c_idx] = c4                               
+end

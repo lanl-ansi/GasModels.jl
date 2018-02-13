@@ -646,3 +646,70 @@ function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, pipe_
 end
 constraint_on_off_pipe_flow_ne(gm::GenericGasModel, i::Int) = constraint_on_off_pipe_flow_ne(gm, gm.cnw, i)
 
+" on/off constraints on flow across compressors for expansion variables "
+function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, c_idx)
+    compressor = gm.ref[:nw][n][:ne_connection][c_idx]
+    max_flow = gm.ref[:nw][n][:max_flow]    
+    constraint_on_off_compressor_flow_ne(gm,  n, c_idx, max_flow)  
+end
+constraint_on_off_compressor_flow_ne(gm::GenericGasModel, i::Int) = constraint_on_off_compressor_flow_ne(gm, gm.cnw, i::Int)
+
+" This function ensures at most one pipe in parallel is selected "
+function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T},  n::Int, i, j)  
+    parallel = collect(filter( connection -> in(connection, collect(keys(gm.ref[:nw][n][:ne_pipe]))), gm.ref[:nw][n][:all_parallel_connections][(i,j)] ))      
+    constraint_exclusive_new_pipes(gm,  n, i, j, parallel)  
+end
+constraint_exclusive_new_pipes(gm::GenericGasModel, i::Int, j::Int) = constraint_exclusive_new_pipes(gm, gm.cnw, i, j)
+
+" Weymouth equation with discrete direction variables for MINLP "
+function constraint_weymouth_ne{T}(gm::GenericGasModel{T},  n::Int, pipe_idx)
+    pipe = gm.ref[:nw][n][:ne_connection][pipe_idx]
+            
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+  
+    max_flow = gm.ref[:nw][n][:max_flow]
+    w = pipe["resistance"]
+    pd_max = pipe["pd_max"] 
+    pd_min = pipe["pd_min"]     
+         
+    constraint_weymouth_ne(gm, n, pipe_idx, i_junction_idx, j_junction_idx, w, max_flow, pd_min, pd_max)            
+end
+constraint_weymouth_ne(gm::GenericGasModel, i::Int) = constraint_weymouth_ne(gm, gm.cnw, i)
+
+"Weymouth equation with fixed directions for MINLP"
+function constraint_weymouth_ne_fixed_direction{T}(gm::GenericGasModel{T},  n::Int, pipe_idx)
+    pipe = gm.ref[:nw][n][:ne_connection][pipe_idx]
+            
+    i_junction_idx = pipe["f_junction"]
+    j_junction_idx = pipe["t_junction"]
+  
+    yp = pipe["yp"]
+    yn = pipe["yn"]
+        
+    max_flow = gm.ref[:nw][n][:max_flow]
+    w = pipe["resistance"]
+    pd_max = pipe["pd_max"] 
+    pd_min = pipe["pd_min"]     
+        
+    constraint_weymouth_ne_fixed_direction(gm,  n, pipe_idx, i_junction_idx, j_junction_idx, w, max_flow, pd_min, pd_max, yp, yn)            
+end
+constraint_weymouth_ne_fixed_direction(gm::GenericGasModel, i::Int) = constraint_weymouth_ne_fixed_direction(gm, gm.cnw, i)
+
+"compressor rations have on off for direction and expansion"
+function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T},  n::Int, c_idx)
+    compressor = gm.ref[:nw][n][:ne_connection][c_idx]
+      
+    i_junction_idx = compressor["f_junction"]
+    j_junction_idx = compressor["t_junction"]
+      
+    max_ratio = compressor["c_ratio_max"]
+    min_ratio = compressor["c_ratio_min"]
+    p_maxj = j["pmax"]
+    p_maxi = i["pmax"]
+    p_minj = j["pmin"]
+    p_mini = i["pmin"]
+    
+    constraint_new_compressor_ratios_ne(gm, n, c_idx, i_junction_idx, j_junction_idx, min_ratio, max_ratio, p_mini, p_maxi, p_minj, p_maxj)  
+end
+constraint_new_compressor_ratios_ne(gm::GenericGasModel, i::Int) = constraint_new_compressor_ratios_ne(gm, gm.cnw, i)
