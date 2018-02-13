@@ -161,7 +161,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
     "category": "Method",
@@ -169,11 +169,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_fixed_direction",
     "category": "Method",
     "text": "Weymouth equation with fixed direction variables\n\n\n\n"
+},
+
+{
+    "location": "formulations.html#GasModels.constraint_weymouth_ne-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_ne",
+    "category": "Method",
+    "text": "Weymouth equation with discrete direction variables for MINLP \n\n\n\n"
+},
+
+{
+    "location": "formulations.html#GasModels.constraint_weymouth_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_ne_fixed_direction",
+    "category": "Method",
+    "text": "Weymouth equation with fixed directions for MINLP\n\n\n\n"
 },
 
 {
@@ -185,7 +201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
     "category": "Method",
@@ -193,9 +209,25 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_fixed_direction",
+    "category": "Method",
+    "text": "Weymouth equation with fixed direction\n\n\n\n"
+},
+
+{
+    "location": "formulations.html#GasModels.constraint_weymouth_ne-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_ne",
+    "category": "Method",
+    "text": "Weymouth equation with discrete direction variables for MINLP\n\n\n\n"
+},
+
+{
+    "location": "formulations.html#GasModels.constraint_weymouth_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_ne_fixed_direction",
     "category": "Method",
     "text": "Weymouth equation with fixed direction\n\n\n\n"
 },
@@ -401,7 +433,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_conserve_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_conserve_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_conserve_flow",
     "category": "Method",
@@ -409,11 +441,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_conserve_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_conserve_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_conserve_flow_ne",
     "category": "Method",
     "text": "This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption \n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_exclusive_new_pipes-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_exclusive_new_pipes",
+    "category": "Method",
+    "text": "This function ensures at most one pipe in parallel is selected \n\n\n\n"
 },
 
 {
@@ -433,7 +473,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance",
     "category": "Method",
@@ -441,7 +481,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance_ls",
     "category": "Method",
@@ -449,7 +489,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance_ne",
     "category": "Method",
@@ -457,7 +497,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance_ne_ls",
     "category": "Method",
@@ -465,7 +505,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_new_compressor_ratios_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_new_compressor_ratios_ne",
+    "category": "Method",
+    "text": "compressor rations have on off for direction and expansion\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_flow_direction",
     "category": "Method",
@@ -473,7 +521,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_flow_direction_fixed_direction",
     "category": "Method",
@@ -481,7 +529,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_flow_direction_ne",
     "category": "Method",
@@ -489,7 +537,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_flow_direction_ne_fixed_direction",
     "category": "Method",
@@ -497,7 +545,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_on_off_compressor_flow_ne",
+    "category": "Method",
+    "text": "on/off constraints on flow across compressors for expansion variables \n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios",
     "category": "Method",
@@ -505,7 +561,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios_fixed_direction",
     "category": "Method",
@@ -513,7 +569,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios_ne",
     "category": "Method",
@@ -521,7 +577,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_control_valve_flow_direction",
     "category": "Method",
@@ -529,7 +585,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_control_valve_flow_direction_fixed_direction",
     "category": "Method",
@@ -537,7 +593,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_control_valve_pressure_drop",
     "category": "Method",
@@ -545,7 +601,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_control_valve_pressure_drop_fixed_direction",
     "category": "Method",
@@ -553,7 +609,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pipe_flow_direction",
     "category": "Method",
@@ -561,7 +617,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pipe_flow_direction_fixed_direction",
     "category": "Method",
@@ -569,7 +625,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pipe_flow_direction_ne",
     "category": "Method",
@@ -577,7 +633,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pipe_flow_direction_ne_fixed_direction",
     "category": "Method",
@@ -585,7 +641,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_on_off_pipe_flow_ne",
+    "category": "Method",
+    "text": "on/off constraints on flow across pipes for expansion variables \n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop",
     "category": "Method",
@@ -593,7 +657,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop_fixed_direction",
     "category": "Method",
@@ -601,7 +665,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop_ne",
     "category": "Method",
@@ -609,7 +673,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop_ne_fixed_direction",
     "category": "Method",
@@ -617,7 +681,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_short_pipe_flow_direction",
     "category": "Method",
@@ -625,7 +689,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_short_pipe_flow_direction_fixed_direction",
     "category": "Method",
@@ -633,7 +697,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_valve_flow_direction",
     "category": "Method",
@@ -641,7 +705,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_valve_flow_direction_fixed_direction",
     "category": "Method",
@@ -649,7 +713,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_on_off_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_valve_pressure_drop",
     "category": "Method",
@@ -657,7 +721,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_parallel_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_parallel_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_parallel_flow",
     "category": "Method",
@@ -665,7 +729,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_parallel_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_parallel_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_parallel_flow_ne",
     "category": "Method",
@@ -673,7 +737,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_short_pipe_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_short_pipe_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_short_pipe_pressure_drop",
     "category": "Method",
@@ -681,7 +745,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_sink_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_sink_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_sink_flow",
     "category": "Method",
@@ -689,7 +753,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_sink_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_sink_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_sink_flow_ne",
     "category": "Method",
@@ -697,7 +761,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_source_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_source_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_source_flow",
     "category": "Method",
@@ -705,7 +769,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_source_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_source_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_source_flow_ne",
     "category": "Method",
