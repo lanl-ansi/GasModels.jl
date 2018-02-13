@@ -11,6 +11,8 @@ GasModels.jl Change Log
 - Implement a "make_per_unit" function to normalize all units
 - Allow multiple loads/producers per node (breaking)
 - Implement Constraints on compressor power 
+- Implement a multi-network test
+- Implement an update_data function patterned after PowerModels.jl
 
 ### Staged
 

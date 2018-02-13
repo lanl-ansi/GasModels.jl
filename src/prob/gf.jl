@@ -48,28 +48,28 @@ function post_gf(gm::GenericGasModel)
         constraint_parallel_flow(gm, i)
     end
     
-    for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))] #[collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
+    for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))] 
         constraint_on_off_pressure_drop(gm, i)
         constraint_on_off_pipe_flow_direction(gm, i)
         constraint_weymouth(gm, i)        
     end
 
-    for i in ids(gm, :short_pipe) # gm.ref[:short_pipe]
+    for i in ids(gm, :short_pipe) 
         constraint_short_pipe_pressure_drop(gm, i)
         constraint_on_off_short_pipe_flow_direction(gm, i)      
     end
         
-    for i in ids(gm, :compressor) #gm.ref[:compressor]
+    for i in ids(gm, :compressor) 
         constraint_on_off_compressor_flow_direction(gm, i)
         constraint_on_off_compressor_ratios(gm, i)    
     end
     
-    for i in ids(gm, :valve) #gm.ref[:valve]    
+    for i in ids(gm, :valve)     
         constraint_on_off_valve_flow_direction(gm, i)
         constraint_on_off_valve_pressure_drop(gm, i)  
     end
     
-    for i in ids(gm, :control_valve) #gm.ref[:control_valve]    
+    for i in ids(gm, :control_valve)     
         constraint_on_off_control_valve_flow_direction(gm, i)
         constraint_on_off_control_valve_pressure_drop(gm, i)  
     end

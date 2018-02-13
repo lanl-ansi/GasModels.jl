@@ -39,23 +39,23 @@ function post_nels(gm::GenericGasModel)
         end            
     end
 
-    for i in ids(gm,:connection) #gm.ref[:connection]
+    for i in ids(gm,:connection) 
         constraint_flow_direction_choice(gm, i) 
         constraint_parallel_flow_ne(gm, i)  
     end
     
-    for i in ids(gm, :ne_connection) #gm.ref[:ne_connection]
+    for i in ids(gm, :ne_connection) 
         constraint_flow_direction_choice_ne(gm, i) 
         constraint_parallel_flow_ne(gm, i)  
     end
 
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] #[collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
+    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 
         constraint_on_off_pressure_drop(gm, i) 
         constraint_on_off_pipe_flow_direction(gm, i) 
         constraint_weymouth(gm, i)
     end
 
-    for i in ids(gm,:ne_pipe) #gm.ref[:ne_pipe]
+    for i in ids(gm,:ne_pipe) 
         constraint_on_off_pressure_drop_ne(gm, i) 
         constraint_on_off_pipe_flow_direction_ne(gm, i) 
         constraint_on_off_pipe_flow_ne(gm, i) 
@@ -71,22 +71,22 @@ function post_nels(gm::GenericGasModel)
     # and we just want to add a compressor to it.  Use constraint 
     # constraint_on_off_compressor_flow_expansion to disallow flow
     # if the compressor is not built 
-    for i in ids(gm,:compressor) #gm.ref[:compressor]
+    for i in ids(gm,:compressor) 
         constraint_on_off_compressor_flow_direction(gm, i) 
         constraint_on_off_compressor_ratios(gm, i)         
     end
  
-    for i in ids(gm, :ne_compressor) #gm.ref[:ne_compressor]
+    for i in ids(gm, :ne_compressor) 
         constraint_on_off_compressor_flow_direction_ne(gm, i) 
         constraint_on_off_compressor_ratios_ne(gm, i) 
     end  
           
-    for i in ids(gm, :valve) #gm.ref[:valve]    
+    for i in ids(gm, :valve)     
         constraint_on_off_valve_flow_direction(gm, i)
         constraint_on_off_valve_pressure_drop(gm, i)  
     end
     
-    for i in ids(gm, :control_valve) #gm.ref[:control_valve]    
+    for i in ids(gm, :control_valve)    
         constraint_on_off_control_valve_flow_direction(gm, i)
         constraint_on_off_control_valve_pressure_drop(gm, i)  
     end

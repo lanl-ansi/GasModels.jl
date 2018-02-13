@@ -104,31 +104,13 @@ function post_ne(gm::GenericGasModel)
     end  
 end
 
-" on/off constraints on flow across pipes for expansion variables "
-function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, pipe_idx)
-    pipe = gm.ref[:nw][n][:ne_connection][pipe_idx]
-      
-    i_junction_idx = pipe["f_junction"]
-    j_junction_idx = pipe["t_junction"]
 
-    zp = gm.var[:nw][n][:zp][pipe_idx] 
-    f  = gm.var[:nw][n][:f_ne][pipe_idx] 
-    
-    max_flow = gm.ref[:nw][n][:max_flow]
-    pd_max = pipe["pd_max"]  
-    pd_min = pipe["pd_min"]  
-    w = pipe["resistance"]
-          
-    c1 = @constraint(gm.model, f <= zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))
-    c2 = @constraint(gm.model, f >= -zp*min(max_flow, sqrt(w*max(pd_max, abs(pd_min)))))            
-    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_ne1)
-        gm.con[:nw][n][:on_off_pipe_flow_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pipe_flow_ne2] = Dict{Int,ConstraintRef}()          
-    end    
-    gm.con[:nw][n][:on_off_pipe_flow_ne1][pipe_idx] = c1              
-    gm.con[:nw][n][:on_off_pipe_flow_ne2][pipe_idx] = c2              
-end
-constraint_on_off_pipe_flow_ne(gm::GenericGasModel, i::Int) = constraint_on_off_pipe_flow_ne(gm, gm.cnw, i)
+
+
+
+
+
+
 
 " on/off constraints on flow across compressors for expansion variables "
 function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, c_idx)
