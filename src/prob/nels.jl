@@ -62,7 +62,7 @@ function post_nels(gm::GenericGasModel)
         constraint_weymouth_ne(gm, i) 
     end
     
-    for i in ids(gm, :short_pipe) #gm.ref[:short_pipe]
+    for i in ids(gm, :short_pipe) 
         constraint_short_pipe_pressure_drop(gm, i)
         constraint_on_off_short_pipe_flow_direction(gm, i)      
     end
