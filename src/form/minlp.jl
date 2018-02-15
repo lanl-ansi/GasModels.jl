@@ -25,6 +25,28 @@ const MINLPGasDirectedModel = GenericGasModel{StandardMINLPDirectedForm}
 MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPForm; kwargs...)
 MINLPGasDirectedModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPDirectedForm; kwargs...)
 
+""
+function variable_flow{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    variable_flux(gm,n; bounded=bounded)
+    variable_connection_direction(gm,n)  
+end
+
+""
+function variable_flow{T <: AbstractMINLPDirectedForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    variable_flux(gm,n; bounded=bounded)
+end
+
+""
+function variable_flow_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    variable_flux_ne(gm,n; bounded=bounded)
+    variable_connection_direction_ne(gm,n)  
+end
+
+""
+function variable_flow_ne{T <: AbstractMINLPDirectedForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    variable_flux_ne(gm,n; bounded=bounded)
+end
+
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)
     pi = gm.var[:nw][n][:p][i] 

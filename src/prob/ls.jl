@@ -12,9 +12,8 @@ end
 
 " construct the gas flow feasbility problem "
 function post_ls(gm::GenericGasModel)
-    variable_flux(gm)
+    variable_flow(gm)
     variable_pressure_sqr(gm)
-    variable_connection_direction(gm)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)

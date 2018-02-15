@@ -1,16 +1,4 @@
 ################
-# Variables
-################
-  
-" variables associated with direction of flow on the connections "
-function variable_connection_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-end
-
-" variables associated with direction of flow on the connections "
-function variable_connection_direction_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-end
-
-################
 # Constraints
 ################
 

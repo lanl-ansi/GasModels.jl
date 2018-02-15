@@ -23,8 +23,7 @@ end
 " construct the gas flow feasbility problem "
 function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
-    variable_flux(gm)
-    variable_connection_direction(gm)
+    variable_flow(gm)
     variable_valve_operation(gm)
     
     for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
