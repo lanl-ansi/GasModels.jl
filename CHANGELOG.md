@@ -12,6 +12,7 @@ GasModels.jl Change Log
 - Implement Constraints on compressor power 
 - Implement a multi-network test
 - Implement an update_data function patterned after PowerModels.jl
+- Implement a matlab like data input format
 
 ### Staged
 

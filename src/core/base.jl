@@ -7,7 +7,12 @@ export
 
 ""
 @compat abstract type AbstractGasFormulation end
-        
+
+"Formulation specific to models corresponding to directions"
+@compat abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
+@compat abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
+
+
 """
 ```
 type GenericGasModel{T<:AbstractGasFormulation}
@@ -18,7 +23,7 @@ type GenericGasModel{T<:AbstractGasFormulation}
     var::Dict{Symbol,Any} # model variable lookup
     constraint::Dict{Symbol, Dict{Any, ConstraintRef}} # model constraint lookup
     ref::Dict{Symbol,Any} # reference data
-    ext::Dict{Symbol,Any} # user extentions
+    ext::Dict{Symbol,Any} # user extensions
 end
 ```
 where
@@ -50,7 +55,7 @@ end
 
 "default generic constructor"
 function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
-    ref = build_ref(data) # refrence data
+    ref = build_ref(data) # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
     con = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
