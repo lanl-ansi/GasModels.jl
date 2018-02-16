@@ -161,6 +161,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPDirectedForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth",
+    "category": "Method",
+    "text": "Weymouth equation with fixed direction variables\n\n\n\n"
+},
+
+{
     "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
@@ -169,11 +177,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth_ne-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPDirectedForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
-    "title": "GasModels.constraint_weymouth_fixed_direction",
+    "title": "GasModels.constraint_weymouth_ne",
     "category": "Method",
-    "text": "Weymouth equation with fixed direction variables\n\n\n\n"
+    "text": "Weymouth equation with fixed directions for MINLP\n\n\n\n"
 },
 
 {
@@ -185,19 +193,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMINLPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_weymouth_ne_fixed_direction",
-    "category": "Method",
-    "text": "Weymouth equation with fixed directions for MINLP\n\n\n\n"
-},
-
-{
     "location": "formulations.html#MINLP-1",
     "page": "Network Formulations",
     "title": "MINLP",
     "category": "section",
     "text": "Modules = [GasModels]\nPages   = [\"form/minlp.jl\"]\nOrder   = [:function]\nPrivate  = true"
+},
+
+{
+    "location": "formulations.html#GasModels.constraint_weymouth-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPDirectedForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth",
+    "category": "Method",
+    "text": "Weymouth equation with directed flow\n\n\n\n"
 },
 
 {
@@ -209,9 +217,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "formulations.html#GasModels.constraint_weymouth_ne-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPDirectedForm},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Network Formulations",
-    "title": "GasModels.constraint_weymouth_fixed_direction",
+    "title": "GasModels.constraint_weymouth_ne",
     "category": "Method",
     "text": "Weymouth equation with fixed direction\n\n\n\n"
 },
@@ -225,11 +233,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.constraint_weymouth_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T<:GasModels.AbstractMISOCPForm},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "formulations.html#GasModels.variable_flow",
     "page": "Network Formulations",
-    "title": "GasModels.constraint_weymouth_ne_fixed_direction",
-    "category": "Method",
-    "text": "Weymouth equation with fixed direction\n\n\n\n"
+    "title": "GasModels.variable_flow",
+    "category": "Function",
+    "text": "\n\n"
 },
 
 {
@@ -345,22 +353,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#GasModels.variable_connection_direction",
-    "page": "Variables",
-    "title": "GasModels.variable_connection_direction",
-    "category": "Function",
-    "text": "variables associated with direction of flow on the connections \n\n\n\n"
-},
-
-{
-    "location": "variables.html#GasModels.variable_connection_direction_ne",
-    "page": "Variables",
-    "title": "GasModels.variable_connection_direction_ne",
-    "category": "Function",
-    "text": "variables associated with direction of flow on the connections \n\n\n\n"
-},
-
-{
     "location": "variables.html#GasModels.variable_flux",
     "page": "Variables",
     "title": "GasModels.variable_flux",
@@ -433,19 +425,35 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_conserve_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_compressor_flow-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_conserve_flow",
+    "title": "GasModels.constraint_compressor_flow",
     "category": "Method",
-    "text": "This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption \n\n\n\n"
+    "text": "All constraints associated with flows through a compressor\n\n\n\n"
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_conserve_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_compressor_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_conserve_flow_ne",
+    "title": "GasModels.constraint_compressor_flow_ne",
     "category": "Method",
-    "text": "This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption \n\n\n\n"
+    "text": "All constraints associated with flows through a compressor\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_control_valve_flow-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_control_valve_flow",
+    "category": "Method",
+    "text": "All constraints associated with flows through a control valve\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_control_valve_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_control_valve_flow_ne",
+    "category": "Method",
+    "text": "All constraints associated with flows through a control valve\n\n\n\n"
 },
 
 {
@@ -457,7 +465,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_flow_direction_choice-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_flow_direction_choice-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
     "title": "GasModels.constraint_flow_direction_choice",
     "category": "Method",
@@ -465,11 +473,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_flow_direction_choice_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any}",
+    "location": "constraints.html#GasModels.constraint_flow_direction_choice_ne-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
     "title": "GasModels.constraint_flow_direction_choice_ne",
     "category": "Method",
     "text": "Constraint that states a flow direction must be chosen for new edges \n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_junction_flow-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_junction_flow",
+    "category": "Method",
+    "text": "All constraints associated with flows through at a junction\n\n\n\n"
 },
 
 {
@@ -505,6 +521,38 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "constraints.html#GasModels.constraint_junction_flow_ls-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_junction_flow_ls",
+    "category": "Method",
+    "text": "All constraints associated with flows through at a junction with load shedding\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_junction_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_junction_flow_ne",
+    "category": "Method",
+    "text": "All constraints associated with flows through at a junction with new pipe options\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_junction_flow_ne_ls-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_junction_flow_ne_ls",
+    "category": "Method",
+    "text": "All constraints associated with flows through at a junction with new pipe options\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_new_compressor_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_new_compressor_flow_ne",
+    "category": "Method",
+    "text": "All constraints associated with flows through a control valve\n\n\n\n"
+},
+
+{
     "location": "constraints.html#GasModels.constraint_new_compressor_ratios_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_new_compressor_ratios_ne",
@@ -513,35 +561,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_new_pipe_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction",
+    "title": "GasModels.constraint_new_pipe_flow_ne",
     "category": "Method",
-    "text": "constraints on flow across compressors \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across compressors when directions are constants \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_ne",
-    "category": "Method",
-    "text": "constraints on flow across compressors \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_ne_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across compressors when the directions are constants \n\n\n\n"
+    "text": "All constraints associated with flows through a valve\n\n\n\n"
 },
 
 {
@@ -553,91 +577,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_ratios",
-    "category": "Method",
-    "text": "enforces pressure changes bounds that obey compression ratios \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_ratios_fixed_direction",
-    "category": "Method",
-    "text": "on/off constraint for compressors when the flow direction is constant \n\n\n\n"
-},
-
-{
     "location": "constraints.html#GasModels.constraint_on_off_compressor_ratios_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios_ne",
     "category": "Method",
     "text": "constraints on pressure drop across control valves \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_control_valve_flow_direction",
-    "category": "Method",
-    "text": "constraints on flow across control valves \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_control_valve_flow_direction_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across control valves when directions are constants \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_control_valve_pressure_drop",
-    "category": "Method",
-    "text": "constraints on pressure drop across control valves \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_control_valve_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_control_valve_pressure_drop_fixed_direction",
-    "category": "Method",
-    "text": "constraints on pressure drop across control valves when directions are constants \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction",
-    "category": "Method",
-    "text": "constraints on flow across pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across pipes where the directions are fixed \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_ne",
-    "category": "Method",
-    "text": "constraints on flow across pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pipe_flow_direction_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_ne_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across pipes when directions are fixed \n\n\n\n"
 },
 
 {
@@ -649,70 +593,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pressure_drop",
-    "category": "Method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pressure_drop_fixed_direction",
-    "category": "Method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pressure_drop_ne",
-    "category": "Method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_pressure_drop_ne_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pressure_drop_ne_fixed_direction",
-    "category": "Method",
-    "text": "constraints on pressure drop across pipes when the direction is fixed \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_short_pipe_flow_direction",
-    "category": "Method",
-    "text": "constraints on flow across short pipes \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_short_pipe_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_short_pipe_flow_direction_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across short pipes when the directions are constants \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_valve_flow_direction",
-    "category": "Method",
-    "text": "constraints on flow across valves \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_on_off_valve_flow_direction_fixed_direction-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_on_off_valve_flow_direction_fixed_direction",
-    "category": "Method",
-    "text": "constraints on flow across valves when directions are constants \n\n\n\n"
-},
-
-{
     "location": "constraints.html#GasModels.constraint_on_off_valve_pressure_drop-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_valve_pressure_drop",
@@ -721,19 +601,35 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_parallel_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_pipe_flow-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_parallel_flow",
+    "title": "GasModels.constraint_pipe_flow",
     "category": "Method",
-    "text": "ensures that parallel lines have flow in the same direction \n\n\n\n"
+    "text": "All constraints associated with flows through a pipe\n\n\n\n"
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_parallel_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_pipe_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_parallel_flow_ne",
+    "title": "GasModels.constraint_pipe_flow_ne",
     "category": "Method",
-    "text": "ensures that parallel lines have flow in the same direction \n\n\n\n"
+    "text": "All constraints associated with flows through a pipe\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_short_pipe_flow-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_short_pipe_flow",
+    "category": "Method",
+    "text": "All constraints associated with flows through a short pipe\n\n\n\n"
+},
+
+{
+    "location": "constraints.html#GasModels.constraint_short_pipe_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
+    "page": "Constraints",
+    "title": "GasModels.constraint_short_pipe_flow_ne",
+    "category": "Method",
+    "text": "All constraints associated with flows through a short pipe\n\n\n\n"
 },
 
 {
@@ -745,35 +641,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_sink_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_valve_flow-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_sink_flow",
+    "title": "GasModels.constraint_valve_flow",
     "category": "Method",
-    "text": "Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) \n\n\n\n"
+    "text": "All constraints associated with flows through a valve\n\n\n\n"
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_sink_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_valve_flow_ne-Tuple{GasModels.GenericGasModel,Int64}",
     "page": "Constraints",
-    "title": "GasModels.constraint_sink_flow_ne",
+    "title": "GasModels.constraint_valve_flow_ne",
     "category": "Method",
-    "text": "Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_source_flow-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_source_flow",
-    "category": "Method",
-    "text": "Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_source_flow_ne-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any}",
-    "page": "Constraints",
-    "title": "GasModels.constraint_source_flow_ne",
-    "category": "Method",
-    "text": "Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) \n\n\n\n"
+    "text": "All constraints associated with flows through a valve\n\n\n\n"
 },
 
 {
