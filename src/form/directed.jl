@@ -2,12 +2,6 @@
 # Constraints
 ################
 
-function constraint_flow_direction_choice{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i)
-end
-
-function constraint_flow_direction_choice_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i)
-end
-
 " constraints on pressure drop across pipes "
 function constraint_on_off_pressure_drop{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...)
     kwargs = Dict(kwargs)
@@ -190,28 +184,4 @@ function constraint_on_off_control_valve_pressure_drop{T <: AbstractDirectedGasF
     gm.con[:nw][n][:on_off_control_valve_pressure_drop2][k] = @constraint(gm.model,  (min_ratio*pi) - pj <= (2-yp-v)*(min_ratio*i_pmax^2) )
     gm.con[:nw][n][:on_off_control_valve_pressure_drop3][k] = @constraint(gm.model,  pi - (max_ratio*pj) <= (2-yn-v)*i_pmax^2)              
     gm.con[:nw][n][:on_off_control_valve_pressure_drop4][k] = @constraint(gm.model,  (min_ratio*pj) - pi <= (2-yn-v)*(min_ratio*j_pmax^2))                             
-end
-
-function constraint_source_flow{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches)
-end
-
-function constraint_source_flow_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne)
-end
-
-function constraint_sink_flow{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches)
-end
-
-function constraint_sink_flow_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne)
-end
-
-function constraint_conserve_flow{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, yp_first, yn_first, yp_last, yn_last)
-end
-
-function constraint_conserve_flow_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last)
-end
-
-function constraint_parallel_flow{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections)
-end
-
-function constraint_parallel_flow_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections, f_connections_ne, t_connections_ne)    
 end

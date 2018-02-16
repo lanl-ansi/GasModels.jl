@@ -22,6 +22,7 @@ include("form/minlp.jl")
 include("form/misocp.jl")
 include("form/directed.jl")
 include("form/undirected.jl")
+include("form/shared.jl")
 
 include("prob/gf.jl")
 include("prob/ne.jl")

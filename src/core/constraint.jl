@@ -10,6 +10,57 @@ constraint_flow_direction_choice(gm::GenericGasModel, i::Int) = constraint_flow_
 " Constraint that states a flow direction must be chosen for new edges "
 constraint_flow_direction_choice_ne(gm::GenericGasModel, i::Int) = constraint_flow_direction_choice_ne(gm, gm.cnw, i)
 
+" All constraints associated with flows through at a junction"
+constraint_junction_flow(gm::GenericGasModel, i::Int) = constraint_junction_flow(gm, gm.cnw, i)
+
+" All constraints associated with flows through at a junction with load shedding"
+constraint_junction_flow_ls(gm::GenericGasModel, i::Int) = constraint_junction_flow_ls(gm, gm.cnw, i)
+
+" All constraints associated with flows through at a junction with new pipe options"
+constraint_junction_flow_ne(gm::GenericGasModel, i::Int) = constraint_junction_flow_ne(gm, gm.cnw, i)
+
+" All constraints associated with flows through at a junction with new pipe options"
+constraint_junction_flow_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_flow_ne_ls(gm, gm.cnw, i)
+
+" All constraints associated with flows through a pipe"
+constraint_pipe_flow(gm::GenericGasModel, k::Int) = constraint_pipe_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a short pipe"
+constraint_short_pipe_flow(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a compressor"
+constraint_compressor_flow(gm::GenericGasModel, k::Int) = constraint_compressor_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a valve"
+constraint_valve_flow(gm::GenericGasModel, k::Int) = constraint_valve_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a control valve"
+constraint_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_control_valve_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a pipe"
+constraint_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a short pipe"
+constraint_short_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a compressor"
+constraint_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_compressor_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a valve"
+constraint_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_valve_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a control valve"
+constraint_control_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a valve"
+constraint_new_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a control valve"
+constraint_new_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_compressor_flow_ne(gm, gm.cnw, k)
+
+
+
+
 # Constraints with templates
 
 " constraints on pressure drop across control valves "

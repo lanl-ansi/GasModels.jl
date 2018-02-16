@@ -58,23 +58,6 @@ function variable_flow{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int=g
     variable_connection_direction(gm,n)  
 end
 
-""
-function variable_flow{T <: AbstractMISOCPDirectedForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux(gm,n; bounded=bounded)
-end
-
-""
-function variable_flow_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux_ne(gm,n; bounded=bounded)
-    variable_connection_direction_ne(gm,n)  
-end
-
-""
-function variable_flow_ne{T <: AbstractMISOCPDirectedForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux_ne(gm,n; bounded=bounded)
-end
-
-
 " Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)  
     pi = gm.var[:nw][n][:p][i] 

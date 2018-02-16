@@ -101,19 +101,6 @@ function constraint_on_off_compressor_flow_direction_ne{T}(gm::GenericGasModel{T
 end 
 constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, i::Int) = constraint_on_off_compressor_flow_direction_ne(gm, gm.cnw, i)
 
-#" constraints on flow across compressors when the directions are constants "
-#function constraint_on_off_compressor_flow_direction_ne_fixed_direction{T}(gm::GenericGasModel{T}, n::Int, c_idx)
- #   compressor = ref(gm,n,:ne_connection,c_idx)
-      
-  #  i_junction_idx = compressor["f_junction"]
-  #  j_junction_idx = compressor["t_junction"]
-  #  yp             = compressor["yp"]
-  #  yn             = compressor["yn"]
-
-  #  constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, n, c_idx, i_junction_idx, j_junction_idx; yp=yp, yn=yn)        
-#end 
-#constraint_on_off_compressor_flow_direction_ne_fixed_direction(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow_direction_ne_fixed_direction(gm, gm.cnw, k)
-
 " enforces pressure changes bounds that obey compression ratios "
 function constraint_on_off_compressor_ratios{T}(gm::GenericGasModel{T}, n::Int, k)
     compressor     = ref(gm,n,:connection,k)
