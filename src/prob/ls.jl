@@ -12,61 +12,36 @@ end
 
 " construct the gas flow feasbility problem "
 function post_ls(gm::GenericGasModel)
+    variable_flow(gm)
     variable_pressure_sqr(gm)
-    variable_flux(gm)
-    variable_connection_direction(gm)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-    variable_flux(gm)
     
     objective_max_load(gm)
             
     for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
-        constraint_junction_flow_balance_ls(gm, i)
-      
-        if max(junction["qgmin"],junction["qgfirm"]) > 0.0  && junction["qlmin"] == 0.0 && junction["qlmax"] == 0.0 && junction["qlfirm"] == 0.0 && junction["qgmin"] >= 0.0
-            constraint_source_flow(gm, i)
-        end      
-        
-        if junction["qgmax"] == 0.0 && junction["qgmin"] == 0.0 && junction["qgfirm"] == 0.0 && max(junction["qlmin"],junction["qlfirm"]) > 0.0 && junction["qlmin"] >= 0.0
-            constraint_sink_flow(gm, i)
-        end      
-                
-        if junction["qgmax"] == 0 && junction["qgmin"] == 0 && junction["qgfirm"] == 0 && junction["qlmax"] == 0 && junction["qlmin"] == 0 && junction["qlfirm"] == 0 && junction["degree"] == 2
-           constraint_conserve_flow(gm, i)
-        end        
+        constraint_junction_flow_ls(gm, i)      
     end
     
-    for i in ids(gm, :connection) #gm.ref[:connection]
-        constraint_flow_direction_choice(gm, i)
-        constraint_parallel_flow(gm, i)
-    end
-    
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] #[collect(keys(gm.ref[:pipe])); collect(keys(gm.ref[:resistor]))]
-        constraint_on_off_pressure_drop(gm, i)
-        constraint_on_off_pipe_flow_direction(gm, i)
-        constraint_weymouth(gm, i)        
+    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 
+        constraint_pipe_flow(gm, i) 
     end
 
-    for i in ids(gm, :short_pipe) #gm.ref[:short_pipe]
-        constraint_short_pipe_pressure_drop(gm, i)
-        constraint_on_off_short_pipe_flow_direction(gm, i)      
+    for i in ids(gm, :short_pipe)
+        constraint_short_pipe_flow(gm, i) 
     end
         
-    for i in ids(gm, :compressor) #gm.ref[:compressor]
-        constraint_on_off_compressor_flow_direction(gm, i)
-        constraint_on_off_compressor_ratios(gm, i)    
+    for i in ids(gm, :compressor) 
+        constraint_compressor_flow(gm, i) 
     end
     
-    for i in ids(gm, :valve) #gm.ref[:valve]    
-        constraint_on_off_valve_flow_direction(gm, i)
-        constraint_on_off_valve_pressure_drop(gm, i)  
+    for i in ids(gm, :valve)     
+        constraint_valve_flow(gm, i) 
     end
     
-    for i in ids(gm, :control_valve) #gm.ref[:control_valve]    
-        constraint_on_off_control_valve_flow_direction(gm, i)
-        constraint_on_off_control_valve_pressure_drop(gm, i)  
+    for i in ids(gm, :control_valve) 
+        constraint_control_valve_flow(gm, i) 
     end
 end
 

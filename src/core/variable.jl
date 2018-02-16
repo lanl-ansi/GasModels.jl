@@ -36,18 +36,6 @@ function variable_flux_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Boo
     end                       
 end
 
-" variables associated with direction of flow on the connections "
-function variable_connection_direction{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Int, basename="$(n)_yp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yp_start", 1.0))                  
-    gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Int, basename="$(n)_yn", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yn_start", 0.0))                  
-end
-
-" variables associated with direction of flow on the connections "
-function variable_connection_direction_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-     gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_connection])], category = :Int, basename="$(n)_yp_ne", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yp_start", 1.0))                  
-     gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_connection])], category = :Int, basename="$(n)_yn_ne", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yn_start", 0.0))                  
-end
-
 " variables associated with building pipes "
 function variable_pipe_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
     gm.var[:nw][n][:zp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_pipe])], category = :Int, basename="$(n)_zp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zp_start", 0.0))                  

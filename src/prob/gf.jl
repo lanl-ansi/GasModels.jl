@@ -23,55 +23,31 @@ end
 " construct the gas flow feasbility problem "
 function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
-    variable_flux(gm)
-    variable_connection_direction(gm)
+    variable_flow(gm)
     variable_valve_operation(gm)
     
     for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
-        constraint_junction_flow_balance(gm, i)
-      
-        if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0 
-            constraint_source_flow(gm, i)
-        end      
-        
-        if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 
-            constraint_sink_flow(gm, i)
-        end      
-                
-        if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree"] == 2
-           constraint_conserve_flow(gm, i)           
-        end        
-    end
-    
-    for i in ids(gm, :connection) 
-        constraint_flow_direction_choice(gm, i)
-        constraint_parallel_flow(gm, i)
+        constraint_junction_flow(gm, i)
     end
     
     for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))] 
-        constraint_on_off_pressure_drop(gm, i)
-        constraint_on_off_pipe_flow_direction(gm, i)
-        constraint_weymouth(gm, i)        
+        constraint_pipe_flow(gm, i) 
     end
 
-    for i in ids(gm, :short_pipe) 
-        constraint_short_pipe_pressure_drop(gm, i)
-        constraint_on_off_short_pipe_flow_direction(gm, i)      
+    for i in ids(gm, :short_pipe)
+        constraint_short_pipe_flow(gm, i) 
     end
         
-    for i in ids(gm, :compressor) 
-        constraint_on_off_compressor_flow_direction(gm, i)
-        constraint_on_off_compressor_ratios(gm, i)    
+    for i in ids(gm, :compressor)
+        constraint_compressor_flow(gm, i) 
     end
     
-    for i in ids(gm, :valve)     
-        constraint_on_off_valve_flow_direction(gm, i)
-        constraint_on_off_valve_pressure_drop(gm, i)  
+    for i in ids(gm, :valve)
+        constraint_valve_flow(gm, i) 
     end
     
     for i in ids(gm, :control_valve)     
-        constraint_on_off_control_valve_flow_direction(gm, i)
-        constraint_on_off_control_valve_pressure_drop(gm, i)  
+        constraint_control_valve_flow(gm, i) 
     end
 end
 

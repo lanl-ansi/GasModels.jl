@@ -26,5 +26,4 @@ include("gf.jl")
 include("ne.jl")
 include("ls.jl")
 include("nels.jl")
-include("nelsfd.jl")
 
