@@ -135,13 +135,16 @@ constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint
 
 " standard flow balance equation where demand and production is fixed "
 function constraint_junction_flow_balance{T}(gm::GenericGasModel{T}, n::Int, i)
-    junction = ref(gm,n,:junction,i)  
+    junction = ref(gm,n,:junction,i)
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
+      
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     
     f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
-    qgfirm     = junction["qgfirm"]
-    qlfirm     = junction["qlfirm"]
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0
       
     constraint_junction_flow_balance(gm, n, i, f_branches, t_branches, qgfirm, qlfirm)  
 end
@@ -151,15 +154,17 @@ constraint_junction_flow_balance(gm::GenericGasModel, i::Int) = constraint_junct
 function constraint_junction_flow_balance_ne{T}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)   
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
-    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
+          
     f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
 
     f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
     t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection])))
    
-    qgfirm = junction["qgfirm"] 
-    qlfirm = junction["qlfirm"]  
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0
     
     constraint_junction_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, qgfirm, qlfirm)  
 end
@@ -172,15 +177,18 @@ function constraint_junction_flow_balance_ls{T}(gm::GenericGasModel{T}, n::Int, 
     
     f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
-      
-    ql_firm = junction["qlfirm"]
-    qg_firm = junction["qgfirm"]
-    qlmin   = junction["qlmin"]
-    qlmax   = junction["qlmax"]
-    qgmin   = junction["qgmin"]
-    qgmax   = junction["qgmax"]
+    
+    # collect the firm load numbers    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
+    qgfirm  = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0
+    qlfirm  = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0
+
+    # collect the possible consumer and producer indices
+    v_consumers = collect(keys(filter( (a, consumer) -> consumer["ql_junc"] == i && (consumer["qlmax"] != 0 || consumer["qlmin"]) != 0, gm.ref[:nw][n][:consumer])))
+    v_producers = collect(keys(filter( (a, producer) -> producer["qg_junc"] == i && (producer["qgmax"] != 0 || producer["qgmin"]) != 0, gm.ref[:nw][n][:producer])))
           
-    constraint_junction_flow_balance_ls(gm, n, i, f_branches, t_branches, ql_firm, qg_firm, qlmin, qlmax, qgmin, qgmax)
+    constraint_junction_flow_balance_ls(gm, n, i, f_branches, t_branches, qlfirm, qgfirm, v_consumers, v_producers)
 end
 constraint_junction_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_junction_flow_balance_ls(gm, gm.cnw, i)
 
@@ -195,14 +203,17 @@ function constraint_junction_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, n::In
     f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
     t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection])))
     
-    qlmin = junction["qlmin"]  
-    qlmax = junction["qlmax"]  
-    qgmin = junction["qgmin"]  
-    qgmax = junction["qgmax"]  
-    ql_firm = junction["qlfirm"]
-    qg_firm = junction["qgfirm"]
-    
-    constraint_junction_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, qlmin, qlmax, qgmin, qgmax, ql_firm, qg_firm)     
+    # collect the firm load numbers    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
+    qgfirm  = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0
+    qlfirm  = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0
+
+    # collect the possible consumer and producer indices
+    v_consumers = collect(keys(filter( (a, consumer) -> consumer["ql_junc"] == i && (consumer["qlmax"] != 0 || consumer["qlmin"]) != 0, gm.ref[:nw][n][:consumer])))
+    v_producers = collect(keys(filter( (a, producer) -> producer["qg_junc"] == i && (producer["qgmax"] != 0 || producer["qgmin"]) != 0, gm.ref[:nw][n][:producer])))
+              
+    constraint_junction_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, qlfirm, qgfirm, v_consumers, v_producers)     
 end
 constraint_junction_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_flow_balance_ne_ls(gm, gm.cnw, i)
 

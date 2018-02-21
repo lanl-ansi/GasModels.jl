@@ -7,7 +7,6 @@ GasModels.jl Change Log
 - Implement non-binary variable model of compressors and control valves  
 - Implement nlp version(s) of the problems (abs, x - x^2 = 0, compressor directionalty)
 - Implement a "make_per_unit" function to normalize all units
-- Allow multiple loads/producers per node (breaking)
 - Implement Constraints on compressor power 
 - Implement a multi-network test
 - Implement an update_data function patterned after PowerModels.jl
@@ -18,6 +17,7 @@ GasModels.jl Change Log
 - Added support for multiple networks in the JuMP model (breaking)
 - Introduced the constraint_template.jl framework for gas constraints
 - Created undirected and directed gas formulations (breaking)
+- Producers and Consumers defined as seperate objects so that multiple can exist at each node (breaking)
 
 ### v0.1.0
 - Initial implementation

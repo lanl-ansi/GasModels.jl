@@ -304,16 +304,16 @@ end
         end
    end
     
-    # 325.31057760000004 yp[321] - f[321] <= 325.31057760000004
-    # f[321] + 325.31057760000004 yn[321] <= 325.31057760000004
+    # 162.6552888 yp[321] - f[321] <= 325.31057760000004
+    # f[321] + 162.6552888 yn[321] <= 325.31057760000004
    ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow_direction1][321]
-   c = gm.model.linconstr[ref.idx]      
-   @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+   c = gm.model.linconstr[ref.idx]
+   @test isapprox(c.ub, 162.6552888; atol = 1e-4)
    @test JuMP.sense(c) == :<=
    @test length(c.terms.coeffs) == 2                
    for i = 1:length(c.terms.vars)
        if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yp][321]
-           @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+           @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
        elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][321]
            @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
         else
@@ -323,13 +323,13 @@ end
                 
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow_direction2][321]
     c = gm.model.linconstr[ref.idx]      
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
 
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yn][321]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][321]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
         else
@@ -337,17 +337,17 @@ end
         end
     end
    
-    # 325.31057760000004 yp[549] - f[549] <= 325.31057760000004
-    # f[549] + 325.31057760000004 yn[549] <= 325.31057760000004
+    # 162.6552888 yp[549] - f[549] <= 162.6552888
+    # f[549] + 162.6552888 yn[549] <= 162.6552888
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction1][549]
     c = gm.model.linconstr[ref.idx]      
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
 
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yp][549]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][549]
             @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
         else
@@ -357,13 +357,13 @@ end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction2][549]
     c = gm.model.linconstr[ref.idx]      
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
 
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yn][549]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][549]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
         else
@@ -447,21 +447,21 @@ end
        end
     end
     
-    # f[558] - 325.31057760000004 v[558] <= 0
-    # -325.31057760000004 v[558] - f[558] <= 0
-    # 325.31057760000004 yp[558] - f[558] <= 325.31057760000004
-    # f[558] + 325.31057760000004 yn[558] <= 325.31057760000004
+    # f[558] - 162.6552888 v[558] <= 0
+    # -162.6552888 v[558] - f[558] <= 0
+    # 162.6552888 yp[558] - f[558] <= 162.6552888
+    # f[558] + 162.6552888 yn[558] <= 162.6552888
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction2][558]   
     c = gm.model.linconstr[ref.idx]      
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
         
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][558]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:yn][558]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)       
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)       
         else
             @test true == false
         end
@@ -471,13 +471,13 @@ end
     c = gm.model.linconstr[ref.idx]      
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
 
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][558]
             @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:yp][558]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)       
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)       
         else
             @test true == false
        end
@@ -492,7 +492,7 @@ end
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][558]
             @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:v][558]
-            @test isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)       
+            @test isapprox(c.terms.coeffs[i], -162.6552888; atol = 1e-4)       
         else
             @test true == false
         end
@@ -508,7 +508,7 @@ end
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][558]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:v][558]
-            @test isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)       
+            @test isapprox(c.terms.coeffs[i], -162.6552888; atol = 1e-4)       
         else
             @test true == false
         end
@@ -551,10 +551,10 @@ end
         end
     end
     
-    # -325.31057760000004 v[591] - f[591] <= 0
-    # f[591] + 325.31057760000004 yn[591] <= 325.31057760000004
-    # 325.31057760000004 yp[591] - f[591] <= 325.31057760000004
-    # f[591] - 325.31057760000004 v[591] <= 0
+    # -162.6552888 v[591] - f[591] <= 0
+    # f[591] + 325.31057760000004 yn[591] <= 162.6552888
+    # 162.6552888 yp[591] - f[591] <= 162.6552888
+    # f[591] - 162.6552888 v[591] <= 0
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction4][591]
     c = gm.model.linconstr[ref.idx]      
     @test JuMP.sense(c) == :<=
@@ -564,7 +564,7 @@ end
     #    ok = true
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:v][591]
-            @test isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], -162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][591]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
         else
@@ -576,11 +576,11 @@ end
     c = gm.model.linconstr[ref.idx]      
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
    
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yp][591]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][591]
             @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
          else
@@ -592,11 +592,11 @@ end
     c = gm.model.linconstr[ref.idx]      
     @test JuMP.sense(c) == :<=
     @test length(c.terms.coeffs) == 2                
-    @test isapprox(c.ub, 325.31057760000004; atol = 1e-4)
+    @test isapprox(c.ub, 162.6552888; atol = 1e-4)
     
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:yn][591]
-            @test isapprox(c.terms.coeffs[i], 325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], 162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][591]
             @test isapprox(c.terms.coeffs[i], 1.0; atol = 1e-4)       
         else
@@ -611,7 +611,7 @@ end
     @test isapprox(c.ub, 0.0; atol = 1e-4)
     for i = 1:length(c.terms.vars)
         if c.terms.vars[i] == gm.var[:nw][gm.cnw][:v][591]
-            @test isapprox(c.terms.coeffs[i], -325.31057760000004; atol = 1e-4)
+            @test isapprox(c.terms.coeffs[i], -162.6552888; atol = 1e-4)
         elseif c.terms.vars[i] == gm.var[:nw][gm.cnw][:f][591]
             @test isapprox(c.terms.coeffs[i], -1.0; atol = 1e-4)       
         else
