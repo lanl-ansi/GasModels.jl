@@ -3,14 +3,25 @@
 "Computes the maximum flow of the Gas Model"
 function calc_max_flow(data::Dict{String,Any})
     max_flow = 0  
-    for (idx, junction) in data["junction"]
-        if junction["qgmax"] > 0
-          max_flow = max_flow + junction["qgmax"]
+    #for (idx, junction) in data["junction"]
+     #   if junction["qgmax"] > 0
+      #    max_flow = max_flow + junction["qgmax"]
+       # end
+        #if junction["qgfirm"] > 0
+         # max_flow = max_flow + junction["qgfirm"]
+        #end
+    #end 
+    
+    for (idx, producer) in data["producer"]
+        if producer["qgmax"] > 0
+          max_flow = max_flow + producer["qgmax"]
         end
-        if junction["qgfirm"] > 0
-          max_flow = max_flow + junction["qgfirm"]
+        if producer["qgfirm"] > 0
+          max_flow = max_flow + producer["qgfirm"]
         end
     end 
+    
+    
     return max_flow    
 end
 

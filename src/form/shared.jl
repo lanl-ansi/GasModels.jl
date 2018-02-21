@@ -33,16 +33,21 @@ end
 function constraint_junction_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
     constraint_junction_flow_balance(gm, n, i)
-      
-    if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0 
+    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0  
+    
+    if qgfirm > 0.0 && qlfirm == 0.0 
         constraint_source_flow(gm, n, i)
     end      
         
-    if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 
+    if qgfirm == 0.0 && qlfirm > 0.0 
         constraint_sink_flow(gm, n, i)
     end      
                 
-    if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree"] == 2
+    if qgfirm == 0.0 && qlfirm == 0.0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)           
     end   
 end
@@ -54,16 +59,25 @@ end
 function constraint_junction_flow_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
     constraint_junction_flow_balance_ls(gm, n, i)
-      
-    if max(junction["qgmin"],junction["qgfirm"]) > 0.0  && junction["qlmin"] == 0.0 && junction["qlmax"] == 0.0 && junction["qlfirm"] == 0.0 && junction["qgmin"] >= 0.0
+    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
+    qgmax     = length(producers) > 0 ? sum(producer["qgmax"] for (j, producer) in producers) : 0 
+    qlmax     = length(consumers) > 0 ? sum(consumer["qlmax"] for (j, consumer) in consumers) : 0 
+    qgmin     = length(producers) > 0 ? sum(producer["qgmin"] for (j, producer) in producers) : 0 
+    qlmin     = length(consumers) > 0 ? sum(consumer["qlmin"] for (j, consumer) in consumers) : 0 
+                  
+    if max(qgmin,qgfirm) > 0.0  && qlmin == 0.0 && qlmax == 0.0 && qlfirm == 0.0 && qgmin >= 0.0
         constraint_source_flow(gm, n, i)
     end      
         
-    if junction["qgmax"] == 0.0 && junction["qgmin"] == 0.0 && junction["qgfirm"] == 0.0 && max(junction["qlmin"],junction["qlfirm"]) > 0.0 && junction["qlmin"] >= 0.0
+    if qgmax == 0.0 && qgmin == 0.0 && qgfirm == 0.0 && max(qlmin,qlfirm) > 0.0 && qlmin >= 0.0
         constraint_sink_flow(gm, n, i)
     end      
                 
-    if junction["qgmax"] == 0 && junction["qgmin"] == 0 && junction["qgfirm"] == 0 && junction["qlmax"] == 0 && junction["qlmin"] == 0 && junction["qlfirm"] == 0 && junction["degree"] == 2
+    if qgmax == 0 && qgmin == 0 && qgfirm == 0 && qlmax == 0 && qlmin == 0 && qlfirm == 0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)
     end         
 end
@@ -75,13 +89,19 @@ end
 function constraint_junction_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
     constraint_junction_flow_balance_ne(gm, n, i)
-    if junction["qgfirm"] > 0.0 && junction["qlfirm"] == 0.0
+    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
+    
+    if qgfirm > 0.0 && qlfirm == 0.0
         constraint_source_flow_ne(gm, n, i) 
     end
-    if junction["qgfirm"] == 0.0 && junction["qlfirm"] > 0.0 
+    if qgfirm == 0.0 && qlfirm > 0.0 
         constraint_sink_flow_ne(gm, n, i)
     end              
-    if junction["qgfirm"] == 0.0 && junction["qlfirm"] == 0.0 && junction["degree_all"] == 2
+    if qgfirm == 0.0 && qlfirm == 0.0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, n, i)
     end              
 end
@@ -93,13 +113,23 @@ end
 function constraint_junction_flow_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
     constraint_junction_flow_balance_ne_ls(gm, n, i)
-    if max(junction["qgmin"],junction["qgfirm"]) > 0.0  && junction["qlmin"] == 0.0 && junction["qlmax"] == 0.0 && junction["qlfirm"] == 0.0 && junction["qgmin"] >= 0.0
+    
+    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
+    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
+    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
+    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
+    qgmax     = length(producers) > 0 ? sum(producer["qgmax"] for (j, producer) in producers) : 0 
+    qlmax     = length(consumers) > 0 ? sum(consumer["qlmax"] for (j, consumer) in consumers) : 0 
+    qgmin     = length(producers) > 0 ? sum(producer["qgmin"] for (j, producer) in producers) : 0 
+    qlmin     = length(consumers) > 0 ? sum(consumer["qlmin"] for (j, consumer) in consumers) : 0 
+    
+    if max(qgmin,qgfirm) > 0.0  && qlmin == 0.0 && qlmax == 0.0 && qlfirm == 0.0 && qgmin >= 0.0
         constraint_source_flow_ne(gm, i) 
     end
-    if junction["qgmax"] == 0.0 && junction["qgmin"] == 0.0 && junction["qgfirm"] == 0.0 && max(junction["qlmin"],junction["qlfirm"]) > 0.0 && junction["qlmin"] >= 0.0
+    if qgmax == 0.0 && qgmin == 0.0 && qgfirm == 0.0 && max(qlmin,qlfirm) > 0.0 && qlmin >= 0.0
         constraint_sink_flow_ne(gm, i)
     end              
-    if junction["qgmax"] == 0 && junction["qgmin"] == 0 && junction["qgfirm"] == 0 && junction["qlmax"] == 0 && junction["qlmin"] == 0 && junction["qlfirm"] == 0 && junction["degree_all"] == 2
+    if qgmax == 0 && qgmin == 0 && qgfirm == 0 && qlmax == 0 && qlmin == 0 && qlfirm == 0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, i)
     end                     
 end

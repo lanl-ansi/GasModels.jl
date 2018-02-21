@@ -53,20 +53,20 @@ end
 
 " variables associated with demand "
 function variable_load{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    load_set = filter(i -> gm.ref[:nw][n][:junction][i]["qlmin"] != gm.ref[:nw][n][:junction][i]["qlmax"], collect(keys(gm.ref[:nw][n][:junction])))
+    load_set = filter(i -> gm.ref[:nw][n][:consumer][i]["qlmax"] != 0 || gm.ref[:nw][n][:consumer][i]["qlmin"] != 0, collect(keys(gm.ref[:nw][n][:consumer])))
     if bounded       
-        gm.var[:nw][n][:ql] = @variable(gm.model, [i in load_set], basename="$(n)_ql", lowerbound=gm.ref[:nw][n][:junction][i]["qlmin"], upperbound=gm.ref[:nw][n][:junction][i]["qlmax"], start = getstart(gm.ref[:nw][n][:junction], i, "ql_start", 0.0))                  
+        gm.var[:nw][n][:ql] = @variable(gm.model, [i in load_set], basename="$(n)_ql", lowerbound=gm.ref[:nw][n][:consumer][i]["qlmin"], upperbound=gm.ref[:nw][n][:consumer][i]["qlmax"], start = getstart(gm.ref[:nw][n][:consumer], i, "ql_start", 0.0))                  
     else
-        gm.var[:nw][n][:ql] = @variable(gm.model, [i in load_set], basename="$(n)_ql", start = getstart(gm.ref[:nw][n][:junction], i, "ql_start", 0.0))                        
+        gm.var[:nw][n][:ql] = @variable(gm.model, [i in load_set], basename="$(n)_ql", start = getstart(gm.ref[:nw][n][:consumer], i, "ql_start", 0.0))                        
     end
 end
 
 " variables associated with production "
 function variable_production{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    prod_set = filter(i -> gm.ref[:nw][n][:junction][i]["qgmin"] != gm.ref[:nw][n][:junction][i]["qgmax"], collect(keys(gm.ref[:nw][n][:junction])))
+    prod_set = filter(i -> gm.ref[:nw][n][:producer][i]["qgmax"] != 0 || gm.ref[:nw][n][:producer][i]["qgmin"] != 0, collect(keys(gm.ref[:nw][n][:producer])))
     if bounded          
-        gm.var[:nw][n][:qg] = @variable(gm.model, [i in prod_set], basename="$(n)_qg", lowerbound=gm.ref[:nw][n][:junction][i]["qgmin"], upperbound=gm.ref[:nw][n][:junction][i]["qgmax"], start = getstart(gm.ref[:nw][n][:junction], i, "qg_start", 0.0))                  
+        gm.var[:nw][n][:qg] = @variable(gm.model, [i in prod_set], basename="$(n)_qg", lowerbound=gm.ref[:nw][n][:producer][i]["qgmin"], upperbound=gm.ref[:nw][n][:producer][i]["qgmax"], start = getstart(gm.ref[:nw][n][:producer], i, "qg_start", 0.0))                  
     else
-        gm.var[:nw][n][:qg] = @variable(gm.model, [i in prod_set], basename="$(n)_qg", start = getstart(gm.ref[:nw][n][:junction], i, "qg_start", 0.0))                        
+        gm.var[:nw][n][:qg] = @variable(gm.model, [i in prod_set], basename="$(n)_qg", start = getstart(gm.ref[:nw][n][:producer], i, "qg_start", 0.0))                        
     end
 end

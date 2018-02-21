@@ -180,6 +180,8 @@ Some of the common keys include:
 * `:all_parallel_connections` -- the set of all existing and new connections between junction pairs (i,j),
 * `:junction_connections` -- the set of all existing connections of junction i,
 * `:junction_ne_connections` -- the set of all new connections of junction i,
+* `:junction_consumers` -- the mapping `Dict(i => [consumer["ql_junc"] for (i,consumer) in ref[:consumer]])`.
+* `:junction_producers` -- the mapping `Dict(i => [producer["qg_junc"] for (i,producer) in ref[:producer]])`.
 * `junction[degree]` -- the degree of junction i using existing connections (see `add_degree`)),
 * `junction[all_degree]` -- the degree of junction i using existing and new connections (see `add_degree`)),
 * `connection[pd_min,pd_max]` -- the max and min square pressure difference (see `add_pd_bounds_swr`)),
@@ -264,6 +266,18 @@ function build_ref(data::Dict{String,Any})
             push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
         end
       
+        junction_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        for (i,consumer) in ref[:consumer]
+            push!(junction_consumers[consumer["ql_junc"]], i)
+        end
+        ref[:junction_consumers] = junction_consumers
+        
+        junction_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        for (i,producer) in ref[:producer]
+            push!(junction_producers[producer["qg_junc"]], i)
+        end
+        ref[:junction_producers] = junction_producers
+                
         add_degree(ref)    
         add_pd_bounds_sqr(ref)  
     end          

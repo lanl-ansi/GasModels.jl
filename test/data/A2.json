@@ -1,7 +1,6 @@
 
 
 {
-  "multinetwork": false,
   "ne_connection": {
     "29": {
       "length": 41.37,
@@ -83,316 +82,225 @@
       "construction_cost": 1500
     }
   },
-  "junction": {
-    "171": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "4": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 80,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "1": {
-      "qlmax": 0,
-      "qgmin": 10.911288,
-      "qgmax": 10.911288,
-      "qlmin": 0,
-      "qgfirm": 10.911288,
-      "pmax": 77,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "81": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 59,
-      "qlfirm": 0,
-      "pmin": 0
-    },
+  "consumer": {
     "12": {
       "qlmax": 2.12,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 12,
       "qlmin": 2.12,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 2.12,
-      "pmin": 0
+      "qlfirm": 2.12
     },
     "20": {
       "qlmax": 1.919,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 20,
       "qlmin": 1.919,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 1.919,
-      "pmin": 25
-    },
-    "24": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "2": {
-      "qlmax": 0,
-      "qgmin": 8.4,
-      "qgmax": 8.4,
-      "qlmin": 0,
-      "qgfirm": 8.4,
-      "pmax": 77,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "6": {
-      "qlmax": 4.034,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 4.034,
-      "qgfirm": 0,
-      "pmax": 80,
-      "qlfirm": 4.034,
-      "pmin": 30
-    },
-    "25": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "23": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "41": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 80,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "11": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "22": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "13": {
-      "qlmax": 0,
-      "qgmin": 1.2,
-      "qgmax": 1.2,
-      "qlmin": 0,
-      "qgfirm": 1.2,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "211": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "51": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 77,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "5": {
-      "qlmax": 0,
-      "qgmin": 2.814712,
-      "qgmax": 2.814712,
-      "qlmin": 0,
-      "qgfirm": 2.814712,
-      "pmax": 77,
-      "qlfirm": 0,
-      "pmin": 0
+      "qlfirm": 1.919
     },
     "15": {
       "qlmax": 6.848,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 15,
       "qlmin": 6.848,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 6.848,
-      "pmin": 0
-    },
-    "16": {
-      "qlmax": 15.616,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 15.616,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 15.616,
-      "pmin": 50
-    },
-    "14": {
-      "qlmax": 0,
-      "qgmin": 0.96,
-      "qgmax": 0.96,
-      "qlmin": 0,
-      "qgfirm": 0.96,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "21": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "7": {
-      "qlmax": 5.256,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 5.256,
-      "qgfirm": 0,
-      "pmax": 80,
-      "qlfirm": 5.256,
-      "pmin": 30
-    },
-    "8": {
-      "qlmax": 0,
-      "qgmin": 22.012,
-      "qgmax": 22.012,
-      "qlmin": 0,
-      "qgfirm": 22.012,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 50
-    },
-    "17": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
+      "qlfirm": 6.848
     },
     "10": {
       "qlmax": 6.365,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 10,
       "qlmin": 6.365,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 6.365,
-      "pmin": 30
+      "qlfirm": 6.365
+    },
+    "6": {
+      "qlmax": 4.034,
+      "ql_junc": 6,
+      "qlmin": 4.034,
+      "qlfirm": 4.034
+    },
+    "7": {
+      "qlmax": 5.256,
+      "ql_junc": 7,
+      "qlmin": 5.256,
+      "qlfirm": 5.256
     },
     "19": {
       "qlmax": 0.222,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 19,
       "qlmin": 0.222,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0.222,
-      "pmin": 0
+      "qlfirm": 0.222
     },
-    "241": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 14
-    },
-    "9": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 66.2,
-      "qlfirm": 0,
-      "pmin": 0
-    },
-    "18": {
-      "qlmax": 0,
-      "qgmin": 0,
-      "qgmax": 0,
-      "qlmin": 0,
-      "qgfirm": 0,
-      "pmax": 63,
-      "qlfirm": 0,
-      "pmin": 0
+    "16": {
+      "qlmax": 15.616,
+      "ql_junc": 16,
+      "qlmin": 15.616,
+      "qlfirm": 15.616
     },
     "3": {
       "qlmax": 3.918,
-      "qgmin": 0,
-      "qgmax": 0,
+      "ql_junc": 3,
       "qlmin": 3.918,
-      "qgfirm": 0,
+      "qlfirm": 3.918
+    }
+  },
+  "junction": {
+    "24": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "4": {
       "pmax": 80,
-      "qlfirm": 3.918,
+      "pmin": 0
+    },
+    "1": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "81": {
+      "pmax": 59,
+      "pmin": 0
+    },
+    "12": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "20": {
+      "pmax": 66.2,
+      "pmin": 25
+    },
+    "3": {
+      "pmax": 80,
       "pmin": 30
+    },
+    "2": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "6": {
+      "pmax": 80,
+      "pmin": 30
+    },
+    "25": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "23": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "41": {
+      "pmax": 80,
+      "pmin": 0
+    },
+    "11": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "22": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "13": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "211": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "51": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "5": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "15": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "16": {
+      "pmax": 66.2,
+      "pmin": 50
+    },
+    "14": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "21": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "7": {
+      "pmax": 80,
+      "pmin": 30
+    },
+    "8": {
+      "pmax": 66.2,
+      "pmin": 50
+    },
+    "17": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "10": {
+      "pmax": 66.2,
+      "pmin": 30
+    },
+    "19": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "241": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "9": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "18": {
+      "pmax": 63,
+      "pmin": 0
+    },
+    "171": {
+      "pmax": 66.2,
+      "pmin": 0
+    }
+  },
+  "multinetwork": false,
+  "producer": {
+    "8": {
+      "qgmin": 22.012,
+      "qgmax": 22.012,
+      "qgfirm": 22.012,
+      "qg_junc": 8
+    },
+    "1": {
+      "qgmin": 10.911288,
+      "qgmax": 10.911288,
+      "qgfirm": 10.911288,
+      "qg_junc": 1
+    },
+    "5": {
+      "qgmin": 2.814712,
+      "qgmax": 2.814712,
+      "qgfirm": 2.814712,
+      "qg_junc": 5
+    },
+    "2": {
+      "qgmin": 8.4,
+      "qgmax": 8.4,
+      "qgfirm": 8.4,
+      "qg_junc": 2
+    },
+    "13": {
+      "qgmin": 1.2,
+      "qgmax": 1.2,
+      "qgfirm": 1.2,
+      "qg_junc": 13
+    },
+    "14": {
+      "qgmin": 0.96,
+      "qgmax": 0.96,
+      "qgfirm": 0.96,
+      "qg_junc": 14
     }
   },
   "connection": {
