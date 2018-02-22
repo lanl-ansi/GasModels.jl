@@ -497,7 +497,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance_ls",
     "category": "Method",
@@ -513,7 +513,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
+    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne_ls-Tuple{GasModels.GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}",
     "page": "Constraints",
     "title": "GasModels.constraint_junction_flow_balance_ne_ls",
     "category": "Method",
