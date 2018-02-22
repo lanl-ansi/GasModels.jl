@@ -2,7 +2,7 @@
 # Variables
 ################
 
-" variables associated with direction of flow on the connections "
+" variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
 function variable_connection_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int=gm.cnw)
     gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Int, basename="$(n)_yp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yp_start", 1.0))                  
     gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Int, basename="$(n)_yn", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yn_start", 0.0))                  

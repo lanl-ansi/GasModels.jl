@@ -7,7 +7,7 @@ export run_ls
 
 " entry point into running the gas flow feasability problem "
 function run_ls(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_ls; kwargs...) 
+    return run_generic_model(file, model_constructor, solver, post_ls; solution_builder = get_ls_solution, kwargs...) 
 end
 
 " construct the gas flow feasbility problem "
@@ -45,3 +45,11 @@ function post_ls(gm::GenericGasModel)
     end
 end
 
+# Get all the load shedding solution values
+function get_ls_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
+    add_junction_pressure_setpoint(sol, gm)
+    add_connection_flow_setpoint(sol, gm)
+    add_direction_setpoint(sol, gm)
+    add_load_setpoint(sol, gm)
+    add_production_setpoint(sol, gm)
+end
