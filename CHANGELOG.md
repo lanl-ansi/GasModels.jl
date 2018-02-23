@@ -17,7 +17,7 @@ GasModels.jl Change Log
 - Added support for multiple networks in the JuMP model (breaking)
 - Introduced the constraint_template.jl framework for gas constraints
 - Created undirected and directed gas formulations (breaking)
-- Producers and Consumers defined as seperate objects so that multiple can exist at each node (breaking)
+- Producers and Consumers defined as separate objects so that multiple can exist at each node (breaking)
 
 ### v0.1.0
 - Initial implementation
