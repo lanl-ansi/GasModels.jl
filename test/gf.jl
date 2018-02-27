@@ -5,6 +5,17 @@ function check_pressure_status(sol, gm)
     end
 end
 
+function check_ratio(sol, gm)
+    for (idx,val) in sol["connection"]
+        k = parse(Int64,idx)
+        connection = gm.ref[:nw][gm.cnw][:connection][parse(Int64,idx)]
+        if connection["type"] == "compressor" || connection["type"] == "control_valve"          
+            @test val["ratio"] <= connection["c_ratio_max"] + 1e6
+            @test val["ratio"] >= connection["c_ratio_min"] - 1e6
+        end
+    end
+end
+
 
 #Check the second order code model
 @testset "test misocp gf" begin
@@ -14,7 +25,8 @@ end
         @test isapprox(result["objective"], 0; atol = 1e-6)
         data = GasModels.parse_file("../test/data/gaslib-40.json")  
         gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)        
-        check_pressure_status(result["solution"], gm)   
+        check_pressure_status(result["solution"], gm)
+        check_ratio(result["solution"], gm)             
     end      
     @testset "gaslib 135 case" begin
         result = run_gf("../test/data/gaslib-135.json", MISOCPGasModel, misocp_solver)
@@ -23,6 +35,7 @@ end
         data = GasModels.parse_file("../test/data/gaslib-135.json")  
         gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)                  
         check_pressure_status(result["solution"], gm) 
+        check_ratio(result["solution"], gm)          
     end
 end
 
