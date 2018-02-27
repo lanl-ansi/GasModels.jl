@@ -29,4 +29,6 @@ include("prob/ne.jl")
 include("prob/ls.jl")
 include("prob/nels.jl")
 
+include("io/diagnostics.jl")
+
 end

@@ -38,17 +38,17 @@ end
 
 " variables associated with building pipes "
 function variable_pipe_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-    gm.var[:nw][n][:zp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_pipe])], category = :Int, basename="$(n)_zp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zp_start", 0.0))                  
+    gm.var[:nw][n][:zp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_pipe])], category = :Bin, basename="$(n)_zp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zp_start", 0.0))                  
 end
 
 " variables associated with building compressors "
 function variable_compressor_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-    gm.var[:nw][n][:zc] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_compressor])], category = :Int,basename="$(n)_zc", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zc_start", 0.0))                  
+    gm.var[:nw][n][:zc] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_compressor])], category = :Bin,basename="$(n)_zc", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zc_start", 0.0))                  
 end
 
 " 0-1 variables associated with operating valves "
 function variable_valve_operation{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
-    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], category = :Int, basename="$(n)_v", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))                  
+    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], category = :Bin, basename="$(n)_v", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))                  
 end
 
 " variables associated with demand "

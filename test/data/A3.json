@@ -14,10 +14,10 @@
     "29": {
       "c_ratio_max": 2,
       "f_junction": 23,
-      "t_junction": 231,
+      "t_junction": 600023,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 1500
+      "construction_cost": 750
     },
     "25": {
       "length": 16.07,
@@ -55,6 +55,14 @@
       "type": "pipe",
       "construction_cost": 53.568434958399
     },
+    "100007": {
+      "c_ratio_max": 2,
+      "f_junction": 261,
+      "t_junction": 800026,
+      "c_ratio_min": 1,
+      "construction_cost": 750,
+      "type": "compressor"
+    },
     "31": {
       "length": 24.46,
       "f_junction": 15,
@@ -67,18 +75,18 @@
     "27": {
       "c_ratio_max": 2,
       "f_junction": 21,
-      "t_junction": 211,
+      "t_junction": 700021,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 1500
+      "construction_cost": 750
     },
     "33": {
       "c_ratio_max": 2,
       "f_junction": 26,
-      "t_junction": 261,
+      "t_junction": 800026,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 1500
+      "construction_cost": 750
     },
     "28": {
       "length": 32.35,
@@ -107,6 +115,14 @@
       "type": "pipe",
       "construction_cost": 61.793848357087
     },
+    "100006": {
+      "c_ratio_max": 2,
+      "f_junction": 211,
+      "t_junction": 700021,
+      "c_ratio_min": 1,
+      "construction_cost": 750,
+      "type": "compressor"
+    },
     "36": {
       "length": 25.48,
       "f_junction": 29,
@@ -125,6 +141,14 @@
       "type": "pipe",
       "construction_cost": 13.731966301575
     },
+    "100005": {
+      "c_ratio_max": 2,
+      "f_junction": 231,
+      "t_junction": 600023,
+      "c_ratio_min": 1,
+      "construction_cost": 750,
+      "type": "compressor"
+    },
     "30": {
       "length": 33.79,
       "f_junction": 24,
@@ -133,6 +157,279 @@
       "diameter": 890,
       "type": "pipe",
       "construction_cost": 58.145757058924
+    }
+  },
+  "consumer": {
+    "12": {
+      "qlmax": 0,
+      "ql_junc": 12,
+      "qlmin": 0,
+      "qlfirm": 2.12
+    },
+    "20": {
+      "qlmax": 0,
+      "ql_junc": 20,
+      "qlmin": 0,
+      "qlfirm": 1.919
+    },
+    "10": {
+      "qlmax": 0,
+      "ql_junc": 10,
+      "qlmin": 0,
+      "qlfirm": 6.365
+    },
+    "19": {
+      "qlmax": 0,
+      "ql_junc": 19,
+      "qlmin": 0,
+      "qlfirm": 0.222
+    },
+    "6": {
+      "qlmax": 0,
+      "ql_junc": 6,
+      "qlmin": 0,
+      "qlfirm": 4.034
+    },
+    "7": {
+      "qlmax": 0,
+      "ql_junc": 7,
+      "qlmin": 0,
+      "qlfirm": 5.256
+    },
+    "15": {
+      "qlmax": 0,
+      "ql_junc": 15,
+      "qlmin": 0,
+      "qlfirm": 6.848
+    },
+    "16": {
+      "qlmax": 0,
+      "ql_junc": 16,
+      "qlmin": 0,
+      "qlfirm": 15.616
+    },
+    "3": {
+      "qlmax": 0,
+      "ql_junc": 3,
+      "qlmin": 0,
+      "qlfirm": 3.918
+    }
+  },
+  "junction": {
+    "29": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "1": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "81": {
+      "pmax": 59.85,
+      "pmin": 0
+    },
+    "2": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "500004": {
+      "pmax": 80,
+      "pmin": 0
+    },
+    "41": {
+      "pmax": 80,
+      "pmin": 0
+    },
+    "51": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "27": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "28": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "26": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "10": {
+      "pmax": 66.2,
+      "pmin": 30
+    },
+    "200017": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "24": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "25": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "23": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "5": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "17": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "9": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "12": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "20": {
+      "pmax": 66.2,
+      "pmin": 25
+    },
+    "6": {
+      "pmax": 80,
+      "pmin": 30
+    },
+    "14": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "7": {
+      "pmax": 80,
+      "pmin": 30
+    },
+    "261": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "231": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "8": {
+      "pmax": 66.2,
+      "pmin": 50
+    },
+    "19": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "171": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "4": {
+      "pmax": 80,
+      "pmin": 0
+    },
+    "400008": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "800026": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "22": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "11": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "13": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "211": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "300008": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "700021": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "15": {
+      "pmax": 66.2,
+      "pmin": 0
+    },
+    "16": {
+      "pmax": 66.2,
+      "pmin": 50
+    },
+    "600023": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "21": {
+      "pmax": 66.2,
+      "pmin": 14
+    },
+    "100005": {
+      "pmax": 77,
+      "pmin": 0
+    },
+    "18": {
+      "pmax": 63,
+      "pmin": 0
+    },
+    "3": {
+      "pmax": 80,
+      "pmin": 30
+    }
+  },
+  "multinetwork": false,
+  "producer": {
+    "8": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 22.012,
+      "qg_junc": 8
+    },
+    "1": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 10.911288,
+      "qg_junc": 1
+    },
+    "5": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 2.814712,
+      "qg_junc": 5
+    },
+    "2": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 8.4,
+      "qg_junc": 2
+    },
+    "13": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 1.2,
+      "qg_junc": 13
+    },
+    "14": {
+      "qgmin": 0,
+      "qgmax": 0,
+      "qgfirm": 0.96,
+      "qg_junc": 14
     }
   },
   "connection": {
@@ -203,7 +500,7 @@
     "6": {
       "c_ratio_max": 2,
       "f_junction": 5,
-      "t_junction": 51,
+      "t_junction": 100005,
       "c_ratio_min": 1,
       "type": "compressor"
     },
@@ -218,14 +515,21 @@
     "22": {
       "c_ratio_max": 2,
       "f_junction": 17,
-      "t_junction": 171,
+      "t_junction": 200017,
       "c_ratio_min": 1,
       "type": "compressor"
     },
     "11": {
       "c_ratio_max": 2,
       "f_junction": 8,
-      "t_junction": 81,
+      "t_junction": 300008,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "100003": {
+      "c_ratio_max": 2,
+      "f_junction": 81,
+      "t_junction": 400008,
       "c_ratio_min": 1,
       "type": "compressor"
     },
@@ -236,6 +540,27 @@
       "resistance": 0.0270084,
       "diameter": 395.5,
       "type": "pipe"
+    },
+    "100001": {
+      "c_ratio_max": 2,
+      "f_junction": 171,
+      "t_junction": 200017,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "100002": {
+      "c_ratio_max": 2,
+      "f_junction": 81,
+      "t_junction": 300008,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "100000": {
+      "c_ratio_max": 2,
+      "f_junction": 51,
+      "t_junction": 100005,
+      "c_ratio_min": 1,
+      "type": "compressor"
     },
     "5": {
       "length": 26,
@@ -268,6 +593,13 @@
       "resistance": 0.863836,
       "diameter": 890,
       "type": "pipe"
+    },
+    "100004": {
+      "c_ratio_max": 2,
+      "f_junction": 41,
+      "t_junction": 500004,
+      "c_ratio_min": 1,
+      "type": "compressor"
     },
     "14": {
       "length": 25,
@@ -336,7 +668,7 @@
     "10": {
       "c_ratio_max": 2,
       "f_junction": 8,
-      "t_junction": 81,
+      "t_junction": 400008,
       "c_ratio_min": 1,
       "type": "compressor"
     },
@@ -351,7 +683,7 @@
     "9": {
       "c_ratio_max": 2,
       "f_junction": 4,
-      "t_junction": 41,
+      "t_junction": 500004,
       "c_ratio_min": 1,
       "type": "compressor"
     },
@@ -362,247 +694,6 @@
       "resistance": 6.04685,
       "diameter": 890,
       "type": "pipe"
-    }
-  },
-  "junction": {
-    "29": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "1": {
-      "pmax": 77,
-      "pmin": 0
-    },
-    "81": {
-      "pmax": 59.85,
-      "pmin": 0
-    },
-    "2": {
-      "pmax": 77,
-      "pmin": 0
-    },
-    "41": {
-      "pmax": 80,
-      "pmin": 0
-    },
-    "51": {
-      "pmax": 77,
-      "pmin": 0
-    },
-    "27": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "28": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "26": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "10": {
-      "pmax": 66.2,
-      "pmin": 30
-    },
-    "24": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "25": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "23": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "5": {
-      "pmax": 77,
-      "pmin": 0
-    },
-    "17": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "9": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "12": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "20": {
-      "pmax": 66.2,
-      "pmin": 25
-    },
-    "6": {
-      "pmax": 80,
-      "pmin": 30
-    },
-    "14": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "7": {
-      "pmax": 80,
-      "pmin": 30
-    },
-    "261": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "231": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "8": {
-      "pmax": 66.2,
-      "pmin": 50
-    },
-    "19": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "171": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "4": {
-      "pmax": 80,
-      "pmin": 0
-    },
-    "22": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "11": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "13": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "211": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "15": {
-      "pmax": 66.2,
-      "pmin": 0
-    },
-    "16": {
-      "pmax": 66.2,
-      "pmin": 50
-    },
-    "21": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
-    "18": {
-      "pmax": 63,
-      "pmin": 0
-    },
-    "3": {
-      "pmax": 80,
-      "pmin": 30
-    }
-  },
-  "multinetwork": false,
-  "producer": {
-    "14": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 0.96,
-      "qg_junc": 14
-    },
-    "1": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 10.911288,
-      "qg_junc": 1
-    },
-    "5": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 2.814712,
-      "qg_junc": 5
-    },
-    "2": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 8.4,
-      "qg_junc": 2
-    },
-    "13": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 1.2,
-      "qg_junc": 13
-    },
-    "8": {
-      "qgmin": 0,
-      "qgmax": 0,
-      "qgfirm": 22.012,
-      "qg_junc": 8
-    }
-  },
-  "consumer": {
-    "12": {
-      "qlmax": 0,
-      "ql_junc": 12,
-      "qlmin": 0,
-      "qlfirm": 2.12
-    },
-    "20": {
-      "qlmax": 0,
-      "ql_junc": 20,
-      "qlmin": 0,
-      "qlfirm": 1.919
-    },
-    "10": {
-      "qlmax": 0,
-      "ql_junc": 10,
-      "qlmin": 0,
-      "qlfirm": 6.365
-    },
-    "19": {
-      "qlmax": 0,
-      "ql_junc": 19,
-      "qlmin": 0,
-      "qlfirm": 0.222
-    },
-    "6": {
-      "qlmax": 0,
-      "ql_junc": 6,
-      "qlmin": 0,
-      "qlfirm": 4.034
-    },
-    "7": {
-      "qlmax": 0,
-      "ql_junc": 7,
-      "qlmin": 0,
-      "qlfirm": 5.256
-    },
-    "15": {
-      "qlmax": 0,
-      "ql_junc": 15,
-      "qlmin": 0,
-      "qlfirm": 6.848
-    },
-    "16": {
-      "qlmax": 0,
-      "ql_junc": 16,
-      "qlmin": 0,
-      "qlfirm": 15.616
-    },
-    "3": {
-      "qlmax": 0,
-      "ql_junc": 3,
-      "qlmin": 0,
-      "qlfirm": 3.918
     }
   }
 }

@@ -22,8 +22,9 @@ using Base.Test
 misocp_solver = pajarito_solver
 minlp_solver = couenne_solver   
 
+include("ls.jl") # this one is unstable with Pajarito... dependent on ordering of variables and constraints
+include("nels.jl")
 include("gf.jl")
 include("ne.jl")
-include("ls.jl")
-include("nels.jl")
+
 
