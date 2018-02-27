@@ -2,14 +2,21 @@
 
 ## Type Hierarchy
 We begin with the top of the hierarchy, where we can distinguish between gas flow models. Currently, there are two variations
-of the disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.
+of the weymouth equations, one where the directions of flux are known and one where they are unknown.
 ```julia
-AbstractMINLPForm <: AbstractGasFormulation
-AbstractMISOCPForm <: AbstractGasFormulation
+AbstractDirectedGasFormulation <: AbstractGasFormulation
+AbstractUndirectedGasFormulation <: AbstractGasFormulation
+```
+Each of these have a disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.
+```julia
+AbstractMINLPForm <: AbstractUndirectedGasFormulation
+AbstractMISOCPForm <: AbstractUndirectedGasFormulation
+AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation
+AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation
 ```
 
 ## Gas Models
-Each of these forms can be used as the type parameter for a GasModel:
+Each of these forms can be used as the type parameter for a GasModel, i.e.:
 ```julia
 MINLPGasModel = GenericGasModel(StandardMINLPForm)
 MISOCPGasModel = GenericGasModel(StandardMISOCPForm)
@@ -26,6 +33,24 @@ AbstractMyFooForm <: AbstractGasFormulation
 StandardMyFooForm <: AbstractFooForm
 FooGasModel = GenericGasModel{StandardFooForm}
 ```
+## Directed Models
+
+```@autodocs
+Modules = [GasModels]
+Pages   = ["form/directed.jl"]
+Order   = [:function]
+Private  = true
+```
+
+## Undirected Models
+
+```@autodocs
+Modules = [GasModels]
+Pages   = ["form/undirected.jl"]
+Order   = [:function]
+Private  = true
+```
+
 ## MINLP
 
 ```@autodocs
@@ -36,7 +61,6 @@ Private  = true
 ```
 
 ## MISOCP
-
 
 ```@autodocs
 Modules = [GasModels]

@@ -301,25 +301,6 @@ function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}
 end
 constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
 
-#" constraints on pressure drop across control valves when directions are constants "
-#function constraint_on_off_control_valve_pressure_drop_fixed_direction{T}(gm::GenericGasModel{T}, n::Int, valve_idx)
- #   valve = ref(gm,n,:connection,valve_idx)  
-  #  i_junction_idx = valve["f_junction"]
-   # j_junction_idx = valve["t_junction"]
-  
- #   i = gm.ref[:nw][n][:junction][i_junction_idx]  
-  #  j = gm.ref[:nw][n][:junction][j_junction_idx]
-  #  yp = valve["yp"]
-  #  yn = valve["yn"]    
-  #  max_ratio = valve["c_ratio_max"]
-   # min_ratio = valve["c_ratio_min"]
-   # j_pmax = j["pmax"]  
-   # i_pmax = i["pmax"]  
-    
-   # constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, valve_idx, i_junction_idx, j_junction_idx, min_ratio, max_ratio, i_pmax, j_pmax; yp=yp, yn=yn)            
-#end
-#constraint_on_off_control_valve_pressure_drop_fixed_direction(gm::GenericGasModel, i::Int) = constraint_on_off_control_valve_pressure_drop_fixed_direction(gm, gm.cnw, i)
-
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
 function constraint_source_flow{T}(gm::GenericGasModel{T}, n::Int, i)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))

@@ -12,22 +12,22 @@ end
 
 " construct the gas flow feasbility problem "
 function post_ls(gm::GenericGasModel)
-    variable_flow(gm)
+    variable_flow(gm)  
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-    
+        
     objective_max_load(gm)
-            
-    for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
-        constraint_junction_flow_ls(gm, i)      
-    end
-    
+                
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 
         constraint_pipe_flow(gm, i) 
     end
-
+    
+    for i in ids(gm, :junction)
+        constraint_junction_flow_ls(gm, i)      
+    end
+    
     for i in ids(gm, :short_pipe)
         constraint_short_pipe_flow(gm, i) 
     end

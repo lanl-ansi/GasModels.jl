@@ -9,11 +9,11 @@ end
 
 " construct the gas flow expansion problem to maximize load "
 function post_nels(gm::GenericGasModel)
+    variable_flow(gm)          
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
     variable_load(gm)
     variable_production(gm)
-    variable_flow(gm)    
     
     # expansion variables
     variable_pipe_ne(gm)
@@ -24,7 +24,7 @@ function post_nels(gm::GenericGasModel)
     # expansion cost objective
     objective_max_load(gm)
 
-    for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
+    for i in ids(gm, :junction)
         constraint_junction_flow_ne_ls(gm, i) 
     end
 

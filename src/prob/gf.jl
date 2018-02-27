@@ -26,7 +26,7 @@ function post_gf(gm::GenericGasModel)
     variable_flow(gm)
     variable_valve_operation(gm)
     
-    for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
+    for i in ids(gm, :junction)
         constraint_junction_flow(gm, i)
     end
     
@@ -48,6 +48,6 @@ function post_gf(gm::GenericGasModel)
     
     for i in ids(gm, :control_valve)     
         constraint_control_valve_flow(gm, i) 
-    end
+    end    
 end
 

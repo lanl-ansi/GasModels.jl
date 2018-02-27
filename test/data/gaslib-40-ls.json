@@ -1,6 +1,611 @@
 
 
 {
+  "connection": {
+    "32": {
+      "length": 3.479454666,
+      "f_junction": 21,
+      "t_junction": 34,
+      "resistance": 5.9719269834653,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "29": {
+      "length": 12.76670341,
+      "f_junction": 4,
+      "t_junction": 17,
+      "resistance": 5.1713226843072,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "1": {
+      "length": 76.89355076,
+      "f_junction": 32,
+      "t_junction": 18,
+      "resistance": 0.27023136533888,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "2": {
+      "length": 21.55756619,
+      "f_junction": 37,
+      "t_junction": 15,
+      "resistance": 3.0625323084282,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "41": {
+      "c_ratio_max": 5,
+      "f_junction": 21,
+      "t_junction": 100021,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "27": {
+      "length": 22.22415325,
+      "f_junction": 31,
+      "t_junction": 30,
+      "resistance": 0.93497596843783,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "42": {
+      "c_ratio_max": 5,
+      "f_junction": 2,
+      "t_junction": 200002,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "33": {
+      "length": 3.418008251,
+      "f_junction": 35,
+      "t_junction": 36,
+      "resistance": 19.315559852332,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "28": {
+      "length": 31.1796191,
+      "f_junction": 31,
+      "t_junction": 4,
+      "resistance": 0.66643050195663,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "26": {
+      "length": 36.06100987,
+      "f_junction": 17,
+      "t_junction": 31,
+      "resistance": 0.57621928178213,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "10": {
+      "length": 32.86820253,
+      "f_junction": 20,
+      "t_junction": 8,
+      "resistance": 0.63219305006606,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "24": {
+      "length": 66.03659463,
+      "f_junction": 27,
+      "t_junction": 22,
+      "resistance": 0.070802150512045,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "25": {
+      "length": 18.96941271,
+      "f_junction": 27,
+      "t_junction": 17,
+      "resistance": 3.4803788581789,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "23": {
+      "length": 19.30319202,
+      "f_junction": 10,
+      "t_junction": 22,
+      "resistance": 0.2422155313718,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "100003": {
+      "c_ratio_max": 5,
+      "f_junction": 27,
+      "t_junction": 400037,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "5": {
+      "length": 86.69026557,
+      "f_junction": 27,
+      "t_junction": 28,
+      "resistance": 0.23969299287532,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "31": {
+      "length": 49.86614839,
+      "f_junction": 35,
+      "t_junction": 21,
+      "resistance": 0.41669649408488,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "43": {
+      "c_ratio_max": 5,
+      "f_junction": 1,
+      "t_junction": 300001,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "39": {
+      "c_ratio_max": 5,
+      "f_junction": 37,
+      "t_junction": 400037,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "34": {
+      "length": 32.44937205,
+      "f_junction": 29,
+      "t_junction": 36,
+      "resistance": 2.0345769047927,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "44": {
+      "c_ratio_max": 5,
+      "f_junction": 5,
+      "t_junction": 500005,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "17": {
+      "length": 12.01587483,
+      "f_junction": 23,
+      "t_junction": 14,
+      "resistance": 0.047422090832808,
+      "diameter": 400,
+      "type": "pipe"
+    },
+    "37": {
+      "length": 65.05717427,
+      "f_junction": 12,
+      "t_junction": 33,
+      "resistance": 0.31939673742042,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "9": {
+      "length": 20.32220543,
+      "f_junction": 6,
+      "t_junction": 22,
+      "resistance": 0.23007015298615,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "12": {
+      "length": 3.802586677,
+      "f_junction": 8,
+      "t_junction": 9,
+      "resistance": 1.2295664266054,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "20": {
+      "length": 10.58612947,
+      "f_junction": 19,
+      "t_junction": 6,
+      "resistance": 0.4416659484041,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "6": {
+      "length": 16.579326,
+      "f_junction": 28,
+      "t_junction": 11,
+      "resistance": 0.28200983033304,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "100002": {
+      "c_ratio_max": 5,
+      "f_junction": 38,
+      "t_junction": 300001,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "100004": {
+      "c_ratio_max": 5,
+      "f_junction": 39,
+      "t_junction": 500005,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "14": {
+      "length": 38.65982436,
+      "f_junction": 9,
+      "t_junction": 26,
+      "resistance": 0.014739278231524,
+      "diameter": 400,
+      "type": "pipe"
+    },
+    "7": {
+      "length": 10.02278298,
+      "f_junction": 11,
+      "t_junction": 20,
+      "resistance": 0.46649048688632,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "8": {
+      "length": 35.21883909,
+      "f_junction": 28,
+      "t_junction": 6,
+      "resistance": 0.13275658803937,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "19": {
+      "length": 20.63469827,
+      "f_junction": 7,
+      "t_junction": 19,
+      "resistance": 0.22658595978085,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "0": {
+      "length": 13.07108523,
+      "f_junction": 0,
+      "t_junction": 5,
+      "resistance": 5.0508998898139,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "4": {
+      "length": 58.21896955,
+      "f_junction": 16,
+      "t_junction": 12,
+      "resistance": 0.35691200597056,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "22": {
+      "length": 12.39735216,
+      "f_junction": 5,
+      "t_junction": 25,
+      "resistance": 1.6760876790024,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "11": {
+      "length": 47.48828385,
+      "f_junction": 27,
+      "t_junction": 39,
+      "resistance": 0.43756159462961,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "35": {
+      "length": 26.42748165,
+      "f_junction": 29,
+      "t_junction": 21,
+      "resistance": 0.78626671594452,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "13": {
+      "length": 39.03604181,
+      "f_junction": 8,
+      "t_junction": 24,
+      "resistance": 0.53230420514373,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "100001": {
+      "c_ratio_max": 5,
+      "f_junction": 35,
+      "t_junction": 200002,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "100000": {
+      "c_ratio_max": 5,
+      "f_junction": 33,
+      "t_junction": 100021,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "15": {
+      "length": 18.0178496,
+      "f_junction": 24,
+      "t_junction": 3,
+      "resistance": 0.25949450217945,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "16": {
+      "length": 3.06754744,
+      "f_junction": 26,
+      "t_junction": 23,
+      "resistance": 1.5241925361376,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "40": {
+      "c_ratio_max": 5,
+      "f_junction": 13,
+      "t_junction": 600013,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "21": {
+      "length": 10.45203118,
+      "f_junction": 19,
+      "t_junction": 10,
+      "resistance": 0.44733246885474,
+      "diameter": 600,
+      "type": "pipe"
+    },
+    "38": {
+      "length": 65.53221271,
+      "f_junction": 12,
+      "t_junction": 34,
+      "resistance": 0.31708145274421,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "36": {
+      "length": 18.13659729,
+      "f_junction": 12,
+      "t_junction": 13,
+      "resistance": 3.6401945686006,
+      "diameter": 1000,
+      "type": "pipe"
+    },
+    "100005": {
+      "c_ratio_max": 5,
+      "f_junction": 32,
+      "t_junction": 600013,
+      "c_ratio_min": 1,
+      "type": "compressor"
+    },
+    "18": {
+      "length": 14.04311354,
+      "f_junction": 9,
+      "t_junction": 7,
+      "resistance": 0.040576322764952,
+      "diameter": 400,
+      "type": "pipe"
+    },
+    "30": {
+      "length": 32.92125982,
+      "f_junction": 31,
+      "t_junction": 38,
+      "resistance": 0.63117418109881,
+      "diameter": 800,
+      "type": "pipe"
+    },
+    "3": {
+      "length": 6.998053779,
+      "f_junction": 15,
+      "t_junction": 16,
+      "resistance": 9.4341577005413,
+      "diameter": 1000,
+      "type": "pipe"
+    }
+  },
+  "junction": {
+    "32": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "29": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "1": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "2": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "600013": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "27": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "200002": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "33": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "28": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "26": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "10": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "24": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "25": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "23": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "5": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "31": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "39": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "34": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "17": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "37": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "9": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "12": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "20": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "6": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "400037": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "14": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "7": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "8": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "19": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "0": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "4": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "22": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "11": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "35": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "13": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "100021": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "15": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "16": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "21": {
+      "pmax": 81.01325,
+      "pmin": 31.01325
+    },
+    "38": {
+      "pmax": 71.01325,
+      "pmin": 1.01325
+    },
+    "300001": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "36": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "500005": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "18": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "30": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    },
+    "3": {
+      "pmax": 81.01325,
+      "pmin": 1.01325
+    }
+  },
+  "multinetwork": false,
+  "producer": {
+    "1": {
+      "qgmin": 0,
+      "qgmax": 17.4,
+      "qgfirm": 17.4,
+      "qg_junc": 1
+    },
+    "2": {
+      "qgmin": 0,
+      "qgmax": 17.4,
+      "qgfirm": 17.4,
+      "qg_junc": 2
+    },
+    "0": {
+      "qgmin": 0,
+      "qgmax": 100,
+      "qgfirm": 17.4,
+      "qg_junc": 0
+    }
+  },
   "consumer": {
     "24": {
       "qlmax": 1.8,
@@ -175,545 +780,6 @@
       "ql_junc": 3,
       "qlmin": 0,
       "qlfirm": 1.8
-    }
-  },
-  "junction": {
-    "24": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "4": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "1": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "12": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "29": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "20": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "32": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "2": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "6": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "25": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "23": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "22": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "11": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "35": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "13": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "5": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "15": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "27": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "31": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "33": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "28": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "16": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "14": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "39": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "21": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "38": {
-      "pmax": 71.01325,
-      "pmin": 1.01325
-    },
-    "7": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "34": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "8": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "36": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "26": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "17": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "10": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "0": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "19": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "37": {
-      "pmax": 81.01325,
-      "pmin": 31.01325
-    },
-    "9": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "18": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "30": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    },
-    "3": {
-      "pmax": 81.01325,
-      "pmin": 1.01325
-    }
-  },
-  "multinetwork": false,
-  "producer": {
-    "1": {
-      "qgmin": 0,
-      "qgmax": 17.4,
-      "qgfirm": 17.4,
-      "qg_junc": 1
-    },
-    "2": {
-      "qgmin": 0,
-      "qgmax": 17.4,
-      "qgfirm": 17.4,
-      "qg_junc": 2
-    },
-    "0": {
-      "qgmin": 0,
-      "qgmax": 100,
-      "qgfirm": 17.4,
-      "qg_junc": 0
-    }
-  },
-  "connection": {
-    "32": {
-      "length": 3.479454666,
-      "f_junction": 21,
-      "t_junction": 34,
-      "resistance": 5.9719269834653,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "29": {
-      "length": 12.76670341,
-      "f_junction": 4,
-      "t_junction": 17,
-      "resistance": 5.1713226843072,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "1": {
-      "length": 76.89355076,
-      "f_junction": 32,
-      "t_junction": 18,
-      "resistance": 0.27023136533888,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "2": {
-      "length": 21.55756619,
-      "f_junction": 37,
-      "t_junction": 15,
-      "resistance": 3.0625323084282,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "41": {
-      "c_ratio_max": 5,
-      "f_junction": 21,
-      "t_junction": 33,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "27": {
-      "length": 22.22415325,
-      "f_junction": 31,
-      "t_junction": 30,
-      "resistance": 0.93497596843783,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "42": {
-      "c_ratio_max": 5,
-      "f_junction": 2,
-      "t_junction": 35,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "33": {
-      "length": 3.418008251,
-      "f_junction": 35,
-      "t_junction": 36,
-      "resistance": 19.315559852332,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "28": {
-      "length": 31.1796191,
-      "f_junction": 31,
-      "t_junction": 4,
-      "resistance": 0.66643050195663,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "26": {
-      "length": 36.06100987,
-      "f_junction": 17,
-      "t_junction": 31,
-      "resistance": 0.57621928178213,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "10": {
-      "length": 32.86820253,
-      "f_junction": 20,
-      "t_junction": 8,
-      "resistance": 0.63219305006606,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "24": {
-      "length": 66.03659463,
-      "f_junction": 27,
-      "t_junction": 22,
-      "resistance": 0.070802150512045,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "25": {
-      "length": 18.96941271,
-      "f_junction": 27,
-      "t_junction": 17,
-      "resistance": 3.4803788581789,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "23": {
-      "length": 19.30319202,
-      "f_junction": 10,
-      "t_junction": 22,
-      "resistance": 0.2422155313718,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "5": {
-      "length": 86.69026557,
-      "f_junction": 27,
-      "t_junction": 28,
-      "resistance": 0.23969299287532,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "31": {
-      "length": 49.86614839,
-      "f_junction": 35,
-      "t_junction": 21,
-      "resistance": 0.41669649408488,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "43": {
-      "c_ratio_max": 5,
-      "f_junction": 1,
-      "t_junction": 38,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "39": {
-      "c_ratio_max": 5,
-      "f_junction": 37,
-      "t_junction": 27,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "34": {
-      "length": 32.44937205,
-      "f_junction": 29,
-      "t_junction": 36,
-      "resistance": 2.0345769047927,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "44": {
-      "c_ratio_max": 5,
-      "f_junction": 5,
-      "t_junction": 39,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "17": {
-      "length": 12.01587483,
-      "f_junction": 23,
-      "t_junction": 14,
-      "resistance": 0.047422090832808,
-      "diameter": 400,
-      "type": "pipe"
-    },
-    "37": {
-      "length": 65.05717427,
-      "f_junction": 12,
-      "t_junction": 33,
-      "resistance": 0.31939673742042,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "9": {
-      "length": 20.32220543,
-      "f_junction": 6,
-      "t_junction": 22,
-      "resistance": 0.23007015298615,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "12": {
-      "length": 3.802586677,
-      "f_junction": 8,
-      "t_junction": 9,
-      "resistance": 1.2295664266054,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "20": {
-      "length": 10.58612947,
-      "f_junction": 19,
-      "t_junction": 6,
-      "resistance": 0.4416659484041,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "6": {
-      "length": 16.579326,
-      "f_junction": 28,
-      "t_junction": 11,
-      "resistance": 0.28200983033304,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "14": {
-      "length": 38.65982436,
-      "f_junction": 9,
-      "t_junction": 26,
-      "resistance": 0.014739278231524,
-      "diameter": 400,
-      "type": "pipe"
-    },
-    "7": {
-      "length": 10.02278298,
-      "f_junction": 11,
-      "t_junction": 20,
-      "resistance": 0.46649048688632,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "8": {
-      "length": 35.21883909,
-      "f_junction": 28,
-      "t_junction": 6,
-      "resistance": 0.13275658803937,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "19": {
-      "length": 20.63469827,
-      "f_junction": 7,
-      "t_junction": 19,
-      "resistance": 0.22658595978085,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "0": {
-      "length": 13.07108523,
-      "f_junction": 0,
-      "t_junction": 5,
-      "resistance": 5.0508998898139,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "4": {
-      "length": 58.21896955,
-      "f_junction": 16,
-      "t_junction": 12,
-      "resistance": 0.35691200597056,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "22": {
-      "length": 12.39735216,
-      "f_junction": 5,
-      "t_junction": 25,
-      "resistance": 1.6760876790024,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "11": {
-      "length": 47.48828385,
-      "f_junction": 27,
-      "t_junction": 39,
-      "resistance": 0.43756159462961,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "35": {
-      "length": 26.42748165,
-      "f_junction": 29,
-      "t_junction": 21,
-      "resistance": 0.78626671594452,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "13": {
-      "length": 39.03604181,
-      "f_junction": 8,
-      "t_junction": 24,
-      "resistance": 0.53230420514373,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "15": {
-      "length": 18.0178496,
-      "f_junction": 24,
-      "t_junction": 3,
-      "resistance": 0.25949450217945,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "16": {
-      "length": 3.06754744,
-      "f_junction": 26,
-      "t_junction": 23,
-      "resistance": 1.5241925361376,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "40": {
-      "c_ratio_max": 5,
-      "f_junction": 13,
-      "t_junction": 32,
-      "c_ratio_min": 1,
-      "type": "compressor"
-    },
-    "21": {
-      "length": 10.45203118,
-      "f_junction": 19,
-      "t_junction": 10,
-      "resistance": 0.44733246885474,
-      "diameter": 600,
-      "type": "pipe"
-    },
-    "38": {
-      "length": 65.53221271,
-      "f_junction": 12,
-      "t_junction": 34,
-      "resistance": 0.31708145274421,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "36": {
-      "length": 18.13659729,
-      "f_junction": 12,
-      "t_junction": 13,
-      "resistance": 3.6401945686006,
-      "diameter": 1000,
-      "type": "pipe"
-    },
-    "18": {
-      "length": 14.04311354,
-      "f_junction": 9,
-      "t_junction": 7,
-      "resistance": 0.040576322764952,
-      "diameter": 400,
-      "type": "pipe"
-    },
-    "30": {
-      "length": 32.92125982,
-      "f_junction": 31,
-      "t_junction": 38,
-      "resistance": 0.63117418109881,
-      "diameter": 800,
-      "type": "pipe"
-    },
-    "3": {
-      "length": 6.998053779,
-      "f_junction": 15,
-      "t_junction": 16,
-      "resistance": 9.4341577005413,
-      "diameter": 1000,
-      "type": "pipe"
     }
   }
 }

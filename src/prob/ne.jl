@@ -22,7 +22,7 @@ function post_ne(gm::GenericGasModel)
     # expansion cost objective
     objective_min_ne_cost(gm)
 
-    for (i,junction) in gm.ref[:nw][gm.cnw][:junction]
+    for i in ids(gm, :junction)
         constraint_junction_flow_ne(gm, i) 
     end
 
@@ -92,4 +92,5 @@ function get_ne_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
     add_connection_ne(sol, gm)
     add_direction_setpoint(sol, gm)
     add_direction_ne_setpoint(sol, gm)
+    add_compressor_ratio_setpoint(sol, gm)
 end

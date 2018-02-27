@@ -11,14 +11,30 @@ The network data dictionary structure is roughly as follows:
 "name":<string>,        # a name for the model
 "junction":{
     "1":{
+      "pmax": <float>,   # maximum pressure
+      "pmin": <float>,   # minimum pressure
+       ...
+    },
+    "2":{...},
+    ...
+},
+"consumer":{
+    "1":{
+      "ql_junc": <float>,  # junction id
       "qlmax": <float>,  # the maximum gas demand that can be added to qlfirm
+      "qlmin": <float>,  # the minimum gas demand that can be added to qlfirm
+      "qlfirm": <float>, # constant gas demand
+       ...
+    },
+    "2":{...},
+    ...
+},
+"producer":{
+    "1":{
+      "qg_junc": <float>,  # junction id
       "qgmin": <float>,  # the minimum gas production that can be added to qgfirm
       "qgmax": <float>,  # the maximum gas production that can be added to qgfirm
-      "qlmin": <float>,  # the minimum gas demand that can be added to qlfirm
       "qgfirm": <float>, # constant gas production
-      "pmax": <float>,   # maximum pressure
-      "qlfirm": <float>, # constant gas demand
-      "pmin": <float>,   # minimum pressure
        ...
     },
     "2":{...},
@@ -31,8 +47,8 @@ The network data dictionary structure is roughly as follows:
       "t_junction": <int>,     # the "to" side junction id
       "resistance": <float>,   # the resistance of the connection
       "diameter": <float>,     # the diameter of the connection
-      "c_ratio_min": <float>,  # minimum multiplicative pressure change (compression or decompressions)
-      "c_ratio_max": <float>,  # maximum multiplicative pressure change (compression or decompressions)      
+      "c_ratio_min": <float>,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).
+      "c_ratio_max": <float>,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).      
       "type": <string>,        # the type of the connection. Can be "pipe", "compressor", "short_pipe", "control_valve", "valve"
         ...
     },

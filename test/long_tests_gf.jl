@@ -17,12 +17,12 @@ end
             @test result["status"] == :LocalOptimal || result["status"] == :Optimal
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
-        @testset "gaslib 135 case" begin
-            println("gaslib 135 - MINLP")                                    
-            result = run_gf("../test/data/gaslib-135.json", MINLPGasModel, minlp_solver)        
-            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-            @test isapprox(result["objective"], 0; atol = 1e-6)
-        end    
+#        @testset "gaslib 135 case" begin
+ #           println("gaslib 135 - MINLP")                                    
+  #          result = run_gf("../test/data/gaslib-135.json", MINLPGasModel, minlp_solver)        
+   #         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+    #        @test isapprox(result["objective"], 0; atol = 1e-6)
+   #     end    
 end
 
 
