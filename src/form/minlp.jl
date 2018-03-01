@@ -22,8 +22,8 @@ const MINLPGasModel = GenericGasModel{StandardMINLPForm}
 const MINLPGasDirectedModel = GenericGasModel{StandardMINLPDirectedForm}
 
 "default MINLP constructor"
-MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPForm; kwargs...)
-MINLPGasDirectedModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPDirectedForm; kwargs...)
+MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPForm)
+MINLPGasDirectedModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPDirectedForm)
 
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)

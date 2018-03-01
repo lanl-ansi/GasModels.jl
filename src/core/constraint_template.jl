@@ -496,7 +496,7 @@ constraint_on_off_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_
 function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, k)
     compressor = gm.ref[:nw][n][:ne_connection][k]
     mf = gm.ref[:nw][n][:max_flow]    
-    constraint_on_off_compressor_flow_ne(gm,  n, c_idx, mf)  
+    constraint_on_off_compressor_flow_ne(gm, n, k, mf)  
 end
 constraint_on_off_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow_ne(gm, gm.cnw, k::Int)
 

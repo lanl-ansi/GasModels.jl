@@ -10,8 +10,8 @@ function check_ratio(sol, gm)
         k = parse(Int64,idx)
         connection = gm.ref[:nw][gm.cnw][:connection][parse(Int64,idx)]
         if connection["type"] == "compressor" || connection["type"] == "control_valve"          
-            @test val["ratio"] <= connection["c_ratio_max"] + 1e6
-            @test val["ratio"] >= connection["c_ratio_min"] - 1e6
+            @test val["ratio"] <= connection["c_ratio_max"] + 1e-6
+            @test val["ratio"] >= connection["c_ratio_min"] - 1e-6
         end
     end
 end

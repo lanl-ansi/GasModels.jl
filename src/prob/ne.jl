@@ -8,7 +8,10 @@ function run_ne(file, model_constructor, solver; kwargs...)
 end
 
 " construct the gas flow feasbility problem "
-function post_ne(gm::GenericGasModel)
+function post_ne(gm::GenericGasModel; kwargs...)
+    kwargs = Dict(kwargs)
+    obj_normalization = haskey(kwargs, :obj_normalization) ? kwargs[:obj_normalization] : 1.0
+      
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -20,7 +23,7 @@ function post_ne(gm::GenericGasModel)
     variable_compressor_ne(gm)
 
     # expansion cost objective
-    objective_min_ne_cost(gm)
+    objective_min_ne_cost(gm; normalization =  obj_normalization)
 
     for i in ids(gm, :junction)
         constraint_junction_flow_ne(gm, i) 
@@ -46,7 +49,7 @@ function post_ne(gm::GenericGasModel)
         constraint_compressor_flow_ne(gm, i)
     end
     
-    for i in ids(gm, :ne_compressor) 
+    for i in ids(gm, :ne_compressor)
         constraint_new_compressor_flow_ne(gm, i)
     end  
          
@@ -72,11 +75,15 @@ function post_ne(gm::GenericGasModel)
             exclusive[i][j] = true
         end             
     end  
+    
+    zp = gm.var[:nw][gm.cnw][:zp]
+    zc = gm.var[:nw][gm.cnw][:zc]
 end
 
 # Special function for whether or not a connection is added
 function add_connection_ne{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "ne_connection", "built", :zp; default_value = (item) -> 1)
+    add_setpoint(sol, gm, "ne_connection", "built_zp", :zp; default_value = (item) -> NaN)
+    add_setpoint(sol, gm, "ne_connection", "built_zc", :zc; default_value = (item) -> NaN)
 end
 
 # Get the direction solutions
@@ -85,12 +92,24 @@ function add_direction_ne_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "ne_connection", "yn", :yn_ne)    
 end
 
+" Add the compressor solutions "
+function add_compressor_ratio_ne_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "ne_connection", "ratio", :p; scale = (x,item) -> (item["type"] == "compressor" || item["type"] == "control_valve") ? sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])) : NaN, extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
+end
+
+" Add the flow solutions to new lines"
+function add_connection_flow_ne_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "ne_connection", "f", :f_ne)  
+end
+
 # Get all the solution values
 function get_ne_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
+    add_junction_pressure_setpoint(sol, gm)    
     add_connection_flow_setpoint(sol, gm)
-    add_connection_ne(sol, gm)
+    add_connection_flow_ne_setpoint(sol, gm)    
     add_direction_setpoint(sol, gm)
-    add_direction_ne_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
+    add_direction_ne_setpoint(sol, gm)    
+    add_compressor_ratio_setpoint(sol, gm)    
+    add_compressor_ratio_ne_setpoint(sol, gm)    
+    add_connection_ne(sol, gm)    
 end

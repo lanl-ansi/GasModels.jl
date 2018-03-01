@@ -9,7 +9,7 @@
       "resistance": 0.808042312,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 77.263820418635
+      "construction_cost": 77.26
     },
     "27": {
       "length": 46.2,
@@ -18,7 +18,7 @@
       "resistance": 0.78530519,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 79.500857535433
+      "construction_cost": 79.50
     },
     "25": {
       "length": 39.05,
@@ -27,7 +27,7 @@
       "resistance": 0.929093464,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 67.197153393045
+      "construction_cost": 67.19
     },
     "28": {
       "length": 47.33,
@@ -36,7 +36,7 @@
       "resistance": 0.766556091,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 81.445359029265
+      "construction_cost": 81.44
     }
   },
   "consumer": {
@@ -145,6 +145,7 @@
       "pmin": 0
     },
     "22": {
+      "name": "Koninklijke",
       "pmax": 66.2,
       "pmin": 14
     },
@@ -177,6 +178,7 @@
       "pmin": 0
     },
     "21": {
+      "name": "Bois",
       "pmax": 66.2,
       "pmin": 14
     },
@@ -209,7 +211,7 @@
       "pmin": 0
     },
     "9": {
-      "pmax": 66.2,
+      "pmax": 59.851968,
       "pmin": 0
     },
     "18": {

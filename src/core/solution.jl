@@ -63,7 +63,7 @@ end
 
 " Get the pressure solutions "
 function add_junction_pressure_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(x))
+    add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(getvalue(x)))
 end
 
 " Get the pressure squared solutions "
@@ -99,41 +99,10 @@ end
 
 " Add the compressor solutions "
 function add_compressor_ratio_setpoint{T}(sol, gm::GenericGasModel{T})
-    dict_name = "connection"
-    index_name = nothing  
-    param_name = "ratio"  
-    sol_dict = get(sol, dict_name, Dict{String,Any}())
-      
-    data_dict = gm.data["multinetwork"] ? gm.data["nw"]["$(gm.cnw)"][dict_name] : gm.data[dict_name]
-        
-    if length(data_dict) > 0
-        sol[dict_name] = sol_dict
-    end
-    
-    for (i,item) in data_dict
-        idx = parse(Int64,i)        
-        if index_name != nothing
-            idx = Int(item[index_name])
-        end
-        
-        if (item["type"] == "compressor" || item["type"] == "control_valve")
-            sol_item = sol_dict[i] = get(sol_dict, i, Dict{String,Any}())
-            sol_item[param_name] = NaN
-            i = item["f_junction"]
-            j = item["t_junction"]          
-            try
-                variable_i = var(gm, :p)[i]
-                variable_j = var(gm, :p)[j]
-                pi = getvalue(variable_i)
-                pj = getvalue(variable_j)       
-                sol_item[param_name] =  sqrt(pj) / sqrt(pi)
-            catch
-            end
-        end
-    end
+    add_setpoint(sol, gm, "connection", "ratio", :p; scale = (x,item) -> (item["type"] == "compressor" || item["type"] == "control_valve") ? sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])) : NaN, extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
-function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> x, extract_var = (var,idx,item) -> var[idx])
+function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> getvalue(variable), extract_var = (var,idx,item) -> var[idx])
     sol_dict = get(sol, dict_name, Dict{String,Any}())
       
     if gm.data["multinetwork"]
@@ -155,7 +124,7 @@ function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, var
         sol_item[param_name] = default_value(item)
         try
             variable = extract_var(var(gm, variable_symbol), idx, item)
-            sol_item[param_name] = scale(getvalue(variable), item)
+            sol_item[param_name] = scale(variable, item)
         catch
         end
     end
