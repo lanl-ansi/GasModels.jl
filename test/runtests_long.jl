@@ -29,7 +29,7 @@ scs_solver = SCSSolver
 pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
 #pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
 
-misocp_solver = cplex_solver
+misocp_solver = gurobi_solver
 
 if scip_solver != nothing
     minlp_solver = scip_solver
@@ -39,4 +39,6 @@ end
 
 include("long_tests_gf.jl")
 include("long_tests_ne.jl")
+
+#include("long_tests_unstable.jl")
 

@@ -24,8 +24,8 @@ const MISOCPGasModel = GenericGasModel{StandardMISOCPForm} # the standard MISCOP
 
 
 "default MISOCP constructor"
-MISOCPDirectedGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPDirectedForm; kwargs...)
-MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm; kwargs...)
+MISOCPDirectedGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPDirectedForm)
+MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm)
 
 
 ""

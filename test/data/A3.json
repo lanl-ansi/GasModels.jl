@@ -9,15 +9,15 @@
       "resistance": 1.289765367,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 48.406041611942
+      "construction_cost": 48.40
     },
     "29": {
       "c_ratio_max": 2,
-      "f_junction": 23,
-      "t_junction": 600023,
+      "f_junction": 231,
+      "t_junction": 23,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 750
+      "construction_cost": 1500
     },
     "25": {
       "length": 16.07,
@@ -26,7 +26,7 @@
       "resistance": 2.257691337,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 27.653220359186
+      "construction_cost": 27.65
     },
     "35": {
       "length": 16.25,
@@ -35,7 +35,7 @@
       "resistance": 2.232683064,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 27.962963959974
+      "construction_cost": 27.96
     },
     "271": {
       "length": 14.82,
@@ -44,7 +44,7 @@
       "resistance": 2.448117395,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 25.502223131496
+      "construction_cost": 25.50
     },
     "291": {
       "length": 31.13,
@@ -53,15 +53,7 @@
       "resistance": 1.1654706,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 53.568434958399
-    },
-    "100007": {
-      "c_ratio_max": 2,
-      "f_junction": 261,
-      "t_junction": 800026,
-      "c_ratio_min": 1,
-      "construction_cost": 750,
-      "type": "compressor"
+      "construction_cost": 53.56
     },
     "31": {
       "length": 24.46,
@@ -70,23 +62,23 @@
       "resistance": 1.483282902,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 42.090713751444
+      "construction_cost": 42.09
     },
     "27": {
       "c_ratio_max": 2,
-      "f_junction": 21,
-      "t_junction": 700021,
+      "f_junction": 211,
+      "t_junction": 21,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 750
+      "construction_cost": 1500
     },
     "33": {
-      "c_ratio_max": 2,
-      "f_junction": 26,
-      "t_junction": 800026,
+      "c_ratio_max": 2.8,
+      "f_junction": 261,
+      "t_junction": 26,
       "c_ratio_min": 1,
       "type": "compressor",
-      "construction_cost": 750
+      "construction_cost": 1500
     },
     "28": {
       "length": 32.35,
@@ -95,7 +87,7 @@
       "resistance": 1.121517768,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 55.667808252625
+      "construction_cost": 55.66
     },
     "331": {
       "length": 33.87,
@@ -104,7 +96,7 @@
       "resistance": 1.071186885,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 58.283420881496
+      "construction_cost": 58.28
     },
     "34": {
       "length": 35.91,
@@ -113,15 +105,7 @@
       "resistance": 1.010334163,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 61.793848357087
-    },
-    "100006": {
-      "c_ratio_max": 2,
-      "f_junction": 211,
-      "t_junction": 700021,
-      "c_ratio_min": 1,
-      "construction_cost": 750,
-      "type": "compressor"
+      "construction_cost": 61.79
     },
     "36": {
       "length": 25.48,
@@ -130,7 +114,7 @@
       "resistance": 1.423905015,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 42.090713751444
+      "construction_cost": 42.09
     },
     "26": {
       "length": 7.98,
@@ -139,15 +123,7 @@
       "resistance": 4.546503733,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 13.731966301575
-    },
-    "100005": {
-      "c_ratio_max": 2,
-      "f_junction": 231,
-      "t_junction": 600023,
-      "c_ratio_min": 1,
-      "construction_cost": 750,
-      "type": "compressor"
+      "construction_cost": 13.73
     },
     "30": {
       "length": 33.79,
@@ -156,7 +132,7 @@
       "resistance": 1.073722989,
       "diameter": 890,
       "type": "pipe",
-      "construction_cost": 58.145757058924
+      "construction_cost": 58.14
     }
   },
   "consumer": {
@@ -217,178 +193,207 @@
   },
   "junction": {
     "29": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "Pigneule",
+      "pmax": 70.0,
+      "pmin": 20
     },
     "1": {
+      "name": "Zeebrugge",
       "pmax": 77,
       "pmin": 0
     },
     "81": {
+      "name": "8-9 compressor",
       "pmax": 59.85,
       "pmin": 0
     },
     "2": {
+      "name": "Dudzele",
       "pmax": 77,
       "pmin": 0
     },
     "500004": {
+      "name": "4-14 compressor",    
       "pmax": 80,
       "pmin": 0
     },
     "41": {
+      "name": "4-14 compressor",
       "pmax": 80,
       "pmin": 0
     },
     "51": {
-      "pmax": 77,
+      "name": "5-6 compressor",
+      "pmax": 80,
       "pmin": 0
     },
     "27": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "Gedinne",
+      "pmax": 70,
+      "pmin": 20
     },
     "28": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "Chiny",
+      "pmax": 70,
+      "pmin": 20
     },
     "26": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "Senzeille",
+      "pmax": 70,
+      "pmin": 20
     },
     "10": {
+      "name": "Liege",
       "pmax": 66.2,
       "pmin": 30
     },
     "200017": {
+      "name": "17-18 compressor",
       "pmax": 66.2,
       "pmin": 0
     },
     "24": {
+      "name": "Bois-de-Barry",
       "pmax": 66.2,
       "pmin": 14
     },
     "25": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "Lobbes",
+      "pmax": 70,
+      "pmin": 20
     },
     "23": {
+      "name": "Kortrijk",
       "pmax": 66.2,
       "pmin": 14
     },
     "5": {
+      "name": "Loenhout",
       "pmax": 77,
       "pmin": 0
     },
     "17": {
+      "name": "Wanze",
       "pmax": 66.2,
       "pmin": 0
     },
     "9": {
-      "pmax": 66.2,
+      "name": "Berneau",
+      "pmax": 59.85,
       "pmin": 0
     },
     "12": {
+      "name": "Namur",
       "pmax": 66.2,
       "pmin": 0
     },
     "20": {
+      "name": "Petange",
       "pmax": 66.2,
       "pmin": 25
     },
     "6": {
+      "name": "Antwerp",
       "pmax": 80,
       "pmin": 30
     },
     "14": {
+      "name": "Peronnes",
       "pmax": 66.2,
       "pmin": 0
     },
     "7": {
+      "name": "Ghent",
       "pmax": 80,
       "pmin": 30
     },
     "261": {
-      "pmax": 66.2,
-      "pmin": 14
+      "name": "26-27 compressor",
+      "pmax": 70.0,
+      "pmin": 20
     },
     "231": {
+      "name": "23-24 compressor",
       "pmax": 66.2,
       "pmin": 14
     },
     "8": {
+      "name": "Voeren",
       "pmax": 66.2,
       "pmin": 50
     },
     "19": {
+      "name": "Arlon",
       "pmax": 66.2,
       "pmin": 0
     },
     "171": {
+      "name": "17-18 compressor",    
       "pmax": 66.2,
       "pmin": 0
     },
     "4": {
+      "name": "Zomergem",
       "pmax": 80,
       "pmin": 0
     },
     "400008": {
-      "pmax": 66.2,
+      "name": "8-9 compressor",
+      "pmax": 59.85,
       "pmin": 0
     },
-    "800026": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
     "22": {
+      "name": "Torhout",
       "pmax": 66.2,
       "pmin": 14
     },
     "11": {
+      "name": "Warnand",
       "pmax": 66.2,
       "pmin": 0
     },
     "13": {
+      "name": "Anderlues",
       "pmax": 66.2,
       "pmin": 0
     },
     "211": {
+      "name": "21-22 compressor",
       "pmax": 66.2,
       "pmin": 14
     },
     "300008": {
+      "name": "8-9 compressor",    
       "pmax": 66.2,
       "pmin": 0
     },
-    "700021": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
     "15": {
+      "name": "Mons",
       "pmax": 66.2,
       "pmin": 0
     },
     "16": {
+      "name": "Blaregnies",
       "pmax": 66.2,
       "pmin": 50
     },
-    "600023": {
-      "pmax": 66.2,
-      "pmin": 14
-    },
     "21": {
+      "name": "Jabbeke",
       "pmax": 66.2,
       "pmin": 14
     },
     "100005": {
-      "pmax": 77,
+      "name": "5-6 compressor",
+      "pmax": 80,
       "pmin": 0
     },
     "18": {
+      "name": "Sinsin",
       "pmax": 63,
       "pmin": 0
     },
     "3": {
+      "name": "Brugge",
       "pmax": 80,
       "pmin": 30
     }

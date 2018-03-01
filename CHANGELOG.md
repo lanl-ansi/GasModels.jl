@@ -3,7 +3,6 @@ GasModels.jl Change Log
 
 ### Pending
 
-- Modify the compressor and control valve data model so that bi-directional regulation objects require two objects in the data (breaking)
 - Implement non-binary variable model of compressors and control valves  
 - Implement nlp version(s) of the problems (abs, x - x^2 = 0, compressor directionalty)
 - Implement a "make_per_unit" function to normalize all units
@@ -18,6 +17,8 @@ GasModels.jl Change Log
 - Introduced the constraint_template.jl framework for gas constraints
 - Created undirected and directed gas formulations (breaking)
 - Producers and Consumers defined as separate objects so that multiple can exist at each node (breaking)
+- Compressors and control valves on compress in one direction as defined from f_junction -> t_junction (breaking)
+
 
 ### v0.1.0
 - Initial implementation

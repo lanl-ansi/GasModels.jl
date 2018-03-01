@@ -172,7 +172,7 @@ end
 " on/off constraints on flow across compressors for expansion variables "
 function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, k, mf)
     zc = gm.var[:nw][n][:zc][k] 
-    f = gm.var[:nw][n][:f][k] 
+    f =  gm.var[:nw][n][:f_ne][k] 
     
     if !haskey(gm.con[:nw][n], :on_off_compressor_flow_ne1)
         gm.con[:nw][n][:on_off_compressor_flow_ne1] = Dict{Int,ConstraintRef}()

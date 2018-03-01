@@ -292,12 +292,14 @@ end
 function constraint_new_compressor_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     constraint_on_off_compressor_flow_direction_ne(gm, i) 
     constraint_on_off_compressor_ratios_ne(gm, i) 
-        
+    constraint_on_off_compressor_flow_ne(gm, i)
+            
     constraint_flow_direction_choice_ne(gm, i) 
     constraint_parallel_flow_ne(gm, i)  
 end
 
 function constraint_new_compressor_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_on_off_compressor_flow_ne(gm, i)  
     constraint_on_off_compressor_flow_direction_ne(gm, i) 
     constraint_on_off_compressor_ratios_ne(gm, i) 
 end

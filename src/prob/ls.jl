@@ -52,4 +52,5 @@ function get_ls_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
     add_direction_setpoint(sol, gm)
     add_load_setpoint(sol, gm)
     add_production_setpoint(sol, gm)
+    add_compressor_ratio_setpoint(sol, gm)
 end

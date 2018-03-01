@@ -150,7 +150,7 @@ function build_generic_model(data::Dict{String,Any}, model_constructor, post_met
         warn("building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
     end
     
-    post_method(gm)
+    post_method(gm; kwargs...)
     return gm
 end
 
