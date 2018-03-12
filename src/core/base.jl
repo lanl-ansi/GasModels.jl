@@ -215,6 +215,9 @@ function build_ref(data::Dict{String,Any})
         end
     
         # filter turned off stuff
+        ref[:junction] = filter((i, junction) -> junction["status"] == 1, ref[:junction])
+        ref[:consumer] = filter((i, consumer) -> consumer["status"] == 1 && consumer["ql_junc"] in keys(ref[:junction]), ref[:consumer])
+        ref[:producer] = filter((i, producer) -> producer["status"] == 1 && producer["qg_junc"] in keys(ref[:junction]), ref[:producer])          
         ref[:connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:connection])
         ref[:ne_connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:ne_connection])
 

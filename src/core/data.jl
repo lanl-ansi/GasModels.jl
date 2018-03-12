@@ -19,10 +19,10 @@ function add_default_status(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
     
     for (n,data) in nws_data  
-        for entry in [data["connection"]; data["ne_connection"]]
-            for (idx,connection) in entry
-                if !haskey(connection,"status")
-                    connection["status"] = 1
+        for entry in [data["connection"]; data["ne_connection"]; data["junction"]; data["consumer"]; data["producer"]]
+            for (idx,component) in entry
+                if !haskey(component,"status")
+                    component["status"] = 1
                 end          
             end    
         end

@@ -3,19 +3,20 @@
 {
   "consumer": {
     "24": {
-      "qlmax": 0,
+      "qlmax": 1,
       "ql_junc": 24,
       "qlmin": 0,
-      "qlfirm": 1.8
+      "qlfirm": 1.8,
+      "status": false
     },
     "4": {
-      "qlmax": 0,
+      "qlmax": 1,
       "ql_junc": 4,
       "qlmin": 0,
       "qlfirm": 1.8
     },
     "29": {
-      "qlmax": 0,
+      "qlmax": 1,
       "ql_junc": 29,
       "qlmin": 0,
       "qlfirm": 1.8
@@ -185,7 +186,8 @@
     },
     "29": {
       "pmax": 81.01325,
-      "pmin": 1.01325
+      "pmin": 1.01325,
+      "status": false
     },
     "1": {
       "pmax": 81.01325,
@@ -368,13 +370,14 @@
   "producer": {
     "1": {
       "qgmin": 0,
-      "qgmax": 0,
+      "qgmax": 1,
       "qgfirm": 17.4,
-      "qg_junc": 1
+      "qg_junc": 1,
+      "status": false
     },
     "2": {
       "qgmin": 0,
-      "qgmax": 0,
+      "qgmax": 1,
       "qgfirm": 17.4,
       "qg_junc": 2
     },
