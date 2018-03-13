@@ -1,4 +1,4 @@
-@testset "connection status = false" begin
+@testset "status = false" begin
     gm = build_generic_model("../test/data/status.json",  MISOCPGasModel, GasModels.post_ls)
     @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
       
@@ -29,3 +29,10 @@
     @test gm.var[:nw][gm.cnw][:qg][2] != nothing      
 end      
  
+
+@testset "gis data" begin
+    gas_file = "../test/data/gaslib-40.json"
+    gas_data = GasModels.parse_file(gas_file)
+    
+    @test gas_data["junction"]["2"]["latitude"] == 49.76190172  
+end
