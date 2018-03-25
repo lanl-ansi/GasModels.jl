@@ -20,6 +20,7 @@ using Base.Test
 couenne_solver =  AmplNLSolver(CoinOptServices.couenne)
 bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
 gurobi_solver = GurobiSolver()
+#gurobi_solver_hp = GurobiSolver(ScaleFlag=2, NumericFocus=3)
 scip_solver =  isfile("../bin/scipampl.exe") ? AmplNLSolver("../bin/scipampl.exe", ["../scip.set"]) : nothing     
 cplex_solver = CplexSolver()
 cbc_solver = CbcSolver()
@@ -37,8 +38,8 @@ else
     minlp_solver = couenne_solver   
 end
 
-include("long_tests_gf.jl")
-include("long_tests_ne.jl")
+#include("long_tests_gf.jl")
+#include("long_tests_ne.jl")
 
-#include("long_tests_unstable.jl")
+include("long_tests_unstable.jl")
 
