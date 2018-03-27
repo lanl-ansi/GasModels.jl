@@ -21,7 +21,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         junction_id = withdrawal["node_index"]
         withdrawal_value = withdrawal["withdrawal"][time_point]
 
-        # FOLLOW UP: make sure this is the correct interperation
+        # FOLLOW UP: make sure this is the correct interpretation
         if !haskey(g_node_withdrawal, junction_id)
             g_node_withdrawal[junction_id] = [withdrawal_value]
         else
@@ -33,28 +33,85 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
     gm_producers = Dict{String,Any}()
     gm_consumers = Dict{String,Any}()
 
+    producer_count = 1
+    consumer_count = 1
+
     node_id_to_junction_id = Dict{Int,Int}()
     for (i, node) in g_nodes
         node_id_to_junction_id[node["index"]] = node["node"]
 
+        junction_id = node["node"]
+
         gm_junction = Dict{String,Any}(
-            "index" => node["node"],
+            "index" => junction_id,
             "pmax" => node["pmax"],
             "pmin" =>  node["pmin"],
             "latitude" => node["lat"],
             "longitude" => node["lon"],
             # other stuff from grail data format
-            "qmax" => node["qmax"],
-            "qmin" => node["qmin"],
+            #"qmax" => node["qmax"],
+            #"qmin" => node["qmin"],
             "isslack" => node["isslack"]
         )
 
         junction_index = "$(gm_junction["index"])"
         assert(!haskey(gm_junctions, junction_index))
         gm_junctions[junction_index] = gm_junction
+
+        if haskey(g_node_withdrawal, junction_id)
+            for withdrawal in g_node_withdrawal[junction_id]
+                if withdrawal > 0
+                    gm_consumer = Dict{String,Any}(
+                        "index" => consumer_count,
+                        "ql_junc" => junction_id,
+                        "qlmax" => 0.0,
+                        "qlmin" => 0.0,
+                        "qlfirm" => withdrawal
+                    )
+
+                    consumer_index = "$(gm_consumer["index"])"
+                    assert(!haskey(gm_consumers, consumer_index))
+                    gm_consumers[consumer_index] = gm_consumer
+                    consumer_count += 1
+                else
+                    gm_producer = Dict{String,Any}(
+                        "index" => producer_count,
+                        "qg_junc" => junction_id,
+                        "qgmax" => 0.0,
+                        "qgmin" => 0.0,
+                        "qgfirm" => -withdrawal
+                    )
+
+                    producer_index = "$(gm_producer["index"])"
+                    assert(!haskey(gm_producers, producer_index))
+                    gm_producers[producer_index] = gm_producer
+                    producer_count += 1
+                end
+            end
+        end
+
+        if node["isslack"] != 0
+            warn("adding producer at junction $(junction_id) to model capacity slack")
+
+            gm_producer = Dict{String,Any}(
+                "index" => producer_count,
+                "qg_junc" => junction_id,
+                "qgmax" => node["qmax"],
+                "qgmin" => node["qmin"],
+                "qgfirm" => 0.0
+            )
+
+            producer_index = "$(gm_producer["index"])"
+            assert(!haskey(gm_producers, producer_index))
+            gm_producers[producer_index] = gm_producer
+            producer_count += 1
+        end
+
     end
 
-    println(length(gm_junctions))
+    #println(length(gm_junctions))
+    #println(length(gm_producers))
+    #println(length(gm_consumers))
 
     gm_connections = Dict{String,Any}()
     for (i, edge) in g_edges
@@ -76,7 +133,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         gm_connections[connection_index] = gm_connection
     end
 
-    println(length(gm_connections))
+    #println(length(gm_connections))
 
 
     max_junction_id = maximum([junction["index"] for (i,junction) in gm_junctions])
@@ -92,6 +149,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         # prepare a new junction for the pipe-connecting compressor
         fr_junction = gm_junctions["$(compressor["node"])"]
         to_junction_index = junction_id_offset + fr_junction["index"]
+
+        warn("adding junction $(to_junction_index) to capture both sides of a compressor")
 
         gm_junction = Dict{String,Any}(
             "index" => to_junction_index,
