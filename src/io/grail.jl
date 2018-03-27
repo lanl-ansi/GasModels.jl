@@ -1,16 +1,33 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail_file(file)
-    grail_data = GasModels.parse_json(file)
+function parse_grail_file(network_file, time_series_file; time_point = 1)
+    network_data = GasModels.parse_json(network_file)
 
-    g_nodes = Dict([(node["index"], node) for node in grail_data["node"]])
-    g_edges = Dict([(edge["index"], edge) for edge in grail_data["edge"]])
-    g_compressors = Dict([(compressor["index"], compressor) for compressor in grail_data["compressor"]])
+    profile_data = GasModels.parse_json(time_series_file)
+    assert(length(profile_data["time_points"]) >= time_point)
+
+    g_nodes = Dict([(node["index"], node) for node in network_data["node"]])
+    g_edges = Dict([(edge["index"], edge) for edge in network_data["edge"]])
+    g_compressors = Dict([(compressor["index"], compressor) for compressor in network_data["compressor"]])
 
     #println(keys(g_nodes))
     #println(keys(g_edges))
     #println(keys(g_compressors))
+
+    g_node_withdrawal = Dict{Int,Any}()
+    for (i, withdrawal) in enumerate(profile_data["withdrawal"])
+        # FOLLOW UP: is this node id or node index?
+        junction_id = withdrawal["node_index"]
+        withdrawal_value = withdrawal["withdrawal"][time_point]
+
+        # FOLLOW UP: make sure this is the correct interperation
+        if !haskey(g_node_withdrawal, junction_id)
+            g_node_withdrawal[junction_id] = [withdrawal_value]
+        else
+            push!(g_node_withdrawal[junction_id], withdrawal_value)
+        end
+    end
 
     gm_junctions = Dict{String,Any}()
     gm_producers = Dict{String,Any}()
@@ -37,7 +54,7 @@ function parse_grail_file(file)
         gm_junctions[junction_index] = gm_junction
     end
 
-    #println(gm_junctions)
+    println(length(gm_junctions))
 
     gm_connections = Dict{String,Any}()
     for (i, edge) in g_edges
@@ -93,7 +110,7 @@ function parse_grail_file(file)
         assert(pipe["type"] == "pipe")
         assert(pipe["t_junction"] == compressor["node"] || pipe["f_junction"] == compressor["node"])
         
-        # this could be an indication of a compressor orientation issue
+        # FOLLOW UP: this could be an indication of a compressor orientation issue
         if pipe["f_junction"] == compressor["node"]
             pipe["f_junction"] = to_junction_index
         else
@@ -120,7 +137,7 @@ function parse_grail_file(file)
     end
 
     gm_network = Dict{String,Any}(
-        "name" => split(file,'.')[1],
+        "name" => split(network_file,'.')[1],
         "multinetwork" => false,
         "junction" => gm_junctions,
         "producer" => gm_producers,
