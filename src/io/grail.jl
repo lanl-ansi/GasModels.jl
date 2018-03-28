@@ -17,15 +17,17 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
 
     g_node_withdrawal = Dict{Int,Any}()
     for (i, withdrawal) in enumerate(profile_data["withdrawal"])
-        # FOLLOW UP: is this node id or node index?
+        # based on connectivity, this appears to be node index keys (not node id keys)
         junction_id = withdrawal["node_index"]
         withdrawal_value = withdrawal["withdrawal"][time_point]
 
-        # FOLLOW UP: make sure this is the correct interpretation
-        if !haskey(g_node_withdrawal, junction_id)
-            g_node_withdrawal[junction_id] = [withdrawal_value]
-        else
-            push!(g_node_withdrawal[junction_id], withdrawal_value)
+        # FOLLOW UP: make sure this is the correct interpretation of multiple withdrawal
+        if withdrawal_value != 0.0
+            if !haskey(g_node_withdrawal, junction_id)
+                g_node_withdrawal[junction_id] = [withdrawal_value]
+            else
+                push!(g_node_withdrawal[junction_id], withdrawal_value)
+            end
         end
     end
 
@@ -58,8 +60,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         assert(!haskey(gm_junctions, junction_index))
         gm_junctions[junction_index] = gm_junction
 
-        if haskey(g_node_withdrawal, junction_id)
-            for withdrawal in g_node_withdrawal[junction_id]
+        if haskey(g_node_withdrawal, node["index"])
+            for withdrawal in g_node_withdrawal[node["index"]]
                 if withdrawal > 0
                     gm_consumer = Dict{String,Any}(
                         "index" => consumer_count,
@@ -68,6 +70,17 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qlmin" => 0.0,
                         "qlfirm" => withdrawal
                     )
+
+                    # for testing
+                    #=
+                    gm_consumer = Dict{String,Any}(
+                        "index" => consumer_count,
+                        "ql_junc" => junction_id,
+                        "qlmax" => withdrawal,
+                        "qlmin" => 0.0,
+                        "qlfirm" => 0.0
+                    )
+                    =#
 
                     consumer_index = "$(gm_consumer["index"])"
                     assert(!haskey(gm_consumers, consumer_index))
@@ -82,6 +95,17 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qgfirm" => -withdrawal
                     )
 
+                    # for testing
+                    #=
+                    gm_producer = Dict{String,Any}(
+                        "index" => producer_count,
+                        "qg_junc" => junction_id,
+                        "qgmax" => -withdrawal,
+                        "qgmin" => 0.0,
+                        "qgfirm" => 0.0
+                    )
+                    =#
+
                     producer_index = "$(gm_producer["index"])"
                     assert(!haskey(gm_producers, producer_index))
                     gm_producers[producer_index] = gm_producer
@@ -91,7 +115,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         end
 
         if node["isslack"] != 0
-            warn("adding producer at junction $(junction_id) to model capacity slack")
+            warn("adding producer at junction $(junction_id) to model slack capacity")
 
             gm_producer = Dict{String,Any}(
                 "index" => producer_count,
@@ -203,6 +227,9 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         "consumer" => gm_consumers,
         "connection" => gm_connections
     )
+
+    #println("total production = $(sum([producer["qgfirm"] for (i,producer) in gm_producers]))")
+    #println("total consumption = $(sum([consumer["qlfirm"] for (i,consumer) in gm_consumers]))")
 
     return gm_network
 end

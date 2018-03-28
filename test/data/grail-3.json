@@ -1,0 +1,80 @@
+{
+  "node": [
+    {
+      "index": 1,
+      "isslack": 1,
+      "lat": 60.0,
+      "lon": -119.0,
+      "node": 101,
+      "pmax": 925,
+      "pmin": 225,
+      "qmax": 1000000,
+      "qmin": -1000000
+    },
+    {
+      "index": 2,
+      "isslack": 0,
+      "lat": 61.0,
+      "lon": -119.0,
+      "node": 102,
+      "pmax": 925,
+      "pmin": 225,
+      "qmax": 1000000,
+      "qmin": -1000000
+    },
+    {
+      "index": 3,
+      "isslack": 0,
+      "lat": 60.0,
+      "lon": -120.0,
+      "node": 103,
+      "pmax": 925,
+      "pmin": 225,
+      "qmax": 1000000,
+      "qmin": -1000000
+    }
+  ],
+  "edge": [
+    {
+      "index": 1,
+      "diameter": 20,
+      "f_id": 1,
+      "fr_node": 101,
+      "friction_factor": 0.01,
+      "length": 0.1194,
+      "t_id": 2,
+      "to_node": 102
+    },
+    {
+      "index": 2,
+      "diameter": 20,
+      "f_id": 2,
+      "fr_node": 102,
+      "friction_factor": 0.01,
+      "length": 0.6679,
+      "t_id": 3,
+      "to_node": 103
+    },
+    {
+      "index": 3,
+      "diameter": 10,
+      "f_id": 1,
+      "fr_node": 101,
+      "friction_factor": 0.01,
+      "length": 0.0753,
+      "t_id": 3,
+      "to_node": 103
+    }
+  ],
+  "compressor": [
+    {
+      "index": 1,
+      "edge_id": 2,
+      "node_id": 2,
+      "node": 102,
+      "cmax": 1.6,
+      "cmin": 1,
+      "hpmax": 0
+    }
+  ]
+}
