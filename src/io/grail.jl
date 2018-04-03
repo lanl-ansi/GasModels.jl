@@ -63,6 +63,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         if haskey(g_node_withdrawal, node["index"])
             for withdrawal in g_node_withdrawal[node["index"]]
                 if withdrawal > 0
+                    #=
                     gm_consumer = Dict{String,Any}(
                         "index" => consumer_count,
                         "ql_junc" => junction_id,
@@ -70,9 +71,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qlmin" => 0.0,
                         "qlfirm" => withdrawal
                     )
+                    =#
 
-                    # for testing
-                    #=
                     gm_consumer = Dict{String,Any}(
                         "index" => consumer_count,
                         "ql_junc" => junction_id,
@@ -80,13 +80,14 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qlmin" => 0.0,
                         "qlfirm" => 0.0
                     )
-                    =#
+
 
                     consumer_index = "$(gm_consumer["index"])"
                     assert(!haskey(gm_consumers, consumer_index))
                     gm_consumers[consumer_index] = gm_consumer
                     consumer_count += 1
                 else
+                    #=
                     gm_producer = Dict{String,Any}(
                         "index" => producer_count,
                         "qg_junc" => junction_id,
@@ -94,9 +95,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qgmin" => 0.0,
                         "qgfirm" => -withdrawal
                     )
+                    =#
 
-                    # for testing
-                    #=
                     gm_producer = Dict{String,Any}(
                         "index" => producer_count,
                         "qg_junc" => junction_id,
@@ -104,7 +104,6 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
                         "qgmin" => 0.0,
                         "qgfirm" => 0.0
                     )
-                    =#
 
                     producer_index = "$(gm_producer["index"])"
                     assert(!haskey(gm_producers, producer_index))
@@ -142,15 +141,30 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         assert(edge["fr_node"] == node_id_to_junction_id[edge["f_id"]])
         assert(edge["to_node"] == node_id_to_junction_id[edge["t_id"]])
 
+        # assume diameter units in inches, convert to meters
+        # assume length units is in degrees, convert to meters
+        a = 343.0 # speed of sound constant
+        #a = 1.0
         gm_connection = Dict{String,Any}(
             "index" => edge["index"],
             "f_junction" => edge["fr_node"],
             "t_junction" =>  edge["to_node"],
-            "length" => edge["length"],
-            "diameter" => edge["diameter"],
-            "resistance" => edge["friction_factor"],
+            "length" => edge["length"]*54.0*1600.0,
+            "diameter" => edge["diameter"]*0.0254,
+            "friction_factor" => edge["friction_factor"],
+            # TODO Fix me, look for computation
+            # variants discussed
+            # is this here? Grail.jl/src/core/base.jl#L428
+            # "resistance" => (2*edge["diameter"]*a^2)/(edge["friction_factor"]*edge["length"]),
+            # "resistance" => (2*edge["diameter"])/(edge["friction_factor"]*edge["length"]),
+            # this works for now...
+            "resistance" => 10.0,
             "type" => "pipe"
         )
+
+        if gm_connection["friction_factor"] == 0.0
+            gm_connection["type"] = "short_pipe"
+        end
 
         connection_index = "$(gm_connection["index"])"
         assert(!haskey(gm_connections, connection_index))
@@ -211,6 +225,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
             # other stuff from grail data format
             "hpmax" => compressor["hpmax"]
         )
+
+        assert(compressor["cmin"] >= 1.0)
 
         connection_index = "$(gm_connection["index"])"
         assert(!haskey(gm_connections, connection_index))
