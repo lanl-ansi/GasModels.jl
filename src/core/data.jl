@@ -82,3 +82,19 @@ function add_pd_bounds_sqr(ref::Dict{Symbol,Any})
         end
     end
 end
+
+"recursive call of update_data"
+function update_data(data::Dict{String,Any}, new_data::Dict{String,Any})
+    for (key, new_v) in new_data
+        if haskey(data, key)
+            v = data[key]
+            if isa(v, Dict) && isa(new_v, Dict)
+                update_data(v, new_v)
+            else
+                data[key] = new_v
+            end
+        else
+            data[key] = new_v
+        end
+    end
+end
