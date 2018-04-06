@@ -1,7 +1,7 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail_file(network_file, time_series_file; time_point = 1)
+function parse_grail_file(network_file, time_series_file; time_point = 1, slack_producers = false)
     network_data = GasModels.parse_json(network_file)
 
     profile_data = GasModels.parse_json(time_series_file)
@@ -113,7 +113,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
             end
         end
 
-        if node["isslack"] != 0
+        if node["isslack"] != 0 && slack_producers
             warn("adding producer at junction $(junction_id) to model slack capacity")
 
             gm_producer = Dict{String,Any}(
@@ -145,20 +145,30 @@ function parse_grail_file(network_file, time_series_file; time_point = 1)
         # assume length units is in degrees, convert to meters
         a = 343.0 # speed of sound constant
         #a = 1.0
+
+        length = max(edge["length"], 0.1) # to be robust to zero values
+
+        c = 96.074830e-15            # Gas relative constant
+        L = length*54.0*1.6  # length of the pipe [km]
+        D = edge["diameter"]*25.4    # interior diameter of the pipe [mm]
+        T = 281.15                   # gas temperature [K]
+        epsilon = 0.05               # absolute rugosity of pipe [mm]
+        delta = 0.6106               # density of the gas relative to air [-]
+        z = 0.8                      # gas compressibility factor [-]
+        B = 3.6*D/epsilon
+        lambda = 1/((2*log10(B))^2)
+        resistance = c*(D^5/(lambda*z*T*L*delta));
+
+        resistance = max(resistance, 0.01) # to have numerical robustness
+
         gm_connection = Dict{String,Any}(
             "index" => edge["index"],
             "f_junction" => edge["fr_node"],
             "t_junction" =>  edge["to_node"],
-            "length" => edge["length"]*54.0*1600.0,
-            "diameter" => edge["diameter"]*0.0254,
+            "length" => L,
+            "diameter" => D,
             "friction_factor" => edge["friction_factor"],
-            # TODO Fix me, look for computation
-            # variants discussed
-            # is this here? Grail.jl/src/core/base.jl#L428
-            # "resistance" => (2*edge["diameter"]*a^2)/(edge["friction_factor"]*edge["length"]),
-            # "resistance" => (2*edge["diameter"])/(edge["friction_factor"]*edge["length"]),
-            # this works for now...
-            "resistance" => 10.0,
+            "resistance" => resistance,
             "type" => "pipe"
         )
 
