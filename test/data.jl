@@ -46,7 +46,7 @@ end
 
     @test length(gas_data["connection"]) == 4
     @test length(gas_data["junction"]) == 4
-    @test length(gas_data["producer"]) == 1
+    @test length(gas_data["producer"]) == 0
     @test length(gas_data["consumer"]) == 2
 
     #TODO see if we can get one of these test working
