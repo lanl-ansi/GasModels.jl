@@ -29,7 +29,7 @@ function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective
         data["connection_count"] = length(gm.data["connection"])
     end
           
-    solution = Dict{AbstractString,Any}(
+    solution = Dict{String,Any}(
         "solver" => string(typeof(gm.model.solver)), 
         "status" => status, 
         "objective" => objective, 

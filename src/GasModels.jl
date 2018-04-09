@@ -9,6 +9,7 @@ using Compat
 
 include("io/json.jl")
 include("io/common.jl")
+include("io/grail.jl")
 
 include("core/base.jl")
 include("core/data.jl")

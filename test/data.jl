@@ -36,3 +36,23 @@ end
     
     @test gas_data["junction"]["2"]["latitude"] == 49.76190172  
 end
+
+
+@testset "grail data" begin
+    grail_network_file = "../test/data/grail-3.json"
+    grail_demand_file = "../test/data/grail-3-profile.json"
+
+    gas_data = GasModels.parse_grail_file(grail_network_file, grail_demand_file)
+
+    @test length(gas_data["connection"]) == 4
+    @test length(gas_data["junction"]) == 4
+    @test length(gas_data["producer"]) == 0
+    @test length(gas_data["consumer"]) == 2
+
+    #TODO see if we can get one of these test working
+    #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, misocp_solver)
+    #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, misocp_solver)
+
+    #@test result["status"] == :Optimal
+    #@test result["objective"] == 0.0
+end

@@ -22,9 +22,12 @@ using Base.Test
 misocp_solver = pajarito_solver
 minlp_solver = couenne_solver   
 
+@testset "GasModels" begin
+
 include("data.jl")
 include("ls.jl") # this one is unstable with Pajarito... dependent on ordering of variables and constraints
 include("nels.jl")
 include("gf.jl")
 include("ne.jl")
 
+end
