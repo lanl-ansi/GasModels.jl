@@ -5,6 +5,7 @@ module GasModels
 using JSON
 using MathProgBase
 using JuMP
+using InfrastructureModels
 using Compat
 
 include("io/json.jl")

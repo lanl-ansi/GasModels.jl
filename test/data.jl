@@ -1,40 +1,66 @@
 @testset "status = false" begin
     gm = build_generic_model("../test/data/status.json",  MISOCPGasModel, GasModels.post_ls)
     @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
-      
-    try 
+
+    try
         gm.var[:nw][gm.cnw][:f][32] == nothing
-        gm.var[:nw][gm.cnw][:f][34] == nothing          
+        gm.var[:nw][gm.cnw][:f][34] == nothing
         @test true == false
     catch
     end
-    
+
     @test gm.var[:nw][gm.cnw][:f][14] != nothing
-      
-    try 
+
+    try
         gm.var[:nw][gm.cnw][:ql][24] == nothing
-        gm.var[:nw][gm.cnw][:ql][29] == nothing          
+        gm.var[:nw][gm.cnw][:ql][29] == nothing
         @test true == false
     catch
     end
-    
+
     @test gm.var[:nw][gm.cnw][:ql][4] != nothing
-      
-    try 
+
+    try
         gm.var[:nw][gm.cnw][:qg][1] == nothing
         @test true == false
     catch
     end
-    
-    @test gm.var[:nw][gm.cnw][:qg][2] != nothing      
-end      
- 
 
-@testset "gis data" begin
+    @test gm.var[:nw][gm.cnw][:qg][2] != nothing
+end
+
+
+@testset "data summary" begin
     gas_file = "../test/data/gaslib-40.json"
     gas_data = GasModels.parse_file(gas_file)
-    
-    @test gas_data["junction"]["2"]["latitude"] == 49.76190172  
+
+    output = sprint(GasModels.summary, gas_data)
+
+    line_count = count(c -> c == '\n', output)
+
+    @test line_count >= 150 && line_count <= 175
+    @test contains(output, "name: gaslib 40")
+    @test contains(output, "connection: 51")
+    @test contains(output, "consumer: 29")
+    @test contains(output, "junction: 46")
+    @test contains(output, "producer: 3")
+    @test contains(output, "c_ratio_max: 5")
+    @test contains(output, "qgfirm: 17.400")
+end
+
+@testset "solution summary" begin
+    gas_file = "../test/data/gaslib-40.json"
+    gas_data = GasModels.parse_file(gas_file)
+    result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, misocp_solver)
+
+    output = sprint(GasModels.summary, result["solution"])
+
+    line_count = count(c -> c == '\n', output)
+    @test line_count >= 100 && line_count <= 125
+    @test contains(output, "connection: 51")
+    @test contains(output, "junction: 46")
+    @test contains(output, "Table: connection")
+    @test contains(output, "Table: junction")
 end
 
 
