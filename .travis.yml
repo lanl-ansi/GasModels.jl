@@ -1,45 +1,31 @@
 language: julia
-
 os:
   - linux
-#  - osx
-
+  - osx
 julia:
   - 0.6 
   - nightly
-
 matrix:
   allow_failures:
     - julia: nightly
-
+    - os: osx
 cache:
  directories:
    - /home/travis/.julia
-
-sudo: false
-
 addons:
   apt_packages:
     - gfortran
-    - liblapack-dev
-    - libgmp-dev
-    - libglpk-dev
-
 before_install:
     # don't keep an old version of the code in the cache
   - julia -e 'if "GasModels" in keys(Pkg.installed()) Pkg.rm("GasModels"); Pkg.rm("GasModels") end'
   - julia -e 'Pkg.update()' #make sure we get the latest version of METADATA
   - julia -e 'if !("Coverage" in keys(Pkg.installed())) Pkg.add("Coverage") end'
   - julia -e 'if !("Documenter" in keys(Pkg.installed())) Pkg.add("Documenter") end'
-  
-
 script: 
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'Pkg.clone(pwd())'
   - julia -e 'Pkg.test("GasModels", coverage=true)'
-
 after_success:
-  - echo $TRAVIS_JULIA_VERSION
-  - export REPO_TOKEN=9c0bd91b-c273-45a8-a221-a4d4e63ac464; julia -e 'using Coverage; cd(Pkg.dir("GasModels")); Codecov.submit(process_folder("."));'
+  - julia -e 'using Coverage; cd(Pkg.dir("GasModels")); Codecov.submit(process_folder("."));'
   - julia -e 'cd(Pkg.dir("GasModels")); include(joinpath("docs", "make.jl"))'
-  
+

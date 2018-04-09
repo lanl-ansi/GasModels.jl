@@ -72,12 +72,10 @@ A solution specifying a pressure for the same case, i.e. `result["solution"]["ju
 ```
 
 Because the data dictionary and the solution dictionary have the same structure 
-GasModels provides an `update_data` helper function which can be used to 
-update a data diction with the values from a solution as follows,
+InfrastructureModels `update_data!` helper function can be used to 
+update a data dictionary with the values from a solution as follows,
 
 ```
-GasModels.update_data(data, result["solution"])
+InfrastructureModels.update_data!(data, result["solution"])
 ```
-
-
 
