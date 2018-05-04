@@ -22,16 +22,6 @@ This enables the definition of a wide variety of gas network formulations and th
 * MINLP 
 * MISOCP
 
-## Installation
-
-For the moment, GasModels.jl is not yet registered as a Julia package.  Hence, "clone" should be used instead of "add" for package installation,
-
-`Pkg.clone("https://github.com/lanl-ansi/GasModels.jl.git")`
-
-At least one solver is required for running GasModels.  Commercial or psuedo-commerical solvers seem to handle these problems much better than
-some of the open source alternatives.  Gurobi and Cplex perform well on the MISOCP model, and SCIP handles the MINLP model reasonably well.
-
-
 ## Basic Usage
 
 
