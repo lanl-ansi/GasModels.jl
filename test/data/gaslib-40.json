@@ -1,6 +1,8 @@
 
 
 {
+  "comment": "pressure is in bars, diameter is in mm, length is in km, volumetric flow is in 10^6 m^3 per day, resistance values are calculated based on Smeers 2000 for these units",
+
   "connection": {
     "32": {
       "length": 3.479454666,

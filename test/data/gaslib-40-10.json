@@ -1,6 +1,8 @@
 
 
 {
+  "comment": "pressure is in bars, diameter is in mm, length is in km",
+
   "ne_connection": {
     "77": {
       "length": 49.86614839,

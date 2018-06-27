@@ -83,6 +83,28 @@ function add_pd_bounds_sqr(ref::Dict{Symbol,Any})
     end
 end
 
+""
+function calc_pipe_resistance(pipe::Dict{String,Any})
+    return calc_pipe_resistance_smeers(pipe)
+end
+
+"Calculate the pipe resistance using the method described in De Wolf and Smeers. The Gas Transmission Problem Solved by an Extension of the Simplex Algorithm. Management Science. 46 (11) 1454-1465, 2000
+# This function assumes that diameters are in mm, lengths are in km, volumetric flow is in 10^6 m^3/day, and pressure is in bars"
+function calc_pipe_resistance_smeers(pipe::Dict{String,Any})
+    c          = 96.074830e-15    # Gas relative constant
+    L          = pipe["length"]  # length of the pipe [km]
+    D          = pipe["diameter"] # interior diameter of the pipe [mm]
+    T          = 281.15           # gas temperature [K]
+    epsilon    = 0.05       # absolute rugosity of pipe [mm]
+    delta      = 0.6106       # density of the gas relative to air [-]
+    z          = 0.8                      # gas compressibility factor [-]
+    B          = 3.6*D/epsilon
+    lambda     = 1/((2*log10(B))^2)
+    resistance = c*(D^5/(lambda*z*T*L*delta));
+  
+    return resistance  
+end
+
 
 "prints the text summary for a data file or dictionary to STDOUT"
 function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)

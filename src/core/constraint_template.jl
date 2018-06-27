@@ -49,6 +49,7 @@ function constraint_on_off_pipe_flow_direction{T}(gm::GenericGasModel{T}, n::Int
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
     w              = pipe["resistance"]
+    #w              = calc_pipe_resistance(pipe) #pipe["resistance"]
     yp             = haskey(pipe, "yp") ? pipe["yp"] : nothing
     yn             = haskey(pipe, "yn") ? pipe["yn"] : nothing  
     
@@ -65,6 +66,7 @@ function constraint_on_off_pipe_flow_direction_ne{T}(gm::GenericGasModel{T}, n::
     mf             = gm.ref[:nw][n][:max_flow]
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
+#    w              = calc_pipe_resistance(pipe) #pipe["resistance"]
     w              = pipe["resistance"]
     yp             = haskey(pipe, "yp") ? pipe["yp"] : nothing
     yn             = haskey(pipe, "yn") ? pipe["yn"] : nothing    
@@ -469,7 +471,9 @@ function constraint_weymouth{T}(gm::GenericGasModel{T}, n::Int, k)
     j = pipe["t_junction"]
   
     mf = gm.ref[:nw][n][:max_flow]
+#    w = calc_pipe_resistance(pipe) #pipe["resistance"]
     w = pipe["resistance"]
+
     pd_max = pipe["pd_max"] 
     pd_min = pipe["pd_min"]
       
@@ -486,6 +490,7 @@ function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, k)
     mf = gm.ref[:nw][n][:max_flow]
     pd_max = pipe["pd_max"]  
     pd_min = pipe["pd_min"]  
+    #w = calc_pipe_resistance(pipe) #pipe["resistance"]
     w = pipe["resistance"]
     
     constraint_on_off_pipe_flow_ne(gm, n, k, w, mf, pd_min, pd_max)  
@@ -515,7 +520,9 @@ function constraint_weymouth_ne{T}(gm::GenericGasModel{T},  n::Int, k)
     j = pipe["t_junction"]
   
     mf = gm.ref[:nw][n][:max_flow]
+#    w = calc_pipe_resistance(pipe) #pipe["resistance"]
     w = pipe["resistance"]
+
     pd_max = pipe["pd_max"] 
     pd_min = pipe["pd_min"]
     yp = haskey(pipe, "yp") ? pipe["yp"] : nothing

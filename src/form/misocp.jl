@@ -31,8 +31,14 @@ MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standa
 ""
 function variable_flux{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
     max_flow = gm.ref[:nw][n][:max_flow] 
+    resistance = Dict{Int, Float64}()
+    for i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor]))]
+        resistance[i] = gm.ref[:nw][n][:connection][i]["resistance"]  
+    end    
+      
+      
     if bounded  
-        gm.var[:nw][n][:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], basename="l", lowerbound=0.0, upperbound=1/gm.ref[:nw][n][:connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
+        gm.var[:nw][n][:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], basename="l", lowerbound=0.0, upperbound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
         gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="f", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                        
     else
         gm.var[:nw][n][:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], basename="l", start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
@@ -43,8 +49,13 @@ end
 ""
 function variable_flux_ne{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
     max_flow = gm.ref[:nw][n][:max_flow]
+    resistance = Dict{Int, Float64}()
+    for i in  keys(gm.ref[:nw][n][:ne_pipe])
+        resistance[i] = gm.ref[:nw][n][:ne_connection][i]["resistance"]  
+    end    
+            
     if bounded   
-        gm.var[:nw][n][:l_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], basename="l_ne", lowerbound=0.0, upperbound=1/gm.ref[:nw][n][:ne_connection][i]["resistance"] * max_flow^2, start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
+        gm.var[:nw][n][:l_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], basename="l_ne", lowerbound=0.0, upperbound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))                        
     else
         gm.var[:nw][n][:l_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], basename="l_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
