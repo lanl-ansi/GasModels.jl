@@ -68,7 +68,7 @@ end
 
 " Get the pressure squared solutions "
 function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "p", :p)
+    add_setpoint(sol, gm, "junction", "psqr", :p)
 end
 
 " Get the pressure squared solutions "

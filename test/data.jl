@@ -37,7 +37,7 @@ end
     output = sprint(GasModels.summary, gas_data)
 
     line_count = count(c -> c == '\n', output)
-
+    
     @test line_count >= 150 && line_count <= 175
     @test contains(output, "name: gaslib 40")
     @test contains(output, "connection: 51")
@@ -45,7 +45,7 @@ end
     @test contains(output, "junction: 46")
     @test contains(output, "producer: 3")
     @test contains(output, "c_ratio_max: 5")
-    @test contains(output, "qgfirm: 17.400")
+    @test contains(output, "qgfirm: 201.389")
 end
 
 @testset "solution summary" begin

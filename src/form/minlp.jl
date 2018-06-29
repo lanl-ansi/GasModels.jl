@@ -38,7 +38,8 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::
         gm.con[:nw][n][:weymouth2] = Dict{Int,ConstraintRef}()          
         gm.con[:nw][n][:weymouth3] = Dict{Int,ConstraintRef}()
         gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()          
-    end    
+    end
+    
     gm.con[:nw][n][:weymouth1][k] = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (1-yp)*mf^2)              
     gm.con[:nw][n][:weymouth2][k] = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*mf^2)
     gm.con[:nw][n][:weymouth3][k] = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*mf^2)              

@@ -92,8 +92,8 @@ end
 # This function assumes that diameters are in mm, lengths are in km, volumetric flow is in 10^6 m^3/day, and pressure is in bars"
 function calc_pipe_resistance_smeers(pipe::Dict{String,Any})
     c          = 96.074830e-15    # Gas relative constant
-    L          = pipe["length"]  # length of the pipe [km]
-    D          = pipe["diameter"] # interior diameter of the pipe [mm]
+    L          = pipe["length"] / 1000.0  # length of the pipe [km]
+    D          = pipe["diameter"] * 1000.0 # interior diameter of the pipe [mm]
     T          = 281.15           # gas temperature [K]
     epsilon    = 0.05       # absolute rugosity of pipe [mm]
     delta      = 0.6106       # density of the gas relative to air [-]
