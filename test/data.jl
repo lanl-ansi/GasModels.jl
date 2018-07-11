@@ -88,7 +88,7 @@ end
         gas_file = "../test/data/gaslib-40.json"
         gas_data = GasModels.parse_file(gas_file)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data["connection"]["32"]), 5.9719269834653; atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data, gas_data["connection"]["32"]), 5.9719269834653; atol=1e-4)
     end
     
     @testset "thorley" begin

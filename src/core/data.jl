@@ -83,16 +83,6 @@ function add_pd_bounds_sqr(ref::Dict{Symbol,Any})
     end
 end
 
-""
-function calc_pipe_resistance(data::Dict{String,Any}, pipe::Dict{String,Any})
-    if (pipe["type"] == "pipe")
-        return calc_pipe_resistance_thorley(data, pipe)
-    else
-        return calc_resistor_resistance_simple(data, pipe)
-    end    
-end
-
-
 "Calculates pipeline resistance from this paperARD Thorley and CH Tiley. Unsteady and transient flow of compressible
 fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
@@ -130,7 +120,7 @@ end
 
 "Calculate the pipe resistance using the method described in De Wolf and Smeers. The Gas Transmission Problem Solved by an Extension of the Simplex Algorithm. Management Science. 46 (11) 1454-1465, 2000
  This function assumes that diameters are in mm, lengths are in km, volumetric flow is in 10^6 m^3/day, and pressure is in bars"
-function calc_pipe_resistance_smeers(pipe::Dict{String,Any})
+function calc_pipe_resistance_smeers(data::Dict{String,Any},pipe::Dict{String,Any})
     c          = 96.074830e-15    # Gas relative constant
     L          = pipe["length"] / 1000.0  # length of the pipe [km]
     D          = pipe["diameter"] * 1000.0 # interior diameter of the pipe [mm]
