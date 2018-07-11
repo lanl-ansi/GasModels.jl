@@ -84,12 +84,52 @@ function add_pd_bounds_sqr(ref::Dict{Symbol,Any})
 end
 
 ""
-function calc_pipe_resistance(pipe::Dict{String,Any})
-    return calc_pipe_resistance_smeers(pipe)
+function calc_pipe_resistance(data::Dict{String,Any}, pipe::Dict{String,Any})
+    if (pipe["type"] == "pipe")
+        return calc_pipe_resistance_thorley(data, pipe)
+    else
+        return calc_resistor_resistance_simple(data, pipe)
+    end    
 end
 
+
+"Calculates pipeline resistance from this paperARD Thorley and CH Tiley. Unsteady and transient flow of compressible
+fluids in pipelines–a review of theoretical and some experimental studies.
+International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
+This is used in many of Zlotniks papers"
+function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,Any})
+    R          = 8.314 # universal gas constant     
+    z          = data["compressibility_factor"]
+    T          = data["temperature"]
+    m          = data["gas_molar_mass"]
+    lambda     = pipe["friction_factor"]
+    D          = pipe["diameter"]  
+    L          = pipe["length"]  
+     
+    a_sqr = z * (R/m) * T          
+    resistance = 2 * D / (lambda * L * a_sqr) 
+    return resistance 
+end
+
+"A very simple model of computing resistance for resistors that is based on the Thorley model.  The are other more realistic models that could
+be used.  See Physical and technical fundamentals of gas networks by Fugenschu et al. for an example"
+function calc_resistor_resistance_simple(data::Dict{String,Any}, pipe::Dict{String,Any})
+    R          = 8.314 # universal gas constant     
+    z          = data["compressibility_factor"]
+    T          = data["temperature"]
+    m          = data["gas_molar_mass"]
+    lambda     = pipe["drag"]
+    D          = pipe["diameter"]  
+    L          = pipe["length"]  
+     
+    a_sqr = z * (R/m) * T          
+    resistance = 2 * D / (lambda * L * a_sqr) 
+    return resistance 
+end
+
+
 "Calculate the pipe resistance using the method described in De Wolf and Smeers. The Gas Transmission Problem Solved by an Extension of the Simplex Algorithm. Management Science. 46 (11) 1454-1465, 2000
-# This function assumes that diameters are in mm, lengths are in km, volumetric flow is in 10^6 m^3/day, and pressure is in bars"
+ This function assumes that diameters are in mm, lengths are in km, volumetric flow is in 10^6 m^3/day, and pressure is in bars"
 function calc_pipe_resistance_smeers(pipe::Dict{String,Any})
     c          = 96.074830e-15    # Gas relative constant
     L          = pipe["length"] / 1000.0  # length of the pipe [km]
