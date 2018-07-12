@@ -50,7 +50,7 @@ end
 
 ""
 function init_solution(gm::GenericGasModel)
-    data_keys = ["multinetwork"]
+    data_keys = ["per_unit", "baseP", "baseQ", "multinetwork"]
     return Dict{String,Any}(key => gm.data[key] for key in data_keys)
 end
 

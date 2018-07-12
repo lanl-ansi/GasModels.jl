@@ -97,7 +97,7 @@ function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,
     L          = pipe["length"]  
      
     a_sqr = z * (R/m) * T          
-    resistance = 2 * D / (lambda * L * a_sqr) 
+    resistance = (2 * D / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
@@ -113,7 +113,7 @@ function calc_resistor_resistance_simple(data::Dict{String,Any}, pipe::Dict{Stri
     L          = pipe["length"]  
      
     a_sqr = z * (R/m) * T          
-    resistance = 2 * D / (lambda * L * a_sqr) 
+    resistance = (2 * D / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
@@ -151,4 +151,108 @@ end
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)
     InfrastructureModels.summary(io, data; kwargs...)
+end
+
+
+"Transforms network data into per-unit (non-dimensionalized)"
+function make_per_unit(data::Dict{String,Any})
+    if !haskey(data, "per_unit") || data["per_unit"] == false
+        data["per_unit"] = true
+        p_base = data["baseP"]
+        q_base = data["baseQ"]          
+        if InfrastructureModels.ismultinetwork(data)
+            for (i,nw_data) in data["nw"]
+                _make_per_unit(nw_data, p_base, q_base)
+            end
+        else
+            _make_per_unit(data, p_base, q_base)
+        end
+    end
+end
+
+
+""
+function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
+    rescale_q      = x -> x/q_base
+    rescale_p      = x -> x/p_base
+    
+    if haskey(data, "junction")
+        for (i, junction) in data["junction"]
+            apply_func(junction, "pmax", rescale_p)
+            apply_func(junction, "pmin", rescale_p)
+        end
+    end
+
+    if haskey(data, "consumer")
+        for (i, consumer) in data["consumer"]
+            apply_func(consumer, "qlmin", rescale_q)
+            apply_func(consumer, "qlmax", rescale_q)
+            apply_func(consumer, "qlfirm", rescale_q)
+            
+        end
+    end
+    
+    if haskey(data, "producer")
+        for (i, producer) in data["producer"]
+            apply_func(producer, "qgmin", rescale_q)
+            apply_func(producer, "qgmax", rescale_q)
+            apply_func(producer, "qgfirm", rescale_q)
+            
+        end
+    end
+
+end
+
+
+"Transforms network data into mixed-units (inverse of per-unit)--non-dimensionalized"
+function make_mixed_units(data::Dict{String,Any})
+    if haskey(data, "per_unit") && data["per_unit"] == true
+        data["per_unit"] = false
+        p_base = data["baseP"]
+        q_base = data["baseQ"]          
+        if InfrastructureModels.ismultinetwork(data)
+            for (i,nw_data) in data["nw"]
+                _make_mixed_units(nw_data, p_base, q_base)
+            end
+        else
+             _make_mixed_units(data, p_base, q_base)
+        end
+    end
+end
+
+
+""
+function _make_mixed_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
+    rescale_q      = x -> x*q_base
+    rescale_p      = x -> x*p_base
+      
+    if haskey(data, "junction")
+        for (i, junction) in data["junction"]
+            apply_func(junction, "pmax", rescale_p)
+            apply_func(junction, "pmin", rescale_p)
+        end
+    end
+
+    if haskey(data, "consumer")
+        for (i, consumer) in data["consumer"]
+            apply_func(consumer, "qlmin", rescale_q)
+            apply_func(consumer, "qlmax", rescale_q)
+            apply_func(consumer, "qlfirm", rescale_q)
+            
+        end
+    end
+    
+    if haskey(data, "producer")
+        for (i, producer) in data["producer"]
+            apply_func(producer, "qgmin", rescale_q)
+            apply_func(producer, "qgmax", rescale_q)
+            apply_func(producer, "qgfirm", rescale_q)
+            
+        end
+    end
+end
+
+""
+function apply_func(data::Dict{String,Any}, key::String, func)
+    data[key] = func(data[key])
 end
