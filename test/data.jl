@@ -96,13 +96,13 @@ end
         gas_file = "../test/data/A1.json"
         gas_data = GasModels.parse_file(gas_file)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_connection"]["26"]), 108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2); atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_connection"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
     
     @testset "resistor" begin
         gas_file = "../test/data/gaslib-582.json"
         gas_data = GasModels.parse_file(gas_file)
-        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["connection"]["605"]), 7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2); atol=1e-4)
+        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["connection"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
     
     
