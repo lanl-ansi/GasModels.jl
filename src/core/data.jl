@@ -1,7 +1,7 @@
 # tools for working with GasModels internal data format
 
-"Computes the maximum flow of the Gas Model"
-function calc_max_flow(data::Dict{String,Any})
+"Computes the maximum volume of the Gas Model"
+function calc_max_volume(data::Dict{String,Any})
     max_flow = 0
     for (idx, producer) in data["producer"]
         if producer["qgmax"] > 0
@@ -14,6 +14,11 @@ function calc_max_flow(data::Dict{String,Any})
     return max_flow
 end
 
+"Computes the max flux in the Gas Model"
+function calc_max_flux(data::Dict{String,Any})
+    return calc_max_volume(data) * data["standard_density"]  
+end
+  
 "Ensures that status exists as a field in connections"
 function add_default_status(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
@@ -96,8 +101,11 @@ function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,
     D          = pipe["diameter"]  
     L          = pipe["length"]  
      
-    a_sqr = z * (R/m) * T          
-    resistance = (2 * D / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
+    a_sqr = z * (R/m) * T       
+    A     = (pi*D) / 4 # cross sectional area
+    
+       
+    resistance = ( (2 * D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
@@ -112,8 +120,10 @@ function calc_resistor_resistance_simple(data::Dict{String,Any}, pipe::Dict{Stri
     D          = pipe["diameter"]  
     L          = pipe["length"]  
      
-    a_sqr = z * (R/m) * T          
-    resistance = (2 * D / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
+    a_sqr = z * (R/m) * T
+    A     = (pi*D) / 4 # cross sectional area
+              
+    resistance = ( (2 * D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
@@ -255,4 +265,35 @@ end
 ""
 function apply_func(data::Dict{String,Any}, key::String, func)
     data[key] = func(data[key])
+end
+
+"calculates minimum mass flux consumption"
+function calc_flmin(data::Dict{String,Any}, consumer::Dict{String,Any})
+    consumer["qlmin"] * data["standard_density"]  
+end
+
+"calculates maximum mass flux consumption"
+function calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
+    consumer["qlmax"] * data["standard_density"]  
+end
+
+"calculates firm mass flux consumption"
+function calc_flfirm(data::Dict{String,Any}, consumer::Dict{String,Any})
+    consumer["qlfirm"] * data["standard_density"]  
+end
+
+
+"calculates minimum mass flux production"
+function calc_fgmin(data::Dict{String,Any}, producer::Dict{String,Any})
+    producer["qgmin"] * data["standard_density"]  
+end
+
+"calculates maximum mass flux production"
+function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
+    producer["qgmax"] * data["standard_density"]  
+end
+
+"calculates firm mass flux production"
+function calc_fgfirm(data::Dict{String,Any}, producer::Dict{String,Any})
+    producer["qgfirm"] * data["standard_density"]  
 end

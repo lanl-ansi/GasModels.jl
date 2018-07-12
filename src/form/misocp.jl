@@ -29,8 +29,8 @@ MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standa
 
 
 ""
-function variable_flux{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
-    max_flow = gm.ref[:nw][n][:max_flow] 
+function variable_mass_flux{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+    max_flow = gm.ref[:nw][n][:max_flux] 
     resistance = Dict{Int, Float64}()
     for i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor]))]
         pipe = gm.ref[:nw][n][:connection][i]
@@ -47,8 +47,8 @@ function variable_flux{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=
 end
 
 ""
-function variable_flux_ne{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
-    max_flow = gm.ref[:nw][n][:max_flow]
+function variable_mass_flux_ne{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+    max_flow = gm.ref[:nw][n][:max_flux]
     resistance = Dict{Int, Float64}()
     for i in  keys(gm.ref[:nw][n][:ne_pipe])
         pipe =  gm.ref[:nw][n][:ne_connection][i]
@@ -66,7 +66,7 @@ end
 
 ""
 function variable_flow{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux(gm,n; bounded=bounded)
+    variable_mass_flux(gm,n; bounded=bounded)
     variable_connection_direction(gm,n)  
 end
 

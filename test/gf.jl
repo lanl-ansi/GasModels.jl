@@ -49,7 +49,7 @@ end
     @test haskey(gm.var[:nw][gm.cnw],:l)   == false
     @test length(gm.var[:nw][gm.cnw][:v])  == 72  
        
-    ref = gm.con[:nw][gm.cnw][:junction_flow_balance][100]  
+    ref = gm.con[:nw][gm.cnw][:junction_mass_flux_balance][100]  
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, 0.64266/data["baseQ"]; atol = 1e-4)
     @test JuMP.sense(c) == :(==)
@@ -58,7 +58,7 @@ end
     @test c.terms.vars[1] == gm.var[:nw][gm.cnw][:f][128]
     
     # -f[426] - f[77] + f[78] == 0
-    ref = gm.con[:nw][gm.cnw][:junction_flow_balance][306]  
+    ref = gm.con[:nw][gm.cnw][:junction_mass_flux_balance][306]  
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, 0.0; atol = 1e-4)
     @test JuMP.sense(c) == :(==)
@@ -76,7 +76,7 @@ end
     end
 
     # -f[360] - f[269] == -526
-    ref = gm.con[:nw][gm.cnw][:junction_flow_balance][26]  
+    ref = gm.con[:nw][gm.cnw][:junction_mass_flux_balance][26]  
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, -526/data["baseQ"]; atol = 1e-4)
     @test JuMP.sense(c) == :(==)

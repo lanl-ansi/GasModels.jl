@@ -12,8 +12,8 @@ function post_nels(gm::GenericGasModel)
     variable_flow(gm)          
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
-    variable_load(gm)
-    variable_production(gm)
+    variable_load_mass_flux(gm)
+    variable_production_mass_flux(gm)
     
     # expansion variables
     variable_pipe_ne(gm)
@@ -25,7 +25,7 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_junction_flow_ne_ls(gm, i) 
+        constraint_junction_mass_flux_ne_ls(gm, i) 
     end
 
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 
@@ -83,8 +83,10 @@ function get_nels_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
     add_connection_ne(sol, gm)
     add_direction_setpoint(sol, gm)
     add_direction_ne_setpoint(sol, gm)
-    add_load_setpoint(sol, gm)
-    add_production_setpoint(sol, gm) 
+    add_load_volume_setpoint(sol, gm)
+    add_load_flux_setpoint(sol, gm)    
+    add_production_volume_setpoint(sol, gm)
+    add_production_flux_setpoint(sol, gm)    
     add_compressor_ratio_setpoint(sol, gm)   
     add_connection_flow_ne_setpoint(sol, gm)    
     add_compressor_ratio_ne_setpoint(sol, gm)    

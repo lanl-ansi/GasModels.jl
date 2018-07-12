@@ -18,15 +18,15 @@
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:ql][4] != nothing
+    @test gm.var[:nw][gm.cnw][:fl][4] != nothing
 
     try
-        gm.var[:nw][gm.cnw][:qg][1] == nothing
+        gm.var[:nw][gm.cnw][:fg][1] == nothing
         @test true == false
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:qg][2] != nothing
+    @test gm.var[:nw][gm.cnw][:fg][2] != nothing
 end
 
 
@@ -39,7 +39,7 @@ end
 
     line_count = count(c -> c == '\n', output)
     
-    @test line_count >= 150 && line_count <= 175
+    @test line_count >= 175 && line_count <= 200
     @test contains(output, "name: gaslib 40")
     @test contains(output, "connection: 51")
     @test contains(output, "consumer: 29")
