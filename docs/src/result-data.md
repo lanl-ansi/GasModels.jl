@@ -81,3 +81,60 @@ InfrastructureModels.update_data!(data, result["solution"])
 
 By default, all results are reported in per-unit (non-dimenionalized). Below are common outputs of implemented optimization models
 
+```json
+{
+"junction":{
+    "1":{
+      "p": <float>,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals
+      "psqr": <float>,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2      
+       ...
+    },
+    "2":{...},
+    ...
+},
+"consumer":{
+    "1":{
+      "fl": <float>,  # variable mass flux consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
+      "ql": <float>,  # the varible volumetric gas demand at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s. 
+       ...
+    },
+    "2":{...},
+    ...
+},
+"producer":{
+    "1":{
+      "fg": <float>,  # variable mass flux produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
+      "qg": <float>,  # the varible volumetric gas produced at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s.        ...
+    },
+    "2":{...},
+    ...
+},
+"connection":{
+    "1":{
+      "f": <float>,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2
+      "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
+      "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
+      "v": <int>,                   # 1 if valve is open. 0 otherwise      
+      "ratio": <float>,             # multiplicative (de)compression ratio
+        ...
+    },
+    "2":{...},
+    ...
+},
+"ne_connection":{
+    "1":{
+      "f": <float>,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2
+      "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
+      "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
+      "v": <int>,                   # 1 if valve is open. 0 otherwise      
+      "ratio": <float>,             # multiplicative (de)compression ratio
+      "built_zp": <float>,          # 1 if the pipe was built. 0 otherwise.
+      "built_zc": <float>,          # 1 if compressor was built. 0 otherwise.      
+        ...
+    },
+    "2":{...},
+    ...
+}
+}
+```
+
