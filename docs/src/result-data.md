@@ -57,8 +57,8 @@ For example the data for a junction, `data["junction"]["1"]` is structured as fo
 
 ```
 {
-"pmin": 14.0,
-"pmax": 80.0,
+"pmin": 14000.0,
+"pmax": 80000.0,
 ...
 }
 ```
@@ -78,4 +78,6 @@ update a data dictionary with the values from a solution as follows,
 ```
 InfrastructureModels.update_data!(data, result["solution"])
 ```
+
+By default, all results are reported in per-unit (non-dimenionalized). Below are common outputs of implemented optimization models
 

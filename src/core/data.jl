@@ -222,10 +222,10 @@ function make_si_units(data::Dict{String,Any})
         q_base = data["baseQ"]          
         if InfrastructureModels.ismultinetwork(data)
             for (i,nw_data) in data["nw"]
-                _make_mixed_units(nw_data, p_base, q_base)
+                _make_si_units(nw_data, p_base, q_base)
             end
         else
-             _make_mixed_units(data, p_base, q_base)
+             _make_si_units(data, p_base, q_base)
         end
     end
 end
