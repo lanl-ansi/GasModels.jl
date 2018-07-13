@@ -214,8 +214,8 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
 end
 
 
-"Transforms network data into mixed-units (inverse of per-unit)--non-dimensionalized"
-function make_mixed_units(data::Dict{String,Any})
+"Transforms network data into si-units (inverse of per-unit)--non-dimensionalized"
+function make_si_units(data::Dict{String,Any})
     if haskey(data, "per_unit") && data["per_unit"] == true
         data["per_unit"] = false
         p_base = data["baseP"]
@@ -232,7 +232,7 @@ end
 
 
 ""
-function _make_mixed_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
+function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
     rescale_q      = x -> x*q_base
     rescale_p      = x -> x*p_base
       

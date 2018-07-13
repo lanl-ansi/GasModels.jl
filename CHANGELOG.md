@@ -4,13 +4,14 @@ GasModels.jl Change Log
 ### Pending
 - Implement non-binary variable model of compressors and control valves  
 - Implement nlp version(s) of the problems (abs, x - x^2 = 0, compressor directionality)
-- Implement a "make_per_unit" function to normalize all units
 - Implement Constraints on compressor power 
 - Implement a multi-network test
 - Implement a matlab like data input format
 
 ### Staged
-- none
+- Standardized on SI for real unit inputs (breaking)
+- Standardized naming conventions on volumetric flow, mass flow, and mass flux, depending on context (breaking)
+- All computations and results are performed in non-dimenionalized units (per unit)
 
 ### v0.2.0
 - Dropped support for Julia v0.5 (breaking)

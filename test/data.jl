@@ -33,7 +33,7 @@ end
 @testset "data summary" begin
     gas_file = "../test/data/gaslib-40.json"
     gas_data = GasModels.parse_file(gas_file)
-    GasModels.make_mixed_units(gas_data)
+    GasModels.make_si_units(gas_data)
 
     output = sprint(GasModels.summary, gas_data)
 

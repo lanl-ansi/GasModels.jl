@@ -2,17 +2,24 @@
 
 ## The Network Data Dictionary
 
-Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization direction as a text file.
+Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization as a text file. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.
 
 The network data dictionary structure is roughly as follows:
 
 ```json
 {
-"name":<string>,        # a name for the model
+"name":<string>,                   # a name for the model
+"temperature":<float>,             # gas temperature. SI units are kelvin
+"multinetwork":<boolean>,          # flag for whether or not this is multiple networks
+"gas_molar_mass":<float>,          # molecular mass of the gas. SI units are kg/mol
+"standard_density":<float>,        # Standard (nominal) density of the gas. SI units are kg/m^3
+"compressibility_factor":<float>,  # Gas compressability. Non-dimensional.
+"baseQ":<float>,                   # Base for non-dimensionalizing volumetric flow at standard density. SI units are m^3/s
+"baseP":<float>,                   # Base for non-dimensionalizing pressure. SI units are pascal.
 "junction":{
     "1":{
-      "pmax": <float>,   # maximum pressure
-      "pmin": <float>,   # minimum pressure
+      "pmax": <float>,   # maximum pressure. SI units are pascals
+      "pmin": <float>,   # minimum pressure. SI units are pascals
        ...
     },
     "2":{...},
@@ -21,9 +28,9 @@ The network data dictionary structure is roughly as follows:
 "consumer":{
     "1":{
       "ql_junc": <float>,  # junction id
-      "qlmax": <float>,  # the maximum gas demand that can be added to qlfirm
-      "qlmin": <float>,  # the minimum gas demand that can be added to qlfirm
-      "qlfirm": <float>, # constant gas demand
+      "qlmax": <float>,  # the maximum volumetric gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
+      "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
+      "qlfirm": <float>, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
        ...
     },
     "2":{...},
@@ -32,9 +39,9 @@ The network data dictionary structure is roughly as follows:
 "producer":{
     "1":{
       "qg_junc": <float>,  # junction id
-      "qgmin": <float>,  # the minimum gas production that can be added to qgfirm
-      "qgmax": <float>,  # the maximum gas production that can be added to qgfirm
-      "qgfirm": <float>, # constant gas production
+      "qgmin": <float>,  # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      "qgmax": <float>,  # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      "qgfirm": <float>, # constant volumetric gas production at standard density. SI units are m^3/s.
        ...
     },
     "2":{...},
@@ -42,14 +49,14 @@ The network data dictionary structure is roughly as follows:
 },
 "connection":{
     "1":{
-      "length": <float>,       # the length of the connection
-      "f_junction": <int>,     # the "from" side junction id
-      "t_junction": <int>,     # the "to" side junction id
-      "resistance": <float>,   # the resistance of the connection
-      "diameter": <float>,     # the diameter of the connection
-      "c_ratio_min": <float>,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).
-      "c_ratio_max": <float>,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).      
-      "type": <string>,        # the type of the connection. Can be "pipe", "compressor", "short_pipe", "control_valve", "valve"
+      "length": <float>,            # the length of the connection. SI units are m.
+      "f_junction": <int>,          # the "from" side junction id
+      "t_junction": <int>,          # the "to" side junction id
+      "friction_factor": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.
+      "diameter": <float>,          # the diameter of the connection. SI units are m.
+      "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      "type": <string>,             # the type of the connection. Can be "pipe", "compressor", "short_pipe", "control_valve", "valve"
         ...
     },
     "2":{...},
