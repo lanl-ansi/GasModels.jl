@@ -37,7 +37,7 @@ Given potential numerical issues associated with these equations, it is very use
     $\tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),$
 ```
 
-where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}/\frac{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define _resistance_, $w$, as the constant 
+where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define _resistance_, $w$, as the constant 
 
 ```math
 $w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).$
@@ -52,7 +52,7 @@ A complete gas flow mathematical model is the defined by
 
 ```math
 \begin{aligned}
-\text{\bf sets:} \\
+\text{\textbf{sets:}} \\
 & N & \text{junctions} \\
 & A^p & \text{pipes}  \\
 & A^c & \text{compressors}  \\
@@ -61,20 +61,20 @@ A complete gas flow mathematical model is the defined by
 & P, P_i & \text{producers and producers at junction $i$}   \\
 & C, C_i & \text{consumers and consumers at junction $i$}    \\
 %
-\text{\bf data:} \\
+\text{\textbf{data:}} \\
 & w_a & \text{resistance factor of pipeline $a$} \\
 & fl_j & \text{consumption (mass flux) at consumer $j$} \\
 & fg_j & \text{production (mass flux) at producer $j$} \\
 & \underline{\alpha}_a=1, \overline{\alpha}_a & \text{(de)compression limits (squared) of edge $a$} \\
 & \underline{p}_i \ge 0,\overline{p}_i & \text{limits on pressure squared at node $i$} \\
 %
-\text{\bf variables:} \\
+\text{\textbf{variables:}} \\
 & p_i & \text{pressure squared at node $i$} \\
 & f_a & \text{flux on edge $a$} \\
 & \alpha_a & \text{compression ratio on compressor $a$}\\
 & v_a & \text{valve status for valve $a$, 1 if valve is open}\\
 %
-\text{\bf constraints:} \\
+\text{textbf{constraints:}} \\
 & (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &\text{Weymouth equation for pipe $a$} \\
 && \text{connected from junction $i$ to junction $j$}  \\
 &\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j & \text{mass flux balance at junction $i$} \\
