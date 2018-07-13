@@ -6,58 +6,41 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 
 ga('create', 'UA-367975-10', 'auto');
 ga('send', 'pageview');
-</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>GasModels</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Home</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="quickguide.html">Getting Started</a></li><li><a class="toctext" href="network-data.html">Network Data Format</a></li><li><a class="toctext" href="result-data.html">Result Data Format</a></li><li class="current"><a class="toctext" href="math-model.html">Mathematical Model</a><ul class="internal"><li><a class="toctext" href="#Gas-Flow-1">Gas Flow</a></li></ul></li></ul></li><li><span class="toctext">Library</span><ul><li><a class="toctext" href="formulations.html">Network Formulations</a></li><li><a class="toctext" href="specifications.html">Problem Specifications</a></li><li><span class="toctext">Modeling Components</span><ul><li><a class="toctext" href="model.html">GasModel</a></li><li><a class="toctext" href="objective.html">Objective</a></li><li><a class="toctext" href="variables.html">Variables</a></li><li><a class="toctext" href="constraints.html">Constraints</a></li></ul></li><li><a class="toctext" href="parser.html">File IO</a></li></ul></li><li><a class="toctext" href="developer.html">Developer</a></li></ul></nav><article id="docs"><header><nav><ul><li>Manual</li><li><a href="math-model.html">Mathematical Model</a></li></ul><a class="edit-page" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/math-model.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Mathematical Model</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="The-GasModels-Mathematical-Model-1" href="#The-GasModels-Mathematical-Model-1">The GasModels Mathematical Model</a></h1><p>As GasModels implements a variety of gas network optimization problems, the implementation is the best reference for precise mathematical formulations.  This section provides a mathematical specification for a prototypical Gas Flow problem, to provide an overview of the typical mathematical models in GasModels.</p><h2><a class="nav-anchor" id="Gas-Flow-1" href="#Gas-Flow-1">Gas Flow</a></h2><p>GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. Starting with the quasi-steady hydrodynamic equations and reducing them to a steady state model, the momentum conservation equation in a pipe is stated as</p><div>\[p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}\]</div><p>where <span>$p$</span> is pressure, <span>$\lambda$</span> is a non dimensional friction factor, <span>$\phi$</span> is mass flux, and <span>$D$</span> is the diameter of the pipe. Here, <span>$a^2=\frac{ZRT}{m}$</span> where <span>$Z$</span> is the gas compressibility factor, <span>$R$</span> is the universal gas constant, <span>$m$</span> is the molar mass of the gas, and <span>$T$</span> is the gas temperature. In steady state, the flow along the pipe (in absence of injections) is constant, i.e.,</p><div>\[
-    \frac{\partial \phi}{\partial x}=0, 
-$$
-where we have assumed the pipe area does not changing with $x$.  Integrating these equations from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe, the equation for flux across the pipe is stated as
-
-$$
-    p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. 
-$$
-
-We typically express the mass flux through the pipe in terms of mass flow, $f$, where $f=\phi A$. $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe. Thus, the equation for mass flow through the pipe is stated as 
-
-$$
-    p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. 
-$$
-
-Given potential numerical issues associated with these equations, it is very useful to non-dimensionalize the units. Here we use a  typical density $p_0$ and a typical mass {\it flow} $f_0$ and normalize the equations. This yields
-
-$$
-    \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),
-$$
-where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}/\frac{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define _resistance_, $w$, as the constant 
-
-$$w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right)\]</div><p>.  </p><p>Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, <span>$q$</span>, at a STP conditions. Given this data, we non-dimensionalize based on <span>$q$</span>. At STP conditions, the mass flux is derived as <span>$\phi=\frac{q}{\rho_s}$</span>, where  <span>$\rho_s$</span> is the gas density at STP conditions.</p><p>More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. _Optimal Control of Transient Flow in Natural Gas Networks_. CDC 2015. We note that this reference expresses these equations in terms of density, <span>$\rho$</span> rather than pressure.  The transformation from density to pressure is simply <span>$\rho=a^2p$</span>.</p><p>A complete gas flow mathematical model is the defined by</p>$<p>\begin{aligned} \text{\bf sets:} \
-&amp; N &amp; \text{junctions} \
-&amp; A^p &amp; \text{pipes}  \
-&amp; A^c &amp; \text{compressors}  \
-&amp; A^v &amp; \text{valves}  \
-&amp; A = A^p \cup A^c \cup A^v &amp; \text{edges }  \
-&amp; P, P_i &amp; \text{producers and producers at junction <span>$i$</span>}   \
-&amp; C, C_i &amp; \text{consumers and consumers at junction <span>$i$</span>}    \
-% \text{\bf data:} \
-&amp; w_a &amp; \text{resistance factor of pipeline <span>$a$</span>} \
-&amp; fl_j &amp; \text{consumption (mass flux) at consumer <span>$j$</span>} \
-&amp; fg_j &amp; \text{production (mass flux) at producer <span>$j$</span>} \
-&amp; \underline{\alpha}_a=1, \overline{\alpha}_a &amp; \text{(de)compression limits (squared) of edge <span>$a$</span>} \
-&amp; \underline{p}_i \ge 0,\overline{p}_i &amp; \text{limits on pressure squared at node <span>$i$</span>} \
-% \text{\bf variables:} \
-&amp; p_i &amp; \text{pressure squared at node <span>$i$</span>} \
-&amp; f_a &amp; \text{flux on edge <span>$a$</span>} \
-&amp; \alpha_a &amp; \text{compression ratio on compressor <span>$a$</span>}\
-&amp; v_a &amp; \text{valve status for valve <span>$a$</span>, 1 if valve is open}\
-% \text{\bf constraints:} \
-&amp; (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &amp;\text{Weymouth equation for pipe <span>$a$</span>} \
-&amp;&amp; \text{connected from junction <span>$i$</span> to junction <span>$j$</span>}  \
-&amp;\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j &amp; \text{mass flux balance at junction <span>$i$</span>} \
-&amp; \alpha_a p_i = p_j &amp; \text{compression boost at compressor <span>$a$</span>} \
-&amp;&amp;\text{mass flux balance at junction <span>$i$</span>} \
-&amp; f_a (1-\alpha_a) \le 0&amp; \text{compression ratio is forced to 1} \
-&amp;&amp; \text{when flow is reversed through compressor <span>$a$</span>} \
-&amp;\underline{{p}}_i \leq p_i \leq \overline{p}_i &amp; \text{pressure limits at junction <span>$i$</span>} \
-&amp;\underline{{\alpha}}_a \leq \alpha_a \leq \overline{\alpha}_a &amp; \text{compression limits at compressor <span>$i$</span>} \
-&amp;-v_a M \leq f_a \leq v_a M &amp; \text{on/off operations for valve <span>$a$</span>} \
-&amp;&amp; \text{where <span>$M$</span> is the maximum flow through the valve} \
-&amp;p_j - v_a \overline{p}_j \leq p_i \leq p_j + v_a \overline{p}_i &amp; \text{links junction pressures of valve <span>$a$</span>} \
-&amp;&amp; \text{connected from junction <span>$i$</span> to junction <span>$j$</span>} \end{aligned} $</p><p>most of the optimization models of GasModels are variations of this formulation. In practice, we discretize on flow direction to reduce the non convexities of this model and relax the assumption that the minimum compression ratio is 1</p><footer><hr/><a class="previous" href="result-data.html"><span class="direction">Previous</span><span class="title">Result Data Format</span></a><a class="next" href="formulations.html"><span class="direction">Next</span><span class="title">Network Formulations</span></a></footer></article></body></html>
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>GasModels</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Home</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="quickguide.html">Getting Started</a></li><li><a class="toctext" href="network-data.html">Network Data Format</a></li><li><a class="toctext" href="result-data.html">Result Data Format</a></li><li class="current"><a class="toctext" href="math-model.html">Mathematical Model</a><ul class="internal"><li><a class="toctext" href="#Gas-Flow-1">Gas Flow</a></li></ul></li></ul></li><li><span class="toctext">Library</span><ul><li><a class="toctext" href="formulations.html">Network Formulations</a></li><li><a class="toctext" href="specifications.html">Problem Specifications</a></li><li><span class="toctext">Modeling Components</span><ul><li><a class="toctext" href="model.html">GasModel</a></li><li><a class="toctext" href="objective.html">Objective</a></li><li><a class="toctext" href="variables.html">Variables</a></li><li><a class="toctext" href="constraints.html">Constraints</a></li></ul></li><li><a class="toctext" href="parser.html">File IO</a></li></ul></li><li><a class="toctext" href="developer.html">Developer</a></li></ul></nav><article id="docs"><header><nav><ul><li>Manual</li><li><a href="math-model.html">Mathematical Model</a></li></ul><a class="edit-page" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/math-model.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Mathematical Model</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="The-GasModels-Mathematical-Model-1" href="#The-GasModels-Mathematical-Model-1">The GasModels Mathematical Model</a></h1><p>As GasModels implements a variety of gas network optimization problems, the implementation is the best reference for precise mathematical formulations.  This section provides a mathematical specification for a prototypical Gas Flow problem, to provide an overview of the typical mathematical models in GasModels.</p><h2><a class="nav-anchor" id="Gas-Flow-1" href="#Gas-Flow-1">Gas Flow</a></h2><p>GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. Starting with the quasi-steady hydrodynamic equations and reducing them to a steady state model, the momentum conservation equation in a pipe is stated as</p><div>\[p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}\]</div><p>where <span>$p$</span> is pressure, <span>$\lambda$</span> is a non dimensional friction factor, <span>$\phi$</span> is mass flux, and <span>$D$</span> is the diameter of the pipe. Here, <span>$a^2=\frac{ZRT}{m}$</span> where <span>$Z$</span> is the gas compressibility factor, <span>$R$</span> is the universal gas constant, <span>$m$</span> is the molar mass of the gas, and <span>$T$</span> is the gas temperature. In steady state, the flow along the pipe (in absence of injections) is constant, i.e.,</p><div>\[    \frac{\partial \phi}{\partial x}=0, \]</div><p>where we have assumed the pipe area does not changing with <span>$x$</span>.  Integrating these equations from the start of the pipe at <span>$x=0$</span> to the end of the pipe at <span>$x=L$</span>, where <span>$L$</span> is the length of the pipe, the equation for flux across the pipe is stated as</p><div>\[    p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. \]</div><p>We typically express the mass flux through the pipe in terms of mass flow, <span>$f$</span>, where <span>$f=\phi A$</span>. <span>$A=\frac{\pi D^2}{4}$</span> is the cross-sectional area of the pipe. Thus, the equation for mass flow through the pipe is stated as </p><div>\[    p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. \]</div><p>Given potential numerical issues associated with these equations, it is very useful to non-dimensionalize the units. Here we use a  typical density <span>$p_0$</span> and a typical mass {\it flow} <span>$f_0$</span> and normalize the equations. This yields</p><div>\[    \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),\]</div><p>where <span>$\tilde{f}=\frac{f}{f_0}$</span> and <span>$\tilde{p}=\frac{p}/\frac{p_0}$</span> are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define _resistance_, <span>$w$</span>, as the constant </p><div>\[w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).\]</div><p>Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, <span>$q$</span>, at a STP conditions. Given this data, we non-dimensionalize based on <span>$q$</span>. At STP conditions, the mass flux is derived as <span>$\phi=\frac{q}{\rho_s}$</span>, where  <span>$\rho_s$</span> is the gas density at STP conditions.</p><p>More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. _Optimal Control of Transient Flow in Natural Gas Networks_. CDC 2015. We note that this reference expresses these equations in terms of density, <span>$\rho$</span> rather than pressure.  The transformation from density to pressure is simply <span>$\rho=a^2p$</span>.</p><p>A complete gas flow mathematical model is the defined by</p><div>\[\begin{aligned}
+\text{\bf sets:} \\
+&amp; N &amp; \text{junctions} \\
+&amp; A^p &amp; \text{pipes}  \\
+&amp; A^c &amp; \text{compressors}  \\
+&amp; A^v &amp; \text{valves}  \\
+&amp; A = A^p \cup A^c \cup A^v &amp; \text{edges }  \\
+&amp; P, P_i &amp; \text{producers and producers at junction $i$}   \\
+&amp; C, C_i &amp; \text{consumers and consumers at junction $i$}    \\
+%
+\text{\bf data:} \\
+&amp; w_a &amp; \text{resistance factor of pipeline $a$} \\
+&amp; fl_j &amp; \text{consumption (mass flux) at consumer $j$} \\
+&amp; fg_j &amp; \text{production (mass flux) at producer $j$} \\
+&amp; \underline{\alpha}_a=1, \overline{\alpha}_a &amp; \text{(de)compression limits (squared) of edge $a$} \\
+&amp; \underline{p}_i \ge 0,\overline{p}_i &amp; \text{limits on pressure squared at node $i$} \\
+%
+\text{\bf variables:} \\
+&amp; p_i &amp; \text{pressure squared at node $i$} \\
+&amp; f_a &amp; \text{flux on edge $a$} \\
+&amp; \alpha_a &amp; \text{compression ratio on compressor $a$}\\
+&amp; v_a &amp; \text{valve status for valve $a$, 1 if valve is open}\\
+%
+\text{\bf constraints:} \\
+&amp; (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &amp;\text{Weymouth equation for pipe $a$} \\
+&amp;&amp; \text{connected from junction $i$ to junction $j$}  \\
+&amp;\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j &amp; \text{mass flux balance at junction $i$} \\
+&amp; \alpha_a p_i = p_j &amp; \text{compression boost at compressor $a$} \\
+&amp;&amp;\text{mass flux balance at junction $i$} \\
+&amp; f_a (1-\alpha_a) \le 0&amp; \text{compression ratio is forced to 1} \\
+&amp;&amp; \text{when flow is reversed through compressor $a$} \\
+&amp;\underline{{p}}_i \leq p_i \leq \overline{p}_i &amp; \text{pressure limits at junction $i$} \\
+&amp;\underline{{\alpha}}_a \leq \alpha_a \leq \overline{\alpha}_a &amp; \text{compression limits at compressor $i$} \\
+&amp;-v_a M \leq f_a \leq v_a M &amp; \text{on/off operations for valve $a$} \\
+&amp;&amp; \text{where $M$ is the maximum flow through the valve} \\
+&amp;p_j - v_a \overline{p}_j \leq p_i \leq p_j + v_a \overline{p}_i &amp; \text{links junction pressures of valve $a$} \\
+&amp;&amp; \text{connected from junction $i$ to junction $j$}
+\end{aligned}\]</div><p>most of the optimization models of GasModels are variations of this formulation. In practice, we discretize on flow direction to reduce the non convexities of this model and relax the assumption that the minimum compression ratio is 1</p><footer><hr/><a class="previous" href="result-data.html"><span class="direction">Previous</span><span class="title">Result Data Format</span></a><a class="next" href="formulations.html"><span class="direction">Next</span><span class="title">Network Formulations</span></a></footer></article></body></html>
