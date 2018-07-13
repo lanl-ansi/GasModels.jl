@@ -101,7 +101,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Data Format",
     "title": "The Network Data Dictionary",
     "category": "section",
-    "text": "Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization direction as a text file.The network data dictionary structure is roughly as follows:{\n\"name\":<string>,        # a name for the model\n\"junction\":{\n    \"1\":{\n      \"pmax\": <float>,   # maximum pressure\n      \"pmin\": <float>,   # minimum pressure\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"consumer\":{\n    \"1\":{\n      \"ql_junc\": <float>,  # junction id\n      \"qlmax\": <float>,  # the maximum gas demand that can be added to qlfirm\n      \"qlmin\": <float>,  # the minimum gas demand that can be added to qlfirm\n      \"qlfirm\": <float>, # constant gas demand\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"producer\":{\n    \"1\":{\n      \"qg_junc\": <float>,  # junction id\n      \"qgmin\": <float>,  # the minimum gas production that can be added to qgfirm\n      \"qgmax\": <float>,  # the maximum gas production that can be added to qgfirm\n      \"qgfirm\": <float>, # constant gas production\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"connection\":{\n    \"1\":{\n      \"length\": <float>,       # the length of the connection\n      \"f_junction\": <int>,     # the \"from\" side junction id\n      \"t_junction\": <int>,     # the \"to\" side junction id\n      \"resistance\": <float>,   # the resistance of the connection\n      \"diameter\": <float>,     # the diameter of the connection\n      \"c_ratio_min\": <float>,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).\n      \"c_ratio_max\": <float>,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 is flow reverses).      \n      \"type\": <string>,        # the type of the connection. Can be \"pipe\", \"compressor\", \"short_pipe\", \"control_valve\", \"valve\"\n        ...\n    },\n    \"2\":{...},\n    ...\n}\n}All data is assumed to have consistent units (i.e. metric, English, etc.)The following commands can be used to explore the network data dictionary,network_data = GasModels.parse_file(\"gaslib-40.json\")\ndisplay(network_data)"
+    "text": "Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization as a text file. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.The network data dictionary structure is roughly as follows:{\n\"name\":<string>,                   # a name for the model\n\"temperature\":<float>,             # gas temperature. SI units are kelvin\n\"multinetwork\":<boolean>,          # flag for whether or not this is multiple networks\n\"gas_molar_mass\":<float>,          # molecular mass of the gas. SI units are kg/mol\n\"standard_density\":<float>,        # Standard (nominal) density of the gas. SI units are kg/m^3\n\"per_unit\":<boolean>,              # Whether or not the file is in per unit (non dimensional units) or SI units.  Note that the only quantities that are non-dimensionalized are pressure and flux.  \n\"compressibility_factor\":<float>,  # Gas compressability. Non-dimensional.\n\"baseQ\":<float>,                   # Base for non-dimensionalizing volumetric flow at standard density. SI units are m^3/s\n\"baseP\":<float>,                   # Base for non-dimensionalizing pressure. SI units are pascal.\n\"junction\":{\n    \"1\":{\n      \"pmax\": <float>,   # maximum pressure. SI units are pascals\n      \"pmin\": <float>,   # minimum pressure. SI units are pascals\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"consumer\":{\n    \"1\":{\n      \"ql_junc\": <float>,  # junction id\n      \"qlmax\": <float>,  # the maximum volumetric gas demand at standard density that can be added to qlfirm. SI units are m^3/s.\n      \"qlmin\": <float>,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.\n      \"qlfirm\": <float>, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"producer\":{\n    \"1\":{\n      \"qg_junc\": <float>,  # junction id\n      \"qgmin\": <float>,  # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.\n      \"qgmax\": <float>,  # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.\n      \"qgfirm\": <float>, # constant volumetric gas production at standard density. SI units are m^3/s.\n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"connection\":{\n    \"1\":{\n      \"length\": <float>,            # the length of the connection. SI units are m.\n      \"f_junction\": <int>,          # the \"from\" side junction id\n      \"t_junction\": <int>,          # the \"to\" side junction id\n      \"drag\": <float>,              # the drag factor of resistors. Non dimensional.\n      \"friction_factor\": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.\n      \"diameter\": <float>,          # the diameter of the connection. SI units are m.\n      \"c_ratio_min\": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).\n      \"c_ratio_max\": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      \n      \"type\": <string>,             # the type of the connection. Can be \"pipe\", \"compressor\", \"short_pipe\", \"control_valve\", \"valve\"\n        ...\n    },\n    \"2\":{...},\n    ...\n}\n}All data is assumed to have consistent units (i.e. metric, English, etc.)The following commands can be used to explore the network data dictionary,network_data = GasModels.parse_file(\"gaslib-40.json\")\ndisplay(network_data)"
 },
 
 {
@@ -149,7 +149,31 @@ var documenterSearchIndex = {"docs": [
     "page": "Result Data Format",
     "title": "Solution Data",
     "category": "section",
-    "text": "The solution object provides detailed information about the solution  produced by the run command.  The solution is organized similarly to  The Network Data Dictionary with the same nested structure and  parameter names, when available.  A network solution most often only includes a small subset of the data included in the network data.For example the data for a junction, data[\"junction\"][\"1\"] is structured as follows,{\n\"pmin\": 14.0,\n\"pmax\": 80.0,\n...\n}A solution specifying a pressure for the same case, i.e. result[\"solution\"][\"junction\"][\"1\"], would result in,{\n\"p\":50.5,\n}Because the data dictionary and the solution dictionary have the same structure  InfrastructureModels update_data! helper function can be used to  update a data dictionary with the values from a solution as follows,InfrastructureModels.update_data!(data, result[\"solution\"])"
+    "text": "The solution object provides detailed information about the solution  produced by the run command.  The solution is organized similarly to  The Network Data Dictionary with the same nested structure and  parameter names, when available.  A network solution most often only includes a small subset of the data included in the network data.For example the data for a junction, data[\"junction\"][\"1\"] is structured as follows,{\n\"pmin\": 14000.0,\n\"pmax\": 80000.0,\n...\n}A solution specifying a pressure for the same case, i.e. result[\"solution\"][\"junction\"][\"1\"], would result in,{\n\"p\":50.5,\n}Because the data dictionary and the solution dictionary have the same structure  InfrastructureModels update_data! helper function can be used to  update a data dictionary with the values from a solution as follows,InfrastructureModels.update_data!(data, result[\"solution\"])By default, all results are reported in per-unit (non-dimenionalized). Below are common outputs of implemented optimization models{\n\"junction\":{\n    \"1\":{\n      \"p\": <float>,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals\n      \"psqr\": <float>,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2      \n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"consumer\":{\n    \"1\":{\n      \"fl\": <float>,  # variable mass flux consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. \n      \"ql\": <float>,  # the varible volumetric gas demand at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s. \n       ...\n    },\n    \"2\":{...},\n    ...\n},\n\"producer\":{\n    \"1\":{\n      \"fg\": <float>,  # variable mass flux produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. \n      \"qg\": <float>,  # the varible volumetric gas produced at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s.        ...\n    },\n    \"2\":{...},\n    ...\n},\n\"connection\":{\n    \"1\":{\n      \"f\": <float>,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2\n      \"yp\": <int>,                  # 1 if flux flows from f_junction. 0 otherwise\n      \"yn\": <int>,                  # 1 if flux flows from t_junction. 0 otherwise\n      \"v\": <int>,                   # 1 if valve is open. 0 otherwise      \n      \"ratio\": <float>,             # multiplicative (de)compression ratio\n        ...\n    },\n    \"2\":{...},\n    ...\n},\n\"ne_connection\":{\n    \"1\":{\n      \"f\": <float>,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2\n      \"yp\": <int>,                  # 1 if flux flows from f_junction. 0 otherwise\n      \"yn\": <int>,                  # 1 if flux flows from t_junction. 0 otherwise\n      \"v\": <int>,                   # 1 if valve is open. 0 otherwise      \n      \"ratio\": <float>,             # multiplicative (de)compression ratio\n      \"built_zp\": <float>,          # 1 if the pipe was built. 0 otherwise.\n      \"built_zc\": <float>,          # 1 if compressor was built. 0 otherwise.      \n        ...\n    },\n    \"2\":{...},\n    ...\n}\n}"
+},
+
+{
+    "location": "math-model.html#",
+    "page": "Mathematical Model",
+    "title": "Mathematical Model",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "math-model.html#The-GasModels-Mathematical-Model-1",
+    "page": "Mathematical Model",
+    "title": "The GasModels Mathematical Model",
+    "category": "section",
+    "text": "As GasModels implements a variety of gas network optimization problems, the implementation is the best reference for precise mathematical formulations.  This section provides a mathematical specification for a prototypical Gas Flow problem, to provide an overview of the typical mathematical models in GasModels."
+},
+
+{
+    "location": "math-model.html#Gas-Flow-1",
+    "page": "Mathematical Model",
+    "title": "Gas Flow",
+    "category": "section",
+    "text": "GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. Starting with the quasi-steady hydrodynamic equations and reducing them to a steady state model, the momentum conservation equation in a pipe is stated as\np fracpartial ppartial x = -fraclambda a^2 phi phi2 D\n\n\n\nwhere p is pressure lambda is a non dimensional friction factor phi is mass flux and D is the diameter of the pipe Here a^2=fracZRTm where Z is the gas compressibility factor R is the universal gas constant m is the molar mass of the gas and T is the gas temperature In steady state the flow along the pipe (in absence of injections) is constant ie\n\n\n    fracpartial phipartial x=0 \n\nwhere we have assumed the pipe area does not changing with x  Integrating these equations from the start of the pipe at x=0 to the end of the pipe at x=L where L is the length of the pipe the equation for flux across the pipe is stated as\n\n\n    p^2(L)-p^2(0) = frac-lambda L a^2 phi phi 2 D  \n\n\nWe typically express the mass flux through the pipe in terms of mass flow f where f=phi A A=fracpi D^24 is the cross-sectional area of the pipe Thus the equation for mass flow through the pipe is stated as \n\n\n    p^2(L)-p^2(0) = frac-lambda L a^2 f f 2 D A^2 \n\n\nGiven potential numerical issues associated with these equations it is very useful to non-dimensionalize the units Here we use a  typical density p_0 and a typical mass it flow f_0 and normalize the equations This yields\n\n\n    tildep^2(L)-tildep^2(0) = -tildef tildef left(fraclambda L 2 Dright) left(fracf_0^2a^2A^2p_0^2right)\n\nwhere tildef=fracff_0 and tildep=fracpfracp_0 are the dimensionless mass flow and pressure respectively and are both of order one Note that both terms in parenthesis on the right hand side of this equation are dimensionless  For the purposes of convenience we define _resistance_ w as the constant \n\nw=left(fraclambda L 2 Dright) left(fracf_0^2a^2A^2p_0^2right).  Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, q, at a STP conditions. Given this data, we non-dimensionalize based on q. At STP conditions, the mass flux is derived as phi=fracqrho_s, where  rho_s is the gas density at STP conditions.More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. _Optimal Control of Transient Flow in Natural Gas Networks_. CDC 2015. We note that this reference expresses these equations in terms of density, rho rather than pressure.  The transformation from density to pressure is simply rho=a^2p.A complete gas flow mathematical model is the defined by$\\begin{aligned} \\text{\\bf sets:} \\\n& N & \\text{junctions} \\\n& A^p & \\text{pipes}  \\\n& A^c & \\text{compressors}  \\\n& A^v & \\text{valves}  \\\n& A = A^p \\cup A^c \\cup A^v & \\text{edges }  \\\n& P, P_i & \\text{producers and producers at junction i}   \\\n& C, C_i & \\text{consumers and consumers at junction i}    \\\n% \\text{\\bf data:} \\\n& w_a & \\text{resistance factor of pipeline a} \\\n& fl_j & \\text{consumption (mass flux) at consumer j} \\\n& fg_j & \\text{production (mass flux) at producer j} \\\n& \\underline{\\alpha}_a=1, \\overline{\\alpha}_a & \\text{(de)compression limits (squared) of edge a} \\\n& \\underline{p}_i \\ge 0,\\overline{p}_i & \\text{limits on pressure squared at node i} \\\n% \\text{\\bf variables:} \\\n& p_i & \\text{pressure squared at node i} \\\n& f_a & \\text{flux on edge a} \\\n& \\alpha_a & \\text{compression ratio on compressor a}\\\n& v_a & \\text{valve status for valve a, 1 if valve is open}\\\n% \\text{\\bf constraints:} \\\n& (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &\\text{Weymouth equation for pipe a} \\\n&& \\text{connected from junction i to junction j}  \\\n&\\sum\\limits_{a=a_{ij}\\in A} f_{a} - \\sum\\limits_{a=a_{ji} \\in A} f_{a} = \\sum_{j \\in P_i} fg_j- \\sum_{j \\in C_i} fl_j & \\text{mass flux balance at junction i} \\\n& \\alpha_a p_i = p_j & \\text{compression boost at compressor a} \\\n&&\\text{mass flux balance at junction i} \\\n& f_a (1-\\alpha_a) \\le 0& \\text{compression ratio is forced to 1} \\\n&& \\text{when flow is reversed through compressor a} \\\n&\\underline{{p}}_i \\leq p_i \\leq \\overline{p}_i & \\text{pressure limits at junction i} \\\n&\\underline{{\\alpha}}_a \\leq \\alpha_a \\leq \\overline{\\alpha}_a & \\text{compression limits at compressor i} \\\n&-v_a M \\leq f_a \\leq v_a M & \\text{on/off operations for valve a} \\\n&& \\text{where M is the maximum flow through the valve} \\\n&p_j - v_a \\overline{p}_j \\leq p_i \\leq p_j + v_a \\overline{p}_i & \\text{links junction pressures of valve a} \\\n&& \\text{connected from junction i to junction j} \\end{aligned} $most of the optimization models of GasModels are variations of this formulation. In practice, we discretize on flow direction to reduce the non convexities of this model and relax the assumption that the minimum compression ratio is 1"
 },
 
 {
@@ -545,17 +569,17 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.variable_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
+    "location": "formulations.html#GasModels.variable_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
     "page": "Network Formulations",
-    "title": "GasModels.variable_flux",
+    "title": "GasModels.variable_mass_flux",
     "category": "method",
     "text": "\n\n"
 },
 
 {
-    "location": "formulations.html#GasModels.variable_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
+    "location": "formulations.html#GasModels.variable_mass_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
     "page": "Network Formulations",
-    "title": "GasModels.variable_flux_ne",
+    "title": "GasModels.variable_mass_flux_ne",
     "category": "method",
     "text": "\n\n"
 },
@@ -693,7 +717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "GasModel",
     "title": "GasModels.build_ref",
     "category": "function",
-    "text": "Returns a dict that stores commonly used pre-computed data from of the data dictionary, primarily for converting data-types, filtering out deactivated components, and storing system-wide values that need to be computed globally.\n\nSome of the common keys include:\n\n:max_flow (see max_flow(data)),\n:connection – the set of connections that are active in the network (based on the component status values),\n:pipe – the set of connections that are pipes (based on the component type values),\n:short_pipe – the set of connections that are short pipes (based on the component type values),\n:compressor – the set of connections that are compressors (based on the component type values),\n:valve – the set of connections that are valves (based on the component type values),\n:control_valve – the set of connections that are control valves (based on the component type values),\n:resistor – the set of connections that are resistors (based on the component type values),\n:parallel_connections – the set of all existing connections between junction pairs (i,j),\n:all_parallel_connections – the set of all existing and new connections between junction pairs (i,j),\n:junction_connections – the set of all existing connections of junction i,\n:junction_ne_connections – the set of all new connections of junction i,\n:junction_consumers – the mapping Dict(i => [consumer[\"ql_junc\"] for (i,consumer) in ref[:consumer]]).\n:junction_producers – the mapping Dict(i => [producer[\"qg_junc\"] for (i,producer) in ref[:producer]]).\njunction[degree] – the degree of junction i using existing connections (see add_degree)),\njunction[all_degree] – the degree of junction i using existing and new connections (see add_degree)),\nconnection[pd_min,pd_max] – the max and min square pressure difference (see add_pd_bounds_swr)),\n\nIf :ne_connection does not exist, then an empty reference is added If status does not exist in the data, then 1 is added If construction cost does not exist in the :ne_connection, then 0 is added\n\n\n\n"
+    "text": "Returns a dict that stores commonly used pre-computed data from of the data dictionary, primarily for converting data-types, filtering out deactivated components, and storing system-wide values that need to be computed globally.\n\nSome of the common keys include:\n\n:max_flux (see max_flux(data)),\n:connection – the set of connections that are active in the network (based on the component status values),\n:pipe – the set of connections that are pipes (based on the component type values),\n:short_pipe – the set of connections that are short pipes (based on the component type values),\n:compressor – the set of connections that are compressors (based on the component type values),\n:valve – the set of connections that are valves (based on the component type values),\n:control_valve – the set of connections that are control valves (based on the component type values),\n:resistor – the set of connections that are resistors (based on the component type values),\n:parallel_connections – the set of all existing connections between junction pairs (i,j),\n:all_parallel_connections – the set of all existing and new connections between junction pairs (i,j),\n:junction_connections – the set of all existing connections of junction i,\n:junction_ne_connections – the set of all new connections of junction i,\n:junction_consumers – the mapping Dict(i => [consumer[\"ql_junc\"] for (i,consumer) in ref[:consumer]]).\n:junction_producers – the mapping Dict(i => [producer[\"qg_junc\"] for (i,producer) in ref[:producer]]).\njunction[degree] – the degree of junction i using existing connections (see add_degree)),\njunction[all_degree] – the degree of junction i using existing and new connections (see add_degree)),\nconnection[pd_min,pd_max] – the max and min square pressure difference (see add_pd_bounds_swr)),\n\nIf :ne_connection does not exist, then an empty reference is added If status does not exist in the data, then 1 is added If construction cost does not exist in the :ne_connection, then 0 is added\n\n\n\n"
 },
 
 {
@@ -761,27 +785,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#GasModels.variable_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_load_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_flux",
+    "title": "GasModels.variable_load_mass_flux",
+    "category": "method",
+    "text": "variables associated with demand \n\n\n\n"
+},
+
+{
+    "location": "variables.html#GasModels.variable_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "page": "Variables",
+    "title": "GasModels.variable_mass_flux",
     "category": "method",
     "text": "variables associated with flux \n\n\n\n"
 },
 
 {
-    "location": "variables.html#GasModels.variable_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_mass_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_flux_ne",
+    "title": "GasModels.variable_mass_flux_ne",
     "category": "method",
     "text": "variables associated with flux in expansion planning \n\n\n\n"
-},
-
-{
-    "location": "variables.html#GasModels.variable_load-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
-    "page": "Variables",
-    "title": "GasModels.variable_load",
-    "category": "method",
-    "text": "variables associated with demand \n\n\n\n"
 },
 
 {
@@ -801,9 +825,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#GasModels.variable_production-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_production_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_production",
+    "title": "GasModels.variable_production_mass_flux",
     "category": "method",
     "text": "variables associated with production \n\n\n\n"
 },
@@ -857,14 +881,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance",
-    "page": "Constraints",
-    "title": "GasModels.constraint_junction_flow_balance",
-    "category": "function",
-    "text": "standard flow balance equation where demand and production is fixed \n\n\n\nstandard flow balance equation where demand and production is fixed \n\n\n\n"
-},
-
-{
     "location": "constraints.html#Flow-Balance-Constraints-1",
     "page": "Constraints",
     "title": "Flow Balance Constraints",
@@ -873,35 +889,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ls",
-    "page": "Constraints",
-    "title": "GasModels.constraint_junction_flow_balance_ls",
-    "category": "function",
-    "text": "standard flow balance equation where demand and production is fixed \n\n\n\nstandard flow balance equation where demand and production is fixed \n\n\n\n"
-},
-
-{
     "location": "constraints.html#Load-Shedding-Constraints-1",
     "page": "Constraints",
     "title": "Load Shedding Constraints",
     "category": "section",
     "text": "constraint_junction_flow_balance_ls"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne",
-    "page": "Constraints",
-    "title": "GasModels.constraint_junction_flow_balance_ne",
-    "category": "function",
-    "text": "standard flow balance equation where demand and production is fixed \n\n\n\nstandard flow balance equation where demand and production is fixed \n\n\n\n"
-},
-
-{
-    "location": "constraints.html#GasModels.constraint_junction_flow_balance_ne_ls",
-    "page": "Constraints",
-    "title": "GasModels.constraint_junction_flow_balance_ne_ls",
-    "category": "function",
-    "text": "standard flow balance equation where demand and production is fixed \n\n\n\nstandard flow balance equation where demand and production is fixed \n\n\n\n"
 },
 
 {
