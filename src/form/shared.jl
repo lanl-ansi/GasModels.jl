@@ -10,132 +10,132 @@ AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirecte
 
 ""
 function variable_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux(gm,n; bounded=bounded)
+    variable_mass_flux(gm,n; bounded=bounded)
     variable_connection_direction(gm,n)  
 end
 
 ""
 function variable_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux(gm,n; bounded=bounded)
+    variable_mass_flux(gm,n; bounded=bounded)
 end
 
 ""
 function variable_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux_ne(gm,n; bounded=bounded)
+    variable_mass_flux_ne(gm,n; bounded=bounded)
     variable_connection_direction_ne(gm,n)  
 end
 
 ""
 function variable_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_flux_ne(gm,n; bounded=bounded)
+    variable_mass_flux_ne(gm,n; bounded=bounded)
 end
 
-function constraint_junction_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flux{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_flow_balance(gm, n, i)
+    constraint_junction_mass_flux_balance(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
-    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
-    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0  
+    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0 
+    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0  
     
-    if qgfirm > 0.0 && qlfirm == 0.0 
+    if fgfirm > 0.0 && flfirm == 0.0 
         constraint_source_flow(gm, n, i)
     end      
         
-    if qgfirm == 0.0 && qlfirm > 0.0 
+    if fgfirm == 0.0 && flfirm > 0.0 
         constraint_sink_flow(gm, n, i)
     end      
                 
-    if qgfirm == 0.0 && qlfirm == 0.0 && junction["degree"] == 2
+    if fgfirm == 0.0 && flfirm == 0.0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)           
     end   
 end
 
-function constraint_junction_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_flow_balance(gm, n, i)
+function constraint_junction_mass_flux{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flux_balance(gm, n, i)
 end
 
-function constraint_junction_flow_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flux_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_flow_balance_ls(gm, n, i)
+    constraint_junction_mass_flux_balance_ls(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
-    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
-    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
-    qgmax     = length(producers) > 0 ? sum(producer["qgmax"] for (j, producer) in producers) : 0 
-    qlmax     = length(consumers) > 0 ? sum(consumer["qlmax"] for (j, consumer) in consumers) : 0 
-    qgmin     = length(producers) > 0 ? sum(producer["qgmin"] for (j, producer) in producers) : 0 
-    qlmin     = length(consumers) > 0 ? sum(consumer["qlmin"] for (j, consumer) in consumers) : 0 
+    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0 
+    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0 
+    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer) for (j, producer) in producers) : 0 
+    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer) for (j, consumer) in consumers) : 0 
+    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer) for (j, producer) in producers) : 0 
+    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer) for (j, consumer) in consumers) : 0 
                   
-    if max(qgmin,qgfirm) > 0.0  && qlmin == 0.0 && qlmax == 0.0 && qlfirm == 0.0 && qgmin >= 0.0
+    if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
         constraint_source_flow(gm, n, i)
     end      
         
-    if qgmax == 0.0 && qgmin == 0.0 && qgfirm == 0.0 && max(qlmin,qlfirm) > 0.0 && qlmin >= 0.0
+    if fgmax == 0.0 && fgmin == 0.0 && fgfirm == 0.0 && max(flmin,flfirm) > 0.0 && flmin >= 0.0
         constraint_sink_flow(gm, n, i)
     end      
                 
-    if qgmax == 0 && qgmin == 0 && qgfirm == 0 && qlmax == 0 && qlmin == 0 && qlfirm == 0 && junction["degree"] == 2
+    if fgmax == 0 && fgmin == 0 && fgfirm == 0 && flmax == 0 && flmin == 0 && flfirm == 0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)
     end         
 end
 
-function constraint_junction_flow_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_flow_balance_ls(gm, n, i)
+function constraint_junction_mass_flux_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flux_balance_ls(gm, n, i)
 end
 
-function constraint_junction_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flux_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_flow_balance_ne(gm, n, i)
+    constraint_junction_mass_flux_balance_ne(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
-    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
-    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
+    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0 
+    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0 
     
-    if qgfirm > 0.0 && qlfirm == 0.0
+    if fgfirm > 0.0 && flfirm == 0.0
         constraint_source_flow_ne(gm, n, i) 
     end
-    if qgfirm == 0.0 && qlfirm > 0.0 
+    if fgfirm == 0.0 && flfirm > 0.0 
         constraint_sink_flow_ne(gm, n, i)
     end              
-    if qgfirm == 0.0 && qlfirm == 0.0 && junction["degree_all"] == 2
+    if fgfirm == 0.0 && flfirm == 0.0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, n, i)
     end              
 end
 
-function constraint_junction_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_flow_balance_ne(gm, n, i)
+function constraint_junction_mass_flux_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flux_balance_ne(gm, n, i)
 end
 
-function constraint_junction_flow_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flux_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_flow_balance_ne_ls(gm, n, i)
+    constraint_junction_mass_flux_balance_ne_ls(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
-    qgfirm     = length(producers) > 0 ? sum(producer["qgfirm"] for (j, producer) in producers) : 0 
-    qlfirm     = length(consumers) > 0 ? sum(consumer["qlfirm"] for (j, consumer) in consumers) : 0 
-    qgmax     = length(producers) > 0 ? sum(producer["qgmax"] for (j, producer) in producers) : 0 
-    qlmax     = length(consumers) > 0 ? sum(consumer["qlmax"] for (j, consumer) in consumers) : 0 
-    qgmin     = length(producers) > 0 ? sum(producer["qgmin"] for (j, producer) in producers) : 0 
-    qlmin     = length(consumers) > 0 ? sum(consumer["qlmin"] for (j, consumer) in consumers) : 0 
+    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0 
+    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0 
+    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer) for (j, producer) in producers) : 0 
+    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer) for (j, consumer) in consumers) : 0 
+    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer) for (j, producer) in producers) : 0 
+    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer) for (j, consumer) in consumers) : 0 
     
-    if max(qgmin,qgfirm) > 0.0  && qlmin == 0.0 && qlmax == 0.0 && qlfirm == 0.0 && qgmin >= 0.0
+    if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
         constraint_source_flow_ne(gm, i) 
     end
-    if qgmax == 0.0 && qgmin == 0.0 && qgfirm == 0.0 && max(qlmin,qlfirm) > 0.0 && qlmin >= 0.0
+    if fgmax == 0.0 && fgmin == 0.0 && fgfirm == 0.0 && max(flmin,flfirm) > 0.0 && flmin >= 0.0
         constraint_sink_flow_ne(gm, i)
     end              
-    if qgmax == 0 && qgmin == 0 && qgfirm == 0 && qlmax == 0 && qlmin == 0 && qlfirm == 0 && junction["degree_all"] == 2
+    if fgmax == 0 && fgmin == 0 && fgfirm == 0 && flmax == 0 && flmin == 0 && flfirm == 0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, i)
     end                     
 end
 
-function constraint_junction_flow_ne_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_flow_balance_ne_ls(gm, n, i)
+function constraint_junction_mass_flux_ne_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flux_balance_ne_ls(gm, n, i)
 end
 
 function constraint_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)

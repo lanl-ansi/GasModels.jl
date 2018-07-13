@@ -147,7 +147,6 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         #a = 1.0
 
         length = max(edge["length"], 0.1) # to be robust to zero values
-
         c = 96.074830e-15            # Gas relative constant
         L = length*54.0*1.6  # length of the pipe [km]
         D = edge["diameter"]*25.4    # interior diameter of the pipe [mm]

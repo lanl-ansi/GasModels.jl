@@ -50,7 +50,7 @@ end
 
 ""
 function init_solution(gm::GenericGasModel)
-    data_keys = ["multinetwork"]
+    data_keys = ["per_unit", "baseP", "baseQ", "multinetwork"]
     return Dict{String,Any}(key => gm.data[key] for key in data_keys)
 end
 
@@ -68,17 +68,27 @@ end
 
 " Get the pressure squared solutions "
 function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "junction", "p", :p)
+    add_setpoint(sol, gm, "junction", "psqr", :p)
 end
 
-" Get the pressure squared solutions "
-function add_load_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "consumer", "ql", :ql; default_value = (item) -> 0)
+" Get the load flux solutions "
+function add_load_flux_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "consumer", "fl", :fl; default_value = (item) -> 0)
 end
 
-" Get the production set point " 
-function add_production_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "producer", "qg", :qg; default_value = (item) -> 0)
+" Get the production flux set point " 
+function add_production_flux_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "producer", "fg", :fg; default_value = (item) -> 0)
+end
+
+" Get the load volume solutions "
+function add_load_volume_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "consumer", "ql", :fl; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
+end
+
+" Get the production flux set point " 
+function add_production_volume_setpoint{T}(sol, gm::GenericGasModel{T})
+    add_setpoint(sol, gm, "producer", "qg", :fg; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
 " Get the direction set points"

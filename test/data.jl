@@ -18,34 +18,35 @@
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:ql][4] != nothing
+    @test gm.var[:nw][gm.cnw][:fl][4] != nothing
 
     try
-        gm.var[:nw][gm.cnw][:qg][1] == nothing
+        gm.var[:nw][gm.cnw][:fg][1] == nothing
         @test true == false
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:qg][2] != nothing
+    @test gm.var[:nw][gm.cnw][:fg][2] != nothing
 end
 
 
 @testset "data summary" begin
     gas_file = "../test/data/gaslib-40.json"
     gas_data = GasModels.parse_file(gas_file)
+    GasModels.make_si_units(gas_data)
 
     output = sprint(GasModels.summary, gas_data)
 
     line_count = count(c -> c == '\n', output)
-
-    @test line_count >= 150 && line_count <= 175
+    
+    @test line_count >= 175 && line_count <= 200
     @test contains(output, "name: gaslib 40")
     @test contains(output, "connection: 51")
     @test contains(output, "consumer: 29")
     @test contains(output, "junction: 46")
     @test contains(output, "producer: 3")
     @test contains(output, "c_ratio_max: 5")
-    @test contains(output, "qgfirm: 17.400")
+    @test contains(output, "qgfirm: 201.389")
 end
 
 @testset "solution summary" begin
@@ -81,4 +82,29 @@ end
 
     #@test result["status"] == :Optimal
     #@test result["objective"] == 0.0
+end
+
+@testset "resistance calculation" begin
+    @testset "smeers" begin
+        gas_file = "../test/data/gaslib-40.json"
+        gas_data = GasModels.parse_file(gas_file)
+
+        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data, gas_data["connection"]["32"]), 5.9719269834653; atol=1e-4)
+    end
+    
+    @testset "thorley" begin
+        gas_file = "../test/data/A1.json"
+        gas_data = GasModels.parse_file(gas_file)
+
+        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_connection"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+    end
+    
+    @testset "resistor" begin
+        gas_file = "../test/data/gaslib-582.json"
+        gas_data = GasModels.parse_file(gas_file)
+        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["connection"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+    end
+    
+    
+
 end

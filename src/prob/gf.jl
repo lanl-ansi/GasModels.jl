@@ -27,7 +27,7 @@ function post_gf(gm::GenericGasModel)
     variable_valve_operation(gm)
     
     for i in ids(gm, :junction)
-        constraint_junction_flow(gm, i)
+        constraint_junction_mass_flux(gm, i)
     end
     
     for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))] 

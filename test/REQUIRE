@@ -1,4 +1,4 @@
-julia 0.5
+julia 0.6
 
 Ipopt
 AmplNLWriter
@@ -7,4 +7,4 @@ Compat
 Logging 0.2
 Pajarito
 Cbc
-
+GLPKMathProgInterface

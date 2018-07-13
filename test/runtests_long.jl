@@ -38,8 +38,8 @@ else
     minlp_solver = couenne_solver   
 end
 
-#include("long_tests_gf.jl")
-#include("long_tests_ne.jl")
+include("long_tests_gf.jl")
+include("long_tests_ne.jl")
 
-include("long_tests_unstable.jl")
+#include("long_tests_unstable.jl")
 
