@@ -52,7 +52,7 @@ A complete gas flow mathematical model is the defined by
 
 ```math
 \begin{aligned}
-\text{\textbf{sets:}} \\
+\text{sets:} \\
 & N & \text{junctions} \\
 & A^p & \text{pipes}  \\
 & A^c & \text{compressors}  \\
@@ -61,20 +61,20 @@ A complete gas flow mathematical model is the defined by
 & P, P_i & \text{producers and producers at junction $i$}   \\
 & C, C_i & \text{consumers and consumers at junction $i$}    \\
 %
-\text{\textbf{data:}} \\
+\text{data:} \\
 & w_a & \text{resistance factor of pipeline $a$} \\
 & fl_j & \text{consumption (mass flux) at consumer $j$} \\
 & fg_j & \text{production (mass flux) at producer $j$} \\
 & \underline{\alpha}_a=1, \overline{\alpha}_a & \text{(de)compression limits (squared) of edge $a$} \\
 & \underline{p}_i \ge 0,\overline{p}_i & \text{limits on pressure squared at node $i$} \\
 %
-\text{\textbf{variables:}} \\
+\text{variables:} \\
 & p_i & \text{pressure squared at node $i$} \\
 & f_a & \text{flux on edge $a$} \\
 & \alpha_a & \text{compression ratio on compressor $a$}\\
 & v_a & \text{valve status for valve $a$, 1 if valve is open}\\
 %
-\text{textbf{constraints:}} \\
+\text{constraints:} \\
 & (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &\text{Weymouth equation for pipe $a$} \\
 && \text{connected from junction $i$ to junction $j$}  \\
 &\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j & \text{mass flux balance at junction $i$} \\
