@@ -13,7 +13,7 @@ p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}
 ```
 
 
-where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux, and $D$ is the diameter of the pipe. Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor, $R$ is the universal gas constant, $m$ is the molar mass of the gas, and $T$ is the gas temperature. In steady state, the flow along the pipe (in absence of injections) is constant, i.e.,
+where $p$ is pressure (SI units are pascals), $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux (SI units are kg/m^2/s), and $D$ is the diameter of the pipe (SI units are m). Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor (non-dimensional), $R$ is the universal gas constant (SI units are J/mol/K), $m$ is the molar mass of the gas (SI unites are kg/mol), and $T$ is the gas temperature (SI units are K). In steady state, the mass conservation reduces to:
 
 ```math
     \frac{\partial \phi}{\partial x}=0, 
@@ -25,25 +25,25 @@ where we have assumed the pipe area does not changing with $x$.  Integrating the
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. 
 ```
 
-We typically express the mass flux through the pipe in terms of mass flow, $f$, where $f=\phi A$. $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe. Thus, the equation for mass flow through the pipe is stated as 
+We typically express the mass flux through the pipe in terms of mass flow (SI units are m^3/s), $f$, where $f=\phi A$. Here, $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe (SI units are m^2). Thus, the equation for mass flow through the pipe is stated as 
 
 ```math
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. 
 ```
 
-Given potential numerical issues associated with these equations, it is very useful to non-dimensionalize the units. Here we use a  typical density $p_0$ and a typical mass {\it flow} $f_0$ and normalize the equations. This yields
+Given potential numerical issues associated with these equations, it is very useful to non-dimensionalize the units. Here we use a  typical pressure $p_0$ and a typical mass flow $f_0$ and normalize the equations. This yields
 
 ```math
     \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),
 ```
 
-where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define _resistance_, $w$, as the constant 
+where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define *resistance*, $w$, as the constant 
 
 ```math
 w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).
 ```  
 
-Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, $q$, at a STP conditions. Given this data, we non-dimensionalize based on $q$. At STP conditions, the mass flux is derived as $\phi=\frac{q}{\rho_s}$, where  $\rho_s$ is the gas density at STP conditions.
+Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, $q$, at a STP conditions. Given this data, we non-dimensionalize based on $q$. At STP conditions, the mass flow is derived as $f=\frac{q}{\rho_s}$, where  $\rho_s$ is the gas density at STP conditions.
 
 
 More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. _Optimal Control of Transient Flow in Natural Gas Networks_. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  The transformation from density to pressure is simply $\rho=a^2p$.
