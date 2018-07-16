@@ -98,11 +98,13 @@ most of the optimization models of GasModels are variations of this formulation.
 
 SI Units for various parameters
 
-| Parameter     | Description   | SI Units |
-| ------------- |:-------------:| --------:|
-| $D$           | Pipe Diameter | m        |
-| $L$           | Pipe Length   | m        |
-| $A$           | Pipe Area Cross Section | m^2 |
+| Parameter     | Description             | SI Units |
+| ------------- |:-----------------------:| --------:|
+| $D$           | Pipe Diameter           | m        |
+| $L$           | Pipe Length             | m        |
+| $A$           | Pipe Area Cross Section | m^2      |
+| $p$           | Gas Pressure            | pascals  |
+| $\rho$        | Gas Density             | kg/m^3   |
 
 
 
