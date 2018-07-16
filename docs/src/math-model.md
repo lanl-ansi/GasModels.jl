@@ -19,7 +19,10 @@ where $p$ is pressure (SI units are pascals), $\lambda$ is a non dimensional fri
     \frac{\partial \phi}{\partial x}=0, 
 ```
 
-where we have assumed the pipe area does not changing with $x$.  Integrating these equations from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe, the equation for flux across the pipe is stated as
+where we have assumed the pipe area does not changing with $x$. We also assume that gas pressure and gas density ($\rho$) satifies the equation of state, i.e. $p = \frac{a^2}{\rho}$ 
+
+
+Integrating these equations from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe, the equation for flux across the pipe is stated as
 
 ```math
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. 
@@ -31,7 +34,7 @@ We typically express the mass flux through the pipe in terms of mass flow (SI un
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. 
 ```
 
-Given potential numerical issues associated with these equations, it is very useful to non-dimensionalize the units. Here we use a  typical pressure $p_0$ and a typical mass flow $f_0$ and normalize the equations. This yields
+To create a better numerically conditioned problem, it is very useful to non-dimensionalize the units. Here we use a typical pressure $p_0$ and a typical mass flow $f_0$ and normalize the equations. This yields
 
 ```math
     \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),
@@ -91,7 +94,15 @@ A complete gas flow mathematical model is the defined by
 \end{aligned}
 ```
 
-most of the optimization models of GasModels are variations of this formulation. In practice, we discretize on flow direction to reduce the non convexities of this model and relax the assumption that the minimum compression ratio is 1
+most of the optimization models of GasModels are variations of this formulation. In practice, we discretize on flow direction to reduce the non convexities of this model and relax the assumption that the minimum compression ratio is 1.
+
+SI Units for various parameters
+
+| Parameter     | Description   | SI Units |
+| ------------- |:-------------:| --------:|
+| $D$           | Pipe Diameter | m        |
+| $L$           | Pipe Length   | m        |
+| $A$           | Pipe Area Cross Section | m^2 |
 
 
 
