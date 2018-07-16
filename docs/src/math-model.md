@@ -13,7 +13,7 @@ p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}
 ```
 
 
-where $p$ is pressure (SI units are pascals), $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux (SI units are kg/m^2/s), and $D$ is the diameter of the pipe (SI units are m). Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor (non-dimensional), $R$ is the universal gas constant (SI units are J/mol/K), $m$ is the molar mass of the gas (SI unites are kg/mol), and $T$ is the gas temperature (SI units are K). In steady state, the mass conservation reduces to:
+where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux, and $D$ is the diameter of the pipe. Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor, $R$ is the universal gas constant, $m$ is the molar mass of the gas, and $T$ is the gas temperature. In steady state, the mass conservation reduces to:
 
 ```math
     \frac{\partial \phi}{\partial x}=0, 
@@ -28,7 +28,7 @@ Integrating these equations from the start of the pipe at $x=0$ to the end of th
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. 
 ```
 
-We typically express the mass flux through the pipe in terms of mass flow (SI units are m^3/s), $f$, where $f=\phi A$. Here, $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe (SI units are m^2). Thus, the equation for mass flow through the pipe is stated as 
+We typically express the mass flux through the pipe in terms of mass flow, $f$, where $f=\phi A$. Here, $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe. Thus, the equation for mass flow through the pipe is stated as 
 
 ```math
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. 
@@ -49,7 +49,7 @@ w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).
 Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, $q$, at a STP conditions. Given this data, we non-dimensionalize based on $q$. At STP conditions, the mass flow is derived as $f=\frac{q}{\rho_s}$, where  $\rho_s$ is the gas density at STP conditions.
 
 
-More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. _Optimal Control of Transient Flow in Natural Gas Networks_. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  The transformation from density to pressure is simply $\rho=a^2p$.
+More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. *Optimal Control of Transient Flow in Natural Gas Networks*. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  Recall that the transformation from density to pressure is simply $\rho=a^2p$.
 
 A complete gas flow mathematical model is the defined by
 
@@ -98,14 +98,20 @@ most of the optimization models of GasModels are variations of this formulation.
 
 SI Units for various parameters
 
-| Parameter     | Description             | SI Units |
-| ------------- |:-----------------------:| --------:|
-| $D$           | Pipe Diameter           | m        |
-| $L$           | Pipe Length             | m        |
-| $A$           | Pipe Area Cross Section | m^2      |
-| $p$           | Gas Pressure            | pascals  |
-| $\rho$        | Gas Density             | kg/m^3   |
-
+| Parameter     | Description                | SI Units |
+| ------------- |:--------------------------:| --------:|
+| $D$           | Pipe Diameter              | m        |
+| $L$           | Pipe Length                | m        |
+| $A$           | Pipe Area Cross Section    | m^2      |
+| $p$           | Gas Pressure               | pascals  |
+| $\rho$        | Gas Density                | kg/m^3   |
+| $Z$           | Gas compressibility factor | none     |
+| $m$           | Gas Molar Mass             | kg/mol   |
+| $T$           | Gas Temperature            | K        |
+| $R$           | Universal Gas Constant     | J/mol/K  |
+| $\phi$        | Gas Mass Flux              | kg/m^2/s |
+| $f$           | Gas Mass Flow              | kg/s     |
+| $\lambda$     | Pipe friction factor       | none     |
 
 
 
