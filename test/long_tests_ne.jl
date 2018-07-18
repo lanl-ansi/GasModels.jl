@@ -253,9 +253,9 @@ end
         println("gaslib 135 - MISOCP 100%")                            
         obj_normalization = 1000000.0                            
         result = run_ne("../test/data/gaslib-135-100.json", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal         
-#        @test isapprox(result["objective"]*obj_normalization, 1234234179; atol = 1e3)
-        @test isapprox(result["objective"]*obj_normalization, 1229077198; atol = 1e3)          
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal        
+        # This one has some slight numerical instabilities, depending on the version of the misocp solver  
+        @test isapprox(result["objective"]*obj_normalization, 1234234179; atol = 1e3) || isapprox(result["objective"]*obj_normalization, 1229077198; atol = 1e3)
     end
        
     @testset "gaslib 135 case 125%" begin
