@@ -569,17 +569,17 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations.html#GasModels.variable_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
+    "location": "formulations.html#GasModels.variable_mass_flow-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
     "page": "Network Formulations",
-    "title": "GasModels.variable_mass_flux",
+    "title": "GasModels.variable_mass_flow",
     "category": "method",
     "text": "\n\n"
 },
 
 {
-    "location": "formulations.html#GasModels.variable_mass_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
+    "location": "formulations.html#GasModels.variable_mass_flow_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T<:Union{GasModels.AbstractMISOCPDirectedForm, GasModels.AbstractMISOCPForm}",
     "page": "Network Formulations",
-    "title": "GasModels.variable_mass_flux_ne",
+    "title": "GasModels.variable_mass_flow_ne",
     "category": "method",
     "text": "\n\n"
 },
@@ -717,7 +717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "GasModel",
     "title": "GasModels.build_ref",
     "category": "function",
-    "text": "Returns a dict that stores commonly used pre-computed data from of the data dictionary, primarily for converting data-types, filtering out deactivated components, and storing system-wide values that need to be computed globally.\n\nSome of the common keys include:\n\n:max_flux (see max_flux(data)),\n:connection – the set of connections that are active in the network (based on the component status values),\n:pipe – the set of connections that are pipes (based on the component type values),\n:short_pipe – the set of connections that are short pipes (based on the component type values),\n:compressor – the set of connections that are compressors (based on the component type values),\n:valve – the set of connections that are valves (based on the component type values),\n:control_valve – the set of connections that are control valves (based on the component type values),\n:resistor – the set of connections that are resistors (based on the component type values),\n:parallel_connections – the set of all existing connections between junction pairs (i,j),\n:all_parallel_connections – the set of all existing and new connections between junction pairs (i,j),\n:junction_connections – the set of all existing connections of junction i,\n:junction_ne_connections – the set of all new connections of junction i,\n:junction_consumers – the mapping Dict(i => [consumer[\"ql_junc\"] for (i,consumer) in ref[:consumer]]).\n:junction_producers – the mapping Dict(i => [producer[\"qg_junc\"] for (i,producer) in ref[:producer]]).\njunction[degree] – the degree of junction i using existing connections (see add_degree)),\njunction[all_degree] – the degree of junction i using existing and new connections (see add_degree)),\nconnection[pd_min,pd_max] – the max and min square pressure difference (see add_pd_bounds_swr)),\n\nIf :ne_connection does not exist, then an empty reference is added If status does not exist in the data, then 1 is added If construction cost does not exist in the :ne_connection, then 0 is added\n\n\n\n"
+    "text": "Returns a dict that stores commonly used pre-computed data from of the data dictionary, primarily for converting data-types, filtering out deactivated components, and storing system-wide values that need to be computed globally.\n\nSome of the common keys include:\n\n:max_mass_flow (see max_mass_flow(data)),\n:connection – the set of connections that are active in the network (based on the component status values),\n:pipe – the set of connections that are pipes (based on the component type values),\n:short_pipe – the set of connections that are short pipes (based on the component type values),\n:compressor – the set of connections that are compressors (based on the component type values),\n:valve – the set of connections that are valves (based on the component type values),\n:control_valve – the set of connections that are control valves (based on the component type values),\n:resistor – the set of connections that are resistors (based on the component type values),\n:parallel_connections – the set of all existing connections between junction pairs (i,j),\n:all_parallel_connections – the set of all existing and new connections between junction pairs (i,j),\n:junction_connections – the set of all existing connections of junction i,\n:junction_ne_connections – the set of all new connections of junction i,\n:junction_consumers – the mapping Dict(i => [consumer[\"ql_junc\"] for (i,consumer) in ref[:consumer]]).\n:junction_producers – the mapping Dict(i => [producer[\"qg_junc\"] for (i,producer) in ref[:producer]]).\njunction[degree] – the degree of junction i using existing connections (see add_degree)),\njunction[all_degree] – the degree of junction i using existing and new connections (see add_degree)),\nconnection[pd_min,pd_max] – the max and min square pressure difference (see add_pd_bounds_swr)),\n\nIf :ne_connection does not exist, then an empty reference is added If status does not exist in the data, then 1 is added If construction cost does not exist in the :ne_connection, then 0 is added\n\n\n\n"
 },
 
 {
@@ -785,27 +785,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#GasModels.variable_load_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_load_mass_flow-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_load_mass_flux",
+    "title": "GasModels.variable_load_mass_flow",
     "category": "method",
     "text": "variables associated with demand \n\n\n\n"
 },
 
 {
-    "location": "variables.html#GasModels.variable_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_mass_flow-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_mass_flux",
+    "title": "GasModels.variable_mass_flow",
     "category": "method",
-    "text": "variables associated with flux \n\n\n\n"
+    "text": "variables associated with mass flow \n\n\n\n"
 },
 
 {
-    "location": "variables.html#GasModels.variable_mass_flux_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_mass_flow_ne-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_mass_flux_ne",
+    "title": "GasModels.variable_mass_flow_ne",
     "category": "method",
-    "text": "variables associated with flux in expansion planning \n\n\n\n"
+    "text": "variables associated with mass flow in expansion planning \n\n\n\n"
 },
 
 {
@@ -825,9 +825,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#GasModels.variable_production_mass_flux-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
+    "location": "variables.html#GasModels.variable_production_mass_flow-Union{Tuple{GasModels.GenericGasModel{T},Int64}, Tuple{GasModels.GenericGasModel{T}}, Tuple{T}} where T",
     "page": "Variables",
-    "title": "GasModels.variable_production_mass_flux",
+    "title": "GasModels.variable_production_mass_flow",
     "category": "method",
     "text": "variables associated with production \n\n\n\n"
 },
