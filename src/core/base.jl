@@ -194,6 +194,7 @@ function build_ref(data::Dict{String,Any})
     # Do some robustness on the data to add missing fields
     add_default_data(data)
     add_default_status(data)
+    add_default_consumer_priority(data)    
     add_default_construction_cost(data)
       
     refs = Dict{Symbol,Any}()

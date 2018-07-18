@@ -34,6 +34,20 @@ function add_default_status(data::Dict{String,Any})
     end
 end
 
+"Ensures that consumer priority exists as a field in loads"
+function add_default_consumer_priority(data::Dict{String,Any})
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
+    
+    for (n,data) in nws_data
+        for (idx,component) in data["consumer"]
+            if !haskey(component,"priority")
+                component["priority"] = 1
+            end
+        end
+    end
+end
+
+
 "Ensures that construction cost exists as a field for new connections"
 function add_default_construction_cost(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
