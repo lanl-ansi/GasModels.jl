@@ -16,21 +16,21 @@ function variable_pressure_sqr{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded
     end
 end
 
-" variables associated with flux "
-function variable_mass_flux{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    max_flux = gm.ref[:nw][n][:max_flux]
+" variables associated with mass flow "
+function variable_mass_flow{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    max_flow = gm.ref[:nw][n][:max_mass_flow]
     if bounded  
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="$(n)_f", lowerbound=-max_flux, upperbound=max_flux, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                  
+        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="$(n)_f", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                  
     else
         gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="$(n)_f", start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                  
     end
 end
 
-" variables associated with flux in expansion planning "
-function variable_mass_flux_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    max_flux = gm.ref[:nw][n][:max_flux]
+" variables associated with mass flow in expansion planning "
+function variable_mass_flow_ne{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+    max_flow = gm.ref[:nw][n][:max_mass_flow]
     if bounded  
-         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="$(n)_f_ne", lowerbound=-max_flux, upperbound=max_flux, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="$(n)_f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
     else
          gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))      
     end                       
@@ -52,10 +52,9 @@ function variable_valve_operation{T}(gm::GenericGasModel{T}, n::Int=gm.cnw)
 end
 
 " variables associated with demand "
-function variable_load_mass_flux{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_load_mass_flow{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
     load_set = filter(i -> gm.ref[:nw][n][:consumer][i]["qlmax"] != 0 || gm.ref[:nw][n][:consumer][i]["qlmin"] != 0, collect(keys(gm.ref[:nw][n][:consumer])))
     if bounded       
-#        gm.var[:nw][n][:ql] = @variable(gm.model, [i in load_set], basename="$(n)_ql", lowerbound=gm.ref[:nw][n][:consumer][i]["qlmin"], upperbound=gm.ref[:nw][n][:consumer][i]["qlmax"], start = getstart(gm.ref[:nw][n][:consumer], i, "ql_start", 0.0))                  
         gm.var[:nw][n][:fl] = @variable(gm.model, [i in load_set], basename="$(n)_fl", lowerbound=calc_flmin(gm.data, gm.ref[:nw][n][:consumer][i]), upperbound=calc_flmax(gm.data, gm.ref[:nw][n][:consumer][i]), start = getstart(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))                           
     else
         gm.var[:nw][n][:fl] = @variable(gm.model, [i in load_set], basename="$(n)_fl", start = getstart(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))                        
@@ -63,10 +62,9 @@ function variable_load_mass_flux{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bound
 end
 
 " variables associated with production "
-function variable_production_mass_flux{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_production_mass_flow{T}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
     prod_set = filter(i -> gm.ref[:nw][n][:producer][i]["qgmax"] != 0 || gm.ref[:nw][n][:producer][i]["qgmin"] != 0, collect(keys(gm.ref[:nw][n][:producer])))
     if bounded          
-#        gm.var[:nw][n][:qg] = @variable(gm.model, [i in prod_set], basename="$(n)_qg", lowerbound=gm.ref[:nw][n][:producer][i]["qgmin"], upperbound=gm.ref[:nw][n][:producer][i]["qgmax"], start = getstart(gm.ref[:nw][n][:producer], i, "qg_start", 0.0))                  
         gm.var[:nw][n][:fg] = @variable(gm.model, [i in prod_set], basename="$(n)_fg", lowerbound=calc_fgmin(gm.data, gm.ref[:nw][n][:producer][i]), upperbound=calc_fgmax(gm.data, gm.ref[:nw][n][:producer][i]), start = getstart(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))                            
     else
         gm.var[:nw][n][:fg] = @variable(gm.model, [i in prod_set], basename="$(n)_fg", start = getstart(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))                        

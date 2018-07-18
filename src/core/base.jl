@@ -168,7 +168,7 @@ system-wide values that need to be computed globally.
 
 Some of the common keys include:
 
-* `:max_flux` (see `max_flux(data)`),
+* `:max_mass_flow` (see `max_mass_flow(data)`),
 * `:connection` -- the set of connections that are active in the network (based on the component status values),
 * `:pipe` -- the set of connections that are pipes (based on the component type values),
 * `:short_pipe` -- the set of connections that are short pipes (based on the component type values),
@@ -222,8 +222,8 @@ function build_ref(data::Dict{String,Any})
         ref[:ne_connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:ne_connection])
 
         # compute the maximum flow  
-        max_flux = calc_max_flux(data)
-        ref[:max_flux] = max_flux  
+        max_mass_flow = calc_max_mass_flow(data)
+        ref[:max_mass_flow] = max_mass_flow  
                       
         # create some sets based on connection types
         ref[:pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:connection])

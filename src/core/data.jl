@@ -1,7 +1,7 @@
 # tools for working with GasModels internal data format
 
 "Computes the maximum volume of the Gas Model"
-function calc_max_volume(data::Dict{String,Any})
+function calc_max_volume_flow(data::Dict{String,Any})
     max_flow = 0
     for (idx, producer) in data["producer"]
         if producer["qgmax"] > 0
@@ -14,9 +14,9 @@ function calc_max_volume(data::Dict{String,Any})
     return max_flow
 end
 
-"Computes the max flux in the Gas Model"
-function calc_max_flux(data::Dict{String,Any})
-    return calc_max_volume(data) * data["standard_density"]  
+"Computes the max mass flow in the Gas Model"
+function calc_max_mass_flow(data::Dict{String,Any})
+    return calc_max_volume_flow(data) * data["standard_density"]  
 end
   
 "Ensures that status exists as a field in connections"
@@ -88,10 +88,11 @@ function add_pd_bounds_sqr(ref::Dict{Symbol,Any})
     end
 end
 
-"Calculates pipeline resistance from this paperARD Thorley and CH Tiley. Unsteady and transient flow of compressible
+"Calculates pipeline resistance from this paper Thorley and CH Tiley. Unsteady and transient flow of compressible
 fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
-This is used in many of Zlotniks papers"
+This is used in many of Zlotniks papers
+This calculation expresses resistance in terms of mass flow equations"
 function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,Any})
     R          = 8.314 # universal gas constant     
     z          = data["compressibility_factor"]
@@ -103,8 +104,7 @@ function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,
      
     a_sqr = z * (R/m) * T       
     A     = (pi*D) / 4 # cross sectional area
-    
-       
+           
     resistance = ( (2 * D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
@@ -267,33 +267,32 @@ function apply_func(data::Dict{String,Any}, key::String, func)
     data[key] = func(data[key])
 end
 
-"calculates minimum mass flux consumption"
+"calculates minimum mass flow consumption"
 function calc_flmin(data::Dict{String,Any}, consumer::Dict{String,Any})
     consumer["qlmin"] * data["standard_density"]  
 end
 
-"calculates maximum mass flux consumption"
+"calculates maximum mass flow consumption"
 function calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
     consumer["qlmax"] * data["standard_density"]  
 end
 
-"calculates firm mass flux consumption"
+"calculates firm mass flow consumption"
 function calc_flfirm(data::Dict{String,Any}, consumer::Dict{String,Any})
     consumer["qlfirm"] * data["standard_density"]  
 end
 
-
-"calculates minimum mass flux production"
+"calculates minimum mass flow production"
 function calc_fgmin(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qgmin"] * data["standard_density"]  
 end
 
-"calculates maximum mass flux production"
+"calculates maximum mass flow production"
 function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qgmax"] * data["standard_density"]  
 end
 
-"calculates firm mass flux production"
+"calculates firm mass flow production"
 function calc_fgfirm(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qgfirm"] * data["standard_density"]  
 end

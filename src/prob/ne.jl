@@ -26,7 +26,7 @@ function post_ne(gm::GenericGasModel; kwargs...)
     objective_min_ne_cost(gm; normalization =  obj_normalization)
 
     for i in ids(gm, :junction)
-        constraint_junction_mass_flux_ne(gm, i) 
+        constraint_junction_mass_flow_ne(gm, i) 
     end
 
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 

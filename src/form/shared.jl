@@ -10,29 +10,29 @@ AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirecte
 
 ""
 function variable_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flux(gm,n; bounded=bounded)
+    variable_mass_flow(gm,n; bounded=bounded)
     variable_connection_direction(gm,n)  
 end
 
 ""
 function variable_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flux(gm,n; bounded=bounded)
+    variable_mass_flow(gm,n; bounded=bounded)
 end
 
 ""
 function variable_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flux_ne(gm,n; bounded=bounded)
+    variable_mass_flow_ne(gm,n; bounded=bounded)
     variable_connection_direction_ne(gm,n)  
 end
 
 ""
 function variable_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flux_ne(gm,n; bounded=bounded)
+    variable_mass_flow_ne(gm,n; bounded=bounded)
 end
 
-function constraint_junction_mass_flux{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_mass_flux_balance(gm, n, i)
+    constraint_junction_mass_flow_balance(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
@@ -52,13 +52,13 @@ function constraint_junction_mass_flux{T <: AbstractMIForms}(gm::GenericGasModel
     end   
 end
 
-function constraint_junction_mass_flux{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_mass_flux_balance(gm, n, i)
+function constraint_junction_mass_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flow_balance(gm, n, i)
 end
 
-function constraint_junction_mass_flux_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_mass_flux_balance_ls(gm, n, i)
+    constraint_junction_mass_flow_balance_ls(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
@@ -82,13 +82,13 @@ function constraint_junction_mass_flux_ls{T <: AbstractMIForms}(gm::GenericGasMo
     end         
 end
 
-function constraint_junction_mass_flux_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_mass_flux_balance_ls(gm, n, i)
+function constraint_junction_mass_flow_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flow_balance_ls(gm, n, i)
 end
 
-function constraint_junction_mass_flux_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_mass_flux_balance_ne(gm, n, i)
+    constraint_junction_mass_flow_balance_ne(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
@@ -106,13 +106,13 @@ function constraint_junction_mass_flux_ne{T <: AbstractMIForms}(gm::GenericGasMo
     end              
 end
 
-function constraint_junction_mass_flux_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_mass_flux_balance_ne(gm, n, i)
+function constraint_junction_mass_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flow_balance_ne(gm, n, i)
 end
 
-function constraint_junction_mass_flux_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
     junction = ref(gm,n,:junction,i)  
-    constraint_junction_mass_flux_balance_ne_ls(gm, n, i)
+    constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
     
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
@@ -134,8 +134,8 @@ function constraint_junction_mass_flux_ne_ls{T <: AbstractMIForms}(gm::GenericGa
     end                     
 end
 
-function constraint_junction_mass_flux_ne_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
-    constraint_junction_mass_flux_balance_ne_ls(gm, n, i)
+function constraint_junction_mass_flow_ne_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+    constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
 end
 
 function constraint_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
