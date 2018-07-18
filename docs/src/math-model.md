@@ -19,7 +19,7 @@ where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is
     \frac{\partial \phi}{\partial x}=0, 
 ```
 
-where we have assumed the pipe area does not changing with $x$. We also assume that gas pressure and gas density ($\rho$) satifies the equation of state, i.e. $p = \frac{a^2}{\rho}$ 
+where we have assumed the pipe area does not changing with $x$. We also assume that gas pressure and gas density ($\rho$) satifies the equation of state, i.e. $p = a^2 \rho$ 
 
 
 Integrating these equations from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe, the equation for flux across the pipe is stated as
@@ -49,7 +49,7 @@ w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).
 Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, $q$, at a STP conditions. Given this data, we non-dimensionalize based on $q$. At STP conditions, the mass flow is derived as $f=\frac{q}{\rho_s}$, where  $\rho_s$ is the gas density at STP conditions.
 
 
-More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. *Optimal Control of Transient Flow in Natural Gas Networks*. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  Recall that the transformation from density to pressure is simply $\rho=a^2p$.
+More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. *Optimal Control of Transient Flow in Natural Gas Networks*. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  Recall that the transformation from density to pressure is simply $p = a^2 \rho$.
 
 A complete gas flow mathematical model is the defined by
 
