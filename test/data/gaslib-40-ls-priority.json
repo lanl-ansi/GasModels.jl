@@ -6,203 +6,203 @@
   "gas_molar_mass": 0.0185674,
   "consumer": {
     "24": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 24,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "4": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 1157.4074074074,
       "ql_junc": 4,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "29": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 29,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "12": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 12,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "20": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 20,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "6": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 6,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "25": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 25,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "23": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 23,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "22": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 22,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "11": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 11,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "13": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 13,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "5": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 5,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "15": {
-      "priority": 2,
+      "priority": 0.5,
       "qlmax": 20.833333333333,
       "ql_junc": 15,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "27": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 27,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "31": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 31,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "28": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 28,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "16": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 16,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "14": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 14,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "21": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 21,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "7": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 7,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "8": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 8,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "26": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 26,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "17": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 17,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "10": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 10,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "19": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 19,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "9": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 9,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "18": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 18,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "30": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 30,
       "qlmin": 0,
       "qlfirm": 20.833333333333
     },
     "3": {
-      "priority": 2,    
+      "priority": 0.5,    
       "qlmax": 20.833333333333,
       "ql_junc": 3,
       "qlmin": 0,

@@ -11,7 +11,7 @@ end
 @testset "test misocp ls" begin
     @testset "gaslib 40 case" begin
         result = run_ls("../test/data/gaslib-40-ls-priority.json", MISOCPGasModel, misocp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 1032.10648148; atol = 1e-2) 
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 258.02662037; atol = 1e-2) 
      end      
 end
