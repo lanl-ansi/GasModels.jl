@@ -20,7 +20,7 @@ where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is
 where we have assumed the pipe area does not change with $x$. We also assume that gas pressure and gas density ($\rho$) satisfy the equation of state, i.e. $p = a^2 \rho$ 
 
 
-Given that $p \frac{\partial p}{\partial x}= \frac{1}{2} \frac{\partial p^2}{\partial x}$ and $\phi$ is a constant througout the pipe (from the mass conservation) the conservation of momentum equation is integrated from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe. Then, the equation for flux across the pipe is stated as
+Given that $p \frac{\partial p}{\partial x}= \frac{1}{2} \frac{\partial p^2}{\partial x}$ and $\phi$ is a constant througout the pipe (from the mass conservation), the conservation of momentum equation is integrated from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe. Then, the equation for flux across the pipe is stated as
 
 ```math
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ D }. 
