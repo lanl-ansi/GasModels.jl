@@ -5,13 +5,11 @@ As GasModels implements a variety of gas network optimization problems, the impl
 
 ## Gas Flow
 
-GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. Starting with the quasi-steady hydrodynamic equations and reducing them to a steady state model, the momentum conservation equation in a pipe is stated as
-
+GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. In the following paragraphs, a derivation of the steady state equations used in GasModels is shown. To that end, we first assume that the flow is steady. Given this assumption, the conservation of momentum equation for the flow of gas in a pipe is given by 
 
 ```math
 p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}
 ```
-
 
 where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux, and $D$ is the diameter of the pipe. Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor, $R$ is the universal gas constant, $m$ is the molar mass of the gas, and $T$ is the gas temperature. In steady state, the mass conservation reduces to:
 
