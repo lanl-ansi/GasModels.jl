@@ -22,34 +22,31 @@ where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is
 where we have assumed the pipe area does not changing with $x$. We also assume that gas pressure and gas density ($\rho$) satifies the equation of state, i.e. $p = a^2 \rho$ 
 
 
-Integrating these equations from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe, the equation for flux across the pipe is stated as
+Given that $p \frac{\partial p}{\partial x}= \frac{1}{2} \frac{\partial p^2}{\partial x}$, these equations are inegrated from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe. The equation for flux across the pipe is stated as
 
 ```math
-    p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ 2 D }. 
+    p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ D }. 
 ```
 
 We typically express the mass flux through the pipe in terms of mass flow, $f$, where $f=\phi A$. Here, $A=\frac{\pi D^2}{4}$ is the cross-sectional area of the pipe. Thus, the equation for mass flow through the pipe is stated as 
 
 ```math
-    p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ 2 D A^2}. 
+    p^2(L)-p^2(0) = \frac{-\lambda L a^2 f |f|}{ D A^2}. 
 ```
 
 To create a better numerically conditioned problem, it is very useful to non-dimensionalize the units. Here we use a typical pressure $p_0$ and a typical mass flow $f_0$ and normalize the equations. This yields
 
 ```math
-    \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),
+    \tilde{p}^2(L)-\tilde{p}^2(0) = -\tilde{f} |\tilde{f}| \left(\frac{\lambda L }{D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right),
 ```
 
 where $\tilde{f}=\frac{f}{f_0}$ and $\tilde{p}=\frac{p}{p_0}$ are the dimensionless mass flow and pressure, respectively, and are both of order one. Note that both terms in parenthesis on the right hand side of this equation are dimensionless.  For the purposes of convenience, we define *resistance*, $w$, as the constant 
 
 ```math
-w=\left(\frac{\lambda L }{2 D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).
+w=\left(\frac{\lambda L }{D}\right) \left(\frac{f_0^2a^2}{A^2p_0^2}\right).
 ```  
 
 Finally, in most data sets, nodal injections and withdrawals are defined in terms of volumetric flow, $q$, at a STP conditions. Given this data, we non-dimensionalize based on $q$. At STP conditions, the mass flow is derived as $f=\frac{q}{\rho_s}$, where  $\rho_s$ is the gas density at STP conditions.
-
-
-More details of there derivations of these equations are found in Zlotnik, Chertkov, and Backhaus. *Optimal Control of Transient Flow in Natural Gas Networks*. CDC 2015. We note that this reference expresses these equations in terms of density, $\rho$ rather than pressure.  Recall that the transformation from density to pressure is simply $p = a^2 \rho$.
 
 A complete gas flow mathematical model is the defined by
 
