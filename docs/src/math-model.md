@@ -11,16 +11,16 @@ GasModels implements a steady-state model of gas flow based on the Weymouth form
 p \frac{\partial p}{\partial x} = -\frac{\lambda a^2 \phi |\phi|}{2 D}
 ```
 
-where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux, and $D$ is the diameter of the pipe. Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor, $R$ is the universal gas constant, $m$ is the molar mass of the gas, and $T$ is the gas temperature. In steady state, the mass conservation reduces to:
+where $p$ is pressure, $\lambda$ is a non dimensional friction factor, $\phi$ is mass flux, and $D$ is the diameter of the pipe. Here, $a^2=\frac{ZRT}{m}$ where $Z$ is the gas compressibility factor, $R$ is the universal gas constant, $m$ is the molar mass of the gas, and $T$ is the gas temperature. Again, for steady flow, the mass conservation reduces to:
 
 ```math
     \frac{\partial \phi}{\partial x}=0, 
 ```
 
-where we have assumed the pipe area does not changing with $x$. We also assume that gas pressure and gas density ($\rho$) satifies the equation of state, i.e. $p = a^2 \rho$ 
+where we have assumed the pipe area does not change with $x$. We also assume that gas pressure and gas density ($\rho$) satisfy the equation of state, i.e. $p = a^2 \rho$ 
 
 
-Given that $p \frac{\partial p}{\partial x}= \frac{1}{2} \frac{\partial p^2}{\partial x}$, these equations are inegrated from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe. The equation for flux across the pipe is stated as
+Given that $p \frac{\partial p}{\partial x}= \frac{1}{2} \frac{\partial p^2}{\partial x}$ and $\phi$ is a constant througout the pipe (from the mass conservation) the conservation of momentum equation is integrated from the start of the pipe at $x=0$ to the end of the pipe at $x=L$, where $L$ is the length of the pipe. Then, the equation for flux across the pipe is stated as
 
 ```math
     p^2(L)-p^2(0) = \frac{-\lambda L a^2 \phi |\phi|}{ D }. 
