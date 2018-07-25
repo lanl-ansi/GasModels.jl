@@ -9,6 +9,9 @@ GasModels.jl Change Log
 - Implement a matlab like data input format
 
 ### Staged
+- nothing
+
+### v0.3.0
 - Standardized on SI for real unit inputs (breaking)
 - Standardized naming conventions on volumetric flow, mass flow, and mass flux, depending on context (breaking)
 - All computations and results are performed in non-dimenionalized units (per unit)
