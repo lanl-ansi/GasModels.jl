@@ -71,13 +71,13 @@ function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "junction", "psqr", :p)
 end
 
-" Get the load flux solutions "
-function add_load_flux_setpoint{T}(sol, gm::GenericGasModel{T})
+" Get the load mass flow solutions "
+function add_load_mass_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "consumer", "fl", :fl; default_value = (item) -> 0)
 end
 
-" Get the production flux set point " 
-function add_production_flux_setpoint{T}(sol, gm::GenericGasModel{T})
+" Get the production mass flow set point " 
+function add_production_mass_flow_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "producer", "fg", :fg; default_value = (item) -> 0)
 end
 
@@ -86,7 +86,7 @@ function add_load_volume_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "consumer", "ql", :fl; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
-" Get the production flux set point " 
+" Get the production volume set point " 
 function add_production_volume_setpoint{T}(sol, gm::GenericGasModel{T})
     add_setpoint(sol, gm, "producer", "qg", :fg; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end

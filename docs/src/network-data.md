@@ -32,6 +32,7 @@ The network data dictionary structure is roughly as follows:
       "qlmax": <float>,  # the maximum volumetric gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
       "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
       "qlfirm": <float>, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      "priority": <float>, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
        ...
     },
     "2":{...},
