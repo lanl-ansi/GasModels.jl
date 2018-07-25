@@ -118,8 +118,7 @@ function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,
      
     a_sqr = z * (R/m) * T       
     A     = (pi*D) / 4 # cross sectional area
-           
-    resistance = ( (2 * D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
+    resistance = ( (D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
@@ -137,7 +136,7 @@ function calc_resistor_resistance_simple(data::Dict{String,Any}, pipe::Dict{Stri
     a_sqr = z * (R/m) * T
     A     = (pi*D) / 4 # cross sectional area
               
-    resistance = ( (2 * D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
+    resistance = ( (D * A^2) / (lambda * L * a_sqr)) * (data["baseP"]^2 / data["baseQ"]^2) # second half is the non-dimensionalization
     return resistance 
 end
 
