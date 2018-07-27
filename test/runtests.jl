@@ -26,7 +26,7 @@ pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solv
 using Base.Test
 
 # default setup for solvers
-misocp_solver = pavito_solver_cbc
+cvx_minlp_solver = pavito_solver_cbc
 minlp_solver = juniper_solver
 
 @testset "GasModels" begin

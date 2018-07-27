@@ -52,7 +52,7 @@ end
 @testset "solution summary" begin
     gas_file = "../test/data/gaslib-40.json"
     gas_data = GasModels.parse_file(gas_file)
-    result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, misocp_solver)
+    result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, cvx_minlp_solver)
 
     output = sprint(GasModels.summary, result["solution"])
 
@@ -77,8 +77,8 @@ end
     @test length(gas_data["consumer"]) == 2
 
     #TODO see if we can get one of these test working
-    #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, misocp_solver)
-    #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, misocp_solver)
+    #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
+    #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
 
     #@test result["status"] == :Optimal
     #@test result["objective"] == 0.0
