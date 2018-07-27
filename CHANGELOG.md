@@ -9,7 +9,7 @@ GasModels.jl Change Log
 - Implement a matlab like data input format
 
 ### Staged
-- nothing
+- Update MINLP solvers used in testing
 
 ### v0.3.0
 - Standardized on SI for real unit inputs (breaking)

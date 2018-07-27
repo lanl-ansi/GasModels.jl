@@ -27,8 +27,8 @@ cbc_solver = CbcSolver()
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 ecos_solver = ECOSSolver(maxit=10000)
 scs_solver = SCSSolver
-pajarito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
-#pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
+pavito_solver = PajaritoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
+#pavito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
 
 misocp_solver = gurobi_solver
 
