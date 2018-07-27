@@ -6,14 +6,10 @@ Logging.configure(level=ERROR)
 
 using Pavito
 using Ipopt
-using CoinOptServices
-using AmplNLWriter
 using Cbc
 using GLPKMathProgInterface
 using Juniper
 
-bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
-couenne_solver =  AmplNLSolver(CoinOptServices.couenne)
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 cbc_solver = CbcSolver()
 glpk_solver = GLPKSolverMIP()

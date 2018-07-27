@@ -1,10 +1,9 @@
 julia 0.6
 
 Ipopt
-AmplNLWriter
-CoinOptServices
 Compat
 Logging 0.2
-Pajarito
+Pavito
 Cbc
 GLPKMathProgInterface
+Juniper
