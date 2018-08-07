@@ -12,12 +12,12 @@ end
 
 ""
 function run_soc_gf(file, solver; kwargs...)
-    return run_pf(file, MISOCPGasModel, solver; kwargs...)
+    return run_gf(file, MISOCPGasModel, solver; kwargs...)
 end
 
 ""
 function run_nl_gf(file, solver; kwargs...)
-    return run_pf(file, MINLPGasModel, solver; kwargs...)
+    return run_gf(file, MINLPGasModel, solver; kwargs...)
 end
 
 " construct the gas flow feasbility problem "
