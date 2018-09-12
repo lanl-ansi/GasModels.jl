@@ -13,6 +13,7 @@ GasModels.jl Change Log
 
 ### v0.3.1
 - Fixed a bug in the resistance calculation (thanks @cvr)
+- Added Julia version upper bound
 
 ### v0.3.0
 - Standardized on SI for real unit inputs (breaking)
