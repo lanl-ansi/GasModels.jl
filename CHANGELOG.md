@@ -11,6 +11,9 @@ GasModels.jl Change Log
 ### Staged
 - nothing
 
+### v0.3.1
+- Fixed a bug in the resistance calculation (thanks @cvr)
+
 ### v0.3.0
 - Standardized on SI for real unit inputs (breaking)
 - Standardized naming conventions on volumetric flow, mass flow, and mass flux, depending on context (breaking)
