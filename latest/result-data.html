@@ -40,7 +40,7 @@ ga('send', 'pageview');
 },
 &quot;consumer&quot;:{
     &quot;1&quot;:{
-      &quot;fl&quot;: &lt;float&gt;,  # variable mass flux consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
+      &quot;fl&quot;: &lt;float&gt;,  # variable mass flow consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
       &quot;ql&quot;: &lt;float&gt;,  # the varible volumetric gas demand at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s. 
        ...
     },
@@ -49,7 +49,7 @@ ga('send', 'pageview');
 },
 &quot;producer&quot;:{
     &quot;1&quot;:{
-      &quot;fg&quot;: &lt;float&gt;,  # variable mass flux produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
+      &quot;fg&quot;: &lt;float&gt;,  # variable mass flow produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. 
       &quot;qg&quot;: &lt;float&gt;,  # the varible volumetric gas produced at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s.        ...
     },
     &quot;2&quot;:{...},
@@ -57,7 +57,7 @@ ga('send', 'pageview');
 },
 &quot;connection&quot;:{
     &quot;1&quot;:{
-      &quot;f&quot;: &lt;float&gt;,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2
+      &quot;f&quot;: &lt;float&gt;,                 # mass flow through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
       &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise      
@@ -69,7 +69,7 @@ ga('send', 'pageview');
 },
 &quot;ne_connection&quot;:{
     &quot;1&quot;:{
-      &quot;f&quot;: &lt;float&gt;,                 # mass flux through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flow is obtained through division of the cross-sectional area (A) of the pipe, squared. A^2= ((pi*diameter^2)/4)^2
+      &quot;f&quot;: &lt;float&gt;,                 # mass flow through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
       &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise      
