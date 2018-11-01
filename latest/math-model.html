@@ -18,21 +18,21 @@ ga('send', 'pageview');
 %
 \text{data:} \\
 &amp; w_a &amp; \text{resistance factor of pipeline $a$} \\
-&amp; fl_j &amp; \text{consumption (mass flux) at consumer $j$} \\
-&amp; fg_j &amp; \text{production (mass flux) at producer $j$} \\
+&amp; fl_j &amp; \text{consumption (mass flow) at consumer $j$} \\
+&amp; fg_j &amp; \text{production (mass flow) at producer $j$} \\
 &amp; \underline{\alpha}_a=1, \overline{\alpha}_a &amp; \text{(de)compression limits (squared) of edge $a$} \\
 &amp; \underline{p}_i \ge 0,\overline{p}_i &amp; \text{limits on pressure squared at node $i$} \\
 %
 \text{variables:} \\
 &amp; p_i &amp; \text{pressure squared at node $i$} \\
-&amp; f_a &amp; \text{flux on edge $a$} \\
+&amp; f_a &amp; \text{mass flow on edge $a$} \\
 &amp; \alpha_a &amp; \text{compression ratio on compressor $a$}\\
 &amp; v_a &amp; \text{valve status for valve $a$, 1 if valve is open}\\
 %
 \text{constraints:} \\
 &amp; (p_i - p_j) = {w}_{a} |f_{a}|f_{a} &amp;\text{Weymouth equation for pipe $a$} \\
 &amp;&amp; \text{connected from junction $i$ to junction $j$}  \\
-&amp;\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j &amp; \text{mass flux balance at junction $i$} \\
+&amp;\sum\limits_{a=a_{ij}\in A} f_{a} - \sum\limits_{a=a_{ji} \in A} f_{a} = \sum_{j \in P_i} fg_j- \sum_{j \in C_i} fl_j &amp; \text{mass flow balance at junction $i$} \\
 &amp; \alpha_a p_i = p_j &amp; \text{compression boost at compressor $a$} \\
 &amp;&amp;\text{mass flux balance at junction $i$} \\
 &amp; f_a (1-\alpha_a) \le 0&amp; \text{compression ratio is forced to 1} \\
