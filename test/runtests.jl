@@ -2,7 +2,8 @@ using GasModels
 using Logging
 
 # suppress warnings during testing
-Logging.configure(level=ERROR)
+#Logging.configure(level=ERROR)
+disable_logging(Logging.Warn)
 
 using Pavito
 using Ipopt
@@ -19,7 +20,7 @@ pavito_solver_cbc = PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver
 pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 
 
-using Base.Test
+using Compat.Test
 
 # default setup for solvers
 cvx_minlp_solver = pavito_solver_cbc

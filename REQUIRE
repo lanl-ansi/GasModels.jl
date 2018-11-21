@@ -3,4 +3,4 @@ JSON 0.6
 MathProgBase 0.5.4
 JuMP 0.17 0.19-
 InfrastructureModels 0.0.2 0.2-
-Compat 0.17
+Compat 1.0
