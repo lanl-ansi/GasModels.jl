@@ -125,7 +125,7 @@ function JuMP.solve(gm::GenericGasModel)
     try
         solve_time = getsolvetime(gm.model)
     catch
-        warn("there was an issue with getsolvetime() on the solver, falling back on @timed.  This is not a rigorous timing value.");
+        @warn "there was an issue with getsolvetime() on the solver, falling back on @timed.  This is not a rigorous timing value."
     end
 
     return status, solve_time
@@ -156,7 +156,7 @@ function build_generic_model(data::Dict{String,Any}, model_constructor, post_met
     gm = model_constructor(data; kwargs...)
     
     if !multinetwork && data["multinetwork"]
-        warn("building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
+        @warn "building a single network model with multinetwork data, only network ($(gm.cnw)) will be used."
     end
     
     post_method(gm; kwargs...)

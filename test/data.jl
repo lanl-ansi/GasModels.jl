@@ -40,13 +40,13 @@ end
     line_count = count(c -> c == '\n', output)
     
     @test line_count >= 175 && line_count <= 200
-    @test contains(output, "name: gaslib 40")
-    @test contains(output, "connection: 51")
-    @test contains(output, "consumer: 29")
-    @test contains(output, "junction: 46")
-    @test contains(output, "producer: 3")
-    @test contains(output, "c_ratio_max: 5")
-    @test contains(output, "qgfirm: 201.389")
+    @test occursin("name: gaslib 40", output)
+    @test occursin("connection: 51", output)
+    @test occursin("consumer: 29", output)
+    @test occursin("junction: 46", output)
+    @test occursin("producer: 3", output)
+    @test occursin("c_ratio_max: 5", output)
+    @test occursin("qgfirm: 201.389", output)
 end
 
 @testset "solution summary" begin
@@ -58,10 +58,10 @@ end
 
     line_count = count(c -> c == '\n', output)
     @test line_count >= 100 && line_count <= 125
-    @test contains(output, "connection: 51")
-    @test contains(output, "junction: 46")
-    @test contains(output, "Table: connection")
-    @test contains(output, "Table: junction")
+    @test occursin("connection: 51", output)
+    @test occursin("junction: 46", output)
+    @test occursin("Table: connection", output)
+    @test occursin("Table: junction", output)
 end
 
 
