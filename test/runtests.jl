@@ -5,18 +5,20 @@ using Logging
 #Logging.configure(level=ERROR)
 disable_logging(Logging.Warn)
 
+using JuMP
+
 using Pavito
 using Ipopt
-using Cbc
+#using Cbc
 using GLPKMathProgInterface
 using Juniper
 
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-cbc_solver = CbcSolver()
+#cbc_solver = CbcSolver()
 glpk_solver = GLPKSolverMIP()
 juniper_solver = JuniperSolver(ipopt_solver)
 
-pavito_solver_cbc = PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
+#pavito_solver_cbc = PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 
 
