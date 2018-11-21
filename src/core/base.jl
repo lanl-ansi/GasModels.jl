@@ -54,7 +54,7 @@ mutable struct GenericGasModel{T<:AbstractGasFormulation}
 end
 
 "default generic constructor"
-function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
+function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
     ref = build_ref(data) # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
@@ -66,7 +66,7 @@ function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,
 
     cnw = minimum([k for k in keys(ref[:nw])])
     
-    gm = GenericGasModel{T}(
+    gm = GenericGasModel{Typ}(
         Model(solver = solver), # model
         data, # data
         setting, # setting

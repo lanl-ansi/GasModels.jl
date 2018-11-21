@@ -1,6 +1,6 @@
 
 "Build a gas solution"
-function build_solution{T}(gm::GenericGasModel{T}, status, solve_time; objective = NaN, solution_builder = get_solution)
+function build_solution(gm::GenericGasModel, status, solve_time; objective = NaN, solution_builder = get_solution)
     if status != :Error
         objective = getobjectivevalue(gm.model)
         status = solver_status_dict(Symbol(typeof(gm.model.solver).name.module), status)
@@ -55,64 +55,64 @@ function init_solution(gm::GenericGasModel)
 end
 
 " Get all the solution values "
-function get_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
+function get_solution(gm::GenericGasModel,sol::Dict{String,Any})
     add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_compressor_ratio_setpoint(sol, gm) 
 end
 
 " Get the pressure solutions "
-function add_junction_pressure_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_junction_pressure_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(getvalue(x)))
 end
 
 " Get the pressure squared solutions "
-function add_junction_pressure_sqr_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_junction_pressure_sqr_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "junction", "psqr", :p)
 end
 
 " Get the load mass flow solutions "
-function add_load_mass_flow_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_load_mass_flow_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "consumer", "fl", :fl; default_value = (item) -> 0)
 end
 
 " Get the production mass flow set point " 
-function add_production_mass_flow_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_production_mass_flow_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "producer", "fg", :fg; default_value = (item) -> 0)
 end
 
 " Get the load volume solutions "
-function add_load_volume_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_load_volume_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "consumer", "ql", :fl; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
 " Get the production volume set point " 
-function add_production_volume_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_production_volume_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "producer", "qg", :fg; scale = (x,item) -> getvalue(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
 " Get the direction set points"
-function add_direction_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_direction_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "connection", "yp", :yp)
     add_setpoint(sol, gm, "connection", "yn", :yn)    
 end
 
 " Get the valve solutions "
-function add_valve_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_valve_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "connection", "valve", :v)
 end
 
 " Add the flow solutions "
-function add_connection_flow_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_connection_flow_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "connection", "f", :f)  
 end
 
 " Add the compressor solutions "
-function add_compressor_ratio_setpoint{T}(sol, gm::GenericGasModel{T}; default_value = (item) -> 1)
+function add_compressor_ratio_setpoint(sol, gm::GenericGasModel; default_value = (item) -> 1)
     add_setpoint(sol, gm, "connection", "ratio", :p; scale = (x,item) -> (item["type"] == "compressor" || item["type"] == "control_valve") ? sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])) : 1.0, extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
-function add_setpoint{T}(sol, gm::GenericGasModel{T}, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> getvalue(x), extract_var = (var,idx,item) -> var[idx])
+function add_setpoint(sol, gm::GenericGasModel, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> getvalue(x), extract_var = (var,idx,item) -> var[idx])
     sol_dict = get(sol, dict_name, Dict{String,Any}())
       
     if gm.data["multinetwork"]

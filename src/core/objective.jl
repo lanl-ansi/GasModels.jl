@@ -3,7 +3,7 @@
 ##########################################################################################################
 
 " function for costing expansion of pipes and compressors "
-function objective_min_ne_cost{T}(gm::GenericGasModel{T}, nws=[gm.cnw]; normalization=1.0)
+function objective_min_ne_cost(gm::GenericGasModel, nws=[gm.cnw]; normalization=1.0)
     zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)  
     zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)  
     
@@ -15,7 +15,7 @@ function objective_min_ne_cost{T}(gm::GenericGasModel{T}, nws=[gm.cnw]; normaliz
 end
 
 " function for maximizing load "
-function objective_max_load{T}(gm::GenericGasModel{T}, nws=[gm.cnw])
+function objective_max_load(gm::GenericGasModel, nws=[gm.cnw])
     load_set = Dict(n => filter(i -> gm.ref[:nw][n][:consumer][i]["qlmax"] != 0 || gm.ref[:nw][n][:consumer][i]["qlmin"] != 0, keys(gm.ref[:nw][n][:consumer])) for n in nws)
     fl =  Dict(n => gm.var[:nw][n][:fl] for n in nws)  
     obj = @objective(gm.model, Max, sum(sum(gm.ref[:nw][n][:consumer][i]["priority"] *  fl[n][i] for i in load_set[n]) for n in nws))      

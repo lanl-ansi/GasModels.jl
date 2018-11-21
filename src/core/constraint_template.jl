@@ -11,7 +11,7 @@
 # and should never refer to model variables
 
 " constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_pressure_drop(gm::GenericGasModel, n::Int, k)
     pipe           = ref(gm, n, :connection, k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
@@ -25,7 +25,7 @@ end
 constraint_on_off_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop(gm, gm.cnw, k)
 
 " constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop_ne{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_pressure_drop_ne(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm, n, :ne_connection, k) 
     
     i              = pipe["f_junction"]
@@ -40,7 +40,7 @@ end
 constraint_on_off_pressure_drop_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_ne(gm, gm.cnw, k)
 
 " constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction{T}(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_on_off_pipe_flow_direction(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:connection,k)
     
     i              = pipe["f_junction"]
@@ -57,7 +57,7 @@ end
 constraint_on_off_pipe_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_direction(gm, gm.cnw, k)
 
 " constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction_ne{T}(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:ne_connection, k) 
      
     i              = pipe["f_junction"]
@@ -74,7 +74,7 @@ end
 constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_direction_ne(gm, gm.cnw, k)
 
 " constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_compressor_flow_direction(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm, n, :connection, k)
   
     i        = compressor["f_junction"]
@@ -88,7 +88,7 @@ end
 constraint_on_off_compressor_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow_direction(gm, gm.cnw, k)
 
 " constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction_ne{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:ne_connection,k)  
 
     i        = compressor["f_junction"]
@@ -102,7 +102,7 @@ end
 constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, i::Int) = constraint_on_off_compressor_flow_direction_ne(gm, gm.cnw, i)
 
 " enforces pressure changes bounds that obey compression ratios "
-function constraint_on_off_compressor_ratios{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_compressor_ratios(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:connection,k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
@@ -120,7 +120,7 @@ end
 constraint_on_off_compressor_ratios(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios(gm, gm.cnw, k)
 
 " constraints on pressure drop across control valves "
-function constraint_on_off_compressor_ratios_ne{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm,n,:ne_connection, k)  
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
@@ -134,7 +134,7 @@ end
 constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios_ne(gm, gm.cnw, k)
 
 " standard mass flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
     producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
@@ -151,7 +151,7 @@ end
 constraint_junction_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance(gm, gm.cnw, i)
 
 " standard mass flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)   
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
@@ -171,7 +171,7 @@ end
 constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne(gm, gm.cnw, i)
 
 " standard mass flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ls{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)    
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     
@@ -193,7 +193,7 @@ end
 constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ls(gm, gm.cnw, i)
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, n::Int, i)  
+function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)  
     junction = ref(gm,n,:junction,i)  
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     
@@ -218,7 +218,7 @@ end
 constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
 " constraints on flow across short pipes "
-function constraint_on_off_short_pipe_flow_direction{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm,n,:connection,k)    
     
     i  = pipe["f_junction"]
@@ -232,7 +232,7 @@ end
 constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_direction(gm, gm.cnw, k)
 
 " constraints on pressure drop across pipes "
-function constraint_short_pipe_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm,n,:connection,k)  
     i = pipe["f_junction"]
     j = pipe["t_junction"]
@@ -242,7 +242,7 @@ end
 constraint_short_pipe_pressure_drop(gm::GenericGasModel, k::Int) = constraint_short_pipe_pressure_drop(gm, gm.cnw, k)
 
 " constraints on flow across valves "
-function constraint_on_off_valve_flow_direction{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_valve_flow_direction(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)  
     i = valve["f_junction"]
     j = valve["t_junction"]
@@ -256,7 +256,7 @@ end
 constraint_on_off_valve_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow_direction(gm, gm.cnw, k)
 
 " constraints on pressure drop across valves "
-function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)  
     i = valve["f_junction"]
     j = valve["t_junction"]
@@ -269,7 +269,7 @@ end
 constraint_on_off_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_valve_pressure_drop(gm, gm.cnw, k)
 
 " constraints on flow across control valves "
-function constraint_on_off_control_valve_flow_direction{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)  
     i = valve["f_junction"]
     j = valve["t_junction"]
@@ -283,7 +283,7 @@ end
 constraint_on_off_control_valve_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_flow_direction(gm, gm.cnw, k)
 
 " constraints on pressure drop across control valves "
-function constraint_on_off_control_valve_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k)
+function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)  
     i = valve["f_junction"]
     j = valve["t_junction"]
@@ -302,7 +302,7 @@ end
 constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_source_flow(gm::GenericGasModel, n::Int, i)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
 
@@ -311,7 +311,7 @@ end
 constraint_source_flow(gm::GenericGasModel, i::Int) = constraint_source_flow(gm, gm.cnw, i)
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow_ne{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_source_flow_ne(gm::GenericGasModel, n::Int, i)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
 
@@ -323,7 +323,7 @@ end
 constraint_source_flow_ne(gm::GenericGasModel, i::Int) = constraint_source_flow_ne(gm, gm.cnw, i)
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_sink_flow(gm::GenericGasModel, n::Int, i)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
 
@@ -332,7 +332,7 @@ end
 constraint_sink_flow(gm::GenericGasModel, i::Int) = constraint_sink_flow(gm, gm.cnw, i)
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow_ne{T}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_sink_flow_ne(gm::GenericGasModel, n::Int, i)
     f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
     t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
     f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
@@ -343,7 +343,7 @@ end
 constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(gm, gm.cnw, i)
 
 " This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow{T}(gm::GenericGasModel{T}, n::Int, idx)
+function constraint_conserve_flow(gm::GenericGasModel, n::Int, idx)
     first = nothing
     last = nothing
     
@@ -375,7 +375,7 @@ end
 constraint_conserve_flow(gm::GenericGasModel, i::Int) = constraint_conserve_flow(gm, gm.cnw, i)
 
 " This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow_ne{T}(gm::GenericGasModel{T}, n::Int, idx)
+function constraint_conserve_flow_ne(gm::GenericGasModel, n::Int, idx)
     first = nothing
     last = nothing
     
@@ -426,7 +426,7 @@ end
 constraint_conserve_flow_ne(gm::GenericGasModel, i::Int) = constraint_conserve_flow_ne(gm, gm.cnw, i)
 
 " ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow{T}(gm::GenericGasModel{T}, n::Int, idx)
+function constraint_parallel_flow(gm::GenericGasModel, n::Int, idx)
     connection = ref(gm,n,:connection,idx)
     i = min(connection["f_junction"], connection["t_junction"])
     j = max(connection["f_junction"], connection["t_junction"])
@@ -443,7 +443,7 @@ end
 constraint_parallel_flow(gm::GenericGasModel, i::Int) = constraint_parallel_flow(gm, gm.cnw, i)
 
 " ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow_ne{T}(gm::GenericGasModel{T}, n::Int, idx)    
+function constraint_parallel_flow_ne(gm::GenericGasModel, n::Int, idx)    
     connection = haskey(gm.ref[:nw][n][:connection], idx) ? gm.ref[:nw][n][:connection][idx] : gm.ref[:nw][n][:ne_connection][idx] 
       
     i = min(connection["f_junction"], connection["t_junction"])
@@ -463,7 +463,7 @@ end
 constraint_parallel_flow_ne(gm::GenericGasModel, i::Int) = constraint_parallel_flow_ne(gm, gm.cnw, i)
 
 "Weymouth equation with discrete direction variables "
-function constraint_weymouth{T}(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_weymouth(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:connection,k)
     i = pipe["f_junction"]
     j = pipe["t_junction"]
@@ -482,7 +482,7 @@ end
 constraint_weymouth(gm::GenericGasModel, k::Int) = constraint_weymouth(gm, gm.cnw, k)
 
 " on/off constraints on flow across pipes for expansion variables "
-function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_on_off_pipe_flow_ne(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = gm.ref[:nw][n][:ne_connection][k]
     mf = gm.ref[:nw][n][:max_mass_flow]
     pd_max = pipe["pd_max"]  
@@ -494,7 +494,7 @@ end
 constraint_on_off_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_ne(gm, gm.cnw, k)
 
 " on/off constraints on flow across compressors for expansion variables "
-function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, k)
+function constraint_on_off_compressor_flow_ne(gm::GenericGasModel,  n::Int, k)
     compressor = gm.ref[:nw][n][:ne_connection][k]
     mf = gm.ref[:nw][n][:max_mass_flow]    
     constraint_on_off_compressor_flow_ne(gm, n, k, mf)  
@@ -502,14 +502,14 @@ end
 constraint_on_off_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow_ne(gm, gm.cnw, k::Int)
 
 " This function ensures at most one pipe in parallel is selected "
-function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T},  n::Int, i, j)  
+function constraint_exclusive_new_pipes(gm::GenericGasModel,  n::Int, i, j)  
     parallel = collect(filter( connection -> in(connection, collect(keys(gm.ref[:nw][n][:ne_pipe]))), gm.ref[:nw][n][:all_parallel_connections][(i,j)] ))      
     constraint_exclusive_new_pipes(gm,  n, i, j, parallel)  
 end
 constraint_exclusive_new_pipes(gm::GenericGasModel, i::Int, j::Int) = constraint_exclusive_new_pipes(gm, gm.cnw, i, j)
 
 " Weymouth equation with discrete direction variables for MINLP "
-function constraint_weymouth_ne{T}(gm::GenericGasModel{T},  n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_weymouth_ne(gm::GenericGasModel,  n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = gm.ref[:nw][n][:ne_connection][k]
             
     i = pipe["f_junction"]
@@ -528,7 +528,7 @@ end
 constraint_weymouth_ne(gm::GenericGasModel, k::Int) = constraint_weymouth_ne(gm, gm.cnw, k)
 
 "compressor rations have on off for direction and expansion"
-function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T},  n::Int, k)
+function constraint_new_compressor_ratios_ne(gm::GenericGasModel,  n::Int, k)
     compressor = gm.ref[:nw][n][:ne_connection][k]
       
     i = compressor["f_junction"]

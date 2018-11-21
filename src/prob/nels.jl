@@ -70,24 +70,24 @@ function post_nels(gm::GenericGasModel)
         end  
            
         if haskey(exclusive[i], j) == false 
-            constraint_exclusive_new_pipes(gm, i, j)         
+            constraint_exclusive_new_pipes(gm, i, j)
             exclusive[i][j] = true
-        end             
+        end
     end  
 end
 
 # Get all the solution values
-function get_nels_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
+function get_nels_solution(gm::GenericGasModel, sol::Dict{String,Any})
     add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_connection_ne(sol, gm)
     add_direction_setpoint(sol, gm)
     add_direction_ne_setpoint(sol, gm)
     add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)    
+    add_load_mass_flow_setpoint(sol, gm)
     add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)    
-    add_compressor_ratio_setpoint(sol, gm)   
-    add_connection_flow_ne_setpoint(sol, gm)    
-    add_compressor_ratio_ne_setpoint(sol, gm)    
+    add_production_mass_flow_setpoint(sol, gm)
+    add_compressor_ratio_setpoint(sol, gm)
+    add_connection_flow_ne_setpoint(sol, gm)
+    add_compressor_ratio_ne_setpoint(sol, gm)
 end
