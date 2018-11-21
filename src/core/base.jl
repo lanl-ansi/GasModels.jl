@@ -6,16 +6,16 @@ export
     run_generic_model, build_generic_model, solve_generic_model
 
 ""
-@compat abstract type AbstractGasFormulation end
+abstract type AbstractGasFormulation end
 
 "Formulation specific to models corresponding to directions"
-@compat abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
-@compat abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
+abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
+abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
 
 
 """
 ```
-type GenericGasModel{T<:AbstractGasFormulation}
+mutable struct GenericGasModel{T<:AbstractGasFormulation}
     model::JuMP.Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
@@ -40,7 +40,7 @@ Methods on `GenericGasModel` for defining variables and adding constraints shoul
 * add them to `model::JuMP.Model`, and
 * follow the conventions for variable and constraint names.
 """
-type GenericGasModel{T<:AbstractGasFormulation} 
+mutable struct GenericGasModel{T<:AbstractGasFormulation} 
     model::Model
     data::Dict{String,Any}
     setting::Dict{String,Any}

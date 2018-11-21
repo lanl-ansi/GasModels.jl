@@ -4,16 +4,16 @@ export
     MINLPGasModel, StandardMINLPForm
 
 ""
-@compat abstract type AbstractMINLPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMINLPForm <: AbstractUndirectedGasFormulation end
 
 ""
-@compat abstract type StandardMINLPForm <: AbstractMINLPForm end
+abstract type StandardMINLPForm <: AbstractMINLPForm end
 
 ""
-@compat abstract type AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation end
+abstract type AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation end
 
 ""
-@compat abstract type StandardMINLPDirectedForm <: AbstractMINLPDirectedForm end
+abstract type StandardMINLPDirectedForm <: AbstractMINLPDirectedForm end
 
 ""
 AbstractMINLPForms = Union{AbstractMINLPDirectedForm, AbstractMINLPForm}

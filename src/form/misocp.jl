@@ -4,16 +4,16 @@ export
     MISOCPGasModel, StandardMISOCPForm, MISOCPDirectedGasModel, StandardMISOCPDirectedForm
 
 ""
-@compat abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
+abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
 
 ""
-@compat abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
+abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
 
 ""
-@compat abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
 
 ""
-@compat abstract type StandardMISOCPForm <: AbstractMISOCPForm end
+abstract type StandardMISOCPForm <: AbstractMISOCPForm end
 
 ""
 AbstractMISOCPForms = Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm}
