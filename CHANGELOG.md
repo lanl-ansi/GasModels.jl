@@ -11,6 +11,10 @@ GasModels.jl Change Log
 ### Staged
 - nothing
 
+### v0.3.2
+- Add support for Julia v0.7 and v1.0
+- Minor documentation updates
+
 ### v0.3.1
 - Fixed a bug in the resistance calculation (thanks @cvr)
 - Added Julia version upper bound
