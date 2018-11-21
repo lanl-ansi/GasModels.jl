@@ -4,11 +4,6 @@ os:
   - osx
 julia:
   - 0.6 
-  - nightly
-matrix:
-  allow_failures:
-    - julia: nightly
-    - os: osx
 cache:
  directories:
    - /home/travis/.julia

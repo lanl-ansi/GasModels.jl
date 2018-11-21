@@ -136,13 +136,13 @@ constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint
 " standard mass flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)
-    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
-    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])
-      
+    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
+    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
+
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
-    
-    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
+
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
     fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data,producer) for (j, producer) in producers) : 0
     flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data,consumer) for (j, consumer) in consumers) : 0
       
@@ -154,14 +154,14 @@ constraint_junction_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_
 function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)   
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
-    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
-    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
-          
-    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
+    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
+    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
 
-    f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
-    t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection])))
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
+
+    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
+    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
    
     fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
     flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
@@ -175,19 +175,19 @@ function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i
     junction = ref(gm,n,:junction,i)    
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     
-    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
     
     # collect the firm load numbers    
-    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
-    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
+    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
+    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
     fgfirm  = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
     flfirm  = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
 
     # collect the possible consumer and producer indices
-    v_consumers = collect(keys(filter( (a, consumer) -> consumer["ql_junc"] == i && (consumer["qlmax"] != 0 || consumer["qlmin"]) != 0, gm.ref[:nw][n][:consumer])))
-    v_producers = collect(keys(filter( (a, producer) -> producer["qg_junc"] == i && (producer["qgmax"] != 0 || producer["qgmin"]) != 0, gm.ref[:nw][n][:producer])))
-          
+    v_consumers = collect(keys(Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i && (x.second["qlmax"] != 0 || x.second["qlmin"]) != 0)))
+    v_producers = collect(keys(Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i && (x.second["qgmax"] != 0 || x.second["qgmin"]) != 0)))
+
     constraint_junction_mass_flow_balance_ls(gm, n, i, f_branches, t_branches, flfirm, fgfirm, v_consumers, v_producers)
 end
 constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ls(gm, gm.cnw, i)
@@ -197,22 +197,22 @@ function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int
     junction = ref(gm,n,:junction,i)  
     junction_branches = gm.ref[:nw][n][:junction_connections][i]
     
-    f_branches = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection])))
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
 
-    f_branches_ne = collect(keys(filter( (a, connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
-    t_branches_ne = collect(keys(filter( (a, connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection])))
+    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
+    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
     
     # collect the firm load numbers    
-    consumers = filter( (j, consumer) -> consumer["ql_junc"] == i, gm.ref[:nw][n][:consumer])
-    producers = filter( (j, producer) -> producer["qg_junc"] == i, gm.ref[:nw][n][:producer])  
+    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
+    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
     fgfirm  = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
     flfirm  = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
 
     # collect the possible consumer and producer indices
-    v_consumers = collect(keys(filter( (a, consumer) -> consumer["ql_junc"] == i && (consumer["qlmax"] != 0 || consumer["qlmin"]) != 0, gm.ref[:nw][n][:consumer])))
-    v_producers = collect(keys(filter( (a, producer) -> producer["qg_junc"] == i && (producer["qgmax"] != 0 || producer["qgmin"]) != 0, gm.ref[:nw][n][:producer])))
-              
+    v_consumers = collect(keys(Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i && (x.second["qlmax"] != 0 || x.second["qlmin"]) != 0)))
+    v_producers = collect(keys(Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i && (x.second["qgmax"] != 0 || x.second["qgmin"]) != 0)))
+
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, flfirm, fgfirm, v_consumers, v_producers)     
 end
 constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
@@ -303,8 +303,8 @@ constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = con
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
 function constraint_source_flow(gm::GenericGasModel, n::Int, i)
-    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
 
     constraint_source_flow(gm, n, i, f_branches, t_branches)  
 end
@@ -312,20 +312,20 @@ constraint_source_flow(gm::GenericGasModel, i::Int) = constraint_source_flow(gm,
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
 function constraint_source_flow_ne(gm::GenericGasModel, n::Int, i)
-    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
 
-    f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
-    t_branches_ne = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection]))) 
-    
+    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
+    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
+
     constraint_source_flow_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne)  
 end
 constraint_source_flow_ne(gm::GenericGasModel, i::Int) = constraint_source_flow_ne(gm, gm.cnw, i)
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
 function constraint_sink_flow(gm::GenericGasModel, n::Int, i)
-    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
 
     constraint_sink_flow(gm, n, i, f_branches, t_branches)  
 end
@@ -333,11 +333,12 @@ constraint_sink_flow(gm::GenericGasModel, i::Int) = constraint_sink_flow(gm, gm.
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
 function constraint_sink_flow_ne(gm::GenericGasModel, n::Int, i)
-    f_branches = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:connection])))
-    t_branches = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:connection]))) 
-    f_branches_ne = collect(keys(filter( (a,connection) -> connection["f_junction"] == i, gm.ref[:nw][n][:ne_connection])))
-    t_branches_ne = collect(keys(filter( (a,connection) -> connection["t_junction"] == i, gm.ref[:nw][n][:ne_connection]))) 
-    
+    f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))
+    t_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["t_junction"] == i)))
+
+    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
+    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
+
     constraint_sink_flow_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne)          
 end
 constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(gm, gm.cnw, i)
@@ -415,13 +416,24 @@ function constraint_conserve_flow_ne(gm::GenericGasModel, n::Int, idx)
         end      
     end
           
-    yp_first = [filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])]
-    yn_first = [filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])]
-    yp_last  = [filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])]
-    yn_last  = [filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]); filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])]
+    yp_first = [
+        filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]);
+        filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])
+    ]
+    yn_first = [
+        filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_connections][idx]);
+        filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == first, gm.ref[:nw][n][:junction_ne_connections][idx])
+    ]
+    yp_last = [
+        filter(i -> gm.ref[:nw][n][:connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]);
+        filter(i -> gm.ref[:nw][n][:ne_connection][i]["t_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])
+    ]
+    yn_last = [
+        filter(i -> gm.ref[:nw][n][:connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_connections][idx]);
+        filter(i -> gm.ref[:nw][n][:ne_connection][i]["f_junction"] == last,  gm.ref[:nw][n][:junction_ne_connections][idx])
+    ]
 
     constraint_conserve_flow_ne(gm, n, idx, yp_first, yn_first, yp_last, yn_last)  
-      
 end
 constraint_conserve_flow_ne(gm::GenericGasModel, i::Int) = constraint_conserve_flow_ne(gm, gm.cnw, i)
 

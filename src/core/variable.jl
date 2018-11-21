@@ -53,7 +53,7 @@ end
 
 " variables associated with demand "
 function variable_load_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    load_set = filter(i -> gm.ref[:nw][n][:consumer][i]["qlmax"] != 0 || gm.ref[:nw][n][:consumer][i]["qlmin"] != 0, collect(keys(gm.ref[:nw][n][:consumer])))
+    load_set = collect(keys(Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["qlmax"] != 0 || x.second["qlmin"] != 0)))
     if bounded       
         gm.var[:nw][n][:fl] = @variable(gm.model, [i in load_set], basename="$(n)_fl", lowerbound=calc_flmin(gm.data, gm.ref[:nw][n][:consumer][i]), upperbound=calc_flmax(gm.data, gm.ref[:nw][n][:consumer][i]), start = getstart(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))                           
     else
@@ -63,7 +63,7 @@ end
 
 " variables associated with production "
 function variable_production_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    prod_set = filter(i -> gm.ref[:nw][n][:producer][i]["qgmax"] != 0 || gm.ref[:nw][n][:producer][i]["qgmin"] != 0, collect(keys(gm.ref[:nw][n][:producer])))
+    prod_set = collect(keys(Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qgmax"] != 0 || x.second["qgmin"] != 0)))
     if bounded          
         gm.var[:nw][n][:fg] = @variable(gm.model, [i in prod_set], basename="$(n)_fg", lowerbound=calc_fgmin(gm.data, gm.ref[:nw][n][:producer][i]), upperbound=calc_fgmax(gm.data, gm.ref[:nw][n][:producer][i]), start = getstart(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))                            
     else
