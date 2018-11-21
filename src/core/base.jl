@@ -89,10 +89,19 @@ ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
 ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
 ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
 
-Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
-Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+if VERSION < v"0.7.0-"
+    Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+    Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+    Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+    Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+end
+
+if VERSION > v"0.7.0-"
+    var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+    var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+    var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+    var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+end
 
 con(gm::GenericGasModel, key::Symbol) = con(gm, gm.cnw, key)
 con(gm::GenericGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
