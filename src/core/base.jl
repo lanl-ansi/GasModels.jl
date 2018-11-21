@@ -216,27 +216,27 @@ function build_ref(data::Dict{String,Any})
         end
     
         # filter turned off stuff
-        ref[:junction] = filter((i, junction) -> junction["status"] == 1, ref[:junction])
-        ref[:consumer] = filter((i, consumer) -> consumer["status"] == 1 && consumer["ql_junc"] in keys(ref[:junction]), ref[:consumer])
-        ref[:producer] = filter((i, producer) -> producer["status"] == 1 && producer["qg_junc"] in keys(ref[:junction]), ref[:producer])          
-        ref[:connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:connection])
-        ref[:ne_connection] = filter((i, connection) -> connection["status"] == 1 && connection["f_junction"] in keys(ref[:junction]) && connection["t_junction"] in keys(ref[:junction]), ref[:ne_connection])
+        ref[:junction] = Dict(x for x in ref[:junction] if x.second["status"] == 1)
+        ref[:consumer] = Dict(x for x in ref[:consumer] if x.second["status"] == 1 && x.second["ql_junc"] in keys(ref[:junction]))
+        ref[:producer] = Dict(x for x in ref[:producer] if x.second["status"] == 1 && x.second["qg_junc"] in keys(ref[:junction]))
+        ref[:connection] = Dict(x for x in ref[:connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
+        ref[:ne_connection] = Dict(x for x in ref[:ne_connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
 
         # compute the maximum flow  
         max_mass_flow = calc_max_mass_flow(data)
         ref[:max_mass_flow] = max_mass_flow  
                       
         # create some sets based on connection types
-        ref[:pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:connection])
-        ref[:short_pipe] = filter((i, connection) -> connection["type"] == "short_pipe", ref[:connection])
-        ref[:compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:connection])
-        ref[:valve] = filter((i, connection) -> connection["type"] == "valve", ref[:connection])
-        ref[:control_valve] = filter((i, connection) -> connection["type"] == "control_valve", ref[:connection])
-        ref[:resistor] = filter((i, connection) -> connection["type"] == "resistor", ref[:connection])
+        ref[:pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "pipe")
+        ref[:short_pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "short_pipe")
+        ref[:compressor] = Dict(x for x in ref[:connection] if x.second["type"] == "compressor")
+        ref[:valve] = Dict(x for x in ref[:connection] if x.second["type"] == "valve")
+        ref[:control_valve] = Dict(x for x in ref[:connection] if x.second["type"] == "control_valve")
+        ref[:resistor] = Dict(x for x in ref[:connection] if x.second["type"] == "resistor")
 
-        ref[:ne_pipe] = filter((i, connection) -> connection["type"] == "pipe", ref[:ne_connection])
-        ref[:ne_compressor] = filter((i, connection) -> connection["type"] == "compressor", ref[:ne_connection])
-            
+        ref[:ne_pipe] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "pipe")
+        ref[:ne_compressor] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "compressor")
+
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
         ref[:parallel_connections] = Dict()
