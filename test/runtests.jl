@@ -1,9 +1,15 @@
 using GasModels
 using Logging
 
-# suppress warnings during testing
-#Logging.configure(level=ERROR)
-disable_logging(Logging.Warn)
+if VERSION < v"0.7.0-"
+    # suppress warnings during testing
+    Logging.configure(level=ERROR)
+end
+
+if VERSION > v"0.7.0-"
+    # suppress warnings during testing
+    disable_logging(Logging.Warn)
+end
 
 using JuMP
 
