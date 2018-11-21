@@ -4,11 +4,12 @@ using Logging
 if VERSION < v"0.7.0-"
     # suppress warnings during testing
     Logging.configure(level=ERROR)
+    import Compat: occursin
 end
 
 if VERSION > v"0.7.0-"
     # suppress warnings during testing
-    #disable_logging(Logging.Warn)
+    disable_logging(Logging.Warn)
 end
 
 using JuMP
