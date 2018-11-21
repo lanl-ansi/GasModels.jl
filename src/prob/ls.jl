@@ -19,13 +19,13 @@ function post_ls(gm::GenericGasModel)
     variable_production_mass_flow(gm)
         
     objective_max_load(gm)
-                
+
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))] 
         constraint_pipe_flow(gm, i) 
     end
     
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow_ls(gm, i)      
+        constraint_junction_mass_flow_ls(gm, i)
     end
     
     for i in ids(gm, :short_pipe)
@@ -36,7 +36,7 @@ function post_ls(gm::GenericGasModel)
         constraint_compressor_flow(gm, i) 
     end
     
-    for i in ids(gm, :valve)     
+    for i in ids(gm, :valve)
         constraint_valve_flow(gm, i) 
     end
     
@@ -46,13 +46,13 @@ function post_ls(gm::GenericGasModel)
 end
 
 # Get all the load shedding solution values
-function get_ls_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
+function get_ls_solution(gm::GenericGasModel,sol::Dict{String,Any})
     add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_direction_setpoint(sol, gm)
     add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)    
+    add_load_mass_flow_setpoint(sol, gm)
     add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)    
+    add_production_mass_flow_setpoint(sol, gm)
     add_compressor_ratio_setpoint(sol, gm)
 end

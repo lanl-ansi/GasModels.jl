@@ -5,7 +5,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
     network_data = GasModels.parse_json(network_file)
 
     profile_data = GasModels.parse_json(time_series_file)
-    assert(length(profile_data["time_points"]) >= time_point)
+    @assert length(profile_data["time_points"]) >= time_point
 
     g_nodes = Dict([(node["index"], node) for node in network_data["node"]])
     g_edges = Dict([(edge["index"], edge) for edge in network_data["edge"]])
@@ -57,7 +57,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         )
 
         junction_index = "$(gm_junction["index"])"
-        assert(!haskey(gm_junctions, junction_index))
+        @assert !haskey(gm_junctions, junction_index)
         gm_junctions[junction_index] = gm_junction
 
         if haskey(g_node_withdrawal, node["index"])
@@ -83,7 +83,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
 
 
                     consumer_index = "$(gm_consumer["index"])"
-                    assert(!haskey(gm_consumers, consumer_index))
+                    @assert !haskey(gm_consumers, consumer_index)
                     gm_consumers[consumer_index] = gm_consumer
                     consumer_count += 1
                 else
@@ -106,7 +106,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                     )
 
                     producer_index = "$(gm_producer["index"])"
-                    assert(!haskey(gm_producers, producer_index))
+                    @assert !haskey(gm_producers, producer_index)
                     gm_producers[producer_index] = gm_producer
                     producer_count += 1
                 end
@@ -114,7 +114,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         end
 
         if node["isslack"] != 0 && slack_producers
-            warn("adding producer at junction $(junction_id) to model slack capacity")
+            @warn "adding producer at junction $(junction_id) to model slack capacity"
 
             gm_producer = Dict{String,Any}(
                 "index" => producer_count,
@@ -125,7 +125,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
             )
 
             producer_index = "$(gm_producer["index"])"
-            assert(!haskey(gm_producers, producer_index))
+            @assert !haskey(gm_producers, producer_index)
             gm_producers[producer_index] = gm_producer
             producer_count += 1
         end
@@ -138,8 +138,8 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
 
     gm_connections = Dict{String,Any}()
     for (i, edge) in g_edges
-        assert(edge["fr_node"] == node_id_to_junction_id[edge["f_id"]])
-        assert(edge["to_node"] == node_id_to_junction_id[edge["t_id"]])
+        @assert edge["fr_node"] == node_id_to_junction_id[edge["f_id"]]
+        @assert edge["to_node"] == node_id_to_junction_id[edge["t_id"]]
 
         # assume diameter units in inches, convert to meters
         # assume length units is in degrees, convert to meters
@@ -176,7 +176,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         end
 
         connection_index = "$(gm_connection["index"])"
-        assert(!haskey(gm_connections, connection_index))
+        @assert !haskey(gm_connections, connection_index)
         gm_connections[connection_index] = gm_connection
     end
 
@@ -191,13 +191,13 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
     compressor_offset = maximum(connection["index"] for (i,connection) in gm_connections)
     compressor_count = 1
     for (i, compressor) in g_compressors
-        assert(compressor["node"] == node_id_to_junction_id[compressor["node_id"]])
+        @assert compressor["node"] == node_id_to_junction_id[compressor["node_id"]]
 
         # prepare a new junction for the pipe-connecting compressor
         fr_junction = gm_junctions["$(compressor["node"])"]
         to_junction_index = junction_id_offset + fr_junction["index"]
 
-        warn("adding junction $(to_junction_index) to capture both sides of a compressor")
+        @warn "adding junction $(to_junction_index) to capture both sides of a compressor"
 
         gm_junction = Dict{String,Any}(
             "index" => to_junction_index,
@@ -208,13 +208,13 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         )
 
         junction_index = "$(gm_junction["index"])"
-        assert(!haskey(gm_junctions, junction_index))
+        @assert !haskey(gm_junctions, junction_index)
         gm_junctions[junction_index] = gm_junction
 
         # update pipe to point to new junction
         pipe = gm_connections["$(compressor["edge_id"])"]
-        assert(pipe["type"] == "pipe")
-        assert(pipe["t_junction"] == compressor["node"] || pipe["f_junction"] == compressor["node"])
+        @assert pipe["type"] == "pipe"
+        @assert pipe["t_junction"] == compressor["node"] || pipe["f_junction"] == compressor["node"]
         
         # FOLLOW UP: this could be an indication of a compressor orientation issue
         if pipe["f_junction"] == compressor["node"]
@@ -235,10 +235,10 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
             "hpmax" => compressor["hpmax"]
         )
 
-        assert(compressor["cmin"] >= 1.0)
+        @assert compressor["cmin"] >= 1.0
 
         connection_index = "$(gm_connection["index"])"
-        assert(!haskey(gm_connections, connection_index))
+        @assert !haskey(gm_connections, connection_index)
         gm_connections[connection_index] = gm_connection
 
         compressor_count += 1

@@ -1,5 +1,3 @@
-isdefined(Base, :__precompile__) && __precompile__()
-
 module GasModels
 
 using JSON
@@ -7,6 +5,11 @@ using MathProgBase
 using JuMP
 using InfrastructureModels
 using Compat
+
+if VERSION < v"0.7.0-"
+    import Compat: @warn
+
+end
 
 include("io/json.jl")
 include("io/common.jl")

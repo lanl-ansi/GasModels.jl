@@ -3,13 +3,13 @@
 ################
 
 " variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
-function variable_connection_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int=gm.cnw)
+function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractUndirectedGasFormulation
     gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Bin, basename="$(n)_yp", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yp_start", 1.0))                  
     gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], category = :Bin, basename="$(n)_yn", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yn_start", 0.0))                  
 end
 
 " variables associated with direction of flow on the connections "
-function variable_connection_direction_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int=gm.cnw)
+function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractUndirectedGasFormulation
      gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], category = :Bin, basename="$(n)_yp_ne", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yp_start", 1.0))                  
      gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], category = :Bin, basename="$(n)_yn_ne", lowerbound=0, upperbound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yn_start", 0.0))                  
 end
@@ -18,7 +18,7 @@ end
 # Constraints
 ################
 
-function constraint_flow_direction_choice{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_flow_direction_choice(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][i] 
     yn = gm.var[:nw][n][:yn][i] 
               
@@ -28,7 +28,7 @@ function constraint_flow_direction_choice{T <: AbstractUndirectedGasFormulation}
     gm.con[:nw][n][:flow_direction_choice][i] = @constraint(gm.model, yp + yn == 1)              
 end
 
-function constraint_flow_direction_choice_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_flow_direction_choice_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp_ne][i] 
     yn = gm.var[:nw][n][:yn_ne][i] 
               
@@ -39,7 +39,7 @@ function constraint_flow_direction_choice_ne{T <: AbstractUndirectedGasFormulati
 end
 
 " constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...)
+function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     pi = gm.var[:nw][n][:p][i] 
@@ -54,7 +54,7 @@ function constraint_on_off_pressure_drop{T <: AbstractUndirectedGasFormulation}(
 end
 
 " constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...)
+function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp_ne][k] 
     yn = gm.var[:nw][n][:yn_ne][k] 
     pi = gm.var[:nw][n][:p][i] 
@@ -69,7 +69,7 @@ function constraint_on_off_pressure_drop_ne{T <: AbstractUndirectedGasFormulatio
 end
 
 " constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...)
+function constraint_on_off_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     f  = gm.var[:nw][n][:f][k]  
@@ -83,7 +83,7 @@ function constraint_on_off_pipe_flow_direction{T <: AbstractUndirectedGasFormula
 end
 
 " constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...)
+function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp_ne][k] 
     yn = gm.var[:nw][n][:yn_ne][k] 
     f  = gm.var[:nw][n][:f_ne][k]  
@@ -97,7 +97,7 @@ function constraint_on_off_pipe_flow_direction_ne{T <: AbstractUndirectedGasForm
 end
 
 " constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_compressor_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     f  = gm.var[:nw][n][:f][k] 
@@ -111,7 +111,7 @@ function constraint_on_off_compressor_flow_direction{T <: AbstractUndirectedGasF
 end
 
 " constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp_ne][k] 
     yn = gm.var[:nw][n][:yn_ne][k] 
     f  = gm.var[:nw][n][:f_ne][k] 
@@ -125,7 +125,7 @@ function constraint_on_off_compressor_flow_direction_ne{T <: AbstractUndirectedG
 end 
 
 " enforces pressure changes bounds that obey compression ratios "
-function constraint_on_off_compressor_ratios{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin; kwargs...)
+function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin; kwargs...) where T <: AbstractUndirectedGasFormulation
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp][k] 
@@ -151,7 +151,7 @@ function constraint_on_off_compressor_ratios{T <: AbstractUndirectedGasFormulati
 end
 
 " constraints on flow across short pipes "
-function constraint_on_off_short_pipe_flow_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     f = gm.var[:nw][n][:f][k]   
@@ -165,7 +165,7 @@ function constraint_on_off_short_pipe_flow_direction{T <: AbstractUndirectedGasF
 end
 
 " constraints on flow across valves "
-function constraint_on_off_valve_flow_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     f = gm.var[:nw][n][:f][k] 
@@ -184,7 +184,7 @@ function constraint_on_off_valve_flow_direction{T <: AbstractUndirectedGasFormul
 end
 
 " constraints on flow across control valves "
-function constraint_on_off_control_valve_flow_direction{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp][k] 
     yn = gm.var[:nw][n][:yn][k] 
     f = gm.var[:nw][n][:f][k] 
@@ -203,7 +203,7 @@ function constraint_on_off_control_valve_flow_direction{T <: AbstractUndirectedG
 end
 
 " constraints on pressure drop across control valves "
-function constraint_on_off_control_valve_pressure_drop{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax; kwargs...)
+function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax; kwargs...) where T <: AbstractUndirectedGasFormulation
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp][k] 
@@ -230,7 +230,7 @@ function constraint_on_off_control_valve_pressure_drop{T <: AbstractUndirectedGa
 end
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches)
+function constraint_source_flow(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
          
@@ -241,7 +241,7 @@ function constraint_source_flow{T <: AbstractUndirectedGasFormulation}(gm::Gener
 end
 
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne)
+function constraint_source_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
    
@@ -255,7 +255,7 @@ function constraint_source_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::Ge
 end
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches)
+function constraint_sink_flow(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
           
@@ -266,7 +266,7 @@ function constraint_sink_flow{T <: AbstractUndirectedGasFormulation}(gm::Generic
 end
 
 " Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne)
+function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
     yp_ne = gm.var[:nw][n][:yp_ne] 
@@ -279,7 +279,7 @@ function constraint_sink_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::Gene
 end
 
 " This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, i, yp_first, yn_first, yp_last, yn_last)
+function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, i, yp_first, yn_first, yp_last, yn_last) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
     
@@ -336,7 +336,7 @@ function constraint_conserve_flow{T <: AbstractUndirectedGasFormulation}(gm::Gen
 end
 
 " This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last)
+function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
     yp_ne = gm.var[:nw][n][:yp_ne] 
@@ -415,7 +415,7 @@ function constraint_conserve_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::
 end
 
 " ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections)
+function constraint_parallel_flow(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
     
@@ -426,7 +426,7 @@ function constraint_parallel_flow{T <: AbstractUndirectedGasFormulation}(gm::Gen
 end
 
 " ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow_ne{T <: AbstractUndirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections, f_connections_ne, t_connections_ne)    
+function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections, f_connections_ne, t_connections_ne) where T <: AbstractUndirectedGasFormulation
     yp = gm.var[:nw][n][:yp] 
     yn = gm.var[:nw][n][:yn] 
     yp_ne = gm.var[:nw][n][:yp_ne] 

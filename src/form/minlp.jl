@@ -4,16 +4,16 @@ export
     MINLPGasModel, StandardMINLPForm
 
 ""
-@compat abstract type AbstractMINLPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMINLPForm <: AbstractUndirectedGasFormulation end
 
 ""
-@compat abstract type StandardMINLPForm <: AbstractMINLPForm end
+abstract type StandardMINLPForm <: AbstractMINLPForm end
 
 ""
-@compat abstract type AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation end
+abstract type AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation end
 
 ""
-@compat abstract type StandardMINLPDirectedForm <: AbstractMINLPDirectedForm end
+abstract type StandardMINLPDirectedForm <: AbstractMINLPDirectedForm end
 
 ""
 AbstractMINLPForms = Union{AbstractMINLPDirectedForm, AbstractMINLPForm}
@@ -26,7 +26,7 @@ MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standar
 MINLPGasDirectedModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPDirectedForm)
 
 "Weymouth equation with discrete direction variables "
-function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...) where T <: AbstractMINLPForm
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp][k] 
@@ -47,7 +47,7 @@ function constraint_weymouth{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, n::
 end
 
 "Weymouth equation with fixed direction variables"
-function constraint_weymouth{T <: AbstractMINLPDirectedForm}(gm::GenericGasModel{T}, n::Int, k, ii, j, mfw, w, pd_min, pd_max; kwargs...)
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, ii, j, mfw, w, pd_min, pd_max; kwargs...) where T <: AbstractMINLPDirectedForm
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
@@ -68,7 +68,7 @@ function constraint_weymouth{T <: AbstractMINLPDirectedForm}(gm::GenericGasModel
 end
 
 " Weymouth equation with discrete direction variables for MINLP "
-function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...)
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMINLPForm
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp_ne][k] 
@@ -89,7 +89,7 @@ function constraint_weymouth_ne{T <: AbstractMINLPForm}(gm::GenericGasModel{T}, 
 end
 
 "Weymouth equation with fixed directions for MINLP"
-function constraint_weymouth_ne{T <: AbstractMINLPDirectedForm}(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...)
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMINLPDirectedForm
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 

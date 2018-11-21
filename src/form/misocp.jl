@@ -4,16 +4,16 @@ export
     MISOCPGasModel, StandardMISOCPForm, MISOCPDirectedGasModel, StandardMISOCPDirectedForm
 
 ""
-@compat abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
+abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
 
 ""
-@compat abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
+abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
 
 ""
-@compat abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
 
 ""
-@compat abstract type StandardMISOCPForm <: AbstractMISOCPForm end
+abstract type StandardMISOCPForm <: AbstractMISOCPForm end
 
 ""
 AbstractMISOCPForms = Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm}
@@ -29,7 +29,7 @@ MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standa
 
 
 ""
-function variable_mass_flow{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForms
     max_flow = gm.ref[:nw][n][:max_mass_flow] 
     resistance = Dict{Int, Float64}()
     for i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor]))]
@@ -47,7 +47,7 @@ function variable_mass_flow{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n:
 end
 
 ""
-function variable_mass_flow_ne{T <: AbstractMISOCPForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForms
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     resistance = Dict{Int, Float64}()
     for i in  keys(gm.ref[:nw][n][:ne_pipe])
@@ -65,13 +65,13 @@ function variable_mass_flow_ne{T <: AbstractMISOCPForms}(gm::GenericGasModel{T},
 end
 
 ""
-function variable_flow{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
     variable_mass_flow(gm,n; bounded=bounded)
     variable_connection_direction(gm,n)  
 end
 
 " Weymouth equation with discrete direction variables "
-function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)  
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPForm
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp][k] 
@@ -94,7 +94,7 @@ function constraint_weymouth{T <: AbstractMISOCPForm}(gm::GenericGasModel{T}, n:
 end
 
 "Weymouth equation with directed flow"
-function constraint_weymouth{T <: AbstractMISOCPDirectedForm}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...)  
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPDirectedForm
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
@@ -118,7 +118,7 @@ function constraint_weymouth{T <: AbstractMISOCPDirectedForm}(gm::GenericGasMode
 end
 
 "Weymouth equation with discrete direction variables for MINLP"
-function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...)
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPForm
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp_ne][k] 
@@ -142,7 +142,7 @@ function constraint_weymouth_ne{T <: AbstractMISOCPForm}(gm::GenericGasModel{T},
 end
 
 "Weymouth equation with fixed direction"
-function constraint_weymouth_ne{T <: AbstractMISOCPDirectedForm}(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...)
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPDirectedForm
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 

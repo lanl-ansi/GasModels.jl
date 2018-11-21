@@ -81,35 +81,35 @@ function post_ne(gm::GenericGasModel; kwargs...)
 end
 
 # Special function for whether or not a connection is added
-function add_connection_ne{T}(sol, gm::GenericGasModel{T})
+function add_connection_ne(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "ne_connection", "built_zp", :zp; default_value = (item) -> NaN)
     add_setpoint(sol, gm, "ne_connection", "built_zc", :zc; default_value = (item) -> NaN)
 end
 
 # Get the direction solutions
-function add_direction_ne_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_direction_ne_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "ne_connection", "yp", :yp_ne)
-    add_setpoint(sol, gm, "ne_connection", "yn", :yn_ne)    
+    add_setpoint(sol, gm, "ne_connection", "yn", :yn_ne)
 end
 
 " Add the compressor solutions "
-function add_compressor_ratio_ne_setpoint{T}(sol, gm::GenericGasModel{T})
+function add_compressor_ratio_ne_setpoint(sol, gm::GenericGasModel)
     add_setpoint(sol, gm, "ne_connection", "ratio", :p; scale = (x,item) -> (item["type"] == "compressor" || item["type"] == "control_valve") ? sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])) : NaN, extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
 " Add the flow solutions to new lines"
-function add_connection_flow_ne_setpoint{T}(sol, gm::GenericGasModel{T})
-    add_setpoint(sol, gm, "ne_connection", "f", :f_ne)  
+function add_connection_flow_ne_setpoint(sol, gm::GenericGasModel)
+    add_setpoint(sol, gm, "ne_connection", "f", :f_ne)
 end
 
 # Get all the solution values
-function get_ne_solution{T}(gm::GenericGasModel{T},sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)    
+function get_ne_solution(gm::GenericGasModel, sol::Dict{String,Any})
+    add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
-    add_connection_flow_ne_setpoint(sol, gm)    
+    add_connection_flow_ne_setpoint(sol, gm)
     add_direction_setpoint(sol, gm)
-    add_direction_ne_setpoint(sol, gm)    
-    add_compressor_ratio_setpoint(sol, gm)    
-    add_compressor_ratio_ne_setpoint(sol, gm)    
-    add_connection_ne(sol, gm)    
+    add_direction_ne_setpoint(sol, gm)
+    add_compressor_ratio_setpoint(sol, gm)
+    add_compressor_ratio_ne_setpoint(sol, gm)
+    add_connection_ne(sol, gm)
 end

@@ -9,28 +9,28 @@ AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm}
 AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirectedForm}
 
 ""
-function variable_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
     variable_mass_flow(gm,n; bounded=bounded)
     variable_connection_direction(gm,n)  
 end
 
 ""
-function variable_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIDirectedForms
     variable_mass_flow(gm,n; bounded=bounded)
 end
 
 ""
-function variable_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
     variable_mass_flow_ne(gm,n; bounded=bounded)
     variable_connection_direction_ne(gm,n)  
 end
 
 ""
-function variable_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true)
+function variable_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIDirectedForms
     variable_mass_flow_ne(gm,n; bounded=bounded)
 end
 
-function constraint_junction_mass_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     junction = ref(gm,n,:junction,i)  
     constraint_junction_mass_flow_balance(gm, n, i)
 
@@ -52,11 +52,11 @@ function constraint_junction_mass_flow{T <: AbstractMIForms}(gm::GenericGasModel
     end   
 end
 
-function constraint_junction_mass_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_junction_mass_flow_balance(gm, n, i)
 end
 
-function constraint_junction_mass_flow_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     junction = ref(gm,n,:junction,i)  
     constraint_junction_mass_flow_balance_ls(gm, n, i)
 
@@ -82,11 +82,11 @@ function constraint_junction_mass_flow_ls{T <: AbstractMIForms}(gm::GenericGasMo
     end         
 end
 
-function constraint_junction_mass_flow_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_junction_mass_flow_balance_ls(gm, n, i)
 end
 
-function constraint_junction_mass_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     junction = ref(gm,n,:junction,i)  
     constraint_junction_mass_flow_balance_ne(gm, n, i)
 
@@ -106,11 +106,11 @@ function constraint_junction_mass_flow_ne{T <: AbstractMIForms}(gm::GenericGasMo
     end              
 end
 
-function constraint_junction_mass_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_junction_mass_flow_balance_ne(gm, n, i)
 end
 
-function constraint_junction_mass_flow_ne_ls{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     junction = ref(gm,n,:junction,i)  
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
     
@@ -134,11 +134,11 @@ function constraint_junction_mass_flow_ne_ls{T <: AbstractMIForms}(gm::GenericGa
     end                     
 end
 
-function constraint_junction_mass_flow_ne_ls{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
 end
 
-function constraint_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_pressure_drop(gm, i)
     constraint_on_off_pipe_flow_direction(gm, i)
     constraint_weymouth(gm, i)        
@@ -147,13 +147,13 @@ function constraint_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::I
     constraint_parallel_flow(gm, i)
 end
 
-function constraint_pipe_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_pressure_drop(gm, i)
     constraint_on_off_pipe_flow_direction(gm, i)
     constraint_weymouth(gm, i)        
 end
 
-function constraint_short_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_short_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_short_pipe_pressure_drop(gm, i)
     constraint_on_off_short_pipe_flow_direction(gm, i)      
         
@@ -161,12 +161,12 @@ function constraint_short_pipe_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}
     constraint_parallel_flow(gm, i)        
 end
 
-function constraint_short_pipe_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_short_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_short_pipe_pressure_drop(gm, i)
     constraint_on_off_short_pipe_flow_direction(gm, i)      
 end
 
-function constraint_compressor_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_compressor_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_compressor_flow_direction(gm, i)
     constraint_on_off_compressor_ratios(gm, i)    
         
@@ -174,12 +174,12 @@ function constraint_compressor_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}
     constraint_parallel_flow(gm, i)        
 end
 
-function constraint_compressor_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_compressor_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_compressor_flow_direction(gm, i)
     constraint_on_off_compressor_ratios(gm, i)    
 end
 
-function constraint_valve_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_valve_flow_direction(gm, i)
     constraint_on_off_valve_pressure_drop(gm, i)  
         
@@ -187,12 +187,12 @@ function constraint_valve_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::
     constraint_parallel_flow(gm, i)          
 end
 
-function constraint_valve_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_valve_flow_direction(gm, i)
     constraint_on_off_valve_pressure_drop(gm, i)          
 end
 
-function constraint_control_valve_flow{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_control_valve_flow_direction(gm, i)
     constraint_on_off_control_valve_pressure_drop(gm, i)  
         
@@ -200,12 +200,12 @@ function constraint_control_valve_flow{T <: AbstractMIForms}(gm::GenericGasModel
     constraint_parallel_flow(gm, i)        
 end
 
-function constraint_control_valve_flow{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_control_valve_flow_direction(gm, i)
     constraint_on_off_control_valve_pressure_drop(gm, i)          
 end
 
-function constraint_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_pressure_drop(gm, i)
     constraint_on_off_pipe_flow_direction(gm, i)
     constraint_weymouth(gm, i)        
@@ -214,13 +214,13 @@ function constraint_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n
     constraint_parallel_flow_ne(gm, i)
 end
 
-function constraint_pipe_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_pressure_drop(gm, i)
     constraint_on_off_pipe_flow_direction(gm, i)
     constraint_weymouth(gm, i)        
 end
 
-function constraint_short_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_short_pipe_pressure_drop(gm, i)
     constraint_on_off_short_pipe_flow_direction(gm, i)      
         
@@ -228,12 +228,12 @@ function constraint_short_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel
     constraint_parallel_flow_ne(gm, i)        
 end
 
-function constraint_short_pipe_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_short_pipe_pressure_drop(gm, i)
     constraint_on_off_short_pipe_flow_direction(gm, i)      
 end
 
-function constraint_compressor_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_compressor_flow_direction(gm, i)
     constraint_on_off_compressor_ratios(gm, i)    
         
@@ -241,12 +241,12 @@ function constraint_compressor_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel
     constraint_parallel_flow_ne(gm, i)        
 end
 
-function constraint_compressor_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_compressor_flow_direction(gm, i)
     constraint_on_off_compressor_ratios(gm, i)    
 end
 
-function constraint_valve_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_valve_flow_direction(gm, i)
     constraint_on_off_valve_pressure_drop(gm, i)  
         
@@ -254,12 +254,12 @@ function constraint_valve_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, 
     constraint_parallel_flow_ne(gm, i)          
 end
 
-function constraint_valve_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_valve_flow_direction(gm, i)
     constraint_on_off_valve_pressure_drop(gm, i)          
 end
 
-function constraint_control_valve_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_control_valve_flow_direction(gm, i)
     constraint_on_off_control_valve_pressure_drop(gm, i)  
         
@@ -267,12 +267,12 @@ function constraint_control_valve_flow_ne{T <: AbstractMIForms}(gm::GenericGasMo
     constraint_parallel_flow_ne(gm, i)        
 end
 
-function constraint_control_valve_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_control_valve_flow_direction(gm, i)
     constraint_on_off_control_valve_pressure_drop(gm, i)          
 end
 
-function constraint_new_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_new_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_pressure_drop_ne(gm, i) 
     constraint_on_off_pipe_flow_direction_ne(gm, i) 
     constraint_on_off_pipe_flow_ne(gm, i) 
@@ -282,14 +282,14 @@ function constraint_new_pipe_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T
     constraint_parallel_flow_ne(gm, i)    
 end
 
-function constraint_new_pipe_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_new_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_pressure_drop_ne(gm, i) 
     constraint_on_off_pipe_flow_direction_ne(gm, i) 
     constraint_on_off_pipe_flow_ne(gm, i) 
     constraint_weymouth_ne(gm, i) 
 end
 
-function constraint_new_compressor_flow_ne{T <: AbstractMIForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_new_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_compressor_flow_direction_ne(gm, i) 
     constraint_on_off_compressor_ratios_ne(gm, i) 
     constraint_on_off_compressor_flow_ne(gm, i)
@@ -298,7 +298,7 @@ function constraint_new_compressor_flow_ne{T <: AbstractMIForms}(gm::GenericGasM
     constraint_parallel_flow_ne(gm, i)  
 end
 
-function constraint_new_compressor_flow_ne{T <: AbstractMIDirectedForms}(gm::GenericGasModel{T}, n::Int, i)
+function constraint_new_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
     constraint_on_off_compressor_flow_ne(gm, i)  
     constraint_on_off_compressor_flow_direction_ne(gm, i) 
     constraint_on_off_compressor_ratios_ne(gm, i) 

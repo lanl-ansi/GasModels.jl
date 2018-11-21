@@ -6,16 +6,16 @@ export
     run_generic_model, build_generic_model, solve_generic_model
 
 ""
-@compat abstract type AbstractGasFormulation end
+abstract type AbstractGasFormulation end
 
 "Formulation specific to models corresponding to directions"
-@compat abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
-@compat abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
+abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
+abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
 
 
 """
 ```
-type GenericGasModel{T<:AbstractGasFormulation}
+mutable struct GenericGasModel{T<:AbstractGasFormulation}
     model::JuMP.Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
@@ -40,7 +40,7 @@ Methods on `GenericGasModel` for defining variables and adding constraints shoul
 * add them to `model::JuMP.Model`, and
 * follow the conventions for variable and constraint names.
 """
-type GenericGasModel{T<:AbstractGasFormulation} 
+mutable struct GenericGasModel{T<:AbstractGasFormulation} 
     model::Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
@@ -54,7 +54,7 @@ type GenericGasModel{T<:AbstractGasFormulation}
 end
 
 "default generic constructor"
-function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
+function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
     ref = build_ref(data) # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
@@ -66,7 +66,7 @@ function GenericGasModel(data::Dict{String,Any}, T::DataType; ext = Dict{String,
 
     cnw = minimum([k for k in keys(ref[:nw])])
     
-    gm = GenericGasModel{T}(
+    gm = GenericGasModel{Typ}(
         Model(solver = solver), # model
         data, # data
         setting, # setting
@@ -89,10 +89,19 @@ ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
 ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
 ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
 
-Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
-Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+if VERSION < v"0.7.0-"
+    Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+    Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+    Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+    Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+end
+
+if VERSION > v"0.7.0-"
+    var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+    var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+    var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+    var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+end
 
 con(gm::GenericGasModel, key::Symbol) = con(gm, gm.cnw, key)
 con(gm::GenericGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
@@ -116,7 +125,7 @@ function JuMP.solve(gm::GenericGasModel)
     try
         solve_time = getsolvetime(gm.model)
     catch
-        warn("there was an issue with getsolvetime() on the solver, falling back on @timed.  This is not a rigorous timing value.");
+        @warn "there was an issue with getsolvetime() on the solver, falling back on @timed.  This is not a rigorous timing value."
     end
 
     return status, solve_time
@@ -147,7 +156,7 @@ function build_generic_model(data::Dict{String,Any}, model_constructor, post_met
     gm = model_constructor(data; kwargs...)
     
     if !multinetwork && data["multinetwork"]
-        warn("building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
+        @warn "building a single network model with multinetwork data, only network ($(gm.cnw)) will be used."
     end
     
     post_method(gm; kwargs...)

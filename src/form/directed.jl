@@ -3,7 +3,7 @@
 ################
 
 " constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...)
+function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
@@ -12,14 +12,14 @@ function constraint_on_off_pressure_drop{T <: AbstractDirectedGasFormulation}(gm
             
     if !haskey(gm.con[:nw][n], :on_off_pressure_drop1)
         gm.con[:nw][n][:on_off_pressure_drop1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pressure_drop2] = Dict{Int,ConstraintRef}()          
+        gm.con[:nw][n][:on_off_pressure_drop2] = Dict{Int,ConstraintRef}()
     end    
-    gm.con[:nw][n][:on_off_pressure_drop1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)              
-    gm.con[:nw][n][:on_off_pressure_drop2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)                          
+    gm.con[:nw][n][:on_off_pressure_drop1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
+    gm.con[:nw][n][:on_off_pressure_drop2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
 end
 
 " constraints on pressure drop across pipes when the direction is fixed "
-function constraint_on_off_pressure_drop_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...)
+function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j]
@@ -35,7 +35,7 @@ function constraint_on_off_pressure_drop_ne{T <: AbstractDirectedGasFormulation}
 end
 
 " constraints on flow across pipes where the directions are fixed "
-function constraint_on_off_pipe_flow_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...)
+function constraint_on_off_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f      = gm.var[:nw][n][:f][k]
     yp     = kwargs[:yp]   
@@ -50,7 +50,7 @@ function constraint_on_off_pipe_flow_direction{T <: AbstractDirectedGasFormulati
 end
 
 " constraints on flow across pipes when directions are fixed "
-function constraint_on_off_pipe_flow_direction_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...)
+function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f  = gm.var[:nw][n][:f_ne][k] 
     yp = kwargs[:yp]
@@ -65,7 +65,7 @@ function constraint_on_off_pipe_flow_direction_ne{T <: AbstractDirectedGasFormul
 end
 
 " constraints on flow across compressors when directions are constants "
-function constraint_on_off_compressor_flow_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_compressor_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f = gm.var[:nw][n][:f][k]
     yp = kwargs[:yp]  
@@ -80,7 +80,7 @@ function constraint_on_off_compressor_flow_direction{T <: AbstractDirectedGasFor
 end
 
 " constraints on flow across compressors when the directions are constants "
-function constraint_on_off_compressor_flow_direction_ne{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f = gm.var[:nw][n][:f_ne][k] 
     yp = kwargs[:yp]  
@@ -95,7 +95,7 @@ function constraint_on_off_compressor_flow_direction_ne{T <: AbstractDirectedGas
 end
 
 " on/off constraint for compressors when the flow direction is constant "
-function constraint_on_off_compressor_ratios{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin; kwargs...)
+function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j]
@@ -122,7 +122,7 @@ function constraint_on_off_compressor_ratios{T <: AbstractDirectedGasFormulation
 end
 
 " constraints on flow across short pipes when the directions are constants "
-function constraint_on_off_short_pipe_flow_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f = gm.var[:nw][n][:f][k]
     yp = kwargs[:yp]     
@@ -137,7 +137,7 @@ function constraint_on_off_short_pipe_flow_direction{T <: AbstractDirectedGasFor
 end
 
 " constraints on flow across valves when directions are constants "
-function constraint_on_off_valve_flow_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f = gm.var[:nw][n][:f][k] 
     v = gm.var[:nw][n][:v][k]
@@ -153,7 +153,7 @@ function constraint_on_off_valve_flow_direction{T <: AbstractDirectedGasFormulat
 end
 
 " constraints on flow across control valves when directions are constants "
-function constraint_on_off_control_valve_flow_direction{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...)
+function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     f = gm.var[:nw][n][:f][k] 
     v = gm.var[:nw][n][:v][k]
@@ -173,7 +173,7 @@ function constraint_on_off_control_valve_flow_direction{T <: AbstractDirectedGas
 end
 
 " constraints on pressure drop across control valves when directions are constants "
-function constraint_on_off_control_valve_pressure_drop{T <: AbstractDirectedGasFormulation}(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax; kwargs...)
+function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax; kwargs...) where T <: AbstractDirectedGasFormulation
     kwargs = Dict(kwargs)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 

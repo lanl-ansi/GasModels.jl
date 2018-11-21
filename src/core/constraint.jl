@@ -61,7 +61,7 @@ constraint_new_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_
 # Constraints with templates
 
 " constraints on pressure drop across control valves "
-function constraint_on_off_compressor_ratios_ne{T}(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
+function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp_ne][k] 
@@ -81,7 +81,7 @@ function constraint_on_off_compressor_ratios_ne{T}(gm::GenericGasModel{T}, n::In
 end
 
 " standard mass flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance{T}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fgfirm, flfirm)
+function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fgfirm, flfirm)
     p = gm.var[:nw][n][:p] 
     f = gm.var[:nw][n][:f] 
 
@@ -92,7 +92,7 @@ function constraint_junction_mass_flow_balance{T}(gm::GenericGasModel{T}, n::Int
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne{T}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fgfirm, flfirm)
+function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fgfirm, flfirm)
     p = gm.var[:nw][n][:p] 
     f = gm.var[:nw][n][:f] 
     f_ne = gm.var[:nw][n][:f_ne] 
@@ -104,7 +104,7 @@ function constraint_junction_mass_flow_balance_ne{T}(gm::GenericGasModel{T}, n::
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ls{T}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fl_firm, fg_firm, consumers, producers)
+function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fl_firm, fg_firm, consumers, producers)
     p = gm.var[:nw][n][:p] 
     f = gm.var[:nw][n][:f]
     fg = gm.var[:nw][n][:fg]   
@@ -117,7 +117,7 @@ function constraint_junction_mass_flow_balance_ls{T}(gm::GenericGasModel{T}, n::
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_firm, fg_firm, consumers, producers)  
+function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_firm, fg_firm, consumers, producers)  
     p = gm.var[:nw][n][:p] 
     f = gm.var[:nw][n][:f] 
     f_ne = gm.var[:nw][n][:f_ne]
@@ -131,7 +131,7 @@ function constraint_junction_mass_flow_balance_ne_ls{T}(gm::GenericGasModel{T}, 
 end
 
 " constraints on pressure drop across pipes "
-function constraint_short_pipe_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k, i, j)
+function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k, i, j)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
 
@@ -142,7 +142,7 @@ function constraint_short_pipe_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, 
 end
 
 " constraints on pressure drop across valves "
-function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, n::Int, k, i, j, i_pmax, j_pmax)
+function constraint_on_off_valve_pressure_drop(gm::GenericGasModel, n::Int, k, i, j, i_pmax, j_pmax)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
 
@@ -157,7 +157,7 @@ function constraint_on_off_valve_pressure_drop{T}(gm::GenericGasModel{T}, n::Int
 end
 
 " on/off constraints on flow across pipes for expansion variables "
-function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, k, w, mf, pd_min, pd_max)
+function constraint_on_off_pipe_flow_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min, pd_max)
     zp = gm.var[:nw][n][:zp][k] 
     f  = gm.var[:nw][n][:f_ne][k] 
           
@@ -170,7 +170,7 @@ function constraint_on_off_pipe_flow_ne{T}(gm::GenericGasModel{T}, n::Int, k, w,
 end
 
 " on/off constraints on flow across compressors for expansion variables "
-function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int, k, mf)
+function constraint_on_off_compressor_flow_ne(gm::GenericGasModel,  n::Int, k, mf)
     zc = gm.var[:nw][n][:zc][k] 
     f =  gm.var[:nw][n][:f_ne][k] 
     
@@ -183,7 +183,7 @@ function constraint_on_off_compressor_flow_ne{T}(gm::GenericGasModel{T},  n::Int
 end
 
 " This function ensures at most one pipe in parallel is selected "
-function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T},  n::Int, i, j, parallel)  
+function constraint_exclusive_new_pipes(gm::GenericGasModel,  n::Int, i, j, parallel)  
     zp = gm.var[:nw][n][:zp]             
     if !haskey(gm.con[:nw][n], :exclusive_new_pipes)
         gm.con[:nw][n][:exclusive_new_pipes] = Dict{Any,ConstraintRef}()
@@ -192,7 +192,7 @@ function constraint_exclusive_new_pipes{T}(gm::GenericGasModel{T},  n::Int, i, j
 end
 
 "compressor rations have on off for direction and expansion"
-function constraint_new_compressor_ratios_ne{T}(gm::GenericGasModel{T},  n::Int, k, i, j, min_ratio, max_ratio, p_mini, p_maxi, p_minj, p_maxj)
+function constraint_new_compressor_ratios_ne(gm::GenericGasModel,  n::Int, k, i, j, min_ratio, max_ratio, p_mini, p_maxi, p_minj, p_maxj)
     pi = gm.var[:nw][n][:p][i] 
     pj = gm.var[:nw][n][:p][j] 
     yp = gm.var[:nw][n][:yp][k] 
