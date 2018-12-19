@@ -14,6 +14,7 @@ end
 include("io/json.jl")
 include("io/common.jl")
 include("io/grail.jl")
+include("io/matlab.jl")
 
 include("core/base.jl")
 include("core/data.jl")
