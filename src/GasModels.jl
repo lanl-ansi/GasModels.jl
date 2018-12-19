@@ -8,6 +8,7 @@ using Compat
 
 if VERSION < v"0.7.0-"
     import Compat: @warn
+    import Compat: @info
 
 end
 
