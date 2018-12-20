@@ -38,17 +38,17 @@ end
         check_ratio(result["solution"], gm)             
     end 
     
-    @testset "24 pipe" begin
-        data = GasModels.parse_file("../test/data/matlab/24-pipe-benchmark.m")  
-        result = run_gf("../test/data/matlab/24-pipe-benchmark.m", MISOCPGasModel, cvx_minlp_solver)
-        println(result["status"])
+    # @testset "24 pipe" begin
+    #     data = GasModels.parse_file("../test/data/matlab/24-pipe-benchmark.m")  
+    #     result = run_gf("../test/data/matlab/24-pipe-benchmark.m", MISOCPGasModel, cvx_minlp_solver)
+    #     println(result["status"])
         
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 0; atol = 1e-6)
-        gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)        
-       # check_pressure_status(result["solution"], gm)
-       # check_ratio(result["solution"], gm)             
-    end      
+    #     @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+    #     @test isapprox(result["objective"], 0; atol = 1e-6)
+    #     gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)        
+        #  check_pressure_status(result["solution"], gm)
+        #  check_ratio(result["solution"], gm)             
+    # end      
 end
 
 
