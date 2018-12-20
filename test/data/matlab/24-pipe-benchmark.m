@@ -95,29 +95,29 @@ mgc.compressor = [
 ];
 
 %% producer 
-% producer_i junction fgmin fgmax fg status
+% producer_i junction fgmin fgmax fg status dispatchable
 mgc.producer = [ 
-1   1   0   1000    800 1
+1   1   0   1000    680.6534 1 0
 ]; 
 
 %% consumer 
-% consumer_i junction fd status
+% consumer_i junction fd status dispatchable
 mgc.consumer = [
-1	6	74.5264	1
-2	8	68.3158	1
-3	24	62.1053	1
-4	25	55.8948	1
-5	12	68.5197	1
-6	13	56.0616	1
-7	18	62.2906	1
-8	19	74.7488	1
-9	12	31.1453	1
-10	25	24.9108	1
-11	6	29.8930	1
-12	18	22.4197	1
-13	24	27.4019	1
-14	24	9.9643	1
-15	25	12.4554	1
+1	6	74.5264	1 0
+2	8	68.3158	1 0
+3	24	62.1053	1 0
+4	25	55.8948	1 0
+5	12	68.5197	1 0
+6	13	56.0616	1 0
+7	18	62.2906	1 0
+8	19	74.7488	1 0
+9	12	31.1453	1 0
+10	25	24.9108	1 0
+11	6	29.8930	1 0
+12	18	22.4197	1 0
+13	24	27.4019	1 0
+14	24	9.9643	1 0
+15	25	12.4554	1 0
 ]; 
 	
 end 

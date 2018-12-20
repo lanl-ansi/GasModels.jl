@@ -91,14 +91,16 @@ mlab_producer_columns = [
     ("junction", Int), 
     ("fg_min", Float64), ("fg_max", Float64),
     ("fg", Float64), 
-    ("status", Int)
+    ("status", Int),
+    ("dispatchable", Int)
 ]
 
 mlab_consumer_columns = [
     ("consumer_i", Int),
     ("junction", Int),
     ("fd", Float64), 
-    ("status", Float64)
+    ("status", Float64),
+    ("dispatchable", Int)
 ]
 
 
@@ -315,12 +317,23 @@ function mlab2gm_producer(data::Dict{String,Any})
     producers = [producer for producer in data["producer"]]
     for producer in producers 
         producer["qg_junc"] = producer["junction"]
-        producer["qgmin"] = producer["fg_min"] / data["standard_density"]
-        producer["qgmax"] = producer["fg_max"] / data["standard_density"]
-        producer["qgfirm"] = producer["fg"] / data["standard_density"]
+   
+        # This is a hack until we deprecate the "qgfirm" idea from the modeling
+        # The artificial wierdness of this will go away once we drop the firm
+        # notion and actually use dispatchable as feature  
+        if producer["dispatchable"] == 1  
+            producer["qgmin"] = producer["fg_min"] / data["standard_density"]
+            producer["qgmax"] = producer["fg_max"] / data["standard_density"]
+            producer["qgfirm"] = 0
+        else
+            producer["qgmin"] = 0
+            producer["qgmax"] = 0
+            producer["qgfirm"] = producer["fg"] / data["standard_density"]
+        end  
         delete!(producer, "fg")
         delete!(producer, "fg_min")
         delete!(producer, "fg_max")
+        delete!(producer, "dispatchable")        
     end 
 end 
 
@@ -329,10 +342,21 @@ function mlab2gm_consumer(data::Dict{String,Any})
     consumers = [consumer for consumer in data["consumer"]]
     for consumer in consumers 
         consumer["ql_junc"] = consumer["junction"]
-        consumer["qlmin"] = 0.0
-        consumer["qlmax"] = consumer["fd"] / data["standard_density"]
-        consumer["qlfirm"] = consumer["fd"] / data["standard_density"]
+          
+        # This is a hack until we deprecate the "q1firm" idea from the modeling
+        # The artificial wierdness of this will go away once we drop the firm
+        # notion and actually use dispatchable as feature  
+        if consumer["dispatchable"] == 1     
+            consumer["qlmin"] = 0
+            consumer["qlmax"] = consumer["fd"] / data["standard_density"]
+            consumer["qlfirm"] = 0
+        else
+            consumer["qlmin"] = 0
+            consumer["qlmax"] = 0
+            consumer["qlfirm"] = consumer["fd"] / data["standard_density"]
+        end
         delete!(consumer, "fd")
+        delete!(consumer, "dispatchable")        
     end 
 end 
 
@@ -347,6 +371,7 @@ function mlab2gm_connection(data::Dict{String,Any})
             "length" => pipe["length"],
             "friction_factor" => pipe["friction_factor"],
             "type" => "pipe",
+            "index" => pipe["index"],              
             "status" => pipe["status"]
         )])
     end 
@@ -362,10 +387,11 @@ function mlab2gm_connection(data::Dict{String,Any})
             "power_max" => compressor["power_max"],
             "qmin" => compressor["fmin"] * data["standard_density"],
             "qmax" => compressor["fmax"] * data["standard_density"],
+            "index" => compressor["index"],  
             "type" => "compressor"
         )])
     end 
-    delete!(data, "compressor")
+    delete!(data, "compressor")    
 end 
 
 "merges junction name data into junctions, if names exist"

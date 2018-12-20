@@ -113,7 +113,7 @@ function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i
     if !haskey(gm.con[:nw][n], :junction_mass_flow_balance_ls)
         gm.con[:nw][n][:junction_mass_flow_balance_ls] = Dict{Int,ConstraintRef}()
     end    
-    gm.con[:nw][n][:junction_mass_flow_balance_ls][i] = @constraint(gm.model, fg_firm - fl_firm + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) )              
+    gm.con[:nw][n][:junction_mass_flow_balance_ls][i] = @constraint(gm.model, fg_firm - fl_firm + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) )             
 end
 
 " standard flow balance equation where demand and production is fixed "
