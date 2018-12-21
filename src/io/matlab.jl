@@ -12,37 +12,6 @@ function parse_matlab(file::Union{IO, String})
 end
 
 
-### very generic helper functions ###
-
-"takes a row from a matrix and assigns the values names and types"
-function row_to_typed_dict(row_data, columns)
-    dict_data = Dict{String,Any}()
-    for (i,v) in enumerate(row_data)
-        if i <= length(columns)
-            name, typ = columns[i]
-            dict_data[name] = InfrastructureModels.check_type(typ, v)
-        else
-            dict_data["col_$(i)"] = v
-        end
-    end
-    return dict_data
-end
-
-"takes a row from a matrix and assigns the values names"
-function row_to_dict(row_data, columns)
-    dict_data = Dict{String,Any}()
-    for (i,v) in enumerate(row_data)
-        if i <= length(columns)
-            dict_data[columns[i]] = v
-        else
-            dict_data["col_$(i)"] = v
-        end
-    end
-    return dict_data
-end
-
-
-
 ### Data and functions specific to the gas Matlab format ###
 
 mlab_data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R", 
@@ -174,7 +143,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction")
         junctions = []
         for junction_row in matlab_data["mgc.junction"]
-            junction_data = row_to_typed_dict(junction_row, mlab_junction_columns)
+            junction_data = InfrastructureModels.row_to_typed_dict(junction_row, mlab_junction_columns)
             junction_data["index"] = InfrastructureModels.check_type(Int, junction_row[1])
             push!(junctions, junction_data)
         end
@@ -187,7 +156,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.pipe")
         pipes = []
         for pipe_row in matlab_data["mgc.pipe"]
-            pipe_data = row_to_typed_dict(pipe_row, mlab_pipe_columns)
+            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, mlab_pipe_columns)
             pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
             push!(pipes, pipe_data)
         end
@@ -200,7 +169,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
-            compressor_data = row_to_typed_dict(compressor_row, mlab_compressor_columns)
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_compressor_columns)
             compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(compressors, compressor_data)
         end
@@ -213,7 +182,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.producer")
         producers = []
         for producer_row in matlab_data["mgc.producer"]
-            producer_data = row_to_typed_dict(producer_row, mlab_producer_columns)
+            producer_data = InfrastructureModels.row_to_typed_dict(producer_row, mlab_producer_columns)
             producer_data["index"] = InfrastructureModels.check_type(Int, producer_row[1])
             push!(producers, producer_data)
         end
@@ -223,7 +192,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.consumer")
         consumers = []
         for consumer_row in matlab_data["mgc.consumer"]
-            consumer_data = row_to_typed_dict(consumer_row, mlab_consumer_columns)
+            consumer_data = InfrastructureModels.row_to_typed_dict(consumer_row, mlab_consumer_columns)
             consumer_data["index"] = InfrastructureModels.check_type(Int, consumer_row[1])
             push!(consumers, consumer_data)
         end
@@ -234,7 +203,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction_name")
         junction_names = []
         for (i, junction_name_row) in enumerate(matlab_data["mgc.junction_name"])
-            junction_name_data = row_to_typed_dict(junction_name_row, mlab_junction_name_columns)
+            junction_name_data = InfrastructureModels.row_to_typed_dict(junction_name_row, mlab_junction_name_columns)
             junction_name_data["index"] = i
             push!(junction_names, junction_name_data)
         end
@@ -259,7 +228,7 @@ function parse_m_string(data_string::String)
                 end
                 tbl = []
                 for (i, row) in enumerate(matlab_data[k])
-                    row_data = row_to_dict(row, column_names)
+                    row_data = InfrastructureModels.row_to_dict(row, column_names)
                     row_data["index"] = i
                     push!(tbl, row_data)
                 end
