@@ -11,6 +11,10 @@ GasModels.jl Change Log
 ### Staged
 - nothing
 
+### v0.3.3
+- Added support for matlab like data input format parsing
+- Added a print_summary function 
+
 ### v0.3.2
 - Add support for Julia v0.7 and v1.0
 - Minor documentation updates
