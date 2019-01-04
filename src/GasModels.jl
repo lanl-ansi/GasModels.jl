@@ -8,12 +8,14 @@ using Compat
 
 if VERSION < v"0.7.0-"
     import Compat: @warn
+    import Compat: @info
 
 end
 
 include("io/json.jl")
 include("io/common.jl")
 include("io/grail.jl")
+include("io/matlab.jl")
 
 include("core/base.jl")
 include("core/data.jl")

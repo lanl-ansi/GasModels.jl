@@ -62,6 +62,7 @@ function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) whe
 
     consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
     producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
+    
     fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0 
     flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0 
     fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer) for (j, producer) in producers) : 0 

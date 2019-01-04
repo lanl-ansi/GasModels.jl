@@ -309,3 +309,48 @@ end
 function calc_fgfirm(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qgfirm"] * data["standard_density"]  
 end
+
+"prints the text summary for a data file or dictionary to stdout"
+function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)
+    summary(stdout, obj; kwargs...)
+end
+
+
+"prints the text summary for a data file to IO"
+function summary(io::IO, file::String; kwargs...)
+    data = parse_file(file)
+    summary(io, data; kwargs...)
+    return data
+end
+
+gm_component_types_order = Dict(
+    "junction" => 1.0, "connection" => 2.0, "producer" => 3.0, "consumer" => 4.0
+)
+
+gm_component_parameter_order = Dict(
+    "junction_i" => 1.0, "junction_type" => 2.0, 
+    "pmin" => 3.0, "pmax" => 4.0, "p_nominal" => 5.0, 
+
+    "type" => 10.0, 
+    "f_junction" => 11.0, "t_junction" => 12.0,
+    "length" => 13.0, "diameter" => 14.0, "friction_factor" => 15.0,
+    "qmin" => 16.0, "qmax" => 17.0, 
+    "c_ratio_min" => 18.0, "c_ratio_max" => 19.0, 
+    "power_max" => 20.0,
+
+    "producer_i" => 50.0, "junction" => 51.0,
+    "qgfirm" => 52.0, "qgmin" => 53.0, "qgmax" => 54.0, 
+
+    "consumer_i" => 70.0, "junction" => 71.0, 
+    "qlfirm" => 72.0, "qlmin" => 73.0, "qlmax" => 74.0, 
+
+    "status" => 500.0,
+)
+
+"prints the text summary for a data dictionary to IO"
+function summary(io::IO, data::Dict{String,Any}; kwargs...)
+    InfrastructureModels.summary(io, data; 
+        component_types_order = gm_component_types_order,
+        component_parameter_order = gm_component_parameter_order,
+        kwargs...)
+end
