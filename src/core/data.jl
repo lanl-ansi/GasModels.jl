@@ -158,25 +158,6 @@ function calc_pipe_resistance_smeers(data::Dict{String,Any},pipe::Dict{String,An
     return resistance  
 end
 
-
-"prints the text summary for a data file or dictionary to STDOUT"
-function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)
-    summary(STDOUT, obj; kwargs...)
-end
-
-"prints the text summary for a data file to IO"
-function summary(io::IO, file::String; kwargs...)
-    data = parse_file(file)
-    InfrastructureModels.summary(io, data; kwargs...)
-    return data
-end
-
-"prints the text summary for a data dictionary to IO"
-function summary(io::IO, data::Dict{String,Any}; kwargs...)
-    InfrastructureModels.summary(io, data; kwargs...)
-end
-
-
 "Transforms network data into per-unit (non-dimensionalized)"
 function make_per_unit(data::Dict{String,Any})
     if !haskey(data, "per_unit") || data["per_unit"] == false
