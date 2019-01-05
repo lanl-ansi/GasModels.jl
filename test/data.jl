@@ -1,3 +1,16 @@
+@testset "gaslib40 summary from dict" begin
+        data = GasModels.parse_file("../test/data/matlab/gaslib40.m")
+        output = sprint(GasModels.summary, data)
+
+        line_count = count(c -> c == '\n', output)
+        @test line_count >= 100 && line_count <= 200
+        @test occursin("name: gaslib40", output)
+        @test occursin("Table: junction", output)
+        @test occursin("Table: connection", output)
+        @test occursin("Table: producer", output)
+        @test occursin("Table: consumer", output)
+    end
+
 @testset "status = false" begin
     gm = build_generic_model("../test/data/status.json",  MISOCPGasModel, GasModels.post_ls)
     @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
