@@ -11,6 +11,10 @@ GasModels.jl Change Log
 ### Staged
 - nothing
 
+### v0.3.4
+- fixed bugs in print_summary function
+- added tests for summary function to improve coverage
+
 ### v0.3.3
 - Added support for matlab like data input format parsing
 - Added a print_summary function 
