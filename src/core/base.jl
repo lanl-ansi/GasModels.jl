@@ -215,7 +215,7 @@ function build_ref(data::Dict{String,Any})
         nw_id = parse(Int, n)
         ref = nws[nw_id] = Dict{Symbol,Any}()
         
-        for (key, item) in data
+        for (key, item) in nw_data
             if isa(item, Dict)
                 item_lookup = Dict([(parse(Int, k), v) for (k,v) in item])
                 ref[Symbol(key)] = item_lookup
