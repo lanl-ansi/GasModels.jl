@@ -9,7 +9,7 @@ GasModels.jl Change Log
 - Implement a matlab like data input format
 
 ### Staged
-- nothing
+- fixed bugs in multinetwork build_ref construction
 
 ### v0.3.4
 - fixed bugs in print_summary function
