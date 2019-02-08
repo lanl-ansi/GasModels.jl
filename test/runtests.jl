@@ -28,7 +28,6 @@ juniper_solver = JuniperSolver(ipopt_solver)
 #pavito_solver_cbc = PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 
-
 using Compat.Test
 
 # default setup for solvers
@@ -37,7 +36,7 @@ minlp_solver = juniper_solver
 
 @testset "GasModels" begin
 
-# include("matlab.jl")
+include("matlab.jl")
 include("data.jl")
 include("ls.jl") # this one is unstable with Pajarito... dependent on ordering of variables and constraints
 include("nels.jl")
