@@ -136,7 +136,6 @@ end
     # yn[239] - yp[238] == 0
     ref = gm.con[:nw][gm.cnw][:conserve_flow2][523]
     c = gm.model.linconstr[ref.idx]
-    println(ref)
 
     @test isapprox(c.ub, 0.0; atol = 1e-4)
     @test JuMP.sense(c) == :(==)
