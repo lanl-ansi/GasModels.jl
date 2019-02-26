@@ -1,6 +1,6 @@
 # stuff that is universal to all gas models
 
-export 
+export
     GenericGasModel,
     setdata, setsolver, solve,
     run_generic_model, build_generic_model, solve_generic_model
@@ -40,17 +40,17 @@ Methods on `GenericGasModel` for defining variables and adding constraints shoul
 * add them to `model::JuMP.Model`, and
 * follow the conventions for variable and constraint names.
 """
-mutable struct GenericGasModel{T<:AbstractGasFormulation} 
+mutable struct GenericGasModel{T<:AbstractGasFormulation}
     model::Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
     solution::Dict{String,Any}
     ref::Dict{Symbol,Any} # data reference data
     var::Dict{Symbol,Any} # JuMP variables
-    con::Dict{Symbol,Any} # data reference data    
+    con::Dict{Symbol,Any} # data reference data
 
-    cnw::Int # current network index value     
-    ext::Dict{Symbol,Any}    
+    cnw::Int # current network index value
+    ext::Dict{Symbol,Any}
 end
 
 "default generic constructor"
@@ -65,7 +65,7 @@ function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{Strin
     end
 
     cnw = minimum([k for k in keys(ref[:nw])])
-    
+
     gm = GenericGasModel{Typ}(
         Model(solver = solver), # model
         data, # data
@@ -154,11 +154,11 @@ end
 ""
 function build_generic_model(data::Dict{String,Any}, model_constructor, post_method; multinetwork=false, kwargs...)
     gm = model_constructor(data; kwargs...)
-    
+
     if !multinetwork && data["multinetwork"]
         @warn "building a single network model with multinetwork data, only network ($(gm.cnw)) will be used."
     end
-    
+
     post_method(gm; kwargs...)
     return gm
 end
@@ -203,18 +203,18 @@ function build_ref(data::Dict{String,Any})
     # Do some robustness on the data to add missing fields
     add_default_data(data)
     add_default_status(data)
-    add_default_consumer_priority(data)    
+    add_default_consumer_priority(data)
     add_default_construction_cost(data)
-      
+
     refs = Dict{Symbol,Any}()
     nws = refs[:nw] = Dict{Int,Any}()
-      
+
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
-    
+
     for (n,nw_data) in nws_data
         nw_id = parse(Int, n)
         ref = nws[nw_id] = Dict{Symbol,Any}()
-        
+
         for (key, item) in nw_data
             if isa(item, Dict)
                 item_lookup = Dict([(parse(Int, k), v) for (k,v) in item])
@@ -223,25 +223,36 @@ function build_ref(data::Dict{String,Any})
                 ref[Symbol(key)] = item
             end
         end
-    
+
         # filter turned off stuff
         ref[:junction] = Dict(x for x in ref[:junction] if x.second["status"] == 1)
         ref[:consumer] = Dict(x for x in ref[:consumer] if x.second["status"] == 1 && x.second["ql_junc"] in keys(ref[:junction]))
         ref[:producer] = Dict(x for x in ref[:producer] if x.second["status"] == 1 && x.second["qg_junc"] in keys(ref[:junction]))
-        ref[:connection] = Dict(x for x in ref[:connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
+#        ref[:connection] = Dict(x for x in ref[:connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
+
+        ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:compressor] = haskey(ref, :compressor) ? Dict(x for x in ref[:compressor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:valve] = haskey(ref, :valve) ? Dict(x for x in ref[:valve] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:control_valve] = haskey(ref, :control_valve) ? Dict(x for x in ref[:control_valve] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:resistor] = haskey(ref, :resistor) ? Dict(x for x in ref[:resistor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+
         ref[:ne_connection] = Dict(x for x in ref[:ne_connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
 
-        # compute the maximum flow  
+        # compute the maximum flow
         max_mass_flow = calc_max_mass_flow(data)
-        ref[:max_mass_flow] = max_mass_flow  
-                      
+        ref[:max_mass_flow] = max_mass_flow
+
+        ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
+
+
         # create some sets based on connection types
-        ref[:pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "pipe")
-        ref[:short_pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "short_pipe")
-        ref[:compressor] = Dict(x for x in ref[:connection] if x.second["type"] == "compressor")
-        ref[:valve] = Dict(x for x in ref[:connection] if x.second["type"] == "valve")
-        ref[:control_valve] = Dict(x for x in ref[:connection] if x.second["type"] == "control_valve")
-        ref[:resistor] = Dict(x for x in ref[:connection] if x.second["type"] == "resistor")
+#        ref[:pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "pipe")
+#        ref[:short_pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "short_pipe")
+#        ref[:compressor] = Dict(x for x in ref[:connection] if x.second["type"] == "compressor")
+#        ref[:valve] = Dict(x for x in ref[:connection] if x.second["type"] == "valve")
+#        ref[:control_valve] = Dict(x for x in ref[:connection] if x.second["type"] == "control_valve")
+#        ref[:resistor] = Dict(x for x in ref[:connection] if x.second["type"] == "resistor")
 
         ref[:ne_pipe] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "pipe")
         ref[:ne_compressor] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "compressor")
@@ -249,61 +260,79 @@ function build_ref(data::Dict{String,Any})
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
         ref[:parallel_connections] = Dict()
-        ref[:all_parallel_connections] = Dict()              
+        ref[:all_parallel_connections] = Dict()
         for entry in [ref[:connection]; ref[:ne_connection]]
-            for (idx, connection) in entry   
+            for (idx, connection) in entry
                 i = connection["f_junction"]
                 j = connection["t_junction"]
                 ref[:parallel_connections][(min(i,j), max(i,j))] = []
                 ref[:all_parallel_connections][(min(i,j), max(i,j))] = []
             end
         end
- 
+
         ref[:junction_connections] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:junction_ne_connections] = Dict(i => [] for (i,junction) in ref[:junction])
-      
+
         for (idx, connection) in ref[:connection]
             i = connection["f_junction"]
-            j = connection["t_junction"]   
+            j = connection["t_junction"]
             push!(ref[:junction_connections][i], idx)
-            push!(ref[:junction_connections][j], idx)        
+            push!(ref[:junction_connections][j], idx)
             push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
-            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
+            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)
         end
-    
+
         for (idx,connection) in ref[:ne_connection]
             i = connection["f_junction"]
-            j = connection["t_junction"]          
+            j = connection["t_junction"]
             push!(ref[:junction_ne_connections][i], idx)
-            push!(ref[:junction_ne_connections][j], idx)        
-            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)                        
+            push!(ref[:junction_ne_connections][j], idx)
+            push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)
         end
-      
+
         junction_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
         for (i,consumer) in ref[:consumer]
             push!(junction_consumers[consumer["ql_junc"]], i)
         end
         ref[:junction_consumers] = junction_consumers
-        
+
         junction_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
         for (i,producer) in ref[:producer]
             push!(junction_producers[producer["qg_junc"]], i)
         end
         ref[:junction_producers] = junction_producers
-                
-        add_degree(ref)    
-        add_pd_bounds_sqr(ref)  
-    end          
+
+        add_degree(ref)
+        add_pd_bounds_sqr(ref)
+    end
     return refs
 end
 
 "Just make sure there is an empty set for new connections if it does not exist"
 function add_default_data(data :: Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
-  
-    for (n,data) in nws_data    
+
+    for (n,data) in nws_data
         if !haskey(data, "ne_connection")
             data["ne_connection"] = []
-        end               
+        end
+        if !haskey(data, "compressor")
+            data["compressor"] = []
+        end
+        if !haskey(data, "pipe")
+            data["pipe"] = []
+        end
+        if !haskey(data, "short_pipe")
+            data["short_pipe"] = []
+        end
+        if !haskey(data, "resistor")
+            data["resistor"] = []
+        end
+        if !haskey(data, "valve")
+            data["valve"] = []
+        end
+        if !haskey(data, "control_valve")
+            data["control_valve"] = []
+        end
     end
 end
