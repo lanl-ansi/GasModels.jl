@@ -59,8 +59,8 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     resistance = Dict{Int, Float64}()
     for i in  keys(gm.ref[:nw][n][:ne_pipe])
-        pipe =  gm.ref[:nw][n][:ne_connection][i]
-        resistance[i] = pipe["type"] == "pipe" ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+        pipe =  gm.ref[:nw][n][:ne_pipe][i]
+        resistance[i] = pipe_resistance(gm.data, pipe)
     end
 
     if bounded

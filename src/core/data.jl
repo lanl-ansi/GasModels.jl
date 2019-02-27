@@ -23,7 +23,7 @@ end
 function add_default_status(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
     for (n,data) in nws_data
-        for entry in [data["pipe"]; data["compressor"]; data["short_pipe"]; data["resistor"]; data["valve"]; data["control_valve"]; data["ne_connection"]; data["junction"]; data["consumer"]; data["producer"]]
+        for entry in [data["pipe"]; data["compressor"]; data["short_pipe"]; data["resistor"]; data["valve"]; data["control_valve"]; data["ne_pipe"]; data["ne_compressor"]; data["junction"]; data["consumer"]; data["producer"]]
             for (idx,component) in entry
                 if !haskey(component,"status")
                     component["status"] = 1
@@ -52,10 +52,12 @@ function add_default_construction_cost(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
 
     for (n,data) in nws_data
-        for (idx, connection) in data["ne_connection"]
-            if !haskey(connection,"construction_cost")
-                connection["construction_cost"] = 0
-            end
+        for entry in [data["ne_pipe"];data["ne_compressor"]]
+           for (idx, connection) in entry
+               if !haskey(connection,"construction_cost")
+                   connection["construction_cost"] = 0
+               end
+           end
         end
     end
 end

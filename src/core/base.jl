@@ -237,13 +237,18 @@ function build_ref(data::Dict{String,Any})
         ref[:control_valve] = haskey(ref, :control_valve) ? Dict(x for x in ref[:control_valve] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
         ref[:resistor] = haskey(ref, :resistor) ? Dict(x for x in ref[:resistor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
 
-        ref[:ne_connection] = Dict(x for x in ref[:ne_connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
+        ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+
+
+#        ref[:ne_connection] = Dict(x for x in ref[:ne_connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
 
         # compute the maximum flow
         max_mass_flow = calc_max_mass_flow(data)
         ref[:max_mass_flow] = max_mass_flow
 
         ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
+        ref[:ne_connection] =  merge(ref[:ne_pipe],ref[:ne_compressor])
 
 
         # create some sets based on connection types
@@ -254,8 +259,8 @@ function build_ref(data::Dict{String,Any})
 #        ref[:control_valve] = Dict(x for x in ref[:connection] if x.second["type"] == "control_valve")
 #        ref[:resistor] = Dict(x for x in ref[:connection] if x.second["type"] == "resistor")
 
-        ref[:ne_pipe] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "pipe")
-        ref[:ne_compressor] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "compressor")
+#        ref[:ne_pipe] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "pipe")
+#        ref[:ne_compressor] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "compressor")
 
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
@@ -313,8 +318,11 @@ function add_default_data(data :: Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
 
     for (n,data) in nws_data
-        if !haskey(data, "ne_connection")
-            data["ne_connection"] = []
+        if !haskey(data, "ne_pipe")
+            data["ne_pipe"] = []
+        end
+        if !haskey(data, "ne_compressor")
+            data["ne_compressor"] = []
         end
         if !haskey(data, "compressor")
             data["compressor"] = []
