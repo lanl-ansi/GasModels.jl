@@ -3,10 +3,10 @@
         output = sprint(GasModels.summary, data)
 
         line_count = count(c -> c == '\n', output)
-        @test line_count >= 100 && line_count <= 200
+        @test line_count >= 150 && line_count <= 250
         @test occursin("name: gaslib40", output)
         @test occursin("Table: junction", output)
-        @test occursin("Table: connection", output)
+        @test occursin("Table: pipe", output)
         @test occursin("Table: producer", output)
         @test occursin("Table: consumer", output)
     end
@@ -51,10 +51,10 @@ end
     output = sprint(GasModels.summary, gas_data)
 
     line_count = count(c -> c == '\n', output)
-    
+
     @test line_count >= 175 && line_count <= 200
     @test occursin("name: gaslib 40", output)
-    @test occursin("connection: 51", output)
+    @test occursin("pipe: 39", output)
     @test occursin("consumer: 29", output)
     @test occursin("junction: 46", output)
     @test occursin("producer: 3", output)
@@ -71,9 +71,9 @@ end
 
     line_count = count(c -> c == '\n', output)
     @test line_count >= 100 && line_count <= 125
-    @test occursin("connection: 51", output)
+    @test occursin("pipe: 39", output)
     @test occursin("junction: 46", output)
-    @test occursin("Table: connection", output)
+    @test occursin("Table: pipe", output)
     @test occursin("Table: junction", output)
 end
 
@@ -102,22 +102,22 @@ end
         gas_file = "../test/data/gaslib-40.json"
         gas_data = GasModels.parse_file(gas_file)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data, gas_data["connection"]["32"]), 5.9719269834653; atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data, gas_data["pipe"]["32"]), 5.9719269834653; atol=1e-4)
     end
-    
+
     @testset "thorley" begin
         gas_file = "../test/data/A1.json"
         gas_data = GasModels.parse_file(gas_file)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_connection"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_pipe"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
-    
+
     @testset "resistor" begin
         gas_file = "../test/data/gaslib-582.json"
         gas_data = GasModels.parse_file(gas_file)
-        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["connection"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
-    
-    
+
+
 
 end

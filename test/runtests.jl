@@ -38,7 +38,7 @@ minlp_solver = juniper_solver
 
 include("matlab.jl")
 include("data.jl")
-include("ls.jl") # this one is unstable with Pajarito... dependent on ordering of variables and constraints
+include("ls.jl") 
 include("nels.jl")
 include("gf.jl")
 include("ne.jl")
