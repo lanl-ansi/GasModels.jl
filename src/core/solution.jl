@@ -122,7 +122,6 @@ end
 
 " Get the valve solutions "
 function add_valve_setpoint(sol, gm::GenericGasModel)
-#    add_setpoint(sol, gm, "connection", "valve", :v)
     add_setpoint(sol, gm, "valve", "v", :v)
     add_setpoint(sol, gm, "control_valve", "v", :v)
 end
@@ -143,8 +142,6 @@ end
 function add_compressor_ratio_setpoint(sol, gm::GenericGasModel; default_value = (item) -> 1)
     add_setpoint(sol, gm, "compressor", "ratio", :p; scale = (x,item) -> sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
     add_setpoint(sol, gm, "control_valve", "ratio", :p; scale = (x,item) -> sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
-
-    #add_setpoint(sol, gm, "connection", "ratio", :p; scale = (x,item) -> (item["type"] == "compressor" || item["type"] == "control_valve") ? sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])) : 1.0, extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
 function add_setpoint(sol, gm::GenericGasModel, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> getvalue(x), extract_var = (var,idx,item) -> var[idx])

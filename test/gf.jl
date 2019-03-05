@@ -28,6 +28,7 @@ end
         check_ratio(result["solution"], gm)
     end
     @testset "gaslib 135 case" begin
+        ## THIS TEST IS TIMING OUT ON LINUX in Travis
 #        println("Testing gaslib 135 misocp gf")
 #        result = run_gf("../test/data/gaslib-135.json", MISOCPGasModel, cvx_minlp_solver)
 #        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
