@@ -21,6 +21,7 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "pmax": <float>,   # maximum pressure. SI units are pascals
       "pmin": <float>,   # minimum pressure. SI units are pascals
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},
@@ -33,6 +34,7 @@ The network data dictionary structure is roughly as follows:
       "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
       "qlfirm": <float>, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
       "priority": <float>, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},
@@ -44,6 +46,7 @@ The network data dictionary structure is roughly as follows:
       "qgmin": <float>,  # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
       "qgmax": <float>,  # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
       "qgfirm": <float>, # constant volumetric gas production at standard density. SI units are m^3/s.
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},
@@ -56,6 +59,7 @@ The network data dictionary structure is roughly as follows:
       "t_junction": <int>,          # the "to" side junction id
       "friction_factor": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.
       "diameter": <float>,          # the diameter of the connection. SI units are m.
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
@@ -67,6 +71,7 @@ The network data dictionary structure is roughly as follows:
       "t_junction": <int>,          # the "to" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
@@ -76,6 +81,7 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
@@ -85,6 +91,7 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
@@ -95,6 +102,7 @@ The network data dictionary structure is roughly as follows:
       "f_junction": <int>,          # the "from" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
@@ -105,6 +113,7 @@ The network data dictionary structure is roughly as follows:
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
       "drag": <float>,              # the drag factor of resistors. Non dimensional.
+      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},

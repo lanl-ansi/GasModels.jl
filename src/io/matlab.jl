@@ -100,7 +100,7 @@ function parse_m_string(data_string::String)
     if func_name != nothing
         case["name"] = func_name
     else
-        @warn string("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
+        warn(LOGGER,"no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
         case["name"] = "no_name_found"
     end
 
@@ -108,7 +108,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        @warn string("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
+        warn(LOGGER, "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
         case["source_version"] = "0.0.0+"
     end
 
@@ -121,14 +121,14 @@ function parse_m_string(data_string::String)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            error(string("no $constant found in .m file"))
+            error(LOGGER, string("no $constant found in .m file"))
         end
     end
 
     if haskey(matlab_data, "mgc.baseP")
         case["baseP"] = matlab_data["mgc.baseP"]
     else
-        error(string("no baseP found in .m file.
+        error(LOGGER, string("no baseP found in .m file.
             The file seems to be missing \"mgc.baseP = ...\" \n
             Typical value is a pmin in any of the junction"))
     end
@@ -136,7 +136,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.baseF")
         case["baseF"] = matlab_data["mgc.baseF"]
     else
-        error(string("no baseF found in .m file.
+        error(LOGGER, string("no baseF found in .m file.
             The file seems to be missing \"mgc.baseF = ...\" "))
     end
 
@@ -149,7 +149,7 @@ function parse_m_string(data_string::String)
         end
         case["junction"] = junctions
     else
-        error(string("no junction table found in .m file.
+        error(LOGGER, string("no junction table found in .m file.
             The file seems to be missing \"mgc.junction = [...];\""))
     end
 
@@ -162,7 +162,7 @@ function parse_m_string(data_string::String)
         end
         case["pipe"] = pipes
     else
-        error(string("no pipe table found in .m file.
+        error(LOGGER, string("no pipe table found in .m file.
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
@@ -175,7 +175,7 @@ function parse_m_string(data_string::String)
         end
         case["compressor"] = compressors
     else
-        error(string("no compressor table found in .m file.
+        error(LOGGER, string("no compressor table found in .m file.
             The file seems to be missing \"mgc.compressor = [...];\""))
     end
 
@@ -210,7 +210,7 @@ function parse_m_string(data_string::String)
         case["junction_name"] = junction_names
 
         if length(case["junction_name"]) != length(case["junction"])
-            error("incorrect .m file, the number of junction names
+            error(LOGGER, "incorrect .m file, the number of junction names
                 ($(length(case["junction_name"]))) is inconsistent with
                 the number of junctions ($(length(case["junction"]))).\n")
         end
@@ -233,10 +233,10 @@ function parse_m_string(data_string::String)
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                @info "extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)"
+                info(LOGGER,"extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
-                @info "extending matlab format with constant data: $(case_name)"
+                info(LOGGER,"extending matlab format with constant data: $(case_name)")
             end
         end
     end
@@ -370,17 +370,17 @@ function merge_generic_data(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mlab_matrix) != length(v)
-                        error("failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mlab_matrix)) and $(length(v)) respectively.")
+                        error(LOGGER,"failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mlab_matrix)) and $(length(v)) respectively.")
                     end
 
-                    @info "extending matlab format by appending matrix \"$(k)\" in to \"$(mlab_name)\""
+                    info(LOGGER,"extending matlab format by appending matrix \"$(k)\" in to \"$(mlab_name)\"")
 
                     for (i, row) in enumerate(mlab_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                error("failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                error(LOGGER, "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end

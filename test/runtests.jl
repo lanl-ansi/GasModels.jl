@@ -1,15 +1,13 @@
 using GasModels
-using Logging
 
 if VERSION < v"0.7.0-"
     # suppress warnings during testing
-    Logging.configure(level=ERROR)
     import Compat: occursin
 end
 
 if VERSION > v"0.7.0-"
     # suppress warnings during testing
-    disable_logging(Logging.Warn)
+    GasModels.silence()
 end
 
 using JuMP
@@ -38,7 +36,7 @@ minlp_solver = juniper_solver
 
 include("matlab.jl")
 include("data.jl")
-include("ls.jl") 
+include("ls.jl")
 include("nels.jl")
 include("gf.jl")
 include("ne.jl")

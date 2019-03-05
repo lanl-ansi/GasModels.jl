@@ -360,7 +360,7 @@ function constraint_conserve_flow(gm::GenericGasModel, n::Int, idx)
             first = other
         elseif first != other
             if last != nothing && last != other
-                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+                error(LOGGER, string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
             end
             last = other
         end
@@ -392,7 +392,7 @@ function constraint_conserve_flow_ne(gm::GenericGasModel, n::Int, idx)
             first = other
         elseif first != other
             if last != nothing && last != other
-                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+                error(LOGGER, string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
             end
             last = other
         end
@@ -410,7 +410,7 @@ function constraint_conserve_flow_ne(gm::GenericGasModel, n::Int, idx)
             first = other
         elseif first != other
             if last != nothing && last != other
-                error(string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+                error(LOGGER, string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
             end
             last = other
         end
