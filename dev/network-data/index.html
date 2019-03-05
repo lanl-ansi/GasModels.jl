@@ -20,6 +20,7 @@ ga('send', 'pageview');
     &quot;1&quot;:{
       &quot;pmax&quot;: &lt;float&gt;,   # maximum pressure. SI units are pascals
       &quot;pmin&quot;: &lt;float&gt;,   # minimum pressure. SI units are pascals
+      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     &quot;2&quot;:{...},
@@ -32,6 +33,7 @@ ga('send', 'pageview');
       &quot;qlmin&quot;: &lt;float&gt;,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
       &quot;qlfirm&quot;: &lt;float&gt;, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
       &quot;priority&quot;: &lt;float&gt;, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     &quot;2&quot;:{...},
@@ -40,25 +42,83 @@ ga('send', 'pageview');
 &quot;producer&quot;:{
     &quot;1&quot;:{
       &quot;qg_junc&quot;: &lt;float&gt;,  # junction id
-      &quot;qgmin&quot;: &lt;float&gt;,  # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      &quot;qgmax&quot;: &lt;float&gt;,  # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      &quot;qgfirm&quot;: &lt;float&gt;, # constant volumetric gas production at standard density. SI units are m^3/s.
+      &quot;qgmin&quot;: &lt;float&gt;,    # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      &quot;qgmax&quot;: &lt;float&gt;,    # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      &quot;qgfirm&quot;: &lt;float&gt;,   # constant volumetric gas production at standard density. SI units are m^3/s.
+      &quot;status&quot;: &lt;int&gt;,     # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     &quot;2&quot;:{...},
     ...
 },
-&quot;connection&quot;:{
+&quot;pipe&quot;:{
     &quot;1&quot;:{
       &quot;length&quot;: &lt;float&gt;,            # the length of the connection. SI units are m.
       &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
       &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
-      &quot;drag&quot;: &lt;float&gt;,              # the drag factor of resistors. Non dimensional.
       &quot;friction_factor&quot;: &lt;float&gt;,   # the friction component of the resistance term of the pipe. Non dimensional.
       &quot;diameter&quot;: &lt;float&gt;,          # the diameter of the connection. SI units are m.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;compressor&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
       &quot;c_ratio_min&quot;: &lt;float&gt;,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       &quot;c_ratio_max&quot;: &lt;float&gt;,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
-      &quot;type&quot;: &lt;string&gt;,             # the type of the connection. Can be &quot;pipe&quot;, &quot;compressor&quot;, &quot;short_pipe&quot;, &quot;control_valve&quot;, &quot;valve&quot;
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;short_pipe&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;valve&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;control_valve&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;c_ratio_min&quot;: &lt;float&gt;,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;c_ratio_max&quot;: &lt;float&gt;,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;resistor&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;drag&quot;: &lt;float&gt;,              # the drag factor of resistors. Non dimensional.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
         ...
     },
     &quot;2&quot;:{...},
