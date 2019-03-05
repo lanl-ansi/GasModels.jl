@@ -9,7 +9,6 @@ using Memento
 
 if VERSION < v"0.7.0-"
     import Compat: @__MODULE__
-
 end
 
 # Create our module level logger (this will get precompiled)
@@ -21,7 +20,7 @@ __init__() = Memento.register(LOGGER)
 
 "Suppresses information and warning messages output by GasModels, for fine grained control use the Memento package"
 function silence()
-    Memento.info(LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
+    info(LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
     setlevel!(getlogger(InfrastructureModels), "error")
     setlevel!(getlogger(GasModels), "error")
 end

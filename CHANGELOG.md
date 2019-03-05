@@ -4,12 +4,13 @@ GasModels.jl Change Log
 ### Pending
 - Implement non-binary variable model of compressors and control valves  
 - Implement nlp version(s) of the problems (abs, x - x^2 = 0, compressor directionality)
-- Implement Constraints on compressor power 
+- Implement Constraints on compressor power
 - Implement a multi-network test
-- Implement a matlab like data input format
 
 ### Staged
 - fixed bugs in multinetwork build_ref construction
+- Redefined the data dictionary to split out connections by type and removed type field (breaking)
+- Replaced Logging with Memento
 
 ### v0.3.4
 - fixed bugs in print_summary function
@@ -17,7 +18,7 @@ GasModels.jl Change Log
 
 ### v0.3.3
 - Added support for matlab like data input format parsing
-- Added a print_summary function 
+- Added a print_summary function
 
 ### v0.3.2
 - Add support for Julia v0.7 and v1.0
