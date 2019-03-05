@@ -228,7 +228,6 @@ function build_ref(data::Dict{String,Any})
         ref[:junction] = Dict(x for x in ref[:junction] if x.second["status"] == 1)
         ref[:consumer] = Dict(x for x in ref[:consumer] if x.second["status"] == 1 && x.second["ql_junc"] in keys(ref[:junction]))
         ref[:producer] = Dict(x for x in ref[:producer] if x.second["status"] == 1 && x.second["qg_junc"] in keys(ref[:junction]))
-#        ref[:connection] = Dict(x for x in ref[:connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
 
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
         ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
@@ -240,27 +239,12 @@ function build_ref(data::Dict{String,Any})
         ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
 
-
-#        ref[:ne_connection] = Dict(x for x in ref[:ne_connection] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction]))
-
         # compute the maximum flow
         max_mass_flow = calc_max_mass_flow(data)
         ref[:max_mass_flow] = max_mass_flow
 
         ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
         ref[:ne_connection] =  merge(ref[:ne_pipe],ref[:ne_compressor])
-
-
-        # create some sets based on connection types
-#        ref[:pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "pipe")
-#        ref[:short_pipe] = Dict(x for x in ref[:connection] if x.second["type"] == "short_pipe")
-#        ref[:compressor] = Dict(x for x in ref[:connection] if x.second["type"] == "compressor")
-#        ref[:valve] = Dict(x for x in ref[:connection] if x.second["type"] == "valve")
-#        ref[:control_valve] = Dict(x for x in ref[:connection] if x.second["type"] == "control_valve")
-#        ref[:resistor] = Dict(x for x in ref[:connection] if x.second["type"] == "resistor")
-
-#        ref[:ne_pipe] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "pipe")
-#        ref[:ne_compressor] = Dict(x for x in ref[:ne_connection] if x.second["type"] == "compressor")
 
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections

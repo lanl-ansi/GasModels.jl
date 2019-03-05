@@ -49,17 +49,62 @@ The network data dictionary structure is roughly as follows:
     "2":{...},
     ...
 },
-"connection":{
+"pipe":{
     "1":{
       "length": <float>,            # the length of the connection. SI units are m.
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
-      "drag": <float>,              # the drag factor of resistors. Non dimensional.
       "friction_factor": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.
       "diameter": <float>,          # the diameter of the connection. SI units are m.
+        ...
+    },
+    "2":{...},
+    ...
+},
+"compressor":{
+    "1":{
+      "f_junction": <int>,          # the "from" side junction id
+      "t_junction": <int>,          # the "to" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
-      "type": <string>,             # the type of the connection. Can be "pipe", "compressor", "short_pipe", "control_valve", "valve"
+        ...
+    },
+    "2":{...},
+    ...
+}
+"short_pipe":{
+    "1":{
+      "f_junction": <int>,          # the "from" side junction id
+      "t_junction": <int>,          # the "to" side junction id
+        ...
+    },
+    "2":{...},
+    ...
+}
+"valve":{
+    "1":{
+      "f_junction": <int>,          # the "from" side junction id
+      "t_junction": <int>,          # the "to" side junction id
+        ...
+    },
+    "2":{...},
+    ...
+}
+"control_valve":{
+    "1":{
+      "f_junction": <int>,          # the "from" side junction id
+      "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+        ...
+    },
+    "2":{...},
+    ...
+}
+"resistor":{
+    "1":{
+      "f_junction": <int>,          # the "from" side junction id
+      "t_junction": <int>,          # the "to" side junction id
+      "drag": <float>,              # the drag factor of resistors. Non dimensional.
         ...
     },
     "2":{...},
@@ -76,7 +121,3 @@ The following commands can be used to explore the network data dictionary,
 network_data = GasModels.parse_file("gaslib-40.json")
 display(network_data)
 ```
-
-
-
-

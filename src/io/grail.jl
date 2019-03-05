@@ -11,10 +11,6 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
     g_edges = Dict([(edge["index"], edge) for edge in network_data["edge"]])
     g_compressors = Dict([(compressor["index"], compressor) for compressor in network_data["compressor"]])
 
-    #println(keys(g_nodes))
-    #println(keys(g_edges))
-    #println(keys(g_compressors))
-
     g_node_withdrawal = Dict{Int,Any}()
     for (i, withdrawal) in enumerate(profile_data["withdrawal"])
         # based on connectivity, this appears to be node index keys (not node id keys)
@@ -215,7 +211,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         pipe = gm_connections["$(compressor["edge_id"])"]
         @assert pipe["type"] == "pipe"
         @assert pipe["t_junction"] == compressor["node"] || pipe["f_junction"] == compressor["node"]
-        
+
         # FOLLOW UP: this could be an indication of a compressor orientation issue
         if pipe["f_junction"] == compressor["node"]
             pipe["f_junction"] = to_junction_index
@@ -258,4 +254,3 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
 
     return gm_network
 end
-

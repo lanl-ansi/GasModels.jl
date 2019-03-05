@@ -331,41 +331,13 @@ end
 
 "merges pipes and compressor to connections"
 function mlab2gm_connection(data::Dict{String,Any})
-    #pipes = [pipe for pipe in data["pipe"]]
-    #for pipe in pipes
-#        append!(data["connection"], [Dict{String,Any}(
-#            "f_junction" => pipe["f_junction"],
-#            "t_junction" => pipe["t_junction"],
-#            "diameter" => pipe["diameter"],
-#            "length" => pipe["length"],
-#            "friction_factor" => pipe["friction_factor"],
-#            "type" => "pipe",
-#            "index" => pipe["index"],
-#            "status" => pipe["status"]
-#        )])
-    #end
-#    delete!(data, "pipe")
     compressors = [compressor for compressor in data["compressor"]]
     for compressor in compressors
         compressor["qmin"] = compressor["fmin"] * data["standard_density"]
         compressor["qmax"] = compressor["fmax"] * data["standard_density"]
         delete!(compressor, "fmin")
         delete!(compressor, "fmax")
-
-#        append!(data["connection"], [Dict{String,Any}(
-#            "f_junction" => compressor["f_junction"],
-#            "t_junction" => compressor["t_junction"],
-#            "c_ratio_max" => compressor["c_ratio_max"],
-#            "c_ratio_min" => compressor["c_ratio_min"],
-#            "status" => compressor["status"],
-#            "power_max" => compressor["power_max"],
-#            "qmin" => compressor["fmin"] * data["standard_density"],
-#            "qmax" => compressor["fmax"] * data["standard_density"],
-#            "index" => compressor["index"],
-#            "type" => "compressor"
-#        )])
     end
-#    delete!(data, "compressor")
 end
 
 "merges junction name data into junctions, if names exist"
