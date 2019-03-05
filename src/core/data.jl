@@ -33,6 +33,27 @@ function add_default_status(data::Dict{String,Any})
     end
 end
 
+"The fields 'yp' and 'yn are used for directionality in many of the math formulations.  If the directed field is included, then we add those values here"
+function add_default_direction(data::Dict{String,Any})
+    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
+    for (n,data) in nws_data
+        for entry in [data["pipe"]; data["compressor"]; data["short_pipe"]; data["resistor"]; data["valve"]; data["control_valve"]; data["ne_pipe"]; data["ne_compressor"]]
+            for (idx,component) in entry
+                if haskey(component,"directed")
+                    if component["directed"] == 1
+                        component["yp"] = 1
+                        component["yn"] = 0
+                    end
+                    if component["directed"] == -1
+                        component["yp"] = 0
+                        component["yn"] = 1
+                    end
+                end
+            end
+        end
+    end
+end
+
 "Ensures that consumer priority exists as a field in loads"
 function add_default_consumer_priority(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)

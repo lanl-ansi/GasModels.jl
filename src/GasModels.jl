@@ -21,7 +21,7 @@ __init__() = Memento.register(LOGGER)
 
 "Suppresses information and warning messages output by GasModels, for fine grained control use the Memento package"
 function silence()
-    info(LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
+    Memento.info(LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
     setlevel!(getlogger(InfrastructureModels), "error")
     setlevel!(getlogger(GasModels), "error")
 end

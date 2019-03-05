@@ -43,10 +43,10 @@ The network data dictionary structure is roughly as follows:
 "producer":{
     "1":{
       "qg_junc": <float>,  # junction id
-      "qgmin": <float>,  # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      "qgmax": <float>,  # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      "qgfirm": <float>, # constant volumetric gas production at standard density. SI units are m^3/s.
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "qgmin": <float>,    # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      "qgmax": <float>,    # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
+      "qgfirm": <float>,   # constant volumetric gas production at standard density. SI units are m^3/s.
+      "status": <int>,     # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},
@@ -59,7 +59,8 @@ The network data dictionary structure is roughly as follows:
       "t_junction": <int>,          # the "to" side junction id
       "friction_factor": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.
       "diameter": <float>,          # the diameter of the connection. SI units are m.
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
@@ -71,7 +72,8 @@ The network data dictionary structure is roughly as follows:
       "t_junction": <int>,          # the "to" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
@@ -81,7 +83,8 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
@@ -91,7 +94,8 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
@@ -102,7 +106,8 @@ The network data dictionary structure is roughly as follows:
       "f_junction": <int>,          # the "from" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
@@ -113,7 +118,8 @@ The network data dictionary structure is roughly as follows:
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
       "drag": <float>,              # the drag factor of resistors. Non dimensional.
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
     },
     "2":{...},
