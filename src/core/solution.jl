@@ -103,9 +103,6 @@ end
 
 " Get the direction set points"
 function add_direction_setpoint(sol, gm::GenericGasModel)
-#    add_setpoint(sol, gm, "connection", "yp", :yp)
-#    add_setpoint(sol, gm, "connection", "yn", :yn)
-
     add_setpoint(sol, gm, "pipe", "yp", :yp)
     add_setpoint(sol, gm, "pipe", "yn", :yn)
     add_setpoint(sol, gm, "compressor", "yp", :yp)
@@ -128,8 +125,6 @@ end
 
 " Add the flow solutions "
 function add_connection_flow_setpoint(sol, gm::GenericGasModel)
-#    add_setpoint(sol, gm, "connection", "f", :f)
-
     add_setpoint(sol, gm, "pipe", "f", :f)
     add_setpoint(sol, gm, "compressor", "f", :f)
     add_setpoint(sol, gm, "control_valve", "f", :f)
