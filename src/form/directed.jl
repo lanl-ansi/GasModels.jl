@@ -2,21 +2,9 @@
 # Constraints
 ################
 
-" constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractDirectedGasFormulation
-    kwargs = Dict(kwargs)
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :on_off_pressure_drop1)
-        gm.con[:nw][n][:on_off_pressure_drop1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pressure_drop2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_pressure_drop1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
-    gm.con[:nw][n][:on_off_pressure_drop2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
-end
+
+
 
 " constraints on pressure drop across pipes when the direction is fixed "
 function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractDirectedGasFormulation
@@ -113,12 +101,6 @@ function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, 
     gm.con[:nw][n][:on_off_compressor_ratios2][k] = @constraint(gm.model, min_ratio^2*pi - pj <= (1-yp)*(i_pmax^2))
     gm.con[:nw][n][:on_off_compressor_ratios3][k] = @constraint(gm.model, pi - pj <= (1-yn)*(i_pmax^2))
     gm.con[:nw][n][:on_off_compressor_ratios4][k] = @constraint(gm.model, pj - pi <= (1-yn)*(j_pmax^2))
-
-    # old way bi directional
-#    gm.con[:nw][n][:on_off_compressor_ratios1][k] = @constraint(gm.model, pj - max_ratio^2*pi <= (1-yp)*(j_pmax^2 - max_ratio^2*i_pmin^2))
- #   gm.con[:nw][n][:on_off_compressor_ratios2][k] = @constraint(gm.model, min_ratio^2*pi - pj <= (1-yp)*(min_ratio^2*i_pmax^2 - j_pmin^2))
-  #  gm.con[:nw][n][:on_off_compressor_ratios3][k] = @constraint(gm.model, pi - max_ratio^2*pj <= (1-yn)*(i_pmax^2 - max_ratio^2*j_pmin^2))
-   # gm.con[:nw][n][:on_off_compressor_ratios4][k] = @constraint(gm.model, min_ratio^2*pj - pi <= (1-yn)*(min_ratio^2*j_pmax^2 - i_pmin^2))
 end
 
 " constraints on flow across short pipes when the directions are constants "
@@ -192,10 +174,4 @@ function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n
     gm.con[:nw][n][:on_off_control_valve_pressure_drop2][k] = @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-v)*(i_pmax^2) )
     gm.con[:nw][n][:on_off_control_valve_pressure_drop3][k] = @constraint(gm.model,  pj - pi <= (2-yn-v)*j_pmax^2)
     gm.con[:nw][n][:on_off_control_valve_pressure_drop4][k] = @constraint(gm.model,  pi - pj <= (2-yn-v)*(i_pmax^2))
-
-    # old way for bi directional control valves
-#    gm.con[:nw][n][:on_off_control_valve_pressure_drop1][k] = @constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-yp-v)*j_pmax^2)
- #   gm.con[:nw][n][:on_off_control_valve_pressure_drop2][k] = @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-v)*(min_ratio^2*i_pmax^2) )
-  #  gm.con[:nw][n][:on_off_control_valve_pressure_drop3][k] = @constraint(gm.model,  pi - (max_ratio^2*pj) <= (2-yn-v)*i_pmax^2^2)
-   # gm.con[:nw][n][:on_off_control_valve_pressure_drop4][k] = @constraint(gm.model,  (min_ratio^2*pj) - pi <= (2-yn-v)*(min_ratio^2*j_pmax^2))
 end

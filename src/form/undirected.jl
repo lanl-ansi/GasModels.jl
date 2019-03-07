@@ -22,20 +22,7 @@ function constraint_flow_direction_choice_ne(gm::GenericGasModel{T}, n::Int, i) 
     gm.con[:nw][n][:flow_direction_choice_ne][i] = @constraint(gm.model, yp + yn == 1)
 end
 
-" constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
 
-    if !haskey(gm.con[:nw][n], :on_off_pressure_drop1)
-        gm.con[:nw][n][:on_off_pressure_drop1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pressure_drop2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_pressure_drop1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
-    gm.con[:nw][n][:on_off_pressure_drop2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
-end
 
 " constraints on pressure drop across pipes "
 function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractUndirectedGasFormulation

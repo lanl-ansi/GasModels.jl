@@ -96,12 +96,17 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow_ne_ls(gm, i)
+        constraint_junction_mass_flow_ne_ls_directed(gm, i)
     end
 
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
+    for i in [collect(ids(gm,:undirected_pipe)); collect(ids(gm,:undirected_resistor))]
         constraint_pipe_flow_ne(gm, i)
     end
+
+    for i in [collect(ids(gm,:directed_pipe)); collect(ids(gm,:directed_resistor))]
+        constraint_pipe_flow_ne_directed(gm, i)
+    end
+
 
     for i in ids(gm,:ne_pipe)
         constraint_new_pipe_flow_ne(gm, i)

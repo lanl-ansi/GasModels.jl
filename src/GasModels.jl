@@ -43,6 +43,7 @@ include("form/misocp.jl")
 include("form/directed.jl")
 include("form/undirected.jl")
 include("form/shared.jl")
+include("form/shared_mi.jl")
 
 include("prob/gf.jl")
 include("prob/ne.jl")

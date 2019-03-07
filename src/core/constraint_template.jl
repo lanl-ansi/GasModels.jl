@@ -17,12 +17,28 @@ function constraint_on_off_pressure_drop(gm::GenericGasModel, n::Int, k)
     j              = pipe["t_junction"]
     pd_min         = pipe["pd_min"]
     pd_max         = pipe["pd_max"]
-    yp             = haskey(pipe, "yp") ? pipe["yp"] : nothing
-    yn             = haskey(pipe, "yn") ? pipe["yn"] : nothing
+#    yp             = haskey(pipe, "yp") ? pipe["yp"] : nothing
+#    yn             = haskey(pipe, "yn") ? pipe["yn"] : nothing
 
-    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max; yp=yp, yn=yn)
+#    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max; yp=yp, yn=yn)
+    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max)
 end
 constraint_on_off_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop(gm, gm.cnw, k)
+
+" constraints on pressure drop across pipes where some edges are directed"
+function constraint_on_off_pressure_drop_directed(gm::GenericGasModel, n::Int, k)
+    pipe           = ref(gm, n, :connection, k)
+    i              = pipe["f_junction"]
+    j              = pipe["t_junction"]
+    pd_min         = pipe["pd_min"]
+    pd_max         = pipe["pd_max"]
+    yp             = pipe["yp"]
+    yn             = pipe["yn"]
+
+    constraint_on_off_pressure_drop_directed(gm, n, k, i, j, pd_min, pd_max, yp, yn)
+end
+constraint_on_off_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_directed(gm, gm.cnw, k)
+
 
 " constraints on pressure drop across pipes "
 function constraint_on_off_pressure_drop_ne(gm::GenericGasModel, n::Int, k)
