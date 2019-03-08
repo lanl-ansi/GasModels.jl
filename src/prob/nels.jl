@@ -107,9 +107,12 @@ function post_nels_directed(gm::GenericGasModel)
         constraint_pipe_flow_ne_directed(gm, i)
     end
 
-
-    for i in ids(gm,:ne_pipe)
+    for i in ids(gm,:undirected_ne_pipe)
         constraint_new_pipe_flow_ne(gm, i)
+    end
+
+    for i in ids(gm,:directed_ne_pipe)
+        constraint_new_pipe_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :short_pipe)

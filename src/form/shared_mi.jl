@@ -178,9 +178,8 @@ end
 "Constraints the define the pressure drop across a pipe when some pipe directions are known"
 function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
     constraint_on_off_pressure_drop_directed(gm, i)
-    # TODO Here
-    constraint_on_off_pipe_flow_direction(gm, i)
-    constraint_weymouth(gm, i)
+    constraint_on_off_pipe_flow_direction_directed(gm, i)
+    constraint_weymouth_directed(gm, i)
 end
 
 " constraints on pressure drop across an undirected pipe"
@@ -221,7 +220,102 @@ end
 " constraints for modeling flow across a directed pipe when there are new edges "
 function constraint_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
     constraint_on_off_pressure_drop_directed(gm, i)
-    # TODO Here
-    constraint_on_off_pipe_flow_direction(gm, i)
-    constraint_weymouth(gm, i)
+    constraint_on_off_pipe_flow_direction_directed(gm, i)
+    constraint_weymouth_directed(gm, i)
+end
+
+" constraint on flow across an undirected pipe "
+function constraint_on_off_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AllAbstractMIForms
+    yp = gm.var[:nw][n][:yp][k]
+    yn = gm.var[:nw][n][:yn][k]
+   constraint_on_off_pipe_flow_direction(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
+end
+
+" generic constraint on flow across the pipe where direction is passed in as a variable or constant"
+function constraint_on_off_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AllAbstractMIForms
+    f  = gm.var[:nw][n][:f][k]
+
+    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_direction1)
+        gm.con[:nw][n][:on_off_pipe_flow_direction1] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:on_off_pipe_flow_direction2] = Dict{Int,ConstraintRef}()
+    end
+    gm.con[:nw][n][:on_off_pipe_flow_direction1][k] = @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f)
+    gm.con[:nw][n][:on_off_pipe_flow_direction2][k] = @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
+end
+
+" constraints on flow across a directed pipe "
+function constraint_on_off_pipe_flow_direction_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AllAbstractMIForms
+    constraint_on_off_pipe_flow_direction(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
+end
+
+#############################################################################################################
+## Constraints for modeling flow across a new pipe
+############################################################################################################
+
+"Constraints for an expansion pipe with undirected flow"
+function constraint_new_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
+    constraint_on_off_pressure_drop_ne(gm, i)
+    constraint_on_off_pipe_flow_direction_ne(gm, i)
+    constraint_on_off_pipe_flow_ne(gm, i)
+    constraint_weymouth_ne(gm, i)
+
+    constraint_flow_direction_choice_ne(gm, i)
+    constraint_parallel_flow_ne(gm, i)
+end
+
+"Constraints for an expansion pipe with undirected flow"
+function constraint_new_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
+    constraint_on_off_pressure_drop_ne_directed(gm, i)
+    constraint_on_off_pipe_flow_direction_ne_directed(gm, i)
+    constraint_on_off_pipe_flow_ne(gm, i)
+    constraint_weymouth_ne_directed(gm, i)
+end
+
+" constraints on pressure drop across an undirected expansion pipe "
+function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AllAbstractMIForms
+    yp = gm.var[:nw][n][:yp_ne][k]
+    yn = gm.var[:nw][n][:yn_ne][k]
+    constraint_on_off_pressure_drop_ne(gm, n, k, i, j, pd_min, pd_max, yp, yn)
+end
+
+" constraints on pressure drop across a pipe "
+function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max, yp, yn) where T <: AllAbstractMIForms
+    pi = gm.var[:nw][n][:p][i]
+    pj = gm.var[:nw][n][:p][j]
+
+    if !haskey(gm.con[:nw][n], :on_off_pressure_drop_ne1)
+        gm.con[:nw][n][:on_off_pressure_drop_ne1] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:on_off_pressure_drop_ne2] = Dict{Int,ConstraintRef}()
+    end
+    gm.con[:nw][n][:on_off_pressure_drop_ne1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
+    gm.con[:nw][n][:on_off_pressure_drop_ne2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
+end
+
+" constraints on pressure drop across pipes when the direction is fixed "
+function constraint_on_off_pressure_drop_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max, yp, yn) where T <: AllAbstractMIForms
+    constraint_on_off_pressure_drop_ne(gm, n, k, i, j, pd_min, pd_max, yp, yn)
+end
+
+" constraints on flow across an expansion undirected pipe "
+function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AllAbstractMIForms
+    yp = gm.var[:nw][n][:yp_ne][k]
+    yn = gm.var[:nw][n][:yn_ne][k]
+    constraint_on_off_pipe_flow_direction_ne(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
+end
+
+" constraints on flow across an expansion pipe "
+function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AllAbstractMIForms
+    f  = gm.var[:nw][n][:f_ne][k]
+
+    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_direction_ne1)
+        gm.con[:nw][n][:on_off_pipe_flow_direction_ne1] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][:on_off_pipe_flow_direction_ne2] = Dict{Int,ConstraintRef}()
+    end
+    gm.con[:nw][n][:on_off_pipe_flow_direction_ne1][k] = @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f)
+    gm.con[:nw][n][:on_off_pipe_flow_direction_ne2][k] = @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
+end
+
+" constraints on flow across an expansion pipe that is directed "
+function constraint_on_off_pipe_flow_direction_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AllAbstractMIForms
+    constraint_on_off_pipe_flow_direction_ne(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
 end

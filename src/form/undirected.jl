@@ -24,48 +24,6 @@ end
 
 
 
-" constraints on pressure drop across pipes "
-function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp_ne][k]
-    yn = gm.var[:nw][n][:yn_ne][k]
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-
-    if !haskey(gm.con[:nw][n], :on_off_pressure_drop_ne1)
-        gm.con[:nw][n][:on_off_pressure_drop_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pressure_drop_ne2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_pressure_drop_ne1][k] = @constraint(gm.model, (1-yp) * pd_min <= pi - pj)
-    gm.con[:nw][n][:on_off_pressure_drop_ne2][k] = @constraint(gm.model, pi - pj <= (1-yn)* pd_max)
-end
-
-" constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
-    f  = gm.var[:nw][n][:f][k]
-
-    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_direction1)
-        gm.con[:nw][n][:on_off_pipe_flow_direction1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pipe_flow_direction2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_pipe_flow_direction1][k] = @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f)
-    gm.con[:nw][n][:on_off_pipe_flow_direction2][k] = @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
-end
-
-" constraints on flow across pipes "
-function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp_ne][k]
-    yn = gm.var[:nw][n][:yn_ne][k]
-    f  = gm.var[:nw][n][:f_ne][k]
-
-    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_direction_ne1)
-        gm.con[:nw][n][:on_off_pipe_flow_direction_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_pipe_flow_direction_ne2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_pipe_flow_direction_ne1][k] = @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f)
-    gm.con[:nw][n][:on_off_pipe_flow_direction_ne2][k] = @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
-end
 
 " constraints on flow across compressors "
 function constraint_on_off_compressor_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation

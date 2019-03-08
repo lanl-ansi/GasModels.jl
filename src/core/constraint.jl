@@ -70,10 +70,13 @@ constraint_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_valve_flow_ne
 " All constraints associated with flows through a control valve"
 constraint_control_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne(gm, gm.cnw, k)
 
-" All constraints associated with flows through a valve"
+" All constraints associated with flows through an undirected expansion pipe"
 constraint_new_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne(gm, gm.cnw, k)
 
-" All constraints associated with flows through a control valve"
+" All constraints associated with flows through a directed expansion pipe"
+constraint_new_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne_directed(gm, gm.cnw, k)
+
+" All constraints associated with flows through an expansion compressor"
 constraint_new_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_compressor_flow_ne(gm, gm.cnw, k)
 
 # Constraints with templates
