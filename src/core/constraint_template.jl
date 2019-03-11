@@ -65,37 +65,6 @@ function constraint_on_off_pressure_drop_ne_directed(gm::GenericGasModel, n::Int
 end
 constraint_on_off_pressure_drop_ne_directed(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_ne_directed(gm, gm.cnw, k)
 
-" constraint on flow across an undirected pipe "
-function constraint_on_off_pipe_flow_direction(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
-    pipe = ref(gm,n,:connection,k)
-
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
-    constraint_on_off_pipe_flow_direction(gm, n, k, i, j, mf, pd_min, pd_max, w)
-end
-constraint_on_off_pipe_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_direction(gm, gm.cnw, k)
-
-" constraint on flow across a directed pipe "
-function constraint_on_off_pipe_flow_direction_directed(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
-    pipe = ref(gm,n,:connection,k)
-
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
-    yp             = pipe["yp"]
-    yn             = pipe["yn"]
-
-    constraint_on_off_pipe_flow_direction_directed(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
-end
-constraint_on_off_pipe_flow_direction_directed(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_direction_directed(gm, gm.cnw, k)
-
 " constraints on flow across an expansion pipe that is undirected "
 function constraint_on_off_pipe_flow_direction_ne(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:ne_connection, k)
@@ -272,19 +241,34 @@ function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int
 end
 constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
-" constraints on flow across short pipes "
+" constraints on flow across an undirected short pipe "
 function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm,n,:connection,k)
 
     i  = pipe["f_junction"]
     j  = pipe["t_junction"]
     mf = gm.ref[:nw][n][:max_mass_flow]
-    yp = haskey(pipe, "yp") ? pipe["yp"] : nothing
-    yn = haskey(pipe, "yn") ? pipe["yn"] : nothing
+#    yp = haskey(pipe, "yp") ? pipe["yp"] : nothing
+#    yn = haskey(pipe, "yn") ? pipe["yn"] : nothing
 
-    constraint_on_off_short_pipe_flow_direction(gm, n, k, i, j, mf; yp=yp, yn=yn)
+    constraint_on_off_short_pipe_flow_direction(gm, n, k, i, j, mf)
 end
 constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_direction(gm, gm.cnw, k)
+
+" constraints on flow across a directed short pipe "
+function constraint_on_off_short_pipe_flow_direction_directed(gm::GenericGasModel, n::Int, k)
+    pipe = ref(gm,n,:connection,k)
+
+    i  = pipe["f_junction"]
+    j  = pipe["t_junction"]
+    mf = gm.ref[:nw][n][:max_mass_flow]
+    yp = pipe["yp"]
+    yn = pipe["yn"]
+
+    constraint_on_off_short_pipe_flow_direction_directed(gm, n, k, i, j, mf, yp, yn)
+end
+constraint_on_off_short_pipe_flow_direction_directed(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_direction_directed(gm, gm.cnw, k)
+
 
 " constraints on pressure drop across pipes "
 function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k)

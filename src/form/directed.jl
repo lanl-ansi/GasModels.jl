@@ -61,20 +61,7 @@ function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, 
     gm.con[:nw][n][:on_off_compressor_ratios4][k] = @constraint(gm.model, pj - pi <= (1-yn)*(j_pmax^2))
 end
 
-" constraints on flow across short pipes when the directions are constants "
-function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
-    kwargs = Dict(kwargs)
-    f = gm.var[:nw][n][:f][k]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :on_off_short_pipe_flow_direction1)
-        gm.con[:nw][n][:on_off_short_pipe_flow_direction1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_short_pipe_flow_direction2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_short_pipe_flow_direction1][k] = @constraint(gm.model, -max_flow*(1-yp) <= f)
-    gm.con[:nw][n][:on_off_short_pipe_flow_direction2][k] = @constraint(gm.model, f <= max_flow*(1-yn))
-end
 
 " constraints on flow across valves when directions are constants "
 function constraint_on_off_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation

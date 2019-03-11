@@ -55,11 +55,11 @@ constraint_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_control_
 " All constraints associated with flows through a pipe"
 constraint_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne(gm, gm.cnw, k)
 
-" All constraints associated with flows through a pipe that is directed"
-constraint_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne_directed(gm, gm.cnw, k)
-
 " All constraints associated with flows through a short pipe"
 constraint_short_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a short pipe for expansion planning models"
+constraint_short_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow_ne_directed(gm, gm.cnw, k)
 
 " All constraints associated with flows through a compressor"
 constraint_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_compressor_flow_ne(gm, gm.cnw, k)
