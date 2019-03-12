@@ -351,7 +351,7 @@ end
 " Constraints for modeling flow on an undirected short pipe"
 function constraint_short_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
     constraint_short_pipe_pressure_drop(gm, i)
-    constraint_on_off_short_pipe_flow_direction(gm, i)
+    constraint_on_off_short_pipe_flow(gm, i)
 
     constraint_flow_direction_choice(gm, i)
     constraint_parallel_flow(gm, i)
@@ -360,25 +360,25 @@ end
 " Constraints for modeling flow on a directed short pipe"
 function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
     constraint_short_pipe_pressure_drop(gm, i)
-    constraint_on_off_short_pipe_flow_direction_directed(gm, i)
+    constraint_on_off_short_pipe_flow_directed(gm, i)
 end
 
 " Constraints for modeling flow on an undirected short pipe for expansion planning models"
 function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AllAbstractMIForms
     constraint_short_pipe_pressure_drop(gm, i)
-    constraint_on_off_short_pipe_flow_direction(gm, i)
+    constraint_on_off_short_pipe_flow(gm, i)
 
     constraint_flow_direction_choice(gm, i)
     constraint_parallel_flow_ne(gm, i)
 end
 
 " constraints on flow across a directed short pipe "
-function constraint_on_off_short_pipe_flow_direction_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AllAbstractMIForms
-    constraint_on_off_short_pipe_flow_direction(gm, n, k, i, j, mf, yp, yn)
+function constraint_on_off_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AllAbstractMIForms
+    constraint_on_off_short_pipe_flow(gm, n, k, i, j, mf, yp, yn)
 end
 
 " constraints on flow across a  short pipe "
-function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AllAbstractMIForms
+function constraint_on_off_short_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AllAbstractMIForms
     f = gm.var[:nw][n][:f][k]
 
     if !haskey(gm.con[:nw][n], :on_off_short_pipe_flow_direction1)
@@ -390,8 +390,34 @@ function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::
 end
 
 " constraints on flow across an undirected short pipe "
-function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AllAbstractMIForms
+function constraint_on_off_short_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AllAbstractMIForms
     yp = gm.var[:nw][n][:yp][k]
     yn = gm.var[:nw][n][:yn][k]
-    constraint_on_off_short_pipe_flow_direction(gm, n, k, i, j, mf, yp, yn)
+    constraint_on_off_short_pipe_flow(gm, n, k, i, j, mf, yp, yn)
 end
+
+" constraints on flow across an undirected short pipe "
+function constraint_on_off_short_pipe_flow(gm::GenericGasModel, n::Int, k)
+    pipe = ref(gm,n,:connection,k)
+
+    i  = pipe["f_junction"]
+    j  = pipe["t_junction"]
+    mf = gm.ref[:nw][n][:max_mass_flow]
+
+    constraint_on_off_short_pipe_flow(gm, n, k, i, j, mf)
+end
+constraint_on_off_short_pipe_flow(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow(gm, gm.cnw, k)
+
+" constraints on flow across a directed short pipe "
+function constraint_on_off_short_pipe_flow_directed(gm::GenericGasModel, n::Int, k)
+    pipe = ref(gm,n,:connection,k)
+
+    i  = pipe["f_junction"]
+    j  = pipe["t_junction"]
+    mf = gm.ref[:nw][n][:max_mass_flow]
+    yp = pipe["yp"]
+    yn = pipe["yn"]
+
+    constraint_on_off_short_pipe_flow_directed(gm, n, k, i, j, mf, yp, yn)
+end
+constraint_on_off_short_pipe_flow_directed(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_directed(gm, gm.cnw, k)

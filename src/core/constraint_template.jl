@@ -241,35 +241,6 @@ function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int
 end
 constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
-" constraints on flow across an undirected short pipe "
-function constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, n::Int, k)
-    pipe = ref(gm,n,:connection,k)
-
-    i  = pipe["f_junction"]
-    j  = pipe["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
-#    yp = haskey(pipe, "yp") ? pipe["yp"] : nothing
-#    yn = haskey(pipe, "yn") ? pipe["yn"] : nothing
-
-    constraint_on_off_short_pipe_flow_direction(gm, n, k, i, j, mf)
-end
-constraint_on_off_short_pipe_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_direction(gm, gm.cnw, k)
-
-" constraints on flow across a directed short pipe "
-function constraint_on_off_short_pipe_flow_direction_directed(gm::GenericGasModel, n::Int, k)
-    pipe = ref(gm,n,:connection,k)
-
-    i  = pipe["f_junction"]
-    j  = pipe["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
-    yp = pipe["yp"]
-    yn = pipe["yn"]
-
-    constraint_on_off_short_pipe_flow_direction_directed(gm, n, k, i, j, mf, yp, yn)
-end
-constraint_on_off_short_pipe_flow_direction_directed(gm::GenericGasModel, k::Int) = constraint_on_off_short_pipe_flow_direction_directed(gm, gm.cnw, k)
-
-
 " constraints on pressure drop across pipes "
 function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm,n,:connection,k)
