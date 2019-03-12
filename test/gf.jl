@@ -239,7 +239,7 @@ end
 
     # 0.12220764306078952 yp[186] - f[186] <= 0.12220764306078952
     # f[186] + 0.12220764306078952 yn[186] <= 0.12220764306078952
-    ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow_direction1][186]
+    ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow1][186]
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, 0.12220764306078952; atol = 1e-4)
     @test JuMP.sense(c) == :<=
@@ -254,7 +254,7 @@ end
         end
     end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow_direction2][186]
+    ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow2][186]
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, 0.12220764306078952; atol = 1e-4)
     @test JuMP.sense(c) == :<=
@@ -320,7 +320,7 @@ end
 
     # 1.0 yp[321] - f[321] <= 325.31057760000004
     # f[321] + 1.0 yn[321] <= 325.31057760000004
-   ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow_direction1][321]
+   ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow1][321]
    c = gm.model.linconstr[ref.idx]
    @test isapprox(c.ub, 1.0; atol = 1e-4)
    @test JuMP.sense(c) == :<=
@@ -335,7 +335,7 @@ end
         end
     end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow_direction2][321]
+    ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow2][321]
     c = gm.model.linconstr[ref.idx]
     @test isapprox(c.ub, 1.0; atol = 1e-4)
     @test JuMP.sense(c) == :<=

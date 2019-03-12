@@ -123,12 +123,20 @@ function post_nels_directed(gm::GenericGasModel)
         constraint_short_pipe_flow_directed(gm, i)
     end
 
-    for i in ids(gm,:compressor)
+    for i in ids(gm,:undirected_compressor)
         constraint_compressor_flow_ne(gm, i)
     end
 
-    for i in ids(gm, :ne_compressor)
+    for i in ids(gm,:directed_compressor)
+        constraint_compressor_flow_ne_directed(gm, i)
+    end
+
+    for i in ids(gm, :undirected_ne_compressor)
         constraint_new_compressor_flow_ne(gm, i)
+    end
+
+    for i in ids(gm, :directed_ne_compressor)
+        constraint_new_compressor_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :valve)

@@ -25,19 +25,6 @@ end
 
 
 
-" constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
-    f  = gm.var[:nw][n][:f][k]
-
-    if !haskey(gm.con[:nw][n], :on_off_compressor_flow_direction1)
-        gm.con[:nw][n][:on_off_compressor_flow_direction1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_flow_direction2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_compressor_flow_direction1][k] = @constraint(gm.model, -(1-yp)*mf <= f)
-    gm.con[:nw][n][:on_off_compressor_flow_direction2][k] = @constraint(gm.model, f <= (1-yn)*mf)
-end
 
 " constraints on flow across compressors "
 function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
@@ -53,25 +40,7 @@ function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel{T}, 
     gm.con[:nw][n][:on_off_compressor_flow_direction_ne2][k] = @constraint(gm.model, f <= (1-yn)*mf)
 end
 
-" enforces pressure changes bounds that obey compression ratios "
-function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin; kwargs...) where T <: AbstractUndirectedGasFormulation
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
 
-    if !haskey(gm.con[:nw][n], :on_off_compressor_ratios1)
-        gm.con[:nw][n][:on_off_compressor_ratios1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_ratios2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_ratios3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_ratios4] = Dict{Int,ConstraintRef}()
-    end
-
-    gm.con[:nw][n][:on_off_compressor_ratios1][k] = @constraint(gm.model, pj - max_ratio^2*pi <= (1-yp)*(j_pmax^2))
-    gm.con[:nw][n][:on_off_compressor_ratios2][k] = @constraint(gm.model, min_ratio^2*pi - pj <= (1-yp)*(i_pmax^2))
-    gm.con[:nw][n][:on_off_compressor_ratios3][k] = @constraint(gm.model, pi - pj <= (1-yn)*(i_pmax^2))
-    gm.con[:nw][n][:on_off_compressor_ratios4][k] = @constraint(gm.model, pj - pi <= (1-yn)*(j_pmax^2))
-end
 
 
 
