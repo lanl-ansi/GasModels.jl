@@ -43,7 +43,7 @@ constraint_weymouth
 
 ```@docs
 constraint_on_off_pressure_drop
-constraint_on_off_pipe_flow_direction
+constraint_on_off_pipe_flow
 ```
 
 ### Network Expansion Constraints
@@ -51,7 +51,7 @@ constraint_on_off_pipe_flow_direction
 ```@docs
 constraint_weymouth_ne
 constraint_on_off_pressure_drop_ne
-constraint_on_off_pipe_flow_direction_ne
+constraint_on_off_pipe_flow_ne
 ```
 
 ## Compressor Constraints
@@ -59,14 +59,14 @@ constraint_on_off_pipe_flow_direction_ne
 ### Direction On/off Constraints
 
 ```@docs
-constraint_on_off_compressor_flow_direction
+constraint_on_off_compressor_flow
 constraint_on_off_compressor_ratios
 ```
 
 ### Network Expansion Constraints
 
 ```@docs
-constraint_on_off_compressor_flow_direction_ne
+constraint_on_off_compressor_flow_ne
 constraint_on_off_compressor_ratios_ne
 ```
 
@@ -76,7 +76,7 @@ constraint_on_off_compressor_ratios_ne
 ### Direction On/off Constraints
 
 ```@docs
-constraint_on_off_control_valve_flow_direction
+constraint_on_off_control_valve_flow
 constraint_on_off_control_valve_pressure_drop
 ```
 
@@ -85,7 +85,7 @@ constraint_on_off_control_valve_pressure_drop
 ### Direction On/off Constraints
 
 ```@docs
-constraint_on_off_valve_flow_direction
+constraint_on_off_valve_flow
 constraint_on_off_valve_pressure_drop
 ```
 
@@ -94,7 +94,7 @@ constraint_on_off_valve_pressure_drop
 ### Direction On/off Constraints
 
 ```@docs
-constraint_on_off_short_pipe_flow_direction
+constraint_on_off_short_pipe_flow
 constraint_short_pipe_pressure_drop
 ```
 

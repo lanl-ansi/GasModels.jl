@@ -11,20 +11,7 @@
 
 
 
-" constraints on flow across compressors when the directions are constants "
-function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
-    kwargs = Dict(kwargs)
-    f = gm.var[:nw][n][:f_ne][k]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :on_off_compressor_flow_direction_ne1)
-        gm.con[:nw][n][:on_off_compressor_flow_direction_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_flow_direction_ne2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_compressor_flow_direction_ne1][k] = @constraint(gm.model, -(1-yp)*mf <= f)
-    gm.con[:nw][n][:on_off_compressor_flow_direction_ne2][k] = @constraint(gm.model, f <= (1-yn)*mf)
-end
 
 
 

@@ -5,7 +5,7 @@
 " Utility function for adding constraints to a gm.model "
 function add_constraint(gm::GenericGasModel, n::Int, key, k, constraint)
     if !haskey(gm.con[:nw][n], key)
-        gm.con[:nw][n][key] = Dict{Int,ConstraintRef}()
+        gm.con[:nw][n][key] = Dict{Any,ConstraintRef}()
     end
     gm.con[:nw][n][key][k] = constraint
 end
@@ -98,19 +98,7 @@ constraint_new_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constr
 
 # Constraints with templates
 
-" constraints on pressure drop across control valves "
-function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    yp = gm.var[:nw][n][:yp_ne][k]
-    yn = gm.var[:nw][n][:yn_ne][k]
-    zc = gm.var[:nw][n][:zc][k]
 
-    add_constraint(gm, n, :on_off_compressor_ratios_ne1, k, @constraint(gm.model,  pj - (max_ratio*pi) <= (2-yp-zc)*j_pmax^2))
-    add_constraint(gm, n, :on_off_compressor_ratios_ne2, k, @constraint(gm.model,  (min_ratio*pi) - pj <= (2-yp-zc)*(min_ratio*i_pmax^2)))
-    add_constraint(gm, n, :on_off_compressor_ratios_ne3, k, @constraint(gm.model,  pi - (max_ratio*pj) <= (2-yn-zc)*i_pmax^2))
-    add_constraint(gm, n, :on_off_compressor_ratios_ne4, k, @constraint(gm.model,  (min_ratio*pj) - pi <= (2-yn-zc)*(min_ratio*j_pmax^2)))
-end
 
 " standard mass flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fgfirm, flfirm)
@@ -170,38 +158,22 @@ function constraint_on_off_pipe_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min
     zp = gm.var[:nw][n][:zp][k]
     f  = gm.var[:nw][n][:f_ne][k]
 
-#    if !haskey(gm.con[:nw][n], :on_off_pipe_flow_ne1)
-#        gm.con[:nw][n][:on_off_pipe_flow_ne1] = Dict{Int,ConstraintRef}()
-#        gm.con[:nw][n][:on_off_pipe_flow_ne2] = Dict{Int,ConstraintRef}()
-#    end
-#    gm.con[:nw][n][:on_off_pipe_flow_ne1][k] = @constraint(gm.model, f <= zp*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
-#    gm.con[:nw][n][:on_off_pipe_flow_ne2][k] = @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(pd_max, abs(pd_min)))))
-
     add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, f <= zp*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
     add_constraint(gm, n, :on_off_pipe_flow_ne2, k,  @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
-
 end
 
 " on/off constraints on flow across compressors for expansion variables "
 function constraint_on_off_compressor_ne(gm::GenericGasModel,  n::Int, k, mf)
     zc = gm.var[:nw][n][:zc][k]
     f =  gm.var[:nw][n][:f_ne][k]
-
-    if !haskey(gm.con[:nw][n], :on_off_compressor_flow_ne1)
-        gm.con[:nw][n][:on_off_compressor_flow_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_compressor_flow_ne2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_compressor_flow_ne1][k] = @constraint(gm.model, -mf*zc <= f)
-    gm.con[:nw][n][:on_off_compressor_flow_ne2][k] = @constraint(gm.model, f <= mf*zc)
+    add_constraint(gm, n, :on_off_compressor_flow_ne1, k, @constraint(gm.model, -mf*zc <= f))
+    add_constraint(gm, n, :on_off_compressor_flow_ne2, k, @constraint(gm.model, f <= mf*zc))
 end
 
 " This function ensures at most one pipe in parallel is selected "
 function constraint_exclusive_new_pipes(gm::GenericGasModel,  n::Int, i, j, parallel)
     zp = gm.var[:nw][n][:zp]
-    if !haskey(gm.con[:nw][n], :exclusive_new_pipes)
-        gm.con[:nw][n][:exclusive_new_pipes] = Dict{Any,ConstraintRef}()
-    end
-    gm.con[:nw][n][:exclusive_new_pipes][(i,j)] = @constraint(gm.model, sum(zp[i] for i in parallel) <= 1)
+    add_constraint(gm, n, :exclusive_new_pipes, (i,j), @constraint(gm.model, sum(zp[i] for i in parallel) <= 1))
 end
 
 "compressor rations have on off for direction and expansion"

@@ -65,35 +65,6 @@ function constraint_on_off_pressure_drop_ne_directed(gm::GenericGasModel, n::Int
 end
 constraint_on_off_pressure_drop_ne_directed(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_ne_directed(gm, gm.cnw, k)
 
-
-" constraints on flow across compressors "
-function constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, n::Int, k)
-    compressor     = ref(gm,n,:ne_connection,k)
-
-    i        = compressor["f_junction"]
-    j        = compressor["t_junction"]
-    mf       = gm.ref[:nw][n][:max_mass_flow]
-    yp       = haskey(compressor, "yp") ? compressor["yp"] : nothing
-    yn       = haskey(compressor, "yn") ? compressor["yn"] : nothing
-
-    constraint_on_off_compressor_flow_direction_ne(gm, n, k, i, j, mf; yp=yp, yn=yn)
-end
-constraint_on_off_compressor_flow_direction_ne(gm::GenericGasModel, i::Int) = constraint_on_off_compressor_flow_direction_ne(gm, gm.cnw, i)
-
-" constraints on pressure drop across control valves "
-function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
-    compressor = ref(gm,n,:ne_connection, k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax         = gm.ref[:nw][n][:junction][i]["pmax"]
-
-    constraint_on_off_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
-end
-constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios_ne(gm, gm.cnw, k)
-
 " standard mass flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
     junction = ref(gm,n,:junction,i)
