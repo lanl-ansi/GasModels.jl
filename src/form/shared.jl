@@ -9,4 +9,4 @@ AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm}
 
 #TODO get rid of these forms
 ""
-AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirectedForm}
+#AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirectedForm}

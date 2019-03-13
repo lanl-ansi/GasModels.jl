@@ -9,10 +9,8 @@ AbstractUndirectedGasFormulation <: AbstractGasFormulation
 ```
 Each of these have a disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.
 ```julia
-AbstractMINLPForm <: AbstractUndirectedGasFormulation
-AbstractMISOCPForm <: AbstractUndirectedGasFormulation
-AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation
-AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation
+AbstractMINLPForm <: AbstractGasFormulation
+AbstractMISOCPForm <: AbstractGasFormulation
 ```
 
 ## Gas Models
@@ -26,7 +24,7 @@ For details on `GenericGasModel`, see the section on [Gas Model](@ref).
 
 ## User-Defined Abstractions
 
-The user-defined abstractions begin from a root abstract like the `AbstractGasFormulation` abstract type, i.e. 
+The user-defined abstractions begin from a root abstract like the `AbstractGasFormulation` abstract type, i.e.
 ```julia
 AbstractMyFooForm <: AbstractGasFormulation
 
@@ -68,4 +66,3 @@ Pages   = ["form/misocp.jl"]
 Order   = [:function]
 Private  = true
 ```
-

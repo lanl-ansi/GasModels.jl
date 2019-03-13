@@ -1,6 +1,6 @@
 # This file contains implementations of functions that are shared by mi formulation
 
-AllAbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm, AbstractMISOCPDirectedForm, AbstractMINLPDirectedForm} # TODO rename to AbstractMIForms
+AllAbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm, AbstractMINLPDirectedForm} # TODO rename to AbstractMIForms
 
 
 #######################################################################################################################

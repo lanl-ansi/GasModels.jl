@@ -1,25 +1,25 @@
 # Define MISOCP implementations of Gas Models
 
 export
-    MISOCPGasModel, StandardMISOCPForm, MISOCPDirectedGasModel, StandardMISOCPDirectedForm
+    MISOCPGasModel, StandardMISOCPForm#, MISOCPDirectedGasModel, StandardMISOCPDirectedForm
+
+#""
+#abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
+
+#""
+#abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
 
 ""
-abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
-
-""
-abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
-
-""
-abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMISOCPForm <: AbstractGasFormulation end
 
 ""
 abstract type StandardMISOCPForm <: AbstractMISOCPForm end
 
 ""
-AbstractMISOCPForms = Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm} # TODO goes away
+AbstractMISOCPForms = Union{AbstractMISOCPForm} # TODO goes away
 
 
-const MISOCPDirectedGasModel = GenericGasModel{StandardMISOCPDirectedForm}
+#const MISOCPDirectedGasModel = GenericGasModel{StandardMISOCPDirectedForm}
 const MISOCPGasModel = GenericGasModel{StandardMISOCPForm} # the standard MISCOP model
 
 
