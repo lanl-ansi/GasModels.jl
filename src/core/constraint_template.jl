@@ -172,39 +172,6 @@ function constraint_on_off_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
 end
 constraint_on_off_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_valve_pressure_drop(gm, gm.cnw, k)
 
-" constraints on flow across control valves "
-function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel, n::Int, k)
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
-
-    yp = haskey(valve, "yp") ? valve["yp"] : nothing
-    yn = haskey(valve, "yn") ? valve["yn"] : nothing
-
-    constraint_on_off_control_valve_flow_direction(gm, n, k, i, j, mf; yp=yp, yn=yn)
-end
-constraint_on_off_control_valve_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_flow_direction(gm, gm.cnw, k)
-
-" constraints on pressure drop across control valves "
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-
-    max_ratio = valve["c_ratio_max"]
-    min_ratio = valve["c_ratio_min"]
-
-    j_pmax = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax = gm.ref[:nw][n][:junction][i]["pmax"]
-
-    yp = haskey(valve, "yp") ? valve["yp"] : nothing
-    yn = haskey(valve, "yn") ? valve["yn"] : nothing
-
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax; yp=yp, yn=yn)
-end
-constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
-
 " Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
 function constraint_source_flow(gm::GenericGasModel, n::Int, i)
     f_branches = collect(keys(Dict(x for x in gm.ref[:nw][n][:connection] if x.second["f_junction"] == i)))

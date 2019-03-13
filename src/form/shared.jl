@@ -10,29 +10,3 @@ AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm}
 #TODO get rid of these forms
 ""
 AbstractMIDirectedForms = Union{AbstractMISOCPDirectedForm, AbstractMINLPDirectedForm}
-
-function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow_direction(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow(gm, i)
-end
-
-function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
-    constraint_on_off_control_valve_flow_direction(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-end
-
-function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow_direction(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow_ne(gm, i)
-end
-
-function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIDirectedForms
-    constraint_on_off_control_valve_flow_direction(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-end

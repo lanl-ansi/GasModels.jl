@@ -147,8 +147,12 @@ function post_nels_directed(gm::GenericGasModel)
         constraint_valve_flow_ne_directed(gm, i)
     end
 
-    for i in ids(gm, :control_valve)
+    for i in ids(gm, :undirected_control_valve)
          constraint_control_valve_flow_ne(gm, i)
+    end
+
+    for i in ids(gm, :directed_control_valve)
+         constraint_control_valve_flow_ne_directed(gm, i)
     end
 
     exclusive = Dict()

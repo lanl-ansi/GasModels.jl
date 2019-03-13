@@ -66,6 +66,9 @@ constraint_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_valve_f
 " All constraints associated with flows through a control valve"
 constraint_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_control_valve_flow(gm, gm.cnw, k)
 
+" All constraints associated with flows through a control valve"
+constraint_control_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_directed(gm, gm.cnw, k)
+
 " All constraints associated with flows through a pipe"
 constraint_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne(gm, gm.cnw, k)
 
@@ -89,6 +92,9 @@ constraint_valve_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_valv
 
 " All constraints associated with flows through a control valve"
 constraint_control_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a control valve that is directed"
+constraint_control_valve_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne_directed(gm, gm.cnw, k)
 
 " All constraints associated with flows through an undirected expansion pipe"
 constraint_new_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne(gm, gm.cnw, k)
