@@ -57,8 +57,11 @@ constraint_compressor_flow(gm::GenericGasModel, k::Int) = constraint_compressor_
 " All constraints associated with flows through a directed compressor"
 constraint_compressor_flow_directed(gm::GenericGasModel, k::Int) = constraint_compressor_flow_directed(gm, gm.cnw, k)
 
-" All constraints associated with flows through a valve"
+" All constraints associated with flows through a valve that is undirected"
 constraint_valve_flow(gm::GenericGasModel, k::Int) = constraint_valve_flow(gm, gm.cnw, k)
+
+" All constraints associated with flows through a valve that is directed"
+constraint_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_valve_flow_directed(gm, gm.cnw, k)
 
 " All constraints associated with flows through a control valve"
 constraint_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_control_valve_flow(gm, gm.cnw, k)
@@ -78,8 +81,11 @@ constraint_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_compress
 " All constraints associated with flows through a compressor"
 constraint_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_compressor_flow_ne_directed(gm, gm.cnw, k)
 
-" All constraints associated with flows through a valve"
+" All constraints associated with flows through an undirected valve"
 constraint_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_valve_flow_ne(gm, gm.cnw, k)
+
+" All constraints associated with flows through a directed valve"
+constraint_valve_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_valve_flow_ne_directed(gm, gm.cnw, k)
 
 " All constraints associated with flows through a control valve"
 constraint_control_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne(gm, gm.cnw, k)
@@ -97,8 +103,6 @@ constraint_new_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_
 constraint_new_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_new_compressor_flow_ne_directed(gm, gm.cnw, k)
 
 # Constraints with templates
-
-
 
 " standard mass flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fgfirm, flfirm)
@@ -184,14 +188,8 @@ function constraint_new_compressor_ratios_ne(gm::GenericGasModel,  n::Int, k, i,
     yn = gm.var[:nw][n][:yn][k]
     zc = gm.var[:nw][n][:zc][k]
 
-    if !haskey(gm.con[:nw][n], :new_compressor_ratios_ne1)
-        gm.con[:nw][n][:new_compressor_ratios_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:new_compressor_ratios_ne2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:new_compressor_ratios_ne3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:new_compressor_ratios_ne4] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:new_compressor_ratios_ne1][c_idx] = @constraint(gm.model, pj - (max_ratio^2*pi) <= (2-yp-zc)*p_maxj^2)
-    gm.con[:nw][n][:new_compressor_ratios_ne2][c_idx] = @constraint(gm.model, (min_ratio^2*pi) - pj <= (2-yp-zc)*(min_ratio^2*p_maxi^2 - p_minj^2))
-    gm.con[:nw][n][:new_compressor_ratios_ne3][c_idx] = @constraint(gm.model, pi - (max_ratio^2*pj) <= (2-yn-zc)*p_maxi^2)
-    gm.con[:nw][n][:new_compressor_ratios_ne4][c_idx] = @constraint(gm.model, (min_ratio^2*pj) - pi <= (2-yn-zc)*(min_ratio^2*p_maxj^2 - p_mini^2))
+    add_constraint(gm, n, :new_compressor_ratios_ne1, c_idx, @constraint(gm.model, pj - (max_ratio^2*pi) <= (2-yp-zc)*p_maxj^2))
+    add_constraint(gm, n, :new_compressor_ratios_ne2, c_idx, @constraint(gm.model, (min_ratio^2*pi) - pj <= (2-yp-zc)*(min_ratio^2*p_maxi^2 - p_minj^2)))
+    add_constraint(gm, n, :new_compressor_ratios_ne3, c_idx, @constraint(gm.model, pi - (max_ratio^2*pj) <= (2-yn-zc)*p_maxi^2))
+    add_constraint(gm, n, :new_compressor_ratios_ne4, c_idx, @constraint(gm.model, (min_ratio^2*pj) - pi <= (2-yn-zc)*(min_ratio^2*p_maxj^2 - p_mini^2)))
 end

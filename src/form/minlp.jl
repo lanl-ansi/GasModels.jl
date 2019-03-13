@@ -39,17 +39,10 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
     pj = gm.var[:nw][n][:p][j]
     f  = gm.var[:nw][n][:f][k]
 
-    if !haskey(gm.con[:nw][n], :weymouth1)
-        gm.con[:nw][n][:weymouth1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()
-    end
-
-    gm.con[:nw][n][:weymouth1][k] = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (1-yp)*mf^2)
-    gm.con[:nw][n][:weymouth2][k] = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*mf^2)
-    gm.con[:nw][n][:weymouth3][k] = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*mf^2)
-    gm.con[:nw][n][:weymouth4][k] = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*mf^2)
+    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (1-yp)*mf^2))
+    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*mf^2))
+    add_constraint(gm, n, :weymouth3, k, @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (1-yn)*mf^2))
+    add_constraint(gm, n, :weymouth4, k, @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (1-yn)*mf^2))
 end
 
 "Weymouth equation with fixed direction"
@@ -71,16 +64,10 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
     zp = gm.var[:nw][n][:zp][k]
     f  = gm.var[:nw][n][:f_ne][k]
 
-    if !haskey(gm.con[:nw][n], :weymouth_ne1)
-        gm.con[:nw][n][:weymouth_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne4] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:weymouth_ne1][k] = @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*mf^2)
-    gm.con[:nw][n][:weymouth_ne2][k] = @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*mf^2)
-    gm.con[:nw][n][:weymouth_ne3][k] = @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*mf^2)
-    gm.con[:nw][n][:weymouth_ne4][k] = @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*mf^2)
+    add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*mf^2))
+    add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*mf^2))
+    add_constraint(gm, n, :weymouth_ne3, k, @NLconstraint(gm.model, w*(pj - pi) >= f^2 - (2-yn-zp)*mf^2))
+    add_constraint(gm, n, :weymouth_ne4, k, @NLconstraint(gm.model, w*(pj - pi) <= f^2 + (2-yn-zp)*mf^2))
 end
 
 "Weymouth equation for directed expansion pipes"

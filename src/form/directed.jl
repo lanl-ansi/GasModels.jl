@@ -16,21 +16,7 @@
 
 
 
-" constraints on flow across valves when directions are constants "
-function constraint_on_off_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation
-    kwargs = Dict(kwargs)
-    f = gm.var[:nw][n][:f][k]
-    v = gm.var[:nw][n][:v][k]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :on_off_valve_flow_direction1)
-        gm.con[:nw][n][:on_off_valve_flow_direction1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_valve_flow_direction2] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_valve_flow_direction1][k] = @constraint(gm.model, -mf*(1-yp) <= f <= mf*(1-yn))
-    gm.con[:nw][n][:on_off_valve_flow_direction2][k] = @constraint(gm.model, -mf*v <= f <= mf*v)
-end
 
 " constraints on flow across control valves when directions are constants "
 function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractDirectedGasFormulation

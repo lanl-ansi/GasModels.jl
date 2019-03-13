@@ -55,11 +55,11 @@ function post_nels(gm::GenericGasModel)
     end
 
     for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i)
+        constraint_valve_flow_ne(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-         constraint_control_valve_flow(gm, i)
+         constraint_control_valve_flow_ne(gm, i)
     end
 
     exclusive = Dict()
@@ -120,7 +120,7 @@ function post_nels_directed(gm::GenericGasModel)
     end
 
     for i in ids(gm, :directed_short_pipe)
-        constraint_short_pipe_flow_directed(gm, i)
+        constraint_short_pipe_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_compressor)
@@ -139,12 +139,16 @@ function post_nels_directed(gm::GenericGasModel)
         constraint_new_compressor_flow_ne_directed(gm, i)
     end
 
-    for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i)
+    for i in ids(gm, :undirected_valve)
+        constraint_valve_flow_ne(gm, i)
+    end
+
+    for i in ids(gm, :directed_valve)
+        constraint_valve_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-         constraint_control_valve_flow(gm, i)
+         constraint_control_valve_flow_ne(gm, i)
     end
 
     exclusive = Dict()
@@ -162,10 +166,6 @@ function post_nels_directed(gm::GenericGasModel)
         end
     end
 end
-
-
-
-
 
 # Get all the solution values
 function get_nels_solution(gm::GenericGasModel, sol::Dict{String,Any})

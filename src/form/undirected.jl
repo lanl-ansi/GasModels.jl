@@ -32,24 +32,7 @@ end
 
 
 
-" constraints on flow across valves "
-function constraint_on_off_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
-    f = gm.var[:nw][n][:f][k]
-    v = gm.var[:nw][n][:v][k]
 
-    if !haskey(gm.con[:nw][n], :on_off_valve_flow_direction1)
-        gm.con[:nw][n][:on_off_valve_flow_direction1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_valve_flow_direction2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_valve_flow_direction3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:on_off_valve_flow_direction4] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:on_off_valve_flow_direction1][k] = @constraint(gm.model, -mf*(1-yp) <= f)
-    gm.con[:nw][n][:on_off_valve_flow_direction2][k] = @constraint(gm.model, f <= mf*(1-yn))
-    gm.con[:nw][n][:on_off_valve_flow_direction3][k] = @constraint(gm.model, -mf*v <= f )
-    gm.con[:nw][n][:on_off_valve_flow_direction4][k] = @constraint(gm.model, f <= mf*v)
-end
 
 " constraints on flow across control valves "
 function constraint_on_off_control_valve_flow_direction(gm::GenericGasModel{T}, n::Int, k, i, j, mf; kwargs...) where T <: AbstractUndirectedGasFormulation

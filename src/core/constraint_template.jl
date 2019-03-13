@@ -159,20 +159,6 @@ function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k)
 end
 constraint_short_pipe_pressure_drop(gm::GenericGasModel, k::Int) = constraint_short_pipe_pressure_drop(gm, gm.cnw, k)
 
-" constraints on flow across valves "
-function constraint_on_off_valve_flow_direction(gm::GenericGasModel, n::Int, k)
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
-
-    yp = haskey(valve, "yp") ? valve["yp"] : nothing
-    yn = haskey(valve, "yn") ? valve["yn"] : nothing
-
-    constraint_on_off_valve_flow_direction(gm, n, k, i, j, mf; yp=yp, yn=yn)
-end
-constraint_on_off_valve_flow_direction(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow_direction(gm, gm.cnw, k)
-
 " constraints on pressure drop across valves "
 function constraint_on_off_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)
