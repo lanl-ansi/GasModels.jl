@@ -8,11 +8,6 @@ export
 ""
 abstract type AbstractGasFormulation end
 
-"Formulation specific to models corresponding to directions"
-abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
-abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
-
-
 """
 ```
 mutable struct GenericGasModel{T<:AbstractGasFormulation}

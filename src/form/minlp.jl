@@ -4,29 +4,18 @@ export
     MINLPGasModel, StandardMINLPForm
 
 ""
-abstract type AbstractMINLPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMINLPForm <: AbstractGasFormulation end
 
 ""
 abstract type StandardMINLPForm <: AbstractMINLPForm end
 
-""
-abstract type AbstractMINLPDirectedForm <: AbstractDirectedGasFormulation end
-
-""
-abstract type StandardMINLPDirectedForm <: AbstractMINLPDirectedForm end
-
-""
-AbstractMINLPForms = Union{AbstractMINLPDirectedForm, AbstractMINLPForm}
-
 const MINLPGasModel = GenericGasModel{StandardMINLPForm}
-const MINLPGasDirectedModel = GenericGasModel{StandardMINLPDirectedForm}
 
 "default MINLP constructor"
 MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPForm)
-MINLPGasDirectedModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMINLPDirectedForm)
 
 "Weymouth equation with discrete direction variables "
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMINLPForms
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMINLPForm
     yp = gm.var[:nw][n][:yp][k]
     yn = gm.var[:nw][n][:yn][k]
 
@@ -34,7 +23,7 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Weymouth equation with discrete direction variables "
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForms
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
     pi = gm.var[:nw][n][:p][i]
     pj = gm.var[:nw][n][:p][j]
     f  = gm.var[:nw][n][:f][k]
@@ -46,19 +35,19 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Weymouth equation with fixed direction"
-function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, ii, j, mfw, w, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForms
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, ii, j, mfw, w, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
     constraint_weymouth(gm, n, k, i, j, mf, w, pd_min, pd_max, yp, yn)
 end
 
 " Weymouth equation for an undirected expansion pipe "
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMINLPForms
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMINLPForm
     yp = gm.var[:nw][n][:yp_ne][k]
     yn = gm.var[:nw][n][:yn_ne][k]
     constraint_weymouth_ne(gm, n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end
 
 " Weymouth equation for an uexpansion pipe "
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForms
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
     pi = gm.var[:nw][n][:p][i]
     pj = gm.var[:nw][n][:p][j]
     zp = gm.var[:nw][n][:zp][k]
@@ -71,6 +60,6 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 "Weymouth equation for directed expansion pipes"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForms
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
     constraint_weymouth_ne(gm, n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end
