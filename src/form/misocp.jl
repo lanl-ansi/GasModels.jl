@@ -1,34 +1,21 @@
 # Define MISOCP implementations of Gas Models
 
 export
-    MISOCPGasModel, StandardMISOCPForm, MISOCPDirectedGasModel, StandardMISOCPDirectedForm
+    MISOCPGasModel, StandardMISOCPForm
 
 ""
-abstract type AbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation end
-
-""
-abstract type StandardMISOCPDirectedForm <: AbstractMISOCPDirectedForm end
-
-""
-abstract type AbstractMISOCPForm <: AbstractUndirectedGasFormulation end
+abstract type AbstractMISOCPForm <: AbstractGasFormulation end
 
 ""
 abstract type StandardMISOCPForm <: AbstractMISOCPForm end
 
-""
-AbstractMISOCPForms = Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm}
-
-
-const MISOCPDirectedGasModel = GenericGasModel{StandardMISOCPDirectedForm}
 const MISOCPGasModel = GenericGasModel{StandardMISOCPForm} # the standard MISCOP model
 
-
 "default MISOCP constructor"
-MISOCPDirectedGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPDirectedForm)
 MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm)
 
 ""
-function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForms
+function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForm
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     resistance = Dict{Int, Float64}()
 
@@ -50,7 +37,7 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
 end
 
 ""
-function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForms
+function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForm
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     resistance = Dict{Int, Float64}()
     for i in  keys(gm.ref[:nw][n][:ne_pipe])
@@ -67,126 +54,60 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
     end
 end
 
-""
-function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
-    variable_mass_flow(gm,n; bounded=bounded)
-    variable_connection_direction(gm,n)
-end
-
-" Weymouth equation with discrete direction variables "
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
+" Weymouth equation for an undirected pipe "
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMISOCPForm
     yp = gm.var[:nw][n][:yp][k]
     yn = gm.var[:nw][n][:yn][k]
-    l  = gm.var[:nw][n][:l][k]
-    f  = gm.var[:nw][n][:f][k]
 
-    if !haskey(gm.con[:nw][n], :weymouth1)
-        gm.con[:nw][n][:weymouth1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth5] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth7] = Dict{Int,ConstraintRef}()
-    end
-
-    gm.con[:nw][n][:weymouth1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth5][k] = @constraint(gm.model, w*l >= f^2)
-#    gm.con[:nw][n][:weymouth6][k] = @constraint(gm.model, w*l <= f * sqrt(w*pd_max) + yn * 2 * mf^2)
-#    gm.con[:nw][n][:weymouth7][k] = @constraint(gm.model, w*l <= -f * sqrt(w*-pd_min) + yp * 2 * mf^2)
+    constraint_weymouth(gm, n, k, i, j, mf, w, pd_min, pd_max, yp, yn)
 end
 
-"Weymouth equation with directed flow"
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPDirectedForm
-    kwargs = Dict(kwargs)
+" Weymouth equation for a pipe "
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMISOCPForm
     pi = gm.var[:nw][n][:p][i]
     pj = gm.var[:nw][n][:p][j]
     l  = gm.var[:nw][n][:l][k]
     f  = gm.var[:nw][n][:f][k]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :weymouth1)
-        gm.con[:nw][n][:weymouth1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth5] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth7] = Dict{Int,ConstraintRef}()
-    end
+   add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
+   add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))
+   add_constraint(gm, n, :weymouth3, k, @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1)))
+   add_constraint(gm, n, :weymouth4, k, @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1)))
+   add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))
 
-    gm.con[:nw][n][:weymouth1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth5][k] = @constraint(gm.model, w*l >= f^2)
 #    gm.con[:nw][n][:weymouth6][k] = @constraint(gm.model, w*l <= f * sqrt(w*pd_max) + yn * 2 * mf^2)
 #    gm.con[:nw][n][:weymouth7][k] = @constraint(gm.model, w*l <= -f * sqrt(w*-pd_min) + yp * 2 * mf^2)
 end
 
-"Weymouth equation with discrete direction variables for MINLP"
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
+"Weymouth equation with a pipe with directed flow"
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMISOCPForm
+    constraint_weymouth(gm, n, k, i, j, mf, w, pd_min, pd_max, yp, yn)
+end
+
+"Weymouth equation for an undirected expansion pipe"
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMISOCPForm
     yp = gm.var[:nw][n][:yp_ne][k]
     yn = gm.var[:nw][n][:yn_ne][k]
-    zp = gm.var[:nw][n][:zp][k]
-    l  = gm.var[:nw][n][:l_ne][k]
-    f  = gm.var[:nw][n][:f_ne][k]
 
-    if !haskey(gm.con[:nw][n], :weymouth_ne1)
-        gm.con[:nw][n][:weymouth_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne4] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne5] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth7] = Dict{Int,ConstraintRef}()
-    end
-
-    gm.con[:nw][n][:weymouth_ne1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth_ne2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth_ne4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne5][k] = @constraint(gm.model, zp*w*l >= f^2)
-#    gm.con[:nw][n][:weymouth6][k] = @constraint(gm.model, w*l <= f * sqrt(w*pd_max) + (yn + (1-zp)) * 2 * mf^2 + )
-#    gm.con[:nw][n][:weymouth7][k] = @constraint(gm.model, w*l <= -f * sqrt(w*-pd_min) + (yp + (1-zp))* 2 * mf^2  )
+    constraint_weymouth_ne(gm,  n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end
 
-"Weymouth equation with fixed direction"
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max; kwargs...) where T <: AbstractMISOCPDirectedForm
-    kwargs = Dict(kwargs)
+"Weymouth equation for an expansion pipe"
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMISOCPForm
     pi = gm.var[:nw][n][:p][i]
     pj = gm.var[:nw][n][:p][j]
     zp = gm.var[:nw][n][:zp][k]
     l  = gm.var[:nw][n][:l_ne][k]
     f  = gm.var[:nw][n][:f_ne][k]
-    yp = kwargs[:yp]
-    yn = kwargs[:yn]
 
-    if !haskey(gm.con[:nw][n], :weymouth_ne1)
-        gm.con[:nw][n][:weymouth_ne1] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne2] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne3] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne4] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne5] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth_ne6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth6] = Dict{Int,ConstraintRef}()
-        gm.con[:nw][n][:weymouth7] = Dict{Int,ConstraintRef}()
-    end
-    gm.con[:nw][n][:weymouth_ne1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth_ne2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))
-    gm.con[:nw][n][:weymouth_ne4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne5][k] = @constraint(gm.model, zp*w*l >= f^2)
-    #    gm.con[:nw][n][:weymouth6][k] = @constraint(gm.model, w*l <= f * sqrt(w*pd_max) + (yn + (1-zp)) * 2 * mf^2 + )
-    #    gm.con[:nw][n][:weymouth7][k] = @constraint(gm.model, w*l <= -f * sqrt(w*-pd_min) + (yp + (1-zp))* 2 * mf^2  )
+    add_constraint(gm, n, :weymouth_ne1, k,  @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
+    add_constraint(gm, n, :weymouth_ne2, k,  @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))
+    add_constraint(gm, n, :weymouth_ne3, k,  @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1)))
+    add_constraint(gm, n, :weymouth_ne4, k,  @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1)))
+    add_constraint(gm, n, :weymouth_ne5, k,  @constraint(gm.model, zp*w*l >= f^2))
+end
 
+"Weymouth equation for expansion pipes with undirected expansion pipes"
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <:  AbstractMISOCPForm
+    constraint_weymouth_ne(gm,  n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end

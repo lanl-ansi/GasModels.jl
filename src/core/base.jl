@@ -8,11 +8,6 @@ export
 ""
 abstract type AbstractGasFormulation end
 
-"Formulation specific to models corresponding to directions"
-abstract type AbstractDirectedGasFormulation <: AbstractGasFormulation end
-abstract type AbstractUndirectedGasFormulation <: AbstractGasFormulation end
-
-
 """
 ```
 mutable struct GenericGasModel{T<:AbstractGasFormulation}
@@ -255,6 +250,8 @@ function build_ref(data::Dict{String,Any})
         ref[:directed_resistor] = Dict(x for x in ref[:resistor] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_ne_pipe] = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_ne_compressor] = Dict(x for x in ref[:ne_compressor] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_connection] =  merge(ref[:directed_pipe],ref[:directed_short_pipe],ref[:directed_compressor],ref[:directed_valve],ref[:directed_control_valve],ref[:directed_resistor])
+        ref[:directed_ne_connection] =  merge(ref[:directed_ne_pipe],ref[:directed_ne_compressor])
 
         ref[:undirected_pipe] = Dict(x for x in ref[:pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_short_pipe] = Dict(x for x in ref[:short_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
@@ -264,6 +261,9 @@ function build_ref(data::Dict{String,Any})
         ref[:undirected_resistor] = Dict(x for x in ref[:resistor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_ne_pipe] = Dict(x for x in ref[:ne_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_ne_compressor] = Dict(x for x in ref[:ne_compressor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_connection] =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
+        ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
+
 
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections

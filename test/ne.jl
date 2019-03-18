@@ -31,7 +31,6 @@ end
         obj_normalization = 1.0
         result = run_ne("../test/data/A1.json", MISOCPGasModel, pavito_solver_glpk; obj_normalization = obj_normalization)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        println(result["objective"]*obj_normalization)
         @test isapprox(result["objective"]*obj_normalization, 144.4; atol = 1e-1)
     end
 

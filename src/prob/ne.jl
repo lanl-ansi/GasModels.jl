@@ -54,11 +54,11 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i)
+        constraint_valve_flow_ne(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-        constraint_control_valve_flow(gm, i)
+        constraint_control_valve_flow_ne(gm, i)
     end
 
     exclusive = Dict()
