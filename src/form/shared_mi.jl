@@ -16,7 +16,7 @@ end
 "Variables needed for modeling flow in MI models when some edges are directed"
 function variable_flow_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
     variable_mass_flow(gm,n; bounded=bounded)
-    variable_connection_direction(gm,n;connection=gm.ref[:nw][n][:undirected_connection])
+    variable_connection_direction(gm,n;connection=ref(gm,n,:undirected_connection))
 end
 
 "Variables needed for modeling flow in MI models"
@@ -28,7 +28,7 @@ end
 "Variables needed for modeling flow in MI models when some edges are directed"
 function variable_flow_ne_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
     variable_mass_flow_ne(gm,n; bounded=bounded)
-    variable_connection_direction_ne(gm,n;ne_connection=gm.ref[:nw][n][:undirected_ne_connection])
+    variable_connection_direction_ne(gm,n;ne_connection=ref(gm,n,:undirected_ne_connection))
 end
 
 ########################################################################################################
@@ -40,10 +40,13 @@ function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where 
     junction = ref(gm,n,:junction,i)
     constraint_junction_mass_flow_balance(gm, n, i)
 
-    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
-    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
+    consumer   = ref(gm,n,:consumer)
+    producer   = ref(gm,n,:producer)
+    consumers  = ref(gm,n,:junction_consumers,i)
+    producers  = ref(gm,n,:junction_producers,i)
+
+    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
+    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
 
     if fgfirm > 0.0 && flfirm == 0.0
         constraint_source_flow(gm, n, i)
@@ -70,15 +73,17 @@ function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) whe
     junction = ref(gm,n,:junction,i)
     constraint_junction_mass_flow_balance_ls(gm, n, i)
 
-    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
-    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
+    consumer   = ref(gm,n,:consumer)
+    producer   = ref(gm,n,:producer)
+    consumers  = ref(gm,n,:junction_consumers,i)
+    producers  = ref(gm,n,:junction_producers,i)
 
-    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
-    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
-    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer) for (j, producer) in producers) : 0
-    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer) for (j, consumer) in consumers) : 0
-    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer) for (j, producer) in producers) : 0
-    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer) for (j, consumer) in consumers) : 0
+    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
+    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in producers) : 0
+    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in consumers) : 0
+    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in producers) : 0
+    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in consumers) : 0
 
     if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
         constraint_source_flow(gm, n, i)
@@ -105,10 +110,13 @@ function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) whe
     junction = ref(gm,n,:junction,i)
     constraint_junction_mass_flow_balance_ne(gm, n, i)
 
-    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
-    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
+    consumer   = ref(gm,n,:consumer)
+    producer   = ref(gm,n,:producer)
+    consumers  = ref(gm,n,:junction_consumers,i)
+    producers  = ref(gm,n,:junction_producers,i)
+
+    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
+    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
 
     if fgfirm > 0.0 && flfirm == 0.0
         constraint_source_flow_ne(gm, n, i)
@@ -133,14 +141,17 @@ function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) 
     junction = ref(gm,n,:junction,i)
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
 
-    consumers = Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["ql_junc"] == i)
-    producers = Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qg_junc"] == i)
-    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer) for (j, producer) in producers) : 0
-    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer) for (j, consumer) in consumers) : 0
-    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer) for (j, producer) in producers) : 0
-    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer) for (j, consumer) in consumers) : 0
-    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer) for (j, producer) in producers) : 0
-    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer) for (j, consumer) in consumers) : 0
+    consumer   = ref(gm,n,:consumer)
+    producer   = ref(gm,n,:producer)
+    consumers  = ref(gm,n,:junction_consumers,i)
+    producers  = ref(gm,n,:junction_producers,i)
+
+    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
+    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in producers) : 0
+    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in consumers) : 0
+    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in producers) : 0
+    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in consumers) : 0
 
     if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
         constraint_source_flow_ne(gm, i)
@@ -219,10 +230,10 @@ function constraint_on_off_pipe_flow(gm::GenericGasModel{T}, n::Int, k; pipe_res
 
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
+    mf             = ref(gm,n,:max_mass_flow)
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     constraint_on_off_pipe_flow(gm, n, k, i, j, mf, pd_min, pd_max, w)
 end
 constraint_on_off_pipe_flow(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow(gm, gm.cnw, k)
@@ -233,10 +244,10 @@ function constraint_on_off_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, k;
 
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
+    mf             = ref(gm,n,:max_mass_flow)
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     yp             = pipe["yp"]
     yn             = pipe["yn"]
 
@@ -293,10 +304,10 @@ function constraint_on_off_pipe_flow_ne(gm::GenericGasModel, n::Int, k; pipe_res
 
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
+    mf             = ref(gm,n,:max_mass_flow)
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:ne_pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = haskey(ref(gm,n,:ne_pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
 
     constraint_on_off_pipe_flow_ne(gm, n, k, i, j, mf, pd_min, pd_max, w)
 end
@@ -308,10 +319,10 @@ function constraint_on_off_pipe_flow_ne_directed(gm::GenericGasModel, n::Int, k;
 
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    mf             = gm.ref[:nw][n][:max_mass_flow]
+    mf             = ref(gm,n,:max_mass_flow)
     pd_max         = pipe["pd_max"]
     pd_min         = pipe["pd_min"]
-    w              = haskey(gm.ref[:nw][n][:ne_pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = haskey(ref(gm,n,:ne_pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     yp             = pipe["yp"]
     yn             = pipe["yn"]
 
@@ -411,7 +422,7 @@ function constraint_on_off_short_pipe_flow(gm::GenericGasModel{T}, n::Int, k) wh
 
     i  = pipe["f_junction"]
     j  = pipe["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
 
     constraint_on_off_short_pipe_flow(gm, n, k, i, j, mf)
 end
@@ -423,7 +434,7 @@ function constraint_on_off_short_pipe_flow_directed(gm::GenericGasModel{T}, n::I
 
     i  = pipe["f_junction"]
     j  = pipe["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
     yp = pipe["yp"]
     yn = pipe["yn"]
 
@@ -488,7 +499,7 @@ function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k)  w
 
     i        = compressor["f_junction"]
     j        = compressor["t_junction"]
-    mf       = gm.ref[:nw][n][:max_mass_flow]
+    mf       = ref(gm,n,:max_mass_flow)
 
     constraint_on_off_compressor_flow(gm, n, k, i, j, mf)
 end
@@ -500,7 +511,7 @@ function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::I
 
     i        = compressor["f_junction"]
     j        = compressor["t_junction"]
-    mf       = gm.ref[:nw][n][:max_mass_flow]
+    mf       = ref(gm,n,:max_mass_flow)
     yp       = compressor["yp"]
     yn       = compressor["yn"]
 
@@ -535,10 +546,10 @@ function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) 
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = gm.ref[:nw][n][:junction][j]["pmax"]
-    j_pmin         = gm.ref[:nw][n][:junction][j]["pmin"]
-    i_pmax         = gm.ref[:nw][n][:junction][i]["pmax"]
-    i_pmin         = gm.ref[:nw][n][:junction][i]["pmin"]
+    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+    j_pmin         = ref(gm,n,:junction,j)["pmin"]
+    i_pmax         = ref(gm,n,:junction,i)["pmax"]
+    i_pmin         = ref(gm,n,:junction,i)["pmin"]
 
     constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin)
 end
@@ -551,10 +562,10 @@ function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n:
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = gm.ref[:nw][n][:junction][j]["pmax"]
-    j_pmin         = gm.ref[:nw][n][:junction][j]["pmin"]
-    i_pmax         = gm.ref[:nw][n][:junction][i]["pmax"]
-    i_pmin         = gm.ref[:nw][n][:junction][i]["pmin"]
+    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+    j_pmin         = ref(gm,n,:junction,j)["pmin"]
+    i_pmax         = ref(gm,n,:junction,i)["pmax"]
+    i_pmin         = ref(gm,n,:junction,i)["pmin"]
     yp             = compressor["yp"]
     yn             = compressor["yn"]
 
@@ -591,7 +602,7 @@ function constraint_on_off_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, k)
 
     i        = compressor["f_junction"]
     j        = compressor["t_junction"]
-    mf       = gm.ref[:nw][n][:max_mass_flow]
+    mf       = ref(gm,n,:max_mass_flow)
 
     constraint_on_off_compressor_flow_ne(gm, n, k, i, j, mf)
 end
@@ -603,7 +614,7 @@ function constraint_on_off_compressor_flow_ne_directed(gm::GenericGasModel{T}, n
 
     i        = compressor["f_junction"]
     j        = compressor["t_junction"]
-    mf       = gm.ref[:nw][n][:max_mass_flow]
+    mf       = ref(gm,n,:max_mass_flow)
     yp       = compressor["yp"]
     yn       = compressor["yn"]
 
@@ -637,8 +648,8 @@ function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, 
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax         = gm.ref[:nw][n][:junction][i]["pmax"]
+    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+    i_pmax         = ref(gm,n,:junction,i)["pmax"]
 
     constraint_on_off_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
 end
@@ -651,8 +662,8 @@ function constraint_on_off_compressor_ratios_ne_directed(gm::GenericGasModel{T},
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax         = gm.ref[:nw][n][:junction][i]["pmax"]
+    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+    i_pmax         = ref(gm,n,:junction,i)["pmax"]
     yp       = compressor["yp"]
     yn       = compressor["yn"]
 
@@ -705,7 +716,7 @@ function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k) where T
     valve = ref(gm,n,:connection,k)
     i = valve["f_junction"]
     j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
 
     constraint_on_off_valve_flow(gm, n, k, i, j, mf)
 end
@@ -716,7 +727,7 @@ function constraint_on_off_valve_flow_directed(gm::GenericGasModel{T}, n::Int, k
     valve = ref(gm,n,:connection,k)
     i = valve["f_junction"]
     j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
 
     yp = valve["yp"]
     yn = valve["yn"]
@@ -782,7 +793,7 @@ function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k)
     valve = ref(gm,n,:connection,k)
     i = valve["f_junction"]
     j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
 
     constraint_on_off_control_valve_flow(gm, n, k, i, j, mf)
 end
@@ -793,7 +804,7 @@ function constraint_on_off_control_valve_flow_directed(gm::GenericGasModel{T}, n
     valve = ref(gm,n,:connection,k)
     i = valve["f_junction"]
     j = valve["t_junction"]
-    mf = gm.ref[:nw][n][:max_mass_flow]
+    mf = ref(gm,n,:max_mass_flow)
 
     yp = valve["yp"]
     yn = valve["yn"]
@@ -839,8 +850,8 @@ function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n
     max_ratio = valve["c_ratio_max"]
     min_ratio = valve["c_ratio_min"]
 
-    j_pmax = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax = gm.ref[:nw][n][:junction][i]["pmax"]
+    j_pmax = ref(gm,n,:junction,j)["pmax"]
+    i_pmax = ref(gm,n,:junction,i)["pmax"]
 
     constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
 end
@@ -855,8 +866,8 @@ function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasMo
     max_ratio = valve["c_ratio_max"]
     min_ratio = valve["c_ratio_min"]
 
-    j_pmax = gm.ref[:nw][n][:junction][j]["pmax"]
-    i_pmax = gm.ref[:nw][n][:junction][i]["pmax"]
+    j_pmax = ref(gm,n,:junction,j)["pmax"]
+    i_pmax = ref(gm,n,:junction,i)["pmax"]
 
     yp = valve["yp"]
     yn = valve["yn"]
@@ -1015,10 +1026,10 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_fir
     if length(yn_first) > 0 && length(yp_last) > 0
         for i1 in yn_first
             for i2 in yp_last
-                yn1 = haskey(gm.ref[:nw][n][:connection],i1) ? yn[i1] : yn_ne[i1]
-                yn2 = haskey(gm.ref[:nw][n][:connection],i2) ? yn[i2] : yn_ne[i2]
-                yp1 = haskey(gm.ref[:nw][n][:connection],i1) ? yp[i1] : yp_ne[i1]
-                yp2 = haskey(gm.ref[:nw][n][:connection],i2) ? yp[i2] : yp_ne[i2]
+                yn1 = haskey(ref(gm,n,:connection),i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(ref(gm,n,:connection),i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(ref(gm,n,:connection),i1) ? yp[i1] : yp_ne[i1]
+                yp2 = haskey(ref(gm,n,:connection),i2) ? yp[i2] : yp_ne[i2]
 
                 add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, yn1  == yp2))
                 add_constraint(gm, n, :conserve_flow_ne2, idx, @constraint(gm.model, yp1  == yn2))
@@ -1031,10 +1042,10 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_fir
     if length(yn_first) > 0 && length(yn_last) > 0
         for i1 in yn_first
             for i2 in yn_last
-                yn1 = haskey(gm.ref[:nw][n][:connection],i1) ? yn[i1] : yn_ne[i1]
-                yn2 = haskey(gm.ref[:nw][n][:connection],i2) ? yn[i2] : yn_ne[i2]
-                yp1 = haskey(gm.ref[:nw][n][:connection],i1) ? yp[i1] : yp_ne[i1]
-                yp2 = haskey(gm.ref[:nw][n][:connection],i2) ? yp[i2] : yp_ne[i2]
+                yn1 = haskey(ref(gm,n,:connection),i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(ref(gm,n,:connection),i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(ref(gm,n,:connection),i1) ? yp[i1] : yp_ne[i1]
+                yp2 = haskey(ref(gm,n,:connection),i2) ? yp[i2] : yp_ne[i2]
 
                 add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, yn1 == yn2))
                 add_constraint(gm, n, :conserve_flow_ne2, idx, @constraint(gm.model, yp1 == yp2))
@@ -1048,10 +1059,10 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_fir
     if length(yp_first) > 0 && length(yp_last) > 0
         for i1 in yp_first
             for i2 in yp_last
-                yn1 = haskey(gm.ref[:nw][n][:connection],i1) ? yn[i1] : yn_ne[i1]
-                yn2 = haskey(gm.ref[:nw][n][:connection],i2) ? yn[i2] : yn_ne[i2]
-                yp1 = haskey(gm.ref[:nw][n][:connection],i1) ? yp[i1] : yp_ne[i1]
-                yp2 = haskey(gm.ref[:nw][n][:connection],i2) ? yp[i2] : yp_ne[i2]
+                yn1 = haskey(ref(gm,n,:connection),i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(ref(gm,n,:connection),i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(ref(gm,n,:connection),i1) ? yp[i1] : yp_ne[i1]
+                yp2 = haskey(ref(gm,n,:connection),i2) ? yp[i2] : yp_ne[i2]
 
                 add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, yp1 == yp2))
                 add_constraint(gm, n, :conserve_flow_ne2, idx, @constraint(gm.model, yn1 == yn2))
@@ -1065,10 +1076,10 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_fir
     if length(yp_first) > 0 && length(yn_last) > 0
         for i1 in yp_first
             for i2 in yn_last
-                yn1 = haskey(gm.ref[:nw][n][:connection],i1) ? yn[i1] : yn_ne[i1]
-                yn2 = haskey(gm.ref[:nw][n][:connection],i2) ? yn[i2] : yn_ne[i2]
-                yp1 = haskey(gm.ref[:nw][n][:connection],i1) ? yp[i1] : yp_ne[i1]
-                yp2 = haskey(gm.ref[:nw][n][:connection],i2) ? yp[i2] : yp_ne[i2]
+                yn1 = haskey(ref(gm,n,:connection),i1) ? yn[i1] : yn_ne[i1]
+                yn2 = haskey(ref(gm,n,:connection),i2) ? yn[i2] : yn_ne[i2]
+                yp1 = haskey(ref(gm,n,:connection),i1) ? yp[i1] : yp_ne[i1]
+                yp2 = haskey(ref(gm,n,:connection),i2) ? yp[i2] : yp_ne[i2]
 
                 add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, yp1 == yn2))
                 add_constraint(gm, n, :conserve_flow_ne2, idx, @constraint(gm.model, yn1 == yp2))
@@ -1083,7 +1094,7 @@ end
 function constraint_parallel_flow(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections) where T <: AbstractMIForms
     yp = gm.var[:nw][n][:yp]
     yn = gm.var[:nw][n][:yn]
-    add_constraint(gm, n, :parallel_flow, k, @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) == yp[k] * length(gm.ref[:nw][n][:parallel_connections][(i,j)])))
+    add_constraint(gm, n, :parallel_flow, k, @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) == yp[k] * length(ref(gm,n,:parallel_connections,(i,j)))))
 end
 
 " ensures that parallel lines have flow in the same direction "
@@ -1092,7 +1103,7 @@ function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, f_
     yn = gm.var[:nw][n][:yn]
     yp_ne = gm.var[:nw][n][:yp_ne]
     yn_ne = gm.var[:nw][n][:yn_ne]
-    yp_i = haskey(gm.ref[:nw][n][:connection], k) ? yp[k] : yp_ne[k]
+    yp_i = haskey(ref(gm,n,:connection), k) ? yp[k] : yp_ne[k]
 
-    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) + sum(yp_ne[i] for i in f_connections_ne) + sum(yn_ne[i] for i in t_connections_ne) == yp_i * length(gm.ref[:nw][n][:all_parallel_connections][(i,j)])))
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(yp[i] for i in f_connections) + sum(yn[i] for i in t_connections) + sum(yp_ne[i] for i in f_connections_ne) + sum(yn_ne[i] for i in t_connections_ne) == yp_i * length(ref(gm,n,:all_parallel_connections,(i,j)))))
 end

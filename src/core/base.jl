@@ -264,6 +264,17 @@ function build_ref(data::Dict{String,Any})
         ref[:undirected_connection] =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
         ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
 
+        junction_producers = Dict((i, []) for (i,junction) in ref[:junction])
+        for (j,producer) in ref[:producer]
+            push!(junction_producers[producer["qg_junc"]], j)
+        end
+        ref[:junction_producers] = junction_producers
+
+        junction_consumers = Dict((i, []) for (i,junction) in ref[:junction])
+        for (j,consumer) in ref[:consumer]
+            push!(junction_consumers[consumer["ql_junc"]], j)
+        end
+        ref[:junction_consumers] = junction_consumers
 
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
@@ -278,8 +289,19 @@ function build_ref(data::Dict{String,Any})
             end
         end
 
-        ref[:junction_connections] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:parallel_ne_pipes] = Dict()
+        for (idx, connection) in ref[:ne_pipe]
+            i = connection["f_junction"]
+            j = connection["t_junction"]
+            ref[:parallel_ne_pipes][(min(i,j), max(i,j))] = []
+        end
+
+        ref[:junction_connections]    = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:junction_ne_connections] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:t_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:f_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:t_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:f_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
 
         for (idx, connection) in ref[:connection]
             i = connection["f_junction"]
@@ -288,6 +310,8 @@ function build_ref(data::Dict{String,Any})
             push!(ref[:junction_connections][j], idx)
             push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
             push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)
+            push!(ref[:f_connections][i], idx)
+            push!(ref[:t_connections][j], idx)
         end
 
         for (idx,connection) in ref[:ne_connection]
@@ -296,6 +320,14 @@ function build_ref(data::Dict{String,Any})
             push!(ref[:junction_ne_connections][i], idx)
             push!(ref[:junction_ne_connections][j], idx)
             push!(ref[:all_parallel_connections][(min(i,j), max(i,j))], idx)
+            push!(ref[:f_ne_connections][i], idx)
+            push!(ref[:t_ne_connections][j], idx)
+        end
+
+        for (idx,connection) in ref[:ne_pipe]
+            i = connection["f_junction"]
+            j = connection["t_junction"]
+            push!(ref[:parallel_ne_pipes][(min(i,j), max(i,j))], idx)
         end
 
         junction_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
