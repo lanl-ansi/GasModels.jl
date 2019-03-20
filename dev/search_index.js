@@ -197,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Formulations",
     "title": "Type Hierarchy",
     "category": "section",
-    "text": "We begin with the top of the hierarchy, where we can distinguish between gas flow models. Currently, there are two variations of the weymouth equations, one where the directions of flux are known and one where they are unknown.AbstractDirectedGasFormulation <: AbstractGasFormulation\nAbstractUndirectedGasFormulation <: AbstractGasFormulationEach of these have a disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.AbstractMINLPForm <: AbstractUndirectedGasFormulation\nAbstractMISOCPForm <: AbstractUndirectedGasFormulation\nAbstractMINLPDirectedForm <: AbstractDirectedGasFormulation\nAbstractMISOCPDirectedForm <: AbstractDirectedGasFormulation"
+    "text": "We begin with the top of the hierarchy, where we can distinguish between gas flow models. Currently, there are two variations of the weymouth equations, one where the directions of flux are known and one where they are unknown.AbstractDirectedGasFormulation <: AbstractGasFormulation\nAbstractUndirectedGasFormulation <: AbstractGasFormulationEach of these have a disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.AbstractMINLPForm <: AbstractGasFormulation\nAbstractMISOCPForm <: AbstractGasFormulation"
 },
 
 {
@@ -213,95 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Formulations",
     "title": "User-Defined Abstractions",
     "category": "section",
-    "text": "The user-defined abstractions begin from a root abstract like the AbstractGasFormulation abstract type, i.e. AbstractMyFooForm <: AbstractGasFormulation\n\nStandardMyFooForm <: AbstractFooForm\nFooGasModel = GenericGasModel{StandardFooForm}"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across compressors when directions are constants \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_flow_direction_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_ne",
-    "category": "method",
-    "text": "constraints on flow across compressors when the directions are constants \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_ratios-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_ratios",
-    "category": "method",
-    "text": "on/off constraint for compressors when the flow direction is constant \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_control_valve_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_control_valve_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across control valves when directions are constants \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_control_valve_pressure_drop-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_control_valve_pressure_drop",
-    "category": "method",
-    "text": "constraints on pressure drop across control valves when directions are constants \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pipe_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across pipes where the directions are fixed \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pipe_flow_direction_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_ne",
-    "category": "method",
-    "text": "constraints on flow across pipes when directions are fixed \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pressure_drop-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pressure_drop",
-    "category": "method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pressure_drop_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pressure_drop_ne",
-    "category": "method",
-    "text": "constraints on pressure drop across pipes when the direction is fixed \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_short_pipe_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_short_pipe_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across short pipes when the directions are constants \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_valve_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractDirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_valve_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across valves when directions are constants \n\n\n\n\n\n"
+    "text": "The user-defined abstractions begin from a root abstract like the AbstractGasFormulation abstract type, i.e.AbstractMyFooForm <: AbstractGasFormulation\n\nStandardMyFooForm <: AbstractFooForm\nFooGasModel = GenericGasModel{StandardFooForm}"
 },
 
 {
@@ -313,174 +225,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations/#GasModels.constraint_conserve_flow-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_conserve_flow",
-    "category": "method",
-    "text": "This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_conserve_flow_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_conserve_flow_ne",
-    "category": "method",
-    "text": "This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across compressors \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_flow_direction_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_ne",
-    "category": "method",
-    "text": "constraints on flow across compressors \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_compressor_ratios-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_compressor_ratios",
-    "category": "method",
-    "text": "enforces pressure changes bounds that obey compression ratios \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_control_valve_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_control_valve_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across control valves \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_control_valve_pressure_drop-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_control_valve_pressure_drop",
-    "category": "method",
-    "text": "constraints on pressure drop across control valves \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pipe_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pipe_flow_direction_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_ne",
-    "category": "method",
-    "text": "constraints on flow across pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pressure_drop-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pressure_drop",
-    "category": "method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_pressure_drop_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_pressure_drop_ne",
-    "category": "method",
-    "text": "constraints on pressure drop across pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_short_pipe_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_short_pipe_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across short pipes \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_on_off_valve_flow_direction-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_on_off_valve_flow_direction",
-    "category": "method",
-    "text": "constraints on flow across valves \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_parallel_flow-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_parallel_flow",
-    "category": "method",
-    "text": "ensures that parallel lines have flow in the same direction \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_parallel_flow_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_parallel_flow_ne",
-    "category": "method",
-    "text": "ensures that parallel lines have flow in the same direction \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_sink_flow-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_sink_flow",
-    "category": "method",
-    "text": "Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_sink_flow_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_sink_flow_ne",
-    "category": "method",
-    "text": "Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_source_flow-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_source_flow",
-    "category": "method",
-    "text": "Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.constraint_source_flow_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.constraint_source_flow_ne",
-    "category": "method",
-    "text": "Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.variable_connection_direction-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.variable_connection_direction",
-    "category": "method",
-    "text": "variables associated with direction of flow on the connections. yp = 1 imples flow goes from fjunction to tjunction. yn = 1 imples flow goes from tjunction to fjunction \n\n\n\n\n\n"
-},
-
-{
-    "location": "formulations/#GasModels.variable_connection_direction_ne-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:GasModels.AbstractUndirectedGasFormulation",
-    "page": "Network Formulations",
-    "title": "GasModels.variable_connection_direction_ne",
-    "category": "method",
-    "text": "variables associated with direction of flow on the connections \n\n\n\n\n\n"
-},
-
-{
     "location": "formulations/#Undirected-Models-1",
     "page": "Network Formulations",
     "title": "Undirected Models",
@@ -489,11 +233,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations/#GasModels.constraint_weymouth-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPDirectedForm",
+    "location": "formulations/#GasModels.constraint_weymouth-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPForm",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
     "category": "method",
-    "text": "Weymouth equation with fixed direction variables\n\n\n\n\n\n"
+    "text": "Weymouth equation with discrete direction variables \n\n\n\n\n\n"
 },
 
 {
@@ -505,11 +249,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations/#GasModels.constraint_weymouth_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPDirectedForm",
+    "location": "formulations/#GasModels.constraint_weymouth_directed-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPForm",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_directed",
+    "category": "method",
+    "text": "Weymouth equation with fixed direction\n\n\n\n\n\n"
+},
+
+{
+    "location": "formulations/#GasModels.constraint_weymouth_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPForm",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_ne",
     "category": "method",
-    "text": "Weymouth equation with fixed directions for MINLP\n\n\n\n\n\n"
+    "text": "Weymouth equation for an uexpansion pipe \n\n\n\n\n\n"
 },
 
 {
@@ -517,7 +269,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_ne",
     "category": "method",
-    "text": "Weymouth equation with discrete direction variables for MINLP \n\n\n\n\n\n"
+    "text": "Weymouth equation for an undirected expansion pipe \n\n\n\n\n\n"
+},
+
+{
+    "location": "formulations/#GasModels.constraint_weymouth_ne_directed-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMINLPForm",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_ne_directed",
+    "category": "method",
+    "text": "Weymouth equation for directed expansion pipes\n\n\n\n\n\n"
 },
 
 {
@@ -529,11 +289,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations/#GasModels.constraint_weymouth-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPDirectedForm",
+    "location": "formulations/#GasModels.constraint_weymouth-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPForm",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
     "category": "method",
-    "text": "Weymouth equation with directed flow\n\n\n\n\n\n"
+    "text": "Weymouth equation for a pipe \n\n\n\n\n\n"
 },
 
 {
@@ -541,15 +301,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth",
     "category": "method",
-    "text": "Weymouth equation with discrete direction variables \n\n\n\n\n\n"
+    "text": "Weymouth equation for an undirected pipe \n\n\n\n\n\n"
 },
 
 {
-    "location": "formulations/#GasModels.constraint_weymouth_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPDirectedForm",
+    "location": "formulations/#GasModels.constraint_weymouth_directed-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPForm",
+    "page": "Network Formulations",
+    "title": "GasModels.constraint_weymouth_directed",
+    "category": "method",
+    "text": "Weymouth equation with a pipe with directed flow\n\n\n\n\n\n"
+},
+
+{
+    "location": "formulations/#GasModels.constraint_weymouth_ne-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPForm",
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_ne",
     "category": "method",
-    "text": "Weymouth equation with fixed direction\n\n\n\n\n\n"
+    "text": "Weymouth equation for an expansion pipe\n\n\n\n\n\n"
 },
 
 {
@@ -557,19 +325,19 @@ var documenterSearchIndex = {"docs": [
     "page": "Network Formulations",
     "title": "GasModels.constraint_weymouth_ne",
     "category": "method",
-    "text": "Weymouth equation with discrete direction variables for MINLP\n\n\n\n\n\n"
+    "text": "Weymouth equation for an undirected expansion pipe\n\n\n\n\n\n"
 },
 
 {
-    "location": "formulations/#GasModels.variable_flow-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:GasModels.AbstractMISOCPForm",
+    "location": "formulations/#GasModels.constraint_weymouth_ne_directed-Union{Tuple{T}, Tuple{GenericGasModel{T},Int64,Any,Any,Any,Any,Any,Any,Any,Any,Any}} where T<:GasModels.AbstractMISOCPForm",
     "page": "Network Formulations",
-    "title": "GasModels.variable_flow",
+    "title": "GasModels.constraint_weymouth_ne_directed",
     "category": "method",
-    "text": "\n\n\n\n"
+    "text": "Weymouth equation for expansion pipes with undirected expansion pipes\n\n\n\n\n\n"
 },
 
 {
-    "location": "formulations/#GasModels.variable_mass_flow-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm}",
+    "location": "formulations/#GasModels.variable_mass_flow-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:GasModels.AbstractMISOCPForm",
     "page": "Network Formulations",
     "title": "GasModels.variable_mass_flow",
     "category": "method",
@@ -577,7 +345,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "formulations/#GasModels.variable_mass_flow_ne-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:Union{AbstractMISOCPDirectedForm, AbstractMISOCPForm}",
+    "location": "formulations/#GasModels.variable_mass_flow_ne-Union{Tuple{GenericGasModel{T}}, Tuple{T}, Tuple{GenericGasModel{T},Int64}} where T<:GasModels.AbstractMISOCPForm",
     "page": "Network Formulations",
     "title": "GasModels.variable_mass_flow_ne",
     "category": "method",
@@ -785,6 +553,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "variables/#GasModels.variable_connection_direction",
+    "page": "Variables",
+    "title": "GasModels.variable_connection_direction",
+    "category": "function",
+    "text": "variables associated with direction of flow on the connections. yp = 1 imples flow goes from fjunction to tjunction. yn = 1 imples flow goes from tjunction to fjunction \n\n\n\n\n\n"
+},
+
+{
+    "location": "variables/#GasModels.variable_connection_direction_ne",
+    "page": "Variables",
+    "title": "GasModels.variable_connection_direction_ne",
+    "category": "function",
+    "text": "variables associated with direction of flow on the connections yp = 1 imples flow goes from fjunction to tjunction. yn = 1 imples flow goes from tjunction to fjunction \n\n\n\n\n\n"
+},
+
+{
     "location": "variables/#GasModels.variable_load_mass_flow",
     "page": "Variables",
     "title": "GasModels.variable_load_mass_flow",
@@ -917,7 +701,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_weymouth",
     "category": "function",
-    "text": "Weymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation with fixed direction variables\n\n\n\n\n\nWeymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation with directed flow\n\n\n\n\n\n"
+    "text": "Weymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation with discrete direction variables \n\n\n\n\n\nWeymouth equation for an undirected pipe \n\n\n\n\n\nWeymouth equation for a pipe \n\n\n\n\n\n"
 },
 
 {
@@ -933,15 +717,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop",
     "category": "function",
-    "text": "constraints on pressure drop across pipes \n\n\n\n\n\nconstraints on pressure drop across pipes \n\n\n\n\n\nconstraints on pressure drop across pipes \n\n\n\n\n\n"
+    "text": "constraints on pressure drop across pipes \n\n\n\n\n\nconstraints on pressure drop across an undirected pipe\n\n\n\n\n\nconstraints on pressure drop across an undirected pipe\n\n\n\n\n\n"
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_pipe_flow_direction",
+    "location": "constraints/#GasModels.constraint_on_off_pipe_flow",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction",
+    "title": "GasModels.constraint_on_off_pipe_flow",
     "category": "function",
-    "text": "constraints on flow across pipes \n\n\n\n\n\nconstraints on flow across pipes where the directions are fixed \n\n\n\n\n\nconstraints on flow across pipes \n\n\n\n\n\n"
+    "text": "constraint on flow across an undirected pipe \n\n\n\n\n\nconstraint on flow across an undirected pipe \n\n\n\n\n\ngeneric constraint on flow across the pipe where direction is passed in as a variable or constant\n\n\n\n\n\n"
 },
 
 {
@@ -949,7 +733,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Direction On/off Constraints",
     "category": "section",
-    "text": "constraint_on_off_pressure_drop\nconstraint_on_off_pipe_flow_direction"
+    "text": "constraint_on_off_pressure_drop\nconstraint_on_off_pipe_flow"
 },
 
 {
@@ -957,7 +741,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_weymouth_ne",
     "category": "function",
-    "text": "Weymouth equation with discrete direction variables for MINLP \n\n\n\n\n\nWeymouth equation with discrete direction variables for MINLP \n\n\n\n\n\nWeymouth equation with fixed directions for MINLP\n\n\n\n\n\nWeymouth equation with discrete direction variables for MINLP\n\n\n\n\n\nWeymouth equation with fixed direction\n\n\n\n\n\n"
+    "text": "Weymouth equation for undirected expansion pipes \n\n\n\n\n\nWeymouth equation for an undirected expansion pipe \n\n\n\n\n\nWeymouth equation for an uexpansion pipe \n\n\n\n\n\nWeymouth equation for an undirected expansion pipe\n\n\n\n\n\nWeymouth equation for an expansion pipe\n\n\n\n\n\n"
 },
 
 {
@@ -965,15 +749,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_pressure_drop_ne",
     "category": "function",
-    "text": "constraints on pressure drop across pipes \n\n\n\n\n\nconstraints on pressure drop across pipes when the direction is fixed \n\n\n\n\n\nconstraints on pressure drop across pipes \n\n\n\n\n\n"
+    "text": "constraints on pressure drop across pipes \n\n\n\n\n\nconstraints on pressure drop across an undirected expansion pipe \n\n\n\n\n\nconstraints on pressure drop across a pipe \n\n\n\n\n\n"
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_pipe_flow_direction_ne",
+    "location": "constraints/#GasModels.constraint_on_off_pipe_flow_ne",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_pipe_flow_direction_ne",
+    "title": "GasModels.constraint_on_off_pipe_flow_ne",
     "category": "function",
-    "text": "constraints on flow across pipes \n\n\n\n\n\nconstraints on flow across pipes when directions are fixed \n\n\n\n\n\nconstraints on flow across pipes \n\n\n\n\n\n"
+    "text": "constraints on flow across an expansion pipe that is undirected \n\n\n\n\n\nconstraints on flow across an expansion undirected pipe \n\n\n\n\n\nconstraints on flow across an expansion pipe \n\n\n\n\n\n"
 },
 
 {
@@ -981,7 +765,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Network Expansion Constraints",
     "category": "section",
-    "text": "constraint_weymouth_ne\nconstraint_on_off_pressure_drop_ne\nconstraint_on_off_pipe_flow_direction_ne"
+    "text": "constraint_weymouth_ne\nconstraint_on_off_pressure_drop_ne\nconstraint_on_off_pipe_flow_ne"
 },
 
 {
@@ -993,11 +777,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_compressor_flow_direction",
+    "location": "constraints/#GasModels.constraint_on_off_compressor_flow",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction",
+    "title": "GasModels.constraint_on_off_compressor_flow",
     "category": "function",
-    "text": "constraints on flow across compressors \n\n\n\n\n\nconstraints on flow across compressors when directions are constants \n\n\n\n\n\nconstraints on flow across compressors \n\n\n\n\n\n"
+    "text": "constraints on flow across an undirected compressor \n\n\n\n\n\nconstraints on flow across an undirected compressor \n\n\n\n\n\nconstraints on flow across a compressor \n\n\n\n\n\n"
 },
 
 {
@@ -1005,7 +789,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios",
     "category": "function",
-    "text": "enforces pressure changes bounds that obey compression ratios \n\n\n\n\n\non/off constraint for compressors when the flow direction is constant \n\n\n\n\n\nenforces pressure changes bounds that obey compression ratios \n\n\n\n\n\n"
+    "text": "enforces pressure changes bounds that obey compression ratios for an undirected compressor \n\n\n\n\n\nenforces pressure changes bounds that obey compression ratios for an undirected compressor \n\n\n\n\n\nenforces pressure changes bounds that obey compression ratios for a compressor \n\n\n\n\n\n"
 },
 
 {
@@ -1013,15 +797,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Direction On/off Constraints",
     "category": "section",
-    "text": "constraint_on_off_compressor_flow_direction\nconstraint_on_off_compressor_ratios"
+    "text": "constraint_on_off_compressor_flow\nconstraint_on_off_compressor_ratios"
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_compressor_flow_direction_ne",
+    "location": "constraints/#GasModels.constraint_on_off_compressor_flow_ne",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_compressor_flow_direction_ne",
+    "title": "GasModels.constraint_on_off_compressor_flow_ne",
     "category": "function",
-    "text": "constraints on flow across compressors \n\n\n\n\n\nconstraints on flow across compressors when the directions are constants \n\n\n\n\n\nconstraints on flow across compressors \n\n\n\n\n\n"
+    "text": "constraints on flow across an undirected compressor \n\n\n\n\n\nconstraints on flow across undirected compressors \n\n\n\n\n\nconstraints on flow across compressors \n\n\n\n\n\n"
 },
 
 {
@@ -1029,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_compressor_ratios_ne",
     "category": "function",
-    "text": "constraints on pressure drop across control valves \n\n\n\n\n\nconstraints on pressure drop across control valves \n\n\n\n\n\n"
+    "text": "constraints on pressure drop across an undirected compressor \n\n\n\n\n\nconstraints on pressure drop across an undirected compressor \n\n\n\n\n\nconstraints on pressure drop across a compressor \n\n\n\n\n\n"
 },
 
 {
@@ -1037,7 +821,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Network Expansion Constraints",
     "category": "section",
-    "text": "constraint_on_off_compressor_flow_direction_ne\nconstraint_on_off_compressor_ratios_ne"
+    "text": "constraint_on_off_compressor_flow_ne\nconstraint_on_off_compressor_ratios_ne"
 },
 
 {
@@ -1049,11 +833,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_control_valve_flow_direction",
+    "location": "constraints/#GasModels.constraint_on_off_control_valve_flow",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_control_valve_flow_direction",
+    "title": "GasModels.constraint_on_off_control_valve_flow",
     "category": "function",
-    "text": "constraints on flow across control valves \n\n\n\n\n\nconstraints on flow across control valves when directions are constants \n\n\n\n\n\nconstraints on flow across control valves \n\n\n\n\n\n"
+    "text": "constraints on flow across an undirected control valve \n\n\n\n\n\nconstraints on flow across control valves that are undirected \n\n\n\n\n\nconstraints on flow across control valves\n\n\n\n\n\n"
 },
 
 {
@@ -1061,7 +845,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "GasModels.constraint_on_off_control_valve_pressure_drop",
     "category": "function",
-    "text": "constraints on pressure drop across control valves \n\n\n\n\n\nconstraints on pressure drop across control valves when directions are constants \n\n\n\n\n\nconstraints on pressure drop across control valves \n\n\n\n\n\n"
+    "text": "constraints on pressure drop across control valves that are undirected \n\n\n\n\n\nconstraints on pressure drop across control valves that are undirected \n\n\n\n\n\nconstraints on pressure drop across control valves\n\n\n\n\n\n"
 },
 
 {
@@ -1069,7 +853,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Direction On/off Constraints",
     "category": "section",
-    "text": "constraint_on_off_control_valve_flow_direction\nconstraint_on_off_control_valve_pressure_drop"
+    "text": "constraint_on_off_control_valve_flow\nconstraint_on_off_control_valve_pressure_drop"
 },
 
 {
@@ -1081,11 +865,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_valve_flow_direction",
+    "location": "constraints/#GasModels.constraint_on_off_valve_flow",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_valve_flow_direction",
+    "title": "GasModels.constraint_on_off_valve_flow",
     "category": "function",
-    "text": "constraints on flow across valves \n\n\n\n\n\nconstraints on flow across valves when directions are constants \n\n\n\n\n\nconstraints on flow across valves \n\n\n\n\n\n"
+    "text": "constraints on flow across an undirected valve \n\n\n\n\n\nconstraints on flow across undirected valves \n\n\n\n\n\nconstraints on flow across undirected valves \n\n\n\n\n\n"
 },
 
 {
@@ -1101,7 +885,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Direction On/off Constraints",
     "category": "section",
-    "text": "constraint_on_off_valve_flow_direction\nconstraint_on_off_valve_pressure_drop"
+    "text": "constraint_on_off_valve_flow\nconstraint_on_off_valve_pressure_drop"
 },
 
 {
@@ -1113,11 +897,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints/#GasModels.constraint_on_off_short_pipe_flow_direction",
+    "location": "constraints/#GasModels.constraint_on_off_short_pipe_flow",
     "page": "Constraints",
-    "title": "GasModels.constraint_on_off_short_pipe_flow_direction",
+    "title": "GasModels.constraint_on_off_short_pipe_flow",
     "category": "function",
-    "text": "constraints on flow across short pipes \n\n\n\n\n\nconstraints on flow across short pipes when the directions are constants \n\n\n\n\n\nconstraints on flow across short pipes \n\n\n\n\n\n"
+    "text": "constraints on flow across a  short pipe \n\n\n\n\n\nconstraints on flow across an undirected short pipe \n\n\n\n\n\nconstraints on flow across an undirected short pipe \n\n\n\n\n\n"
 },
 
 {
@@ -1133,7 +917,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Direction On/off Constraints",
     "category": "section",
-    "text": "constraint_on_off_short_pipe_flow_direction\nconstraint_short_pipe_pressure_drop"
+    "text": "constraint_on_off_short_pipe_flow\nconstraint_short_pipe_pressure_drop"
 },
 
 {
