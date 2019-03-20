@@ -1,4 +1,4 @@
-######################################:ne_connection####################################################################
+##########################################################################################################
 # The purpose of this file is to define commonly used and created constraints used in gas flow models
 ##########################################################################################################
 
@@ -111,39 +111,39 @@ constraint_new_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constr
 # Constraints with templates
 
 " standard mass flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fgfirm, flfirm)
+function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fg, fl)
     p = gm.var[:nw][n][:p]
     f = gm.var[:nw][n][:f]
-    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fgfirm - flfirm == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fgfirm, flfirm)
+function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
     p = gm.var[:nw][n][:p]
     f = gm.var[:nw][n][:f]
     f_ne = gm.var[:nw][n][:f_ne]
-    add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fgfirm - flfirm == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
+    add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fl_firm, fg_firm, consumers, producers)
+function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers)
     p = gm.var[:nw][n][:p]
     f = gm.var[:nw][n][:f]
     fg = gm.var[:nw][n][:fg]
     fl = gm.var[:nw][n][:fl]
 
-    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_firm - fl_firm + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
 end
 
 " standard flow balance equation where demand and production is fixed "
-function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_firm, fg_firm, consumers, producers)
+function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_constant, fg_constant, consumers, producers)
     p = gm.var[:nw][n][:p]
     f = gm.var[:nw][n][:f]
     f_ne = gm.var[:nw][n][:f_ne]
     fg = gm.var[:nw][n][:fg]
     fl = gm.var[:nw][n][:fl]
 
-    add_constraint(gm, n, :junction_mass_flow_balance_ne_ls, i, @constraint(gm.model, fg_firm - fl_firm + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
+    add_constraint(gm, n, :junction_mass_flow_balance_ne_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
 end
 
 " constraints on pressure drop across pipes "

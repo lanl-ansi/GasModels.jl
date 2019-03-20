@@ -13,6 +13,7 @@ GasModels.jl Change Log
 - Replaced Logging with Memento
 - Removed directionality from being defined in the forms. Instead, it is defined at the problem level (breaking)
 - Added utility reference sets to improve computational efficiency of model building
+- Refectored qgmin/qgmax/qgfirm and qlmin/qlmax/qlfirm. Now just qgmin/qgmax/qg and ql with a dispatchable flag. The semantics is that a dispatchable consumer or producer should take a value between min and max.  A non dispatchable consumer or producer should use ql and qg respectively (breaking)
 
 ### v0.3.4
 - fixed bugs in print_summary function

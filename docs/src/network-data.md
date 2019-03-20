@@ -30,10 +30,11 @@ The network data dictionary structure is roughly as follows:
 "consumer":{
     "1":{
       "ql_junc": <float>,  # junction id
-      "qlmax": <float>,  # the maximum volumetric gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
-      "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
-      "qlfirm": <float>, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      "qlmax": <float>,  # the maximum volumetric gas demand at standard density. SI units are m^3/s.
+      "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      "ql": <float>, # nominal volumetric gas demand gas demand at standard density. SI units are m^3/s.
       "priority": <float>, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      "dispatchable": <int>,  # whether or not the unit is dispatchable (0 = consumer should produce qg, 1 = consumer can produce between qlmin and qlmax).
       "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
@@ -42,11 +43,12 @@ The network data dictionary structure is roughly as follows:
 },
 "producer":{
     "1":{
-      "qg_junc": <float>,  # junction id
-      "qgmin": <float>,    # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      "qgmax": <float>,    # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      "qgfirm": <float>,   # constant volumetric gas production at standard density. SI units are m^3/s.
-      "status": <int>,     # status of the component (0 = off, 1 = on). Default is 1.
+      "qg_junc": <float>,     # junction id
+      "qgmin": <float>,       # the minimum volumetric gas production at standard density. SI units are m^3/s.
+      "qgmax": <float>,       # the maximum volumetric gas production at standard density. SI units are m^3/s.
+      "qg": <float>,          # nominal volumetric gas production at standard density. SI units are m^3/s.
+      "dispatchable": <int>,  # whether or not the unit is dispatchable (0 = producer should produce qg, 1 = producer can produce between qgmin and qgmax).
+      "status": <int>,        # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},

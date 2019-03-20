@@ -264,18 +264,6 @@ function build_ref(data::Dict{String,Any})
         ref[:undirected_connection] =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
         ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
 
-        junction_producers = Dict((i, []) for (i,junction) in ref[:junction])
-        for (j,producer) in ref[:producer]
-            push!(junction_producers[producer["qg_junc"]], j)
-        end
-        ref[:junction_producers] = junction_producers
-
-        junction_consumers = Dict((i, []) for (i,junction) in ref[:junction])
-        for (j,consumer) in ref[:consumer]
-            push!(junction_consumers[consumer["ql_junc"]], j)
-        end
-        ref[:junction_consumers] = junction_consumers
-
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
         ref[:parallel_connections] = Dict()
@@ -331,16 +319,34 @@ function build_ref(data::Dict{String,Any})
         end
 
         junction_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_dispatchable_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_nondispatchable_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
         for (i,consumer) in ref[:consumer]
             push!(junction_consumers[consumer["ql_junc"]], i)
+            if (consumer["dispatchable"] == 1)
+                push!(junction_dispatchable_consumers[consumer["ql_junc"]], i)
+            else
+                push!(junction_nondispatchable_consumers[consumer["ql_junc"]], i)
+            end
         end
         ref[:junction_consumers] = junction_consumers
+        ref[:junction_dispatchable_consumers] = junction_dispatchable_consumers
+        ref[:junction_nondispatchable_consumers] = junction_nondispatchable_consumers
 
         junction_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_dispatchable_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_nondispatchable_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
         for (i,producer) in ref[:producer]
             push!(junction_producers[producer["qg_junc"]], i)
+            if (producer["dispatchable"] == 1)
+                push!(junction_dispatchable_producers[producer["qg_junc"]], i)
+            else
+                push!(junction_nondispatchable_producers[producer["qg_junc"]], i)
+            end
         end
         ref[:junction_producers] = junction_producers
+        ref[:junction_dispatchable_producers] = junction_dispatchable_producers
+        ref[:junction_nondispatchable_producers] = junction_nondispatchable_producers
 
         add_degree(ref)
         add_pd_bounds_sqr(ref)

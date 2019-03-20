@@ -1,6 +1,5 @@
 # This file contains implementations of functions that are shared by mi formulation
 
-#AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm} # TODO rename to AbstractMIForms
 AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm}
 
 #######################################################################################################################
@@ -45,18 +44,18 @@ function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where 
     consumers  = ref(gm,n,:junction_consumers,i)
     producers  = ref(gm,n,:junction_producers,i)
 
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    fg         = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
+    fl         = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
 
-    if fgfirm > 0.0 && flfirm == 0.0
+    if fg > 0.0 && fl == 0.0
         constraint_source_flow(gm, n, i)
     end
 
-    if fgfirm == 0.0 && flfirm > 0.0
+    if fg == 0.0 && fl > 0.0
         constraint_sink_flow(gm, n, i)
     end
 
-    if fgfirm == 0.0 && flfirm == 0.0 && junction["degree"] == 2
+    if fg == 0.0 && fl == 0.0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)
     end
 end
@@ -77,23 +76,27 @@ function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) whe
     producer   = ref(gm,n,:producer)
     consumers  = ref(gm,n,:junction_consumers,i)
     producers  = ref(gm,n,:junction_producers,i)
+    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
+    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
+    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
+    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
-    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in producers) : 0
-    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in consumers) : 0
-    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in producers) : 0
-    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in consumers) : 0
+    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in dispatch_consumers) : 0
+    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in dispatch_consumers) : 0
 
-    if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
+    if max(fgmin,fg) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl == 0.0 && fgmin >= 0.0
         constraint_source_flow(gm, n, i)
     end
 
-    if fgmax == 0.0 && fgmin == 0.0 && fgfirm == 0.0 && max(flmin,flfirm) > 0.0 && flmin >= 0.0
+    if fgmax == 0.0 && fgmin == 0.0 && fg== 0.0 && max(flmin,fl) > 0.0 && flmin >= 0.0
         constraint_sink_flow(gm, n, i)
     end
 
-    if fgmax == 0 && fgmin == 0 && fgfirm == 0 && flmax == 0 && flmin == 0 && flfirm == 0 && junction["degree"] == 2
+    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree"] == 2
         constraint_conserve_flow(gm, n, i)
     end
 end
@@ -115,16 +118,16 @@ function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) whe
     consumers  = ref(gm,n,:junction_consumers,i)
     producers  = ref(gm,n,:junction_producers,i)
 
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    fg     = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
+    fl     = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
 
-    if fgfirm > 0.0 && flfirm == 0.0
+    if fg > 0.0 && fl == 0.0
         constraint_source_flow_ne(gm, n, i)
     end
-    if fgfirm == 0.0 && flfirm > 0.0
+    if fg == 0.0 && fl > 0.0
         constraint_sink_flow_ne(gm, n, i)
     end
-    if fgfirm == 0.0 && flfirm == 0.0 && junction["degree_all"] == 2
+    if fg == 0.0 && fl == 0.0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, n, i)
     end
 end
@@ -145,21 +148,25 @@ function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) 
     producer   = ref(gm,n,:producer)
     consumers  = ref(gm,n,:junction_consumers,i)
     producers  = ref(gm,n,:junction_producers,i)
+    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
+    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
+    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
+    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    fgfirm    = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm    = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
-    fgmax     = length(producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in producers) : 0
-    flmax     = length(consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in consumers) : 0
-    fgmin     = length(producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in producers) : 0
-    flmin     = length(consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in consumers) : 0
+    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in dispatch_producers) : 0
+    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in dispatch_consumers) : 0
+    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers) : 0
+    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers) : 0
 
-    if max(fgmin,fgfirm) > 0.0  && flmin == 0.0 && flmax == 0.0 && flfirm == 0.0 && fgmin >= 0.0
+    if max(fgmin,fg) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl == 0.0 && fgmin >= 0.0
         constraint_source_flow_ne(gm, i)
     end
-    if fgmax == 0.0 && fgmin == 0.0 && fgfirm == 0.0 && max(flmin,flfirm) > 0.0 && flmin >= 0.0
+    if fgmax == 0.0 && fgmin == 0.0 && fg == 0.0 && max(flmin,fl) > 0.0 && flmin >= 0.0
         constraint_sink_flow_ne(gm, i)
     end
-    if fgmax == 0 && fgmin == 0 && fgfirm == 0 && flmax == 0 && flmin == 0 && flfirm == 0 && junction["degree_all"] == 2
+    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree_all"] == 2
         constraint_conserve_flow_ne(gm, i)
     end
 end

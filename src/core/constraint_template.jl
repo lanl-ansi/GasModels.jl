@@ -73,9 +73,9 @@ function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
     f_branches = ref(gm,n,:f_connections,i)
     t_branches = ref(gm,n,:t_connections,i)
 
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data,producer[j]) for j in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data,consumer[j]) for j in consumers) : 0
-    constraint_junction_mass_flow_balance(gm, n, i, f_branches, t_branches, fgfirm, flfirm)
+    fg         = length(producers) > 0 ? sum(calc_fg(gm.data,producer[j]) for j in producers) : 0
+    fl         = length(consumers) > 0 ? sum(calc_fl(gm.data,consumer[j]) for j in consumers) : 0
+    constraint_junction_mass_flow_balance(gm, n, i, f_branches, t_branches, fg, fl)
 end
 constraint_junction_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance(gm, gm.cnw, i)
 
@@ -91,10 +91,10 @@ function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i
     f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
     t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
 
-    fgfirm     = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm     = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    fg         = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
+    fl         = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
 
-    constraint_junction_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fgfirm, flfirm)
+    constraint_junction_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
 end
 constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne(gm, gm.cnw, i)
 
@@ -107,12 +107,17 @@ function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i
     producer      = ref(gm,n,:producer)
     consumers     = ref(gm,n,:junction_consumers,i)
     producers     = ref(gm,n,:junction_producers,i)
-    fgfirm        = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm        = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
-    v_consumers   = filter(j -> consumer[j]["qlmax"] != 0 || consumer[j]["qlmin"] != 0, consumers)
-    v_producers   = filter(j -> producer[j]["qgmax"] != 0 || producer[j]["qgmin"] != 0, producers)
+    #flfirm        = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+    #v_consumers   = filter(j -> consumer[j]["qlmax"] != 0 || consumer[j]["qlmin"] != 0, consumers)
+    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
+    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
+    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
+    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    constraint_junction_mass_flow_balance_ls(gm, n, i, f_branches, t_branches, flfirm, fgfirm, v_consumers, v_producers)
+    fg = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+
+    constraint_junction_mass_flow_balance_ls(gm, n, i, f_branches, t_branches, fl, fg, dispatch_consumers, dispatch_producers)
 end
 constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ls(gm, gm.cnw, i)
 
@@ -128,13 +133,19 @@ function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int
     f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
     t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
 
-    fgfirm  = length(producers) > 0 ? sum(calc_fgfirm(gm.data, producer[j]) for j in producers) : 0
-    flfirm  = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
+#    flfirm  = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
 
-    v_consumers   = filter(j -> consumer[j]["qlmax"] != 0 || consumer[j]["qlmin"] != 0, consumers)
-    v_producers   = filter(j -> producer[j]["qgmax"] != 0 || producer[j]["qgmin"] != 0, producers)
+#    v_consumers   = filter(j -> consumer[j]["qlmax"] != 0 || consumer[j]["qlmin"] != 0, consumers)
+    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
+    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
+    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
+    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    constraint_junction_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, flfirm, fgfirm, v_consumers, v_producers)
+    fg  = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl  = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+
+
+    constraint_junction_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl, fg, dispatch_consumers, dispatch_producers)
 end
 constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
@@ -390,7 +401,7 @@ constraint_on_off_compressor_ne(gm::GenericGasModel, k::Int) = constraint_on_off
 
 " This function ensures at most one pipe in parallel is selected "
 function constraint_exclusive_new_pipes(gm::GenericGasModel,  n::Int, i, j)
-    parallel = ref(gm,n,:parallel_ne_pipes, (i,j))    
+    parallel = ref(gm,n,:parallel_ne_pipes, (i,j))
     constraint_exclusive_new_pipes(gm, n, i, j, parallel)
 end
 constraint_exclusive_new_pipes(gm::GenericGasModel, i::Int, j::Int) = constraint_exclusive_new_pipes(gm, gm.cnw, i, j)
