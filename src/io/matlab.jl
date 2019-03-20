@@ -286,23 +286,12 @@ function mlab2gm_producer(data::Dict{String,Any})
     producers = [producer for producer in data["producer"]]
     for producer in producers
         producer["qg_junc"] = producer["junction"]
-
-        # This is a hack until we deprecate the "qgfirm" idea from the modeling
-        # The artificial wierdness of this will go away once we drop the firm
-        # notion and actually use dispatchable as feature
-        if producer["dispatchable"] == 1
-            producer["qgmin"] = producer["fg_min"] / data["standard_density"]
-            producer["qgmax"] = producer["fg_max"] / data["standard_density"]
-            producer["qgfirm"] = 0
-        else
-            producer["qgmin"] = 0
-            producer["qgmax"] = 0
-            producer["qgfirm"] = producer["fg"] / data["standard_density"]
-        end
+        producer["qgmin"]  = producer["fg_min"] / data["standard_density"]
+        producer["qgmax"]  = producer["fg_max"] / data["standard_density"]
+        producer["qg"]     = producer["fg"] / data["standard_density"]
         delete!(producer, "fg")
         delete!(producer, "fg_min")
         delete!(producer, "fg_max")
-        delete!(producer, "dispatchable")
     end
 end
 

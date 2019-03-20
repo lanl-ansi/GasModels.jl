@@ -89,7 +89,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                         "qg_junc" => junction_id,
                         "qgmax" => 0.0,
                         "qgmin" => 0.0,
-                        "qgfirm" => -withdrawal
+                        "qg" => -withdrawal
                     )
                     =#
 
@@ -98,7 +98,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                         "qg_junc" => junction_id,
                         "qgmax" => -withdrawal,
                         "qgmin" => 0.0,
-                        "qgfirm" => 0.0
+                        "qg" => 0.0
                     )
 
                     producer_index = "$(gm_producer["index"])"
@@ -117,7 +117,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                 "qg_junc" => junction_id,
                 "qgmax" => node["qmax"],
                 "qgmin" => node["qmin"],
-                "qgfirm" => 0.0
+                "qg" => 0.0
             )
 
             producer_index = "$(gm_producer["index"])"
@@ -249,7 +249,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         "connection" => gm_connections
     )
 
-    #println("total production = $(sum([producer["qgfirm"] for (i,producer) in gm_producers]))")
+    #println("total production = $(sum([producer["qg"] for (i,producer) in gm_producers]))")
     #println("total consumption = $(sum([consumer["qlfirm"] for (i,consumer) in gm_consumers]))")
 
     return gm_network

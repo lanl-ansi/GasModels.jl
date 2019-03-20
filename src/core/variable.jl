@@ -63,7 +63,7 @@ end
 
 " variables associated with production "
 function variable_production_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    prod_set = collect(keys(Dict(x for x in gm.ref[:nw][n][:producer] if x.second["qgmax"] != 0 || x.second["qgmin"] != 0)))
+    prod_set = collect(keys(Dict(x for x in ref(gm,n,:producer) if x.second["dispatchable"] == 1)))
     if bounded
         gm.var[:nw][n][:fg] = @variable(gm.model, [i in prod_set], basename="$(n)_fg", lowerbound=calc_fgmin(gm.data, gm.ref[:nw][n][:producer][i]), upperbound=calc_fgmax(gm.data, gm.ref[:nw][n][:producer][i]), start = getstart(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))
     else

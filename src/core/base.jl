@@ -337,10 +337,19 @@ function build_ref(data::Dict{String,Any})
         ref[:junction_consumers] = junction_consumers
 
         junction_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_dispatchable_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
+        junction_nondispatchable_producers = Dict([(i, []) for (i,junction) in ref[:junction]])
         for (i,producer) in ref[:producer]
             push!(junction_producers[producer["qg_junc"]], i)
+            if (producer["dispatchable"] == 1)
+                push!(junction_dispatchable_producers[producer["qg_junc"]], i)
+            else
+                push!(junction_nondispatchable_producers[producer["qg_junc"]], i)
+            end
         end
         ref[:junction_producers] = junction_producers
+        ref[:junction_dispatchable_producers] = junction_dispatchable_producers
+        ref[:junction_nondispatchable_producers] = junction_nondispatchable_producers
 
         add_degree(ref)
         add_pd_bounds_sqr(ref)

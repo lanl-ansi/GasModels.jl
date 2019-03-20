@@ -39,7 +39,7 @@
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:fg][2] != nothing
+    @test gm.var[:nw][gm.cnw][:fg][10002] != nothing
 end
 
 
@@ -59,7 +59,7 @@ end
     @test occursin("junction: 46", output)
     @test occursin("producer: 3", output)
     @test occursin("c_ratio_max: 5", output)
-    @test occursin("qgfirm: 201.389", output)
+    @test occursin("qg: 201.389", output)
 end
 
 @testset "solution summary" begin

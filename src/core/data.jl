@@ -7,9 +7,9 @@ function calc_max_volume_flow(data::Dict{String,Any})
         if producer["qgmax"] > 0
           max_flow = max_flow + producer["qgmax"]
         end
-        if producer["qgfirm"] > 0
-          max_flow = max_flow + producer["qgfirm"]
-        end
+#        if producer["qgfirm"] > 0
+#          max_flow = max_flow + producer["qgfirm"]
+#        end
     end
     return max_flow
 end
@@ -222,7 +222,7 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
         for (i, producer) in data["producer"]
             apply_func(producer, "qgmin", rescale_q)
             apply_func(producer, "qgmax", rescale_q)
-            apply_func(producer, "qgfirm", rescale_q)
+            apply_func(producer, "qg", rescale_q)
 
         end
     end
@@ -272,7 +272,7 @@ function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
         for (i, producer) in data["producer"]
             apply_func(producer, "qgmin", rescale_q)
             apply_func(producer, "qgmax", rescale_q)
-            apply_func(producer, "qgfirm", rescale_q)
+            apply_func(producer, "qg", rescale_q)
 
         end
     end
@@ -309,8 +309,8 @@ function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
 end
 
 "calculates firm mass flow production"
-function calc_fgfirm(data::Dict{String,Any}, producer::Dict{String,Any})
-    producer["qgfirm"] * data["standard_density"]
+function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
+    producer["qg"] * data["standard_density"]
 end
 
 "prints the text summary for a data file or dictionary to stdout"
@@ -342,7 +342,7 @@ gm_component_parameter_order = Dict(
     "power_max" => 20.0,
 
     "producer_i" => 50.0, "junction" => 51.0,
-    "qgfirm" => 52.0, "qgmin" => 53.0, "qgmax" => 54.0,
+    "qg" => 52.0, "qgmin" => 53.0, "qgmax" => 54.0,
 
     "consumer_i" => 70.0, "junction" => 71.0,
     "qlfirm" => 72.0, "qlmin" => 73.0, "qlmax" => 74.0,
