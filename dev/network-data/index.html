@@ -29,10 +29,11 @@ ga('send', 'pageview');
 &quot;consumer&quot;:{
     &quot;1&quot;:{
       &quot;ql_junc&quot;: &lt;float&gt;,  # junction id
-      &quot;qlmax&quot;: &lt;float&gt;,  # the maximum volumetric gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
-      &quot;qlmin&quot;: &lt;float&gt;,  # the minimum volumetric gas demand gas demand at standard density that can be added to qlfirm. SI units are m^3/s.
-      &quot;qlfirm&quot;: &lt;float&gt;, # constant volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      &quot;qlmax&quot;: &lt;float&gt;,  # the maximum volumetric gas demand at standard density. SI units are m^3/s.
+      &quot;qlmin&quot;: &lt;float&gt;,  # the minimum volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      &quot;ql&quot;: &lt;float&gt;, # nominal volumetric gas demand gas demand at standard density. SI units are m^3/s.
       &quot;priority&quot;: &lt;float&gt;, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      &quot;dispatchable&quot;: &lt;int&gt;,  # whether or not the unit is dispatchable (0 = consumer should produce qg, 1 = consumer can produce between qlmin and qlmax).
       &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
@@ -41,11 +42,12 @@ ga('send', 'pageview');
 },
 &quot;producer&quot;:{
     &quot;1&quot;:{
-      &quot;qg_junc&quot;: &lt;float&gt;,  # junction id
-      &quot;qgmin&quot;: &lt;float&gt;,    # the minimum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      &quot;qgmax&quot;: &lt;float&gt;,    # the maximum volumetric gas production at standard density that can be added to qgfirm. SI units are m^3/s.
-      &quot;qgfirm&quot;: &lt;float&gt;,   # constant volumetric gas production at standard density. SI units are m^3/s.
-      &quot;status&quot;: &lt;int&gt;,     # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;qg_junc&quot;: &lt;float&gt;,     # junction id
+      &quot;qgmin&quot;: &lt;float&gt;,       # the minimum volumetric gas production at standard density. SI units are m^3/s.
+      &quot;qgmax&quot;: &lt;float&gt;,       # the maximum volumetric gas production at standard density. SI units are m^3/s.
+      &quot;qg&quot;: &lt;float&gt;,          # nominal volumetric gas production at standard density. SI units are m^3/s.
+      &quot;dispatchable&quot;: &lt;int&gt;,  # whether or not the unit is dispatchable (0 = producer should produce qg, 1 = producer can produce between qgmin and qgmax).
+      &quot;status&quot;: &lt;int&gt;,        # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     &quot;2&quot;:{...},
