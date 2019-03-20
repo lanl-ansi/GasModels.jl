@@ -12,6 +12,7 @@ GasModels.jl Change Log
 - Redefined the data dictionary to split out connections by type and removed type field (breaking)
 - Replaced Logging with Memento
 - Removed directionality from being defined in the forms. Instead, it is defined at the problem level (breaking)
+- Added utility reference sets to improve computational efficiency of model building
 
 ### v0.3.4
 - fixed bugs in print_summary function
