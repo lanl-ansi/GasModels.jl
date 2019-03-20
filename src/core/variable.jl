@@ -53,7 +53,7 @@ end
 
 " variables associated with demand "
 function variable_load_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    load_set = collect(keys(Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["qlmax"] != 0 || x.second["qlmin"] != 0)))
+    load_set = collect(keys(Dict(x for x in gm.ref[:nw][n][:consumer] if x.second["dispatchable"] == 1)))
     if bounded
         gm.var[:nw][n][:fl] = @variable(gm.model, [i in load_set], basename="$(n)_fl", lowerbound=calc_flmin(gm.data, gm.ref[:nw][n][:consumer][i]), upperbound=calc_flmax(gm.data, gm.ref[:nw][n][:consumer][i]), start = getstart(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))
     else

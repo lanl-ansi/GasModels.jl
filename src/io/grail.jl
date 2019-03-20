@@ -65,7 +65,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                         "ql_junc" => junction_id,
                         "qlmax" => 0.0,
                         "qlmin" => 0.0,
-                        "qlfirm" => withdrawal
+                        "ql" => withdrawal
                     )
                     =#
 
@@ -74,7 +74,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
                         "ql_junc" => junction_id,
                         "qlmax" => withdrawal,
                         "qlmin" => 0.0,
-                        "qlfirm" => 0.0
+                        "ql" => 0.0
                     )
 
 

@@ -301,20 +301,11 @@ function mlab2gm_consumer(data::Dict{String,Any})
     for consumer in consumers
         consumer["ql_junc"] = consumer["junction"]
 
-        # This is a hack until we deprecate the "q1firm" idea from the modeling
-        # The artificial wierdness of this will go away once we drop the firm
-        # notion and actually use dispatchable as feature
-        if consumer["dispatchable"] == 1
-            consumer["qlmin"] = 0
-            consumer["qlmax"] = consumer["fd"] / data["standard_density"]
-            consumer["qlfirm"] = 0
-        else
-            consumer["qlmin"] = 0
-            consumer["qlmax"] = 0
-            consumer["qlfirm"] = consumer["fd"] / data["standard_density"]
-        end
+        consumer["qlmin"] = 0
+        consumer["qlmax"] = consumer["fd"] / data["standard_density"]
+        consumer["ql"] = consumer["fd"] / data["standard_density"]
+
         delete!(consumer, "fd")
-        delete!(consumer, "dispatchable")
     end
 end
 

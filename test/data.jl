@@ -31,7 +31,7 @@
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:fl][4] != nothing
+    @test gm.var[:nw][gm.cnw][:fl][10004] != nothing
 
     try
         gm.var[:nw][gm.cnw][:fg][1] == nothing

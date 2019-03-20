@@ -213,7 +213,7 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
         for (i, consumer) in data["consumer"]
             apply_func(consumer, "qlmin", rescale_q)
             apply_func(consumer, "qlmax", rescale_q)
-            apply_func(consumer, "qlfirm", rescale_q)
+            apply_func(consumer, "ql", rescale_q)
 
         end
     end
@@ -263,7 +263,7 @@ function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
         for (i, consumer) in data["consumer"]
             apply_func(consumer, "qlmin", rescale_q)
             apply_func(consumer, "qlmax", rescale_q)
-            apply_func(consumer, "qlfirm", rescale_q)
+            apply_func(consumer, "ql", rescale_q)
 
         end
     end
@@ -293,9 +293,9 @@ function calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
     consumer["qlmax"] * data["standard_density"]
 end
 
-"calculates firm mass flow consumption"
-function calc_flfirm(data::Dict{String,Any}, consumer::Dict{String,Any})
-    consumer["qlfirm"] * data["standard_density"]
+"calculates constant mass flow consumption"
+function calc_fl(data::Dict{String,Any}, consumer::Dict{String,Any})
+    consumer["ql"] * data["standard_density"]
 end
 
 "calculates minimum mass flow production"
@@ -308,7 +308,7 @@ function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qgmax"] * data["standard_density"]
 end
 
-"calculates firm mass flow production"
+"calculates constant mass flow production"
 function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
     producer["qg"] * data["standard_density"]
 end
@@ -345,7 +345,7 @@ gm_component_parameter_order = Dict(
     "qg" => 52.0, "qgmin" => 53.0, "qgmax" => 54.0,
 
     "consumer_i" => 70.0, "junction" => 71.0,
-    "qlfirm" => 72.0, "qlmin" => 73.0, "qlmax" => 74.0,
+    "ql" => 72.0, "qlmin" => 73.0, "qlmax" => 74.0,
 
     "status" => 500.0,
 )
