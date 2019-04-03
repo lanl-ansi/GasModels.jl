@@ -7,9 +7,6 @@ function calc_max_volume_flow(data::Dict{String,Any})
         if producer["qgmax"] > 0
           max_flow = max_flow + producer["qgmax"]
         end
-#        if producer["qgfirm"] > 0
-#          max_flow = max_flow + producer["qgfirm"]
-#        end
     end
     return max_flow
 end

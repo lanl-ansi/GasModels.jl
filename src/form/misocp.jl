@@ -56,18 +56,18 @@ end
 
 " Weymouth equation for an undirected pipe "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMISOCPForm
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
+    yp = var(gm,n,:yp,k)
+    yn = var(gm,n,:yn,k) 
 
     constraint_weymouth(gm, n, k, i, j, mf, w, pd_min, pd_max, yp, yn)
 end
 
 " Weymouth equation for a pipe "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMISOCPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    l  = gm.var[:nw][n][:l][k]
-    f  = gm.var[:nw][n][:f][k]
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    l  = var(gm,n,:l,k)
+    f  = var(gm,n,:f,k)
 
    add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
    add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))
@@ -86,19 +86,19 @@ end
 
 "Weymouth equation for an undirected expansion pipe"
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMISOCPForm
-    yp = gm.var[:nw][n][:yp_ne][k]
-    yn = gm.var[:nw][n][:yn_ne][k]
+    yp = var(gm,n,:yp_ne,k)
+    yn = var(gm,n,:yn_ne,k)
 
     constraint_weymouth_ne(gm,  n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end
 
 "Weymouth equation for an expansion pipe"
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMISOCPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    zp = gm.var[:nw][n][:zp][k]
-    l  = gm.var[:nw][n][:l_ne][k]
-    f  = gm.var[:nw][n][:f_ne][k]
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    zp = var(gm,n,:zp,k)
+    l  = var(gm,n,:l_ne,k)
+    f  = var(gm,n,:f_ne,k)
 
     add_constraint(gm, n, :weymouth_ne1, k,  @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
     add_constraint(gm, n, :weymouth_ne2, k,  @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))

@@ -16,17 +16,17 @@ MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standar
 
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMINLPForm
-    yp = gm.var[:nw][n][:yp][k]
-    yn = gm.var[:nw][n][:yn][k]
+    yp = var(gm,n,:yp,k)
+    yn = var(gm,n,:yn,k) 
 
     constraint_weymouth(gm, n, k, i, j, mf, w, pd_min, pd_max, yp, yn)
 end
 
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    f  = gm.var[:nw][n][:f][k]
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    f  = var(gm,n,:f,k)
 
     add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (1-yp)*mf^2))
     add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (1-yp)*mf^2))
@@ -41,17 +41,17 @@ end
 
 " Weymouth equation for an undirected expansion pipe "
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMINLPForm
-    yp = gm.var[:nw][n][:yp_ne][k]
-    yn = gm.var[:nw][n][:yn_ne][k]
+    yp = var(gm,n,:yp_ne,k)
+    yn = var(gm,n,:yn_ne,k)
     constraint_weymouth_ne(gm, n, k, i, j, w, mf, pd_min, pd_max, yp, yn)
 end
 
 " Weymouth equation for an uexpansion pipe "
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max, yp, yn) where T <: AbstractMINLPForm
-    pi = gm.var[:nw][n][:p][i]
-    pj = gm.var[:nw][n][:p][j]
-    zp = gm.var[:nw][n][:zp][k]
-    f  = gm.var[:nw][n][:f_ne][k]
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    zp = var(gm,n,:zp,k)
+    f  = var(gm,n,:f_ne,k)
 
     add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f^2 - (2-yp-zp)*mf^2))
     add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f^2 + (2-yp-zp)*mf^2))
