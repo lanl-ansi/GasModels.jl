@@ -1,6 +1,6 @@
 # This file contains implementations of functions that are shared by mi formulation
 
-AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm}
+AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm, AbstractMIPForm}
 
 #######################################################################################################################
 # Common MI Variables
@@ -212,7 +212,7 @@ end
 
 " constraints on pressure drop across an undirected pipe"
 function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k) 
+    yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max, yp, yn)
 end
