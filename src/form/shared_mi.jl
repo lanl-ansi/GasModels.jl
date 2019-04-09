@@ -222,8 +222,8 @@ function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
 
-   add_constraint(gm, n, :on_off_pressure_drop1, k, @constraint(gm.model, (1-yp) * pd_min <= pi - pj))
-   add_constraint(gm, n, :on_off_pressure_drop2, k, @constraint(gm.model, pi - pj <= (1-yn)* pd_max))
+    add_constraint(gm, n, :on_off_pressure_drop1, k, @constraint(gm.model, (1-yp) * pd_min <= pi - pj))
+    add_constraint(gm, n, :on_off_pressure_drop2, k, @constraint(gm.model, pi - pj <= (1-yn)* pd_max))
 end
 
 " constraints on pressure drop across a directed pipe"
@@ -367,8 +367,8 @@ end
 " constraints on flow across an expansion pipe "
 function constraint_on_off_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AbstractMIForms
     f  = var(gm,n,:f_ne,k)
-    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
-    add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min)))) <= f))
+    add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
 end
 
 " constraints on flow across an expansion pipe that is directed "

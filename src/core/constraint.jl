@@ -127,7 +127,6 @@ end
 
 " standard flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers)
-    p = var(gm,n,:p)
     f = var(gm,n,:f)
     fg = var(gm,n,:fg)
     fl = var(gm,n,:fl)
@@ -137,7 +136,6 @@ end
 
 " standard flow balance equation where demand and production is fixed "
 function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_constant, fg_constant, consumers, producers)
-    p = var(gm,n,:p)
     f = var(gm,n,:f)
     f_ne = var(gm,n,:f_ne)
     fg = var(gm,n,:fg)
@@ -168,8 +166,8 @@ function constraint_on_off_pipe_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
 
-    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, f <= zp*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
-    add_constraint(gm, n, :on_off_pipe_flow_ne2, k,  @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, f <= zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
+    add_constraint(gm, n, :on_off_pipe_flow_ne2, k,  @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
 end
 
 " on/off constraints on flow across compressors for expansion variables "
