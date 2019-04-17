@@ -4,9 +4,9 @@ Once Gas Models is installed, Pajarito is installed, and a network data file (e.
 
 ```julia
 using GasModels
-using Pajarito
+using Pavito
 
-run_soc_gf("../test/data/gaslib-40.json", PajaritoSolver())
+run_soc_gf("../test/data/gaslib-40.json", PavitoSolver())
 ```
 
 Similarly, a full non-convex Gas Flow can be executed with a MINLP solver like
@@ -22,7 +22,7 @@ The run commands in GasModels return detailed results data in the form of a dict
 This dictionary can be saved for further processing as follows,
 
 ```julia
-run_soc_gf("../test/data/gaslib-40.json", PajaritoSolver())
+run_soc_gf("../test/data/gaslib-40.json", PavitoSolver())
 ```
 
 For example, the algorithm's runtime and final objective value can be accessed with,
@@ -48,7 +48,7 @@ The function "run_soc_gf" and "run_nl_gf" are shorthands for a more general form
 For example, `run_soc_gf` is equivalent to,
 
 ```julia
-run_gf("test/data/gaslib-40.json", MISOCPGasModel, PajaritoSolver())
+run_gf("test/data/gaslib-40.json", MISOCPGasModel, PavitoSolver())
 ```
 
 where "MISOCPGasModel" indicates an SOC formulation of the gas flow equations.  This more generic `run_gf()` allows one to solve a gas flow feasability problem with any gas network formulation implemented in GasModels.  For example, the full non convex Gas Flow can be run with,
@@ -63,11 +63,11 @@ The following example demonstrates one way to perform multiple GasModels solves 
 ```julia
 network_data = GasModels.parse_file("test/data/gaslib-40.json")
 
-run_gf(network_data, MISOCPGasModel, PajaritoSolver())
+run_gf(network_data, MISOCPGasModel, PavitoSolver())
 
 network_data["junction"]["24"]["pmin"] = 30.0
 
-run_gf(network_data, MISOCPGasModel, PajaritoSolver())
+run_gf(network_data, MISOCPGasModel, PavitoSolver())
 ```
 
 For additional details about the network data, see the [GasModels Network Data Format](@ref) section.
@@ -80,5 +80,5 @@ gm = build_generic_model("test/data/gaslib-40.json", MISOCPGasModel, GasModels.p
 
 print(gm.model)
 
-solve_generic_model(gm, PajaritoSolver())
+solve_generic_model(gm, PavitoSolver())
 ```

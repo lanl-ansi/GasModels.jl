@@ -24,10 +24,10 @@ For the current development version, "checkout" this package with
 Pkg.checkout("GasModels")
 ```
 
-At least one solver is required for running GasModels.  The open-source solver Pajarito is recommended and can be used to solve a wide variety of the problems and network formulations provided in GasModels.  The Pajarito solver can be installed via the package manager with
+At least one solver is required for running GasModels.  The open-source solver Pavito is recommended and can be used to solve a wide variety of the problems and network formulations provided in GasModels.  The Pavito solver can be installed via the package manager with
 
 ```julia
-Pkg.add("Pajarito")
+Pkg.add("Pavito")
 ```
 
 Test that the package works by running
