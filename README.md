@@ -20,6 +20,7 @@ This enables the definition of a wide variety of gas network formulations and th
 **Core Network Formulations**
 * MINLP 
 * MISOCP
+* MIP
 
 ## Basic Usage
 
