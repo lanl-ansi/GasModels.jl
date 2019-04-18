@@ -107,8 +107,6 @@ function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i
     producer      = ref(gm,n,:producer)
     consumers     = ref(gm,n,:junction_consumers,i)
     producers     = ref(gm,n,:junction_producers,i)
-    #flfirm        = length(consumers) > 0 ? sum(calc_flfirm(gm.data, consumer[j]) for j in consumers) : 0
-    #v_consumers   = filter(j -> consumer[j]["qlmax"] != 0 || consumer[j]["qlmin"] != 0, consumers)
     dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
     nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
     dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)

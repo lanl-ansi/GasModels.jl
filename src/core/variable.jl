@@ -8,7 +8,7 @@ function getstart(set, item_key, value_key, default = 0.0)
 end
 
 " variables associated with pressure squared "
-function variable_pressure_sqr(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
+function variable_pressure_sqr(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractGasFormulation
     if bounded
         gm.var[:nw][n][:p] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:junction])], basename="$(n)_p", lowerbound=gm.ref[:nw][n][:junction][i]["pmin"]^2, upperbound=gm.ref[:nw][n][:junction][i]["pmax"]^2, start = getstart(gm.ref[:nw][n][:junction], i, "p_start", gm.ref[:nw][n][:junction][i]["pmin"]^2))
     else
@@ -72,13 +72,13 @@ function variable_production_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bound
 end
 
 " variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
-function variable_connection_direction(gm::GenericGasModel, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection])
+function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection]) where T <: AbstractGasFormulation
     gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(connection)], category = :Bin, basename="$(n)_yp", lowerbound=0, upperbound=1, start = getstart(connection, l, "yp_start", 1.0))
     gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(connection)], category = :Bin, basename="$(n)_yn", lowerbound=0, upperbound=1, start = getstart(connection, l, "yn_start", 0.0))
 end
 
 " variables associated with direction of flow on the connections yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
-function variable_connection_direction_ne(gm::GenericGasModel, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection])
+function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection]) where T <: AbstractGasFormulation
      gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(ne_connection)], category = :Bin, basename="$(n)_yp_ne", lowerbound=0, upperbound=1, start = getstart(ne_connection, l, "yp_start", 1.0))
      gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(ne_connection)], category = :Bin, basename="$(n)_yn_ne", lowerbound=0, upperbound=1, start = getstart(ne_connection, l, "yn_start", 0.0))
 end

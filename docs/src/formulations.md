@@ -18,6 +18,7 @@ Each of these forms can be used as the type parameter for a GasModel, i.e.:
 ```julia
 MINLPGasModel = GenericGasModel(StandardMINLPForm)
 MISOCPGasModel = GenericGasModel(StandardMISOCPForm)
+MIPGasModel = GenericGasModel(StandardMIPForm)
 ```
 
 For details on `GenericGasModel`, see the section on [Gas Model](@ref).
@@ -63,6 +64,15 @@ Private  = true
 ```@autodocs
 Modules = [GasModels]
 Pages   = ["form/misocp.jl"]
+Order   = [:function]
+Private  = true
+```
+
+## MIP
+
+```@autodocs
+Modules = [GasModels]
+Pages   = ["form/mip.jl"]
 Order   = [:function]
 Private  = true
 ```
