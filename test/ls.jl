@@ -3,7 +3,7 @@
     @testset "gaslib 40 case" begin
         result = run_ls("../test/data/gaslib-40-ls.json", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 516.053240741; atol = 1e-2)
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 515.2312009025778; atol = 1e-1)
      end      
 end
 
@@ -12,6 +12,6 @@ end
     @testset "gaslib 40 case" begin
         result = run_ls("../test/data/gaslib-40-ls-priority.json", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 464.447916667; atol = 1e-2) 
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 463.624073939234; atol = 1e-1) 
      end      
 end

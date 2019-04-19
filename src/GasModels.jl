@@ -6,10 +6,9 @@ using JuMP
 using InfrastructureModels
 using Compat
 
-if VERSION < v"0.7.0-"
-    import Compat: @warn
-
-end
+import MathOptInterface
+const MOI = MathOptInterface
+const MOIU = MathOptInterface.Utilities
 
 include("io/json.jl")
 include("io/common.jl")

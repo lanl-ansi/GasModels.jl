@@ -38,11 +38,11 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
     end    
             
     if bounded  
-        gm.var[:nw][n][:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], basename="l", lowerbound=0.0, upperbound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="f", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                        
+        gm.var[:nw][n][:l] = JuMP.@variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], base_name="l", lower_bound=0.0, upper_bound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
+        gm.var[:nw][n][:f] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="f", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                        
     else
-        gm.var[:nw][n][:l] = @variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], basename="l", start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], basename="f", start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                             
+        gm.var[:nw][n][:l] = JuMP.@variable(gm.model, [i in [collect(keys(gm.ref[:nw][n][:pipe])); collect(keys(gm.ref[:nw][n][:resistor])) ]], base_name="l", start = getstart(gm.ref[:nw][n][:connection], i, "l_start", 0))  
+        gm.var[:nw][n][:f] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="f", start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))                             
     end
 end
 
@@ -56,11 +56,11 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
     end    
             
     if bounded   
-        gm.var[:nw][n][:l_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], basename="l_ne", lowerbound=0.0, upperbound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
-        gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="f_ne", lowerbound=-max_flow, upperbound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))                        
+        gm.var[:nw][n][:l_ne] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="l_ne", lower_bound=0.0, upper_bound=1/resistance[i] * max_flow^2, start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
+        gm.var[:nw][n][:f_ne] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))                        
     else
-        gm.var[:nw][n][:l_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], basename="l_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
-        gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], basename="f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))                              
+        gm.var[:nw][n][:l_ne] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="l_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "l_start", 0))      
+        gm.var[:nw][n][:f_ne] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))                              
     end
 end
 
@@ -86,11 +86,11 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
         gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()
         gm.con[:nw][n][:weymouth5] = Dict{Int,ConstraintRef}()                              
     end    
-    gm.con[:nw][n][:weymouth1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))             
-    gm.con[:nw][n][:weymouth2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))             
-    gm.con[:nw][n][:weymouth4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
-    gm.con[:nw][n][:weymouth5][k] = @constraint(gm.model, w*l >= f^2)                                    
+    gm.con[:nw][n][:weymouth1][k] = JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))             
+    gm.con[:nw][n][:weymouth2][k] = JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
+    gm.con[:nw][n][:weymouth3][k] = JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))             
+    gm.con[:nw][n][:weymouth4][k] = JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
+    gm.con[:nw][n][:weymouth5][k] = JuMP.@constraint(gm.model, w*l >= f^2)                                    
 end
 
 "Weymouth equation with directed flow"
@@ -110,11 +110,11 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
         gm.con[:nw][n][:weymouth4] = Dict{Int,ConstraintRef}()
         gm.con[:nw][n][:weymouth5] = Dict{Int,ConstraintRef}()                              
     end    
-    gm.con[:nw][n][:weymouth1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
-    gm.con[:nw][n][:weymouth5][k] = @constraint(gm.model, w*l >= f^2)                                    
+    gm.con[:nw][n][:weymouth1][k] = JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth2][k] = JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
+    gm.con[:nw][n][:weymouth3][k] = JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth4][k] = JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
+    gm.con[:nw][n][:weymouth5][k] = JuMP.@constraint(gm.model, w*l >= f^2)                                    
 end
 
 "Weymouth equation with discrete direction variables for MINLP"
@@ -134,11 +134,11 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
         gm.con[:nw][n][:weymouth_ne4] = Dict{Int,ConstraintRef}()
         gm.con[:nw][n][:weymouth_ne5] = Dict{Int,ConstraintRef}()                              
     end    
-    gm.con[:nw][n][:weymouth_ne1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth_ne2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth_ne4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
-    gm.con[:nw][n][:weymouth_ne5][k] = @constraint(gm.model, zp*w*l >= f^2)                                    
+    gm.con[:nw][n][:weymouth_ne1][k] = JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth_ne2][k] = JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
+    gm.con[:nw][n][:weymouth_ne3][k] = JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth_ne4][k] = JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
+    gm.con[:nw][n][:weymouth_ne5][k] = JuMP.@constraint(gm.model, zp*w*l >= f^2)                                    
 end
 
 "Weymouth equation with fixed direction"
@@ -159,9 +159,9 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
         gm.con[:nw][n][:weymouth_ne4] = Dict{Int,ConstraintRef}()
         gm.con[:nw][n][:weymouth_ne5] = Dict{Int,ConstraintRef}()                              
     end    
-    gm.con[:nw][n][:weymouth_ne1][k] = @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth_ne2][k] = @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
-    gm.con[:nw][n][:weymouth_ne3][k] = @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
-    gm.con[:nw][n][:weymouth_ne4][k] = @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
-    gm.con[:nw][n][:weymouth_ne5][k] = @constraint(gm.model, zp*w*l >= f^2)                                    
+    gm.con[:nw][n][:weymouth_ne1][k] = JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth_ne2][k] = JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1))
+    gm.con[:nw][n][:weymouth_ne3][k] = JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1))              
+    gm.con[:nw][n][:weymouth_ne4][k] = JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1))                              
+    gm.con[:nw][n][:weymouth_ne5][k] = JuMP.@constraint(gm.model, zp*w*l >= f^2)                                    
 end

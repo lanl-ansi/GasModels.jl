@@ -1,38 +1,24 @@
 using GasModels
-using Logging
 
-if VERSION < v"0.7.0-"
-    # suppress warnings during testing
-    Logging.configure(level=ERROR)
-    import Compat: occursin
-end
-
-if VERSION > v"0.7.0-"
-    # suppress warnings during testing
-    disable_logging(Logging.Warn)
-end
 
 using JuMP
 
-using Pavito
 using Ipopt
-#using Cbc
-using GLPKMathProgInterface
+using Cbc
 using Juniper
 
-ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-#cbc_solver = CbcSolver()
-glpk_solver = GLPKSolverMIP()
-juniper_solver = JuniperSolver(ipopt_solver)
-
-#pavito_solver_cbc = PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
-pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0, sb="yes")
+cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
+juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, 
+    nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), 
+    mip_solver=cbc_solver, log_levels=[])
 
 
-using Compat.Test
+import LinearAlgebra
+using Test
 
 # default setup for solvers
-cvx_minlp_solver = pavito_solver_glpk
+cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 
 @testset "GasModels" begin

@@ -18,7 +18,7 @@ end
     @testset "gaslib 40 case" begin
         result = run_nels("../test/data/gaslib-40-nelsfd.json", MISOCPDirectedGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 108.372 * 10^6 / 24.0 / 60.0 / 60.0; atol = 1e-2) # conversion from 10^6 cubic meters per day to cubic meters per second
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 108.255 * 10^6 / 24.0 / 60.0 / 60.0; atol = 1e-1) # conversion from 10^6 cubic meters per day to cubic meters per second
     end      
 end
 
