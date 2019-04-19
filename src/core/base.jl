@@ -2,7 +2,7 @@
 
 export
     GenericGasModel,
-    setdata, setsolver, solve,
+    optimize!,
     run_generic_model, build_generic_model, solve_generic_model
 
 ""
@@ -35,8 +35,8 @@ Methods on `GenericGasModel` for defining variables and adding constraints shoul
 * add them to `model::JuMP.Model`, and
 * follow the conventions for variable and constraint names.
 """
-mutable struct GenericGasModel{T<:AbstractGasFormulation}
-    model::Model
+mutable struct GenericGasModel{T<:AbstractGasFormulation} 
+    model::JuMP.Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
     solution::Dict{String,Any}
@@ -49,7 +49,7 @@ mutable struct GenericGasModel{T<:AbstractGasFormulation}
 end
 
 "default generic constructor"
-function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), solver = JuMP.UnsetSolver())
+function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), jump_model::JuMP.Model=JuMP.Model())
     ref = build_ref(data) # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
@@ -62,7 +62,7 @@ function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{Strin
     cnw = minimum([k for k in keys(ref[:nw])])
 
     gm = GenericGasModel{Typ}(
-        Model(solver = solver), # model
+        jump_model, # model
         data, # data
         setting, # setting
         Dict{String,Any}(), # solution
@@ -84,19 +84,12 @@ ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
 ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
 ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
 
-if VERSION < v"0.7.0-"
-    Base.var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
-    Base.var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-    Base.var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-    Base.var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
-end
 
-if VERSION > v"0.7.0-"
-    var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
-    var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-    var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-    var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
-end
+var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
+var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
+
 
 con(gm::GenericGasModel, key::Symbol) = con(gm, gm.cnw, key)
 con(gm::GenericGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
@@ -108,34 +101,36 @@ ext(gm::GenericGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
 ext(gm::GenericGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
 ext(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
 
-" Set the solver "
-function JuMP.setsolver(gm::GenericGasModel, solver::MathProgBase.AbstractMathProgSolver)
-    setsolver(gm.model, solver)
-end
 
 " Do a solve of the problem "
-function JuMP.solve(gm::GenericGasModel)
-    status, solve_time, solve_bytes_alloc, sec_in_gc = @timed solve(gm.model)
-
-    try
-        solve_time = getsolvetime(gm.model)
-    catch
-        warn(LOGGER, "there was an issue with getsolvetime() on the solver, falling back on @timed.  This is not a rigorous timing value.")
+function optimize!(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory)
+    if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
+        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
+    else
+        @warn "Model already contains optimizer factory, cannot use optimizer specified in `solve_generic_model`"
+        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
     end
 
-    return status, solve_time
+    try
+        solve_time = MOI.get(gm.model, MOI.SolveTime())
+    catch
+        warn(LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
+    end
+
+    return JuMP.termination_status(gm.model), solve_time
 end
 
+
 ""
-function run_generic_model(file::String, model_constructor, solver, post_method; kwargs...)
+function run_generic_model(file::String, model_constructor, optimizer, post_method; kwargs...)
     data = GasModels.parse_file(file)
-    return run_generic_model(data, model_constructor, solver, post_method; kwargs...)
+    return run_generic_model(data, model_constructor, optimizer, post_method; kwargs...)
 end
 
 ""
-function run_generic_model(data::Dict{String,Any}, model_constructor, solver, post_method; solution_builder = get_solution, kwargs...)
+function run_generic_model(data::Dict{String,Any}, model_constructor, optimizer, post_method; solution_builder = get_solution, kwargs...)
     gm = build_generic_model(data, model_constructor, post_method; kwargs...)
-    solution = solve_generic_model(gm, solver; solution_builder = solution_builder)
+    solution = solve_generic_model(gm, optimizer; solution_builder = solution_builder)
     return solution
 end
 
@@ -159,9 +154,25 @@ function build_generic_model(data::Dict{String,Any}, model_constructor, post_met
 end
 
 ""
-function solve_generic_model(gm::GenericGasModel, solver; solution_builder = get_solution)
-    setsolver(gm.model, solver)
-    status, solve_time = solve(gm)
+function parse_status(termination_status::MOI.TerminationStatusCode)
+    if termination_status == MOI.OPTIMAL
+        return :Optimal
+    elseif termination_status == MOI.LOCALLY_SOLVED
+        return :LocalOptimal
+    elseif termination_status == MOI.INFEASIBLE
+        return :Infeasible
+    elseif termination_status == MOI.LOCALLY_INFEASIBLE
+        return :LocalInfeasible
+    else
+        return :Error
+    end
+end
+
+""
+function solve_generic_model(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory; solution_builder = get_solution)
+    termination_status, solve_time = optimize!(gm, optimizer)
+    status = parse_status(termination_status)
+    
     return build_solution(gm, status, solve_time; solution_builder = solution_builder)
 end
 

@@ -1,9 +1,3 @@
-julia 0.6
-
-Ipopt 0.4
-Pavito 0.1.1
-GLPKMathProgInterface 0.4
-Juniper 0.2.2
-JuMP 0.17 0.19-
-
-AmplNLWriter
+Ipopt 
+Juniper
+Cbc

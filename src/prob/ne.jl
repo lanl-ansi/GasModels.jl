@@ -96,7 +96,7 @@ end
 
 " Add the compressor solutions "
 function add_compressor_ratio_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(getvalue(x[2])) / sqrt(getvalue(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
+    add_setpoint(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
 " Add the flow solutions to new lines"
