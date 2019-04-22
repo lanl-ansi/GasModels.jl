@@ -7,7 +7,7 @@ function objective_min_ne_cost(gm::GenericGasModel, nws=[gm.cnw]; normalization=
     zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)  
     zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)  
     
-    obj = @objective(gm.model, Min, sum(
+    obj = JuMP.@objective(gm.model, Min, sum(
                                         sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])) + 
                                         sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor])) 
                                         for n in nws)

@@ -108,15 +108,6 @@ function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) 
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
 end
 
-
-
-
-
-
-
-
-
-
 function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
     constraint_on_off_pipe_flow_directed(gm, i)
 end
