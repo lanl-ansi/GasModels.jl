@@ -3,20 +3,17 @@ os:
   - linux
   - osx
 julia:
-  - 0.7
   - 1.0
   - 1.1
-cache:
- directories:
-   - /home/travis/.julia
-addons:
-  apt_packages:
-    - gfortran
-before_install:
-  - julia -e '(VERSION >= v"0.7" && using Pkg); Pkg.rm("GasModels"); Pkg.rm("GasModels")'
-  - julia -e '(VERSION >= v"0.7" && using Pkg); Pkg.update()'
+  - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
+script:
+  - julia --project -e 'import Pkg; Pkg.build(); Pkg.instantiate()'
+  - julia --project -e 'import Pkg; Pkg.test(coverage=true);'
 after_success:
-  - julia -e '(VERSION >= v"0.7" && using Pkg); Pkg.add("Coverage"); cd(Pkg.dir("GasModels")); using Coverage; Codecov.submit(process_folder())'
+  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
 jobs:
   include:
     - stage: "Documentation"
