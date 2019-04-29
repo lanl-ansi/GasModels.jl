@@ -7,7 +7,8 @@ GasModels.jl Change Log
 - Implement Constraints on compressor power
 - Implement a multi-network test
 
-### Staged
+### v0.3.5
+- move to new Registrator and drop Julia v0.7 and v0.6 support
 - fixed bugs in multinetwork build_ref construction
 - Redefined the data dictionary to split out connections by type and removed type field (breaking)
 - Replaced Logging with Memento
