@@ -7,6 +7,9 @@ GasModels.jl Change Log
 - Implement Constraints on compressor power
 - Implement a multi-network test
 
+### v0.3.6
+- Support for JuMP 0.19 and the MOI interface
+
 ### v0.3.5
 - move to new Registrator and drop Julia v0.7 and v0.6 support
 - fixed bugs in multinetwork build_ref construction
