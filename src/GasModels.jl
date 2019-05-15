@@ -1,15 +1,10 @@
 module GasModels
 
 using JSON
-using MathProgBase
 using JuMP
 using InfrastructureModels
 using Compat
 using Memento
-
-if VERSION < v"0.7.0-"
-    import Compat: @__MODULE__
-end
 
 # Create our module level logger (this will get precompiled)
 const LOGGER = getlogger(@__MODULE__)
@@ -24,6 +19,9 @@ function silence()
     setlevel!(getlogger(InfrastructureModels), "error")
     setlevel!(getlogger(GasModels), "error")
 end
+import MathOptInterface
+const MOI = MathOptInterface
+const MOIU = MathOptInterface.Utilities
 
 include("io/json.jl")
 include("io/common.jl")

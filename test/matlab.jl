@@ -20,7 +20,7 @@ end
         println("Testing matlab gaslib 40 misocp ls")
         result = run_ls("../test/data/matlab/gaslib40-ls.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 516.053240741; atol = 1e-2)
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 515.23066377; atol = 1e-1)
      end
 end
 

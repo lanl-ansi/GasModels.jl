@@ -4,12 +4,14 @@
 
 " function for costing expansion of pipes and compressors "
 function objective_min_ne_cost(gm::GenericGasModel, nws=[gm.cnw]; normalization=1.0)
-    zp = Dict(n => var(gm,n,:zp) for n in nws)
-    zc = Dict(n => var(gm,n,:zc) for n in nws)
-    obj = @objective(gm.model, Min, sum(
-                                        sum(ref(gm,n,:ne_connection,i)["construction_cost"]/normalization * zp[n][i] for i in keys(ref(gm,n,:ne_pipe))) +
-                                        sum(ref(gm,n,:ne_connection,i)["construction_cost"]/normalization * zc[n][i] for i in keys(ref(gm,n,:ne_compressor)))
-                                        for n in nws))
+    zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)  
+    zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)  
+    
+    obj = JuMP.@objective(gm.model, Min, sum(
+                                        sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])) + 
+                                        sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor])) 
+                                        for n in nws)
+                    )      
 end
 
 " function for maximizing load "

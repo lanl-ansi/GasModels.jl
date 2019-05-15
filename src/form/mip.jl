@@ -22,7 +22,7 @@ MIPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardM
 
 function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection]) where T <: AbstractMIPForm
     "dummy integer variable in case we need it"
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in [0]], category = :Bin, basename="$(n)_yp", lowerbound=0, upperbound=1)
+    gm.var[:nw][n][:yp] = @variable(gm.model, [l in [0]], binary=true, base_name="$(n)_yp", lower_bound=0, upper_bound=1)
 end
 
 function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection]) where T <: AbstractMIPForm
@@ -107,15 +107,6 @@ end
 function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
 end
-
-
-
-
-
-
-
-
-
 
 function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
     constraint_on_off_pipe_flow_directed(gm, i)

@@ -2,34 +2,25 @@ using GasModels
 using InfrastructureModels
 using Memento
 
-if VERSION < v"0.7.0-"
-    # suppress warnings during testing
-    import Compat: occursin
-end
-
-if VERSION > v"0.7.0-"
-    # suppress warnings during testing
-    GasModels.silence()
-end
 
 using JuMP
 
-using Pavito
 using Ipopt
-using GLPKMathProgInterface
+using Cbc
 using Juniper
 
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0, sb="yes")
+cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
+juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, 
+    nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), 
+    mip_solver=cbc_solver, log_levels=[])
 
-ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-glpk_solver = GLPKSolverMIP()
-juniper_solver = JuniperSolver(ipopt_solver)
 
-pavito_solver_glpk = PavitoSolver(mip_solver=glpk_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
-
-using Compat.Test
+import LinearAlgebra
+using Test
 
 # default setup for solvers
-cvx_minlp_solver = pavito_solver_glpk
+cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 
 @testset "GasModels" begin
