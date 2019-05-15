@@ -1,50 +1,42 @@
 using GasModels
 
-if VERSION < v"0.7.0-"
-    # suppress warnings during testing
-    import Compat: occursin
-end
+GasModels.silence()
 
-if VERSION > v"0.7.0-"
-    # suppress warnings during testing
-    GasModels.silence()
-end
 
+using JuMP 
 using Ipopt
-using Pajarito
-using Pavito
-using GLPKMathProgInterface
-using ECOS
-using SCS
-using AmplNLWriter
-#using CoinOptServices
-using Gurobi
-using CPLEX
 using Cbc
-using Compat.Test
+using Juniper
+using Gurobi 
+using SCIP 
+using ECOS 
+using SCS 
+using CPLEX 
+using Test
+using AMPLNLWriter
 
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0, sb="yes")
+cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
+juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, 
+    nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), 
+    mip_solver=cbc_solver, log_levels=[])
+gurobi_solver = JuMP.with_optimizer(Gurobi.Optimizer, LogToConsole=0)
+scip_solver = JuMP.with_optimizer(SCIP.Optimizer, display_verblevel=0)
+ecos_solver = JuMP.with_optimizer(ECOS.Optimizer, verbose=false, maxit=10000)
+scs_solver = JuMP.with_optimizer(SCS.Optimizer)
+cplex_solver = JuMP.with_optimizer(CPLEX.Optimizer, CPX_PARAM_SCRIND = 0)
+couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "path/to/couenne.exe")
+bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "path/to/bonmin.exe")
 
-#baron_solver = BaronSolver() # has too many backward dependecies
-couenne_solver =  AmplNLSolver("couenne")
-#bonmin_solver = OsilBonminSolver() # until BonminNLSolver supports quadratic constraints declared with @constraint
-bonmin_solver = AmplNLSolver("bonmin")
-gurobi_solver = GurobiSolver()
-#gurobi_solver_hp = GurobiSolver(ScaleFlag=2, NumericFocus=3)
-scip_solver =  isfile("../bin/scipampl.exe") ? AmplNLSolver("../bin/scipampl.exe", ["../scip.set"]) : nothing
-cplex_solver = CplexSolver()
-cbc_solver = CbcSolver()
-ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-ecos_solver = ECOSSolver(maxit=10000)
-scs_solver = SCSSolver
-pavito_solver = PavitoSolver(mip_solver=GLPKSolverMIP(), cont_solver=ipopt_solver, log_level=3)
-#pavito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=3)
+# baron_solver = BaronSolver() # has too many backward dependecies
+# scip_solver =  isfile("../bin/scipampl.exe") ? AmplNLSolver("../bin/scipampl.exe", ["../scip.set"]) : nothing
 
 misocp_solver = gurobi_solver
 
 if scip_solver != nothing
     minlp_solver = scip_solver
 else
-    minlp_solver = couenne_solver
+    minlp_solver = juniper_solver
 end
 
 include("long_tests_gf.jl")
