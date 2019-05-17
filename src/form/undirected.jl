@@ -4,14 +4,14 @@
 
 " variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
 function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractUndirectedGasFormulation
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], binary=true, base_name="$(n)_yp", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yp_start", 1.0))                  
-    gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], binary=true, base_name="$(n)_yn", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:connection], l, "yn_start", 0.0))                  
+    gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], binary=true, base_name="$(n)_yp", start = getstart(gm.ref[:nw][n][:connection], l, "yp_start", 1.0))                  
+    gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:connection])], binary=true, base_name="$(n)_yn", start = getstart(gm.ref[:nw][n][:connection], l, "yn_start", 0.0))                  
 end
 
 " variables associated with direction of flow on the connections "
 function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractUndirectedGasFormulation
-     gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], binary=true, base_name="$(n)_yp_ne", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yp_start", 1.0))                  
-     gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], binary=true, base_name="$(n)_yn_ne", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "yn_start", 0.0))                  
+     gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], binary=true, base_name="$(n)_yp_ne", start = getstart(gm.ref[:nw][n][:ne_connection], l, "yp_start", 1.0))                  
+     gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(sort(gm.ref[:nw][n][:ne_connection]))], binary=true, base_name="$(n)_yn_ne", start = getstart(gm.ref[:nw][n][:ne_connection], l, "yn_start", 0.0))                  
 end
 
 ################

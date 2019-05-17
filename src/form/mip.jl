@@ -22,7 +22,7 @@ MIPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardM
 
 function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection]) where T <: AbstractMIPForm
     "dummy integer variable in case we need it"
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in [0]], binary=true, base_name="$(n)_yp", lower_bound=0, upper_bound=1)
+    gm.var[:nw][n][:yp] = @variable(gm.model, [l in [0]], binary=true, base_name="$(n)_yp")
 end
 
 function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection]) where T <: AbstractMIPForm

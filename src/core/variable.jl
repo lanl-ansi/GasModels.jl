@@ -38,17 +38,17 @@ end
 
 " variables associated with building pipes "
 function variable_pipe_ne(gm::GenericGasModel, n::Int=gm.cnw)
-    gm.var[:nw][n][:zp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_pipe])], binary=true, base_name="$(n)_zp", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zp_start", 0.0))                  
+    gm.var[:nw][n][:zp] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_pipe])], binary=true, base_name="$(n)_zp", start = getstart(gm.ref[:nw][n][:ne_connection], l, "zp_start", 0.0))                  
 end
 
 " variables associated with building compressors "
 function variable_compressor_ne(gm::GenericGasModel, n::Int=gm.cnw)
-    gm.var[:nw][n][:zc] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_compressor])], binary=true, base_name="$(n)_zc", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:ne_connection], l, "zc_start", 0.0))                  
+    gm.var[:nw][n][:zc] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:ne_compressor])], binary=true, base_name="$(n)_zc", start = getstart(gm.ref[:nw][n][:ne_connection], l, "zc_start", 0.0))                  
 end
 
 " 0-1 variables associated with operating valves "
 function variable_valve_operation(gm::GenericGasModel, n::Int=gm.cnw)
-    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], binary=true, base_name="$(n)_v", lower_bound=0, upper_bound=1, start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))                  
+    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], binary=true, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))                  
 end
 
 " variables associated with demand "
@@ -73,12 +73,12 @@ end
 
 " variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
 function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection]) where T <: AbstractGasFormulation
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(connection)], binary=true, base_name="$(n)_yp", lower_bound=0, upper_bound=1, start = getstart(connection, l, "yp_start", 1.0))
-    gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(connection)], binary=true, base_name="$(n)_yn", lower_bound=0, upper_bound=1, start = getstart(connection, l, "yn_start", 0.0))
+    gm.var[:nw][n][:yp] = @variable(gm.model, [l in keys(connection)], binary=true, base_name="$(n)_yp", start = getstart(connection, l, "yp_start", 1.0))
+    gm.var[:nw][n][:yn] = @variable(gm.model, [l in keys(connection)], binary=true, base_name="$(n)_yn", start = getstart(connection, l, "yn_start", 0.0))
 end
 
 " variables associated with direction of flow on the connections yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction "
 function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection]) where T <: AbstractGasFormulation
-     gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(ne_connection)], binary=true, base_name="$(n)_yp_ne", lower_bound=0, upper_bound=1, start = getstart(ne_connection, l, "yp_start", 1.0))
-     gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(ne_connection)], binary=true, base_name="$(n)_yn_ne", lower_bound=0, upper_bound=1, start = getstart(ne_connection, l, "yn_start", 0.0))
+     gm.var[:nw][n][:yp_ne] = @variable(gm.model, [l in keys(ne_connection)], binary=true, base_name="$(n)_yp_ne", start = getstart(ne_connection, l, "yp_start", 1.0))
+     gm.var[:nw][n][:yn_ne] = @variable(gm.model, [l in keys(ne_connection)], binary=true, base_name="$(n)_yn_ne", start = getstart(ne_connection, l, "yn_start", 0.0))
 end
