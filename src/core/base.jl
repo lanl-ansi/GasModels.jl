@@ -35,7 +35,7 @@ Methods on `GenericGasModel` for defining variables and adding constraints shoul
 * add them to `model::JuMP.Model`, and
 * follow the conventions for variable and constraint names.
 """
-mutable struct GenericGasModel{T<:AbstractGasFormulation} 
+mutable struct GenericGasModel{T<:AbstractGasFormulation}
     model::JuMP.Model
     data::Dict{String,Any}
     setting::Dict{String,Any}
@@ -163,6 +163,8 @@ function parse_status(termination_status::MOI.TerminationStatusCode)
         return :Infeasible
     elseif termination_status == MOI.LOCALLY_INFEASIBLE
         return :LocalInfeasible
+    elseif termination_status == MOI.INFEASIBLE_OR_UNBOUNDED
+        return :Infeasible
     else
         return :Error
     end
@@ -172,7 +174,7 @@ end
 function solve_generic_model(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory; solution_builder = get_solution)
     termination_status, solve_time = optimize!(gm, optimizer)
     status = parse_status(termination_status)
-    
+
     return build_solution(gm, status, solve_time; solution_builder = solution_builder)
 end
 
