@@ -7,6 +7,12 @@ GasModels.jl Change Log
 - Implement Constraints on compressor power
 - Implement a multi-network test
 
+
+### v0.4.1
+- Remove bounds on binary variables for increased solver robustness 
+- Impoved support for infeasible status codes
+- Fixed AMPLNLWriter name in extra tests
+
 ### v0.4.0
 - Support for JuMP 0.19 and the MOI interface
 
