@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Network Data Format · GasModels</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-367975-10', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>GasModels</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="../quickguide/">Getting Started</a></li><li class="current"><a class="toctext" href>Network Data Format</a><ul class="internal"><li><a class="toctext" href="#The-Network-Data-Dictionary-1">The Network Data Dictionary</a></li></ul></li><li><a class="toctext" href="../result-data/">Result Data Format</a></li><li><a class="toctext" href="../math-model/">Mathematical Model</a></li></ul></li><li><span class="toctext">Library</span><ul><li><a class="toctext" href="../formulations/">Network Formulations</a></li><li><a class="toctext" href="../specifications/">Problem Specifications</a></li><li><span class="toctext">Modeling Components</span><ul><li><a class="toctext" href="../model/">GasModel</a></li><li><a class="toctext" href="../objective/">Objective</a></li><li><a class="toctext" href="../variables/">Variables</a></li><li><a class="toctext" href="../constraints/">Constraints</a></li></ul></li><li><a class="toctext" href="../parser/">File IO</a></li></ul></li><li><a class="toctext" href="../developer/">Developer</a></li></ul></nav><article id="docs"><header><nav><ul><li>Manual</li><li><a href>Network Data Format</a></li></ul><a class="edit-page" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/network-data.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Network Data Format</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="GasModels-Network-Data-Format-1" href="#GasModels-Network-Data-Format-1">GasModels Network Data Format</a></h1><h2><a class="nav-anchor" id="The-Network-Data-Dictionary-1" href="#The-Network-Data-Dictionary-1">The Network Data Dictionary</a></h2><p>Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization as a text file. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.</p><p>The network data dictionary structure is roughly as follows:</p><pre><code class="language-json">{
+&quot;name&quot;:&lt;string&gt;,                   # a name for the model
+&quot;temperature&quot;:&lt;float&gt;,             # gas temperature. SI units are kelvin
+&quot;multinetwork&quot;:&lt;boolean&gt;,          # flag for whether or not this is multiple networks
+&quot;gas_molar_mass&quot;:&lt;float&gt;,          # molecular mass of the gas. SI units are kg/mol
+&quot;standard_density&quot;:&lt;float&gt;,        # Standard (nominal) density of the gas. SI units are kg/m^3
+&quot;per_unit&quot;:&lt;boolean&gt;,              # Whether or not the file is in per unit (non dimensional units) or SI units.  Note that the only quantities that are non-dimensionalized are pressure and flux.  
+&quot;compressibility_factor&quot;:&lt;float&gt;,  # Gas compressability. Non-dimensional.
+&quot;baseQ&quot;:&lt;float&gt;,                   # Base for non-dimensionalizing volumetric flow at standard density. SI units are m^3/s
+&quot;baseP&quot;:&lt;float&gt;,                   # Base for non-dimensionalizing pressure. SI units are pascal.
+&quot;junction&quot;:{
+    &quot;1&quot;:{
+      &quot;pmax&quot;: &lt;float&gt;,   # maximum pressure. SI units are pascals
+      &quot;pmin&quot;: &lt;float&gt;,   # minimum pressure. SI units are pascals
+      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;consumer&quot;:{
+    &quot;1&quot;:{
+      &quot;ql_junc&quot;: &lt;float&gt;,  # junction id
+      &quot;qlmax&quot;: &lt;float&gt;,  # the maximum volumetric gas demand at standard density. SI units are m^3/s.
+      &quot;qlmin&quot;: &lt;float&gt;,  # the minimum volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      &quot;ql&quot;: &lt;float&gt;, # nominal volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      &quot;priority&quot;: &lt;float&gt;, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      &quot;dispatchable&quot;: &lt;int&gt;,  # whether or not the unit is dispatchable (0 = consumer should produce qg, 1 = consumer can produce between qlmin and qlmax).
+      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;producer&quot;:{
+    &quot;1&quot;:{
+      &quot;qg_junc&quot;: &lt;float&gt;,     # junction id
+      &quot;qgmin&quot;: &lt;float&gt;,       # the minimum volumetric gas production at standard density. SI units are m^3/s.
+      &quot;qgmax&quot;: &lt;float&gt;,       # the maximum volumetric gas production at standard density. SI units are m^3/s.
+      &quot;qg&quot;: &lt;float&gt;,          # nominal volumetric gas production at standard density. SI units are m^3/s.
+      &quot;dispatchable&quot;: &lt;int&gt;,  # whether or not the unit is dispatchable (0 = producer should produce qg, 1 = producer can produce between qgmin and qgmax).
+      &quot;status&quot;: &lt;int&gt;,        # status of the component (0 = off, 1 = on). Default is 1.
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;pipe&quot;:{
+    &quot;1&quot;:{
+      &quot;length&quot;: &lt;float&gt;,            # the length of the connection. SI units are m.
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;friction_factor&quot;: &lt;float&gt;,   # the friction component of the resistance term of the pipe. Non dimensional.
+      &quot;diameter&quot;: &lt;float&gt;,          # the diameter of the connection. SI units are m.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;compressor&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;c_ratio_min&quot;: &lt;float&gt;,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;c_ratio_max&quot;: &lt;float&gt;,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;short_pipe&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;valve&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;control_valve&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;c_ratio_min&quot;: &lt;float&gt;,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;c_ratio_max&quot;: &lt;float&gt;,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;resistor&quot;:{
+    &quot;1&quot;:{
+      &quot;f_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;t_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;drag&quot;: &lt;float&gt;,              # the drag factor of resistors. Non dimensional.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;directed&quot;: &lt;int&gt;,            # direction of the component (1 = f_junction -&gt; t_junction, 0 = undirected, -1 = t_junction -&gt; f_junction). Default is 0.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+}</code></pre><p>All data is assumed to have consistent units (i.e. metric, English, etc.)</p><p>The following commands can be used to explore the network data dictionary,</p><pre><code class="language-julia">network_data = GasModels.parse_file(&quot;gaslib-40.json&quot;)
+display(network_data)</code></pre><footer><hr/><a class="previous" href="../quickguide/"><span class="direction">Previous</span><span class="title">Getting Started</span></a><a class="next" href="../result-data/"><span class="direction">Next</span><span class="title">Result Data Format</span></a></footer></article></body></html>
