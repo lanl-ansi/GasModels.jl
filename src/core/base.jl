@@ -253,6 +253,7 @@ function build_ref(data::Dict{String,Any})
         # create references to all connections in the system
         ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
         ref[:ne_connection] =  merge(ref[:ne_pipe],ref[:ne_compressor])
+        check_connection_ids(ref::Dict)
 
         # create references to directed and undirected edges
         ref[:directed_pipe] = Dict(x for x in ref[:pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
@@ -396,5 +397,19 @@ function add_default_data(data :: Dict{String,Any})
         if !haskey(data, "control_valve")
             data["control_valve"] = []
         end
+    end
+end
+
+"Utility function for checking if ids of connections are the same"
+function check_connection_ids(ref::Dict)
+    num_connections = length(ref[:pipe]) + length(ref[:short_pipe]) + length(ref[:compressor]) + length(ref[:valve]) + length(ref[:control_valve]) + length(ref[:resistor])
+
+    if num_connections != length(ref[:connection])
+        Memento.error(LOGGER, "There are connection elements with non-unique ids")
+    end
+
+    num_ne_connections = length(ref[:ne_pipe]) + length(ref[:ne_compressor])
+    if num_connections != length(ref[:connection])
+        Memento.error(LOGGER, "There are new connection elements with non-unique ids")
     end
 end
