@@ -39,6 +39,7 @@ include("core/solution.jl")
 include("form/mip.jl")
 include("form/minlp.jl")
 include("form/misocp.jl")
+#include("form/nlp.jl")
 include("form/shared_mi.jl")
 
 include("prob/gf.jl")

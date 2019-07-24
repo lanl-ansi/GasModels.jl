@@ -1,33 +1,41 @@
-# This file contains implementations of functions that are shared by mi formulation
+# This file contains implementations of functions for the nlp formulation
 
-AbstractMIForms = Union{AbstractMISOCPForm, AbstractMINLPForm, AbstractMIPForm}
+export
+    NLPGasModel, StandardNLPForm
+
+""
+abstract type AbstractNLPForm <: AbstractGasFormulation end
+
+""
+abstract type StandardNLPForm <: AbstractNLPForm end
+
+const NLPGasModel = GenericGasModel{StandardNLPForm} # the standard NLP model
+
+"default NLP constructor"
+NLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardNLPForm)
 
 #######################################################################################################################
-# Common MI Variables
+# Variables
 #######################################################################################################################
 
-"Variables needed for modeling flow in MI models"
-function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
+"Variables needed for modeling flow in NLP models"
+function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractNLPForm
     variable_mass_flow(gm,n; bounded=bounded)
-    variable_connection_direction(gm,n)
 end
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
+"Variables needed for modeling flow in NLP models when some edges are directed"
+function variable_flow_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractNLPorm
     variable_mass_flow(gm,n; bounded=bounded)
-    variable_connection_direction(gm,n;connection=ref(gm,n,:undirected_connection))
 end
 
-"Variables needed for modeling flow in MI models"
-function variable_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
+"Variables needed for modeling flow in NLP models"
+function variable_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractNLPForm
     variable_mass_flow_ne(gm,n; bounded=bounded)
-    variable_connection_direction_ne(gm,n)
 end
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIForms
+"Variables needed for modeling flow in NLP models when some edges are directed"
+function variable_flow_ne_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractNLPForm
     variable_mass_flow_ne(gm,n; bounded=bounded)
-    variable_connection_direction_ne(gm,n;ne_connection=ref(gm,n,:undirected_ne_connection))
 end
 
 ########################################################################################################
@@ -35,147 +43,43 @@ end
 ########################################################################################################
 
 "Constraint for computing mass flow balance at node"
-function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    junction = ref(gm,n,:junction,i)
+function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance(gm, n, i)
-
-    consumer   = ref(gm,n,:consumer)
-    producer   = ref(gm,n,:producer)
-    consumers  = ref(gm,n,:junction_consumers,i)
-    producers  = ref(gm,n,:junction_producers,i)
-
-    fg         = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
-    fl         = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
-
-    if fg > 0.0 && fl == 0.0
-        constraint_source_flow(gm, n, i)
-    end
-
-    if fg == 0.0 && fl > 0.0
-        constraint_sink_flow(gm, n, i)
-    end
-
-    if fg == 0.0 && fl == 0.0 && junction["degree"] == 2
-        constraint_conserve_flow(gm, n, i)
-    end
 end
 
 "Constraint for computing mass flow balance at a node when some edges are directed"
-function constraint_junction_mass_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_junction_mass_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance(gm, n, i)
-
-    # TODO there is an analogue of constraint_source_flow, constraint_sink_flow, and constraint_conserve_flow
 end
 
 "Constraint for computing mass flow balance at node when injections are variables"
-function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    junction = ref(gm,n,:junction,i)
+function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ls(gm, n, i)
-
-    consumer   = ref(gm,n,:consumer)
-    producer   = ref(gm,n,:producer)
-    consumers  = ref(gm,n,:junction_consumers,i)
-    producers  = ref(gm,n,:junction_producers,i)
-    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
-    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
-    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
-    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
-
-    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
-    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in dispatch_producers) : 0
-    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in dispatch_consumers) : 0
-    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in dispatch_producers) : 0
-    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in dispatch_consumers) : 0
-
-    if max(fgmin,fg) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl == 0.0 && fgmin >= 0.0
-        constraint_source_flow(gm, n, i)
-    end
-
-    if fgmax == 0.0 && fgmin == 0.0 && fg== 0.0 && max(flmin,fl) > 0.0 && flmin >= 0.0
-        constraint_sink_flow(gm, n, i)
-    end
-
-    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree"] == 2
-        constraint_conserve_flow(gm, n, i)
-    end
 end
 
 "Constraint for computing mass flow balance at node when injections are variables and some edges are directed"
-function constraint_junction_mass_flow_ls_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_junction_mass_flow_ls_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ls(gm, n, i)
-
-    # TODO there is an analogue of constraint_source_flow, constraint_sink_flow, and constraint_conserve_flow
 end
 
 "Constraint for computing mass flow balance at node when there are expansion edges"
-function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    junction = ref(gm,n,:junction,i)
+function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ne(gm, n, i)
-
-    consumer   = ref(gm,n,:consumer)
-    producer   = ref(gm,n,:producer)
-    consumers  = ref(gm,n,:junction_consumers,i)
-    producers  = ref(gm,n,:junction_producers,i)
-
-    fg     = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
-    fl     = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
-
-    if fg > 0.0 && fl == 0.0
-        constraint_source_flow_ne(gm, n, i)
-    end
-    if fg == 0.0 && fl > 0.0
-        constraint_sink_flow_ne(gm, n, i)
-    end
-    if fg == 0.0 && fl == 0.0 && junction["degree_all"] == 2
-        constraint_conserve_flow_ne(gm, n, i)
-    end
 end
 
 "Constraint for computing mass flow balance at node when there are expansion edges and some edges are directed"
-function constraint_junction_mass_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_junction_mass_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ne(gm, n, i)
-
-    # TODO there is an analogue of constraint_source_flow, constraint_sink_flow, and constraint_conserve_flow
 end
 
 "Constraint for computing mass flow balance at node when there are expansion edges and variable injections"
-function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    junction = ref(gm,n,:junction,i)
+function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
-
-    consumer   = ref(gm,n,:consumer)
-    producer   = ref(gm,n,:producer)
-    consumers  = ref(gm,n,:junction_consumers,i)
-    producers  = ref(gm,n,:junction_producers,i)
-    dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
-    nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
-    dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
-    nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
-
-    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
-    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in dispatch_producers) : 0
-    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in dispatch_consumers) : 0
-    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers) : 0
-    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers) : 0
-
-    if max(fgmin,fg) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl == 0.0 && fgmin >= 0.0
-        constraint_source_flow_ne(gm, i)
-    end
-    if fgmax == 0.0 && fgmin == 0.0 && fg == 0.0 && max(flmin,fl) > 0.0 && flmin >= 0.0
-        constraint_sink_flow_ne(gm, i)
-    end
-    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree_all"] == 2
-        constraint_conserve_flow_ne(gm, i)
-    end
 end
 
 "Constraint for computing mass flow balance at node when there are expansion edges, variable injections, and some edges are directed"
-function constraint_junction_mass_flow_ne_ls_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_junction_mass_flow_ne_ls_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
-
-    # TODO there is an analogue of constraint_source_flow, constraint_sink_flow, and constraint_conserve_flow
 end
 
 #############################################################################################################
@@ -183,72 +87,52 @@ end
 ############################################################################################################
 
 "Constraints the define the pressure drop across a pipe"
-function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_pressure_drop(gm, i)
-    constraint_on_off_pipe_flow(gm, i)
+function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_weymouth(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow(gm, i)
 end
 
 "Constraints the define the pressure drop across a pipe when some pipe directions are known"
-function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_pressure_drop_directed(gm, i)
     constraint_on_off_pipe_flow_directed(gm, i)
     constraint_weymouth_directed(gm, i)
 end
 
 " constraints for modeling flow across an undirected pipe when there are new edges "
-function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_pressure_drop(gm, i)
-    constraint_on_off_pipe_flow(gm, i)
+function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_weymouth(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow_ne(gm, i)
-end
-
-" constraints on pressure drop across an undirected pipe"
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
-    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max, yp, yn)
-end
-
-" constraints on pressure drop across an undirected pipe"
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max, yp, yn) where T <: AbstractMIForms
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
-
-    add_constraint(gm, n, :on_off_pressure_drop1, k, @constraint(gm.model, (1-yp) * pd_min <= pi - pj))
-    add_constraint(gm, n, :on_off_pressure_drop2, k, @constraint(gm.model, pi - pj <= (1-yn)* pd_max))
 end
 
 " constraints on pressure drop across a directed pipe"
-function constraint_on_off_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max, yp, yn)
+function constraint_on_off_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max, yp, yn) where T <: AbstractNLPForm
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+
+    if yp == 1
+        add_constraint(gm, n, :on_off_pressure_drop, k, @constraint(gm.model, pi - pj >= 0))
+    else
+        add_constraint(gm, n, :on_off_pressure_drop, k, @constraint(gm.model, pi - pj <= 0))
 end
 
-" constraint on flow across an undirected pipe "
-function constraint_on_off_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
-   constraint_on_off_pipe_flow(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
-end
 
-" generic constraint on flow across the pipe where direction is passed in as a variable or constant"
-function constraint_on_off_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AbstractMIForms
+
+
+
+
+
+" constraint on flow across a directed pipe "
+function constraint_on_off_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractNLPForm
+    pipe = ref(gm,n,:connection,k)
     f  = var(gm,n,:f,k)
 
-    add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
-    add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+    if yp == 1
+        add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, f >= 0))
+    else
+        add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, f <= 0))
 end
+constraint_on_off_pipe_flow_directed(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_directed(gm, gm.cnw, k)
 
-" constraints on flow across a directed pipe "
-function constraint_on_off_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_pipe_flow(gm, n, k, i, j, mf, pd_min, pd_max, w, yp, yn)
-end
+
 
 #############################################################################################################
 ## Constraints for modeling flow across a new pipe
