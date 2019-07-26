@@ -113,11 +113,11 @@ function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where 
 end
 
 function constraint_new_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_pipe_flow_ne_directed(gm, i)
+    constraint_pipe_flow_ne_one_way(gm, i)
 end
 
 function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_short_pipe_flow_directed(gm, i)
+    constraint_short_pipe_flow_one_way(gm, i)
 end
 
 function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
