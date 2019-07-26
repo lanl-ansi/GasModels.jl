@@ -462,3 +462,13 @@ function constraint_new_compressor_ratios_ne(gm::GenericGasModel,  n::Int, k)
     constraint_new_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, p_mini, p_maxi, p_minj, p_maxj)
 end
 constraint_new_compressor_ratios_ne(gm::GenericGasModel, i::Int) = constraint_new_compressor_ratios_ne(gm, gm.cnw, i)
+
+" constraints on flow across a directed compressor "
+function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+    f  = var(gm,n,:f,k)
+    if yp == 1
+        add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, f >= 0))
+    else
+        add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, f <= 0))
+    end
+end

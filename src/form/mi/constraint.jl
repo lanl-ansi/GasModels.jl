@@ -326,7 +326,7 @@ end
 
 "Constraints on flow through a compressor where the compressor is directed"
 function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow_directed(gm, i)
+    constraint_compressor_flow_one_way(gm, i)
     constraint_on_off_compressor_ratios_directed(gm, i)
 end
 
@@ -358,29 +358,35 @@ end
 
 "Constraints through a compressor that is directed in an expansion model"
 function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow_directed(gm, i)
+    constraint_compressor_flow_one_way(gm, i)
     constraint_on_off_compressor_ratios_directed(gm, i)
 end
 
-" constraints on flow across a directed compressor "
-function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
-end
+#" constraints on flow across a directed compressor "
+#function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
+#    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
+#end
+
+
 
 " constraints on flow across an undirected compressor "
 function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
 
-    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
-end
-
-" constraints on flow across a compressor "
-function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
     f  = var(gm,n,:f,k)
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
+
+#    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
 end
+
+#" constraints on flow across a compressor "
+#function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
+#    f  = var(gm,n,:f,k)
+#    add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
+#    add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
+#end
 
 " on/off constraint for compressors when the flow direction is constant "
 function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn) where T <: AbstractMIForms

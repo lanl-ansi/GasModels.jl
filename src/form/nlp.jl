@@ -158,7 +158,6 @@ end
 
 " Weymouth equation for an undirected expansion pipe "
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractNLPForm
-
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
@@ -227,17 +226,13 @@ end
 ######################################################################################
 
 "Constraints on flow through a compressor where the compressor is undirected"
-function constraint_compressor_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow(gm, i)
-    constraint_on_off_compressor_ratios(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow(gm, i)
+function constraint_compressor_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+    constraint_compressor_ratios(gm, i)
 end
 
 "Constraints on flow through a compressor where the compressor is directed"
-function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow_directed(gm, i)
+function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+    constraint_compressor_flow_one_way(gm, i)
     constraint_on_off_compressor_ratios_directed(gm, i)
 end
 
@@ -246,9 +241,6 @@ function constraint_new_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) wh
     constraint_on_off_compressor_flow_ne(gm, i)
     constraint_on_off_compressor_ratios_ne(gm, i)
     constraint_on_off_compressor_ne(gm, i)
-
-    constraint_flow_direction_choice_ne(gm, i)
-    constraint_parallel_flow_ne(gm, i)
 end
 
 "Constraints through a new compressor that is directed"
@@ -260,18 +252,62 @@ end
 
 "Constraints through a compressor that is undirected in an expansion model"
 function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow(gm, i)
-    constraint_on_off_compressor_ratios(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow_ne(gm, i)
+    constraint_on_off_compressor_ratios(gm, i) # Might need to be specialized for :f_ne
 end
 
 "Constraints through a compressor that is directed in an expansion model"
 function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow_directed(gm, i)
+    constraint_compressor_flow_one_way(gm, i)
     constraint_on_off_compressor_ratios_directed(gm, i)
 end
+
+" enforces pressure changes bounds that obey compression ratios for an undirected compressor "
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractNLPForm
+    compressor     = ref(gm,n,:connection,k)
+    i              = compressor["f_junction"]
+    j              = compressor["t_junction"]
+    max_ratio      = compressor["c_ratio_max"]
+    min_ratio      = compressor["c_ratio_min"]
+
+    constraint_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio)
+end
+constraint_compressor_ratios(gm::GenericGasModel, k::Int) = constraint_compressor_ratios(gm, gm.cnw, k)
+
+" enforces pressure changes bounds that obey compression ratios for an undirected compressor. "
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio) where T <: AbstractNLPForm
+    yp = var(gm,n,:yp,k)
+    yn = var(gm,n,:yn,k)
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    f = var(gm,n,:yn,f)
+
+    #TODO this will only allow backwards flow if min_ratio = 1
+    add_constraint(gm, n, :on_off_compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
+    add_constraint(gm, n, :on_off_compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    add_constraint(gm, n, :on_off_compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= 0))
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 " constraints on flow across an undirected compressor "
 function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
@@ -285,24 +321,12 @@ function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k)  w
 end
 constraint_on_off_compressor_flow(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow(gm, gm.cnw, k)
 
-" constraints on flow across a directed compressor "
-function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
-    compressor = ref(gm, n, :connection, k)
 
-    i        = compressor["f_junction"]
-    j        = compressor["t_junction"]
-    mf       = ref(gm,n,:max_mass_flow)
-    yp       = compressor["yp"]
-    yn       = compressor["yn"]
 
-    constraint_on_off_compressor_flow_directed(gm, n, k, i, j, mf, yp, yn)
-end
-constraint_on_off_compressor_flow_directed(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow_directed(gm, gm.cnw, k)
-
-" constraints on flow across a directed compressor "
-function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
-end
+#" constraints on flow across a directed compressor "
+#function constraint_on_off_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
+#    constraint_on_off_compressor_flow(gm, n, k, i, j, mf, yp, yn)
+#end
 
 " constraints on flow across an undirected compressor "
 function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
@@ -319,21 +343,7 @@ function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i,
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
 end
 
-" enforces pressure changes bounds that obey compression ratios for an undirected compressor "
-function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    compressor     = ref(gm,n,:connection,k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = ref(gm,n,:junction,j)["pmax"]
-    j_pmin         = ref(gm,n,:junction,j)["pmin"]
-    i_pmax         = ref(gm,n,:junction,i)["pmax"]
-    i_pmin         = ref(gm,n,:junction,i)["pmin"]
 
-    constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin)
-end
-constraint_on_off_compressor_ratios(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios(gm, gm.cnw, k)
 
 " enforces pressure changes bounds that obey compression ratios for a directed compressor "
 function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
@@ -358,23 +368,7 @@ function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n:
     constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn)
 end
 
-" enforces pressure changes bounds that obey compression ratios for an undirected compressor "
-function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
 
-    constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn)
-end
-
-" enforces pressure changes bounds that obey compression ratios for a compressor "
-function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn) where T <: AbstractMIForms
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :on_off_compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-yp)*(j_pmax^2)))
-    add_constraint(gm, n, :on_off_compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-yp)*(i_pmax^2)))
-    add_constraint(gm, n, :on_off_compressor_ratios3, k, @constraint(gm.model, pi - pj <= (1-yn)*(i_pmax^2)))
-    add_constraint(gm, n, :on_off_compressor_ratios4, k, @constraint(gm.model, pj - pi <= (1-yn)*(j_pmax^2)))
-end
 
 " constraints on flow across an undirected compressor "
 function constraint_on_off_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
@@ -475,6 +469,27 @@ end
 function constraint_on_off_compressor_ratios_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax, yp, yn) where T <: AbstractMIForms
     constraint_on_off_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax, yp, yn)
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################
+## Constraints associated with valves
+######################################################################################
 
 " constraints on a valve that is undirected"
 function constraint_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
