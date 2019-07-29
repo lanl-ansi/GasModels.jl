@@ -233,7 +233,7 @@ end
 "Constraints on flow through a compressor where the compressor is directed"
 function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_compressor_flow_one_way(gm, i)
-    constraint_on_off_compressor_ratios_directed(gm, i)
+    constraint_compressor_ratios_one_way(gm, i)
 end
 
 "Constraints through a new compressor that is undirected"
@@ -258,7 +258,7 @@ end
 "Constraints through a compressor that is directed in an expansion model"
 function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_compressor_flow_one_way(gm, i)
-    constraint_on_off_compressor_ratios_directed(gm, i)
+    constraint_compressor_ratios_one_way(gm, i)
 end
 
 " enforces pressure changes bounds that obey compression ratios for an undirected compressor "
@@ -345,28 +345,6 @@ end
 
 
 
-" enforces pressure changes bounds that obey compression ratios for a directed compressor "
-function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    compressor     = ref(gm,n,:connection,k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = ref(gm,n,:junction,j)["pmax"]
-    j_pmin         = ref(gm,n,:junction,j)["pmin"]
-    i_pmax         = ref(gm,n,:junction,i)["pmax"]
-    i_pmin         = ref(gm,n,:junction,i)["pmin"]
-    yp             = compressor["yp"]
-    yn             = compressor["yn"]
-
-    constraint_on_off_compressor_ratios_directed(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn)
-end
-constraint_on_off_compressor_ratios_directed(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios_directed(gm, gm.cnw, k)
-
-" on/off constraint for compressors when the flow direction is constant "
-function constraint_on_off_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn)
-end
 
 
 

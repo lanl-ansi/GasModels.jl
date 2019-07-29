@@ -472,3 +472,21 @@ function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k, i, j
         add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, f <= 0))
     end
 end
+
+" enforces pressure changes bounds that obey compression ratios for a directed compressor "
+function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k)
+    compressor     = ref(gm,n,:connection,k)
+    i              = compressor["f_junction"]
+    j              = compressor["t_junction"]
+    max_ratio      = compressor["c_ratio_max"]
+    min_ratio      = compressor["c_ratio_min"]
+#    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+#    j_pmin         = ref(gm,n,:junction,j)["pmin"]
+#    i_pmax         = ref(gm,n,:junction,i)["pmax"]
+#    i_pmin         = ref(gm,n,:junction,i)["pmin"]
+    yp             = compressor["yp"]
+    yn             = compressor["yn"]
+
+    constraint_compressor_ratios_one_way(gm, n, k, i, j, min_ratio, max_ratio, yp, yn)
+end
+constraint_compressor_ratios_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_one_way(gm, gm.cnw, k)

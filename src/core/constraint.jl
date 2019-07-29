@@ -219,6 +219,20 @@ function constraint_pressure_drop_one_way(gm::GenericGasModel, n::Int, k, i, j, 
     end
 end
 
+" on/off constraint for compressors when the flow direction is constant "
+function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, yp, yn)
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+
+    if yp == 1
+        add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        add_constraint(gm, n, :compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    else
+        add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj == pi))
+    end
+#    constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin, yp, yn)
+end
+
 " constraint on flow across the pipe where direction is fixed"
 function constraint_pipe_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f  = var(gm,n,:f,k)
