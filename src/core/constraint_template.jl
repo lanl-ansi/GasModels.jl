@@ -467,9 +467,9 @@ constraint_new_compressor_ratios_ne(gm::GenericGasModel, i::Int) = constraint_ne
 function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f  = var(gm,n,:f,k)
     if yp == 1
-        add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, f >= 0))
+        add_constraint(gm, n, :on_off_compressor_flow_direction, k, @constraint(gm.model, f >= 0))
     else
-        add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, f <= 0))
+        add_constraint(gm, n, :on_off_compressor_flow_direction, k, @constraint(gm.model, f <= 0))
     end
 end
 
@@ -480,13 +480,44 @@ function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k)
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-#    j_pmax         = ref(gm,n,:junction,j)["pmax"]
-#    j_pmin         = ref(gm,n,:junction,j)["pmin"]
-#    i_pmax         = ref(gm,n,:junction,i)["pmax"]
-#    i_pmin         = ref(gm,n,:junction,i)["pmin"]
     yp             = compressor["yp"]
     yn             = compressor["yn"]
 
     constraint_compressor_ratios_one_way(gm, n, k, i, j, min_ratio, max_ratio, yp, yn)
 end
 constraint_compressor_ratios_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_one_way(gm, gm.cnw, k)
+
+" constraints on pressure drop across a directed compressor "
+function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, n::Int, k)
+    compressor = ref(gm,n,:ne_connection, k)
+    i              = compressor["f_junction"]
+    j              = compressor["t_junction"]
+    max_ratio      = compressor["c_ratio_max"]
+    min_ratio      = compressor["c_ratio_min"]
+    j_pmax         = ref(gm,n,:junction,j)["pmax"]
+    i_pmax         = ref(gm,n,:junction,i)["pmax"]
+    i_pmin         = ref(gm,n,:junction,i)["pmin"]
+    mf             = gm.ref[:nw][n][:max_mass_flow]
+
+    yp       = compressor["yp"]
+    yn       = compressor["yn"]
+
+    constraint_compressor_ratios_ne_one_way(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn)
+end
+constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_ne_one_way(gm, gm.cnw, k)
+
+
+
+" constraints on flow across a directed compressor "
+function constraint_compressor_flow_ne_one_way(gm::GenericGasModel, n::Int, k)
+    compressor     = ref(gm,n,:ne_connection,k)
+
+    i        = compressor["f_junction"]
+    j        = compressor["t_junction"]
+    mf       = ref(gm,n,:max_mass_flow)
+    yp       = compressor["yp"]
+    yn       = compressor["yn"]
+
+    constraint_compressor_flow_ne_one_way(gm, n, k, i, j, mf, yp, yn)
+end
+constraint_compressor_flow_ne_one_way(gm::GenericGasModel, i::Int) = constraint_one_way_compressor_flow_ne(gm, gm.cnw, i)
