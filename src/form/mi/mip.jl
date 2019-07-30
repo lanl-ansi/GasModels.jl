@@ -113,33 +113,33 @@ function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where 
 end
 
 function constraint_new_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_pipe_flow_ne_directed(gm, i)
+    constraint_pipe_flow_ne_one_way(gm, i)
 end
 
 function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_short_pipe_flow_directed(gm, i)
+    constraint_short_pipe_flow_one_way(gm, i)
 end
 
 function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_compressor_flow_directed(gm, i)
+    constraint_compressor_flow_one_way(gm, i)
 end
 
 function constraint_new_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_compressor_flow_ne_directed(gm, i)
+    constraint_compressor_flow_ne_one_way(gm, i)
 end
 
 function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_compressor_flow_directed(gm, i)
+    constraint_compressor_flow_one_way(gm, i)
 end
 
 function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_valve_flow_directed(gm, i)
+    constraint_on_off_valve_flow_one_Way(gm, i)
 end
 
 function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_control_valve_flow_directed(gm, i)
+    constraint_control_valve_flow_one_way(gm, i)
 end
 
 function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_control_valve_flow_directed(gm, i)
+    constraint_control_valve_flow_one_way(gm, i)
 end

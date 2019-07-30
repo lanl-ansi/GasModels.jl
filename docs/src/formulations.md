@@ -32,29 +32,11 @@ AbstractMyFooForm <: AbstractGasFormulation
 StandardMyFooForm <: AbstractFooForm
 FooGasModel = GenericGasModel{StandardFooForm}
 ```
-## Directed Models
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/directed.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## Undirected Models
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/undirected.jl"]
-Order   = [:function]
-Private  = true
-```
-
 ## MINLP
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/minlp.jl"]
+Pages   = ["form/mi/minlp.jl"]
 Order   = [:function]
 Private  = true
 ```
@@ -63,7 +45,7 @@ Private  = true
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/misocp.jl"]
+Pages   = ["form/mi/misocp.jl"]
 Order   = [:function]
 Private  = true
 ```
@@ -72,7 +54,7 @@ Private  = true
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/mip.jl"]
+Pages   = ["form/mi/mip.jl"]
 Order   = [:function]
 Private  = true
 ```
