@@ -194,19 +194,6 @@ function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k) where T
 end
 constraint_on_off_valve_flow(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow(gm, gm.cnw, k)
 
-" constraints on flow across a directed valve "
-function constraint_on_off_valve_flow_directed(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-    mf = ref(gm,n,:max_mass_flow)
-
-    yp = valve["yp"]
-    yn = valve["yn"]
-
-    constraint_on_off_valve_flow_directed(gm, n, k, i, j, mf, yp, yn)
-end
-constraint_on_off_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow_directed(gm, gm.cnw, k)
 
 " constraints on flow across an undirected control valve "
 function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
