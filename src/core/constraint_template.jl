@@ -535,3 +535,17 @@ function constraint_on_off_valve_flow_one_way(gm::GenericGasModel, n::Int, k)
     constraint_on_off_valve_flow_one_way(gm, n, k, i, j, mf, yp, yn)
 end
 constraint_on_off_valve_flow_one_way(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow_one_way(gm, gm.cnw, k)
+
+" constraints on flow across a directed control valve "
+function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k)
+    valve = ref(gm,n,:connection,k)
+    i = valve["f_junction"]
+    j = valve["t_junction"]
+    mf = ref(gm,n,:max_mass_flow)
+
+    yp = valve["yp"]
+    yn = valve["yn"]
+
+    constraint_control_valve_flow_one_way(gm, n, k, i, j, mf, yp, yn)
+end
+constraint_control_valve_flow_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_one_way(gm, gm.cnw, k)

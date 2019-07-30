@@ -246,7 +246,7 @@ function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, m
     pj = var(gm,n,:p,j)
     f = var(gm,n,:yn,f)
 
-    #TODO this will only allow backwards flow if min_ratio = 1
+    #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :on_off_compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
     add_constraint(gm, n, :on_off_compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
     add_constraint(gm, n, :on_off_compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= 0))
@@ -274,40 +274,11 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
 
-    #TODO this will only allow backwards flow if min_ratio = 1
+    #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :on_off_compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
     add_constraint(gm, n, :on_off_compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
     add_constraint(gm, n, :on_off_compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ######################################################################################
 ## Constraints associated with valves
@@ -321,6 +292,18 @@ end
 
 " constraints on a valve that is directed"
 function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+    constraint_on_off_valve_flow_one_way(gm, i)
+    constraint_on_off_valve_pressure_drop(gm, i)
+end
+
+" constraints on flow across an undirected valve in an expansion planning model"
+function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+    constraint_on_off_valve_flow(gm, i)
+    constraint_valve_pressure_drop(gm, i)
+end
+
+" constraints on flow across a directed valve in an expansion planning model"
+function constraint_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_valve_flow_one_way(gm, i)
     constraint_on_off_valve_pressure_drop(gm, i)
 end
@@ -346,157 +329,64 @@ end
 
 
 
-
-
-
-
-
-
-
 ##########################################################################################################
 # Constraints on control valves
 ##########################################################################################################
 
-
 " constraints on flow an undirected control valve"
-function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_control_valve_flow(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow(gm, i)
+    constraint_control_valve_pressure_drop(gm, i)
 end
 
 " constraints on flow an directed control valve"
 function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow_directed(gm, i)
+    constraint_on_off_control_valve_flow_one_way(gm, i)
     constraint_on_off_control_valve_pressure_drop_directed(gm, i)
 end
 
-" constraints on flow across an undirected control valve "
-function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-    mf = ref(gm,n,:max_mass_flow)
 
-    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf)
-end
-constraint_on_off_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_flow(gm, gm.cnw, k)
-
-" constraints on flow across a directed control valve "
-function constraint_on_off_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-    mf = ref(gm,n,:max_mass_flow)
-
-    yp = valve["yp"]
-    yn = valve["yn"]
-
-    constraint_on_off_control_valve_flow_directed(gm, n, k, i, j, mf, yp, yn)
-end
-constraint_on_off_control_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_flow_directed(gm, gm.cnw, k)
-
-" constraints on flow across control valves when directions are constants "
-function constraint_on_off_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf, yp, yn)
+"constraints on undirected control value flows for expansion planning"
+function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+    constraint_on_off_control_valve_flow(gm, i)
+    constraint_control_valve_pressure_drop(gm, i)
 end
 
-######################################################
-# Flow Constraints for control valves
-#######################################################
+"constraints on directed control value flows for expansion planning"
+function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+    constraint_control_valve_flow_one_way(gm, i)
+    constraint_on_off_control_valve_pressure_drop_directed(gm, i)
+end
+
 
 " constraints on flow across control valves that are undirected "
-function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
-
-    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf, yp, yn)
-end
-
-" constraints on flow across control valves"
-function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
+function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractNLPForm
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
-
-    add_constraint(gm, n, :on_off_control_valve_flow_direction1, k, @constraint(gm.model, -mf*(1-yp) <= f))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction2, k, @constraint(gm.model, f <= mf*(1-yn)))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f ))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+    add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
+    add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
 end
+
+" enforces pressure changes bounds that obey decompression ratios for an undirected control valve "
+function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractNLPForm
+    control_valve     = ref(gm,n,:control_valve,k)
+    i              = control_valve["f_junction"]
+    j              = control_valve["t_junction"]
+    max_ratio      = control_valve["c_ratio_max"]
+    min_ratio      = control_valve["c_ratio_min"]
+
+    constraint_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio)
+end
+constraint_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop(gm, gm.cnw, k)
 
 " constraints on pressure drop across control valves that are undirected "
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-
-    max_ratio = valve["c_ratio_max"]
-    min_ratio = valve["c_ratio_min"]
-
-    j_pmax = ref(gm,n,:junction,j)["pmax"]
-    i_pmax = ref(gm,n,:junction,i)["pmax"]
-
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
-end
-constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
-
-" constraints on pressure drop across control valves that are directed "
-function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    valve = ref(gm,n,:connection,k)
-    i = valve["f_junction"]
-    j = valve["t_junction"]
-
-    max_ratio = valve["c_ratio_max"]
-    min_ratio = valve["c_ratio_min"]
-
-    j_pmax = ref(gm,n,:junction,j)["pmax"]
-    i_pmax = ref(gm,n,:junction,i)["pmax"]
-
-    yp = valve["yp"]
-    yn = valve["yn"]
-
-    constraint_on_off_control_valve_pressure_drop_directed(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
-end
-constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop_directed(gm, gm.cnw, k)
-
-" constraints on pressure drop across control valves when directions are constants "
-function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
-end
-
-" constraints on pressure drop across control valves that are undirected "
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIForms
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
-
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
-end
-
-" constraints on pressure drop across control valves"
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIForms
+function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v = var(gm,n,:v,k)
 
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-yp-v)*j_pmax^2))
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop2, k, @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-v)*(i_pmax^2) ))
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop3, k, @constraint(gm.model,  pj - pi <= (2-yn-v)*j_pmax^2))
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop4, k, @constraint(gm.model,  pi - pj <= (2-yn-v)*(i_pmax^2)))
-end
-
-"constraints on undirected control value flows for expansion planning"
-function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow(gm, i)
-    constraint_on_off_control_valve_pressure_drop(gm, i)
-
-    constraint_flow_direction_choice(gm, i)
-    constraint_parallel_flow_ne(gm, i)
-end
-
-"constraints on directed control value flows for expansion planning"
-function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_control_valve_flow_directed(gm, i)
-    constraint_on_off_control_valve_pressure_drop_directed(gm, i)
+    #TODO this constraint is only valid if max_ratio = 1
+    add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
+    add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, f * (1-pj/pi) >= 0))
 end

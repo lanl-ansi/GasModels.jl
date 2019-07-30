@@ -186,7 +186,6 @@ function constraint_on_off_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i,
 #    constraint_on_off_valve_flow(gm, n, k, i, j, mf, yp, yn)
 end
 
-
 " on/off constraints on flow across pipes for expansion variables "
 function constraint_on_off_pipe_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min, pd_max)
     zp = var(gm,n,:zp,k)
@@ -302,4 +301,19 @@ function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, n::Int, k,
     else
         add_constraint(gm, n, :on_off_compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
     end
+end
+
+" constraints on flow across control valves when directions are constants "
+function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
+    f = var(gm,n,:f,k)
+    v = var(gm,n,:v,k)
+
+    if yp == 1
+        add_constraint(gm, n,:control_valve_flow_direction1, k, @constraint(gm.model, 0 <= f))
+        add_constraint(gm, n,:control_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+    else
+        add_constraint(gm, n,:control_valve_flow_direction2, k, @constraint(gm.model, f <= 0))
+        add_constraint(gm, n,:control_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
+    end
+#    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf, yp, yn)
 end

@@ -137,9 +137,9 @@ function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where
 end
 
 function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_control_valve_flow_directed(gm, i)
+    constraint_control_valve_flow_one_way(gm, i)
 end
 
 function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_control_valve_flow_directed(gm, i)
+    constraint_control_valve_flow_one_way(gm, i)
 end
