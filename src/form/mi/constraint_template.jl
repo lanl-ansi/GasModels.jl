@@ -228,7 +228,7 @@ end
 constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
 
 " constraints on pressure drop across control valves that are directed "
-function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
+function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)
     i = valve["f_junction"]
     j = valve["t_junction"]
@@ -242,6 +242,6 @@ function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasMo
     yp = valve["yp"]
     yn = valve["yn"]
 
-    constraint_on_off_control_valve_pressure_drop_directed(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+    constraint_control_valve_pressure_drop_one_way(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
 end
-constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop_directed(gm, gm.cnw, k)
+constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop_one_way(gm, gm.cnw, k)

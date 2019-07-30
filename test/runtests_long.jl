@@ -8,7 +8,7 @@ using Ipopt
 using Cbc
 using Juniper
 using Gurobi
-#using SCIP
+using SCIP
 using ECOS
 using SCS
 using CPLEX
@@ -21,7 +21,7 @@ juniper_solver = JuMP.with_optimizer(Juniper.Optimizer,
     nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0),
     mip_solver=cbc_solver, log_levels=[])
 gurobi_solver = JuMP.with_optimizer(Gurobi.Optimizer)
-scip_solver = nothing #JuMP.with_optimizer(SCIP.Optimizer, display_verblevel=0)
+scip_solver = JuMP.with_optimizer(SCIP.Optimizer, display_verblevel=0)
 ecos_solver = JuMP.with_optimizer(ECOS.Optimizer, verbose=false, maxit=10000)
 scs_solver = JuMP.with_optimizer(SCS.Optimizer)
 cplex_solver = JuMP.with_optimizer(CPLEX.Optimizer, CPX_PARAM_SCRIND = 0)

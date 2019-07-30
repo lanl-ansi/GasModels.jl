@@ -549,3 +549,22 @@ function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k)
     constraint_control_valve_flow_one_way(gm, n, k, i, j, mf, yp, yn)
 end
 constraint_control_valve_flow_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_one_way(gm, gm.cnw, k)
+
+" constraints on pressure drop across control valves that are directed "
+function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::Int, k)
+    valve = ref(gm,n,:connection,k)
+    i = valve["f_junction"]
+    j = valve["t_junction"]
+
+    max_ratio = valve["c_ratio_max"]
+    min_ratio = valve["c_ratio_min"]
+
+    j_pmax = ref(gm,n,:junction,j)["pmax"]
+    i_pmax = ref(gm,n,:junction,i)["pmax"]
+
+    yp = valve["yp"]
+    yn = valve["yn"]
+
+    constraint_control_valve_pressure_drop_one_way(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+end
+constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop_one_way(gm, gm.cnw, k)

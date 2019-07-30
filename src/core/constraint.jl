@@ -315,5 +315,20 @@ function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i
         add_constraint(gm, n,:control_valve_flow_direction2, k, @constraint(gm.model, f <= 0))
         add_constraint(gm, n,:control_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
     end
-#    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf, yp, yn)
+end
+
+" constraints on pressure drop across control valves when directions are constants "
+function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    v  = var(gm,n,:v,k)
+
+    if yp == 1
+        add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    else
+        add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model,  pj - ((1-v)*j_pmax^2) <= pi))
+        add_constraint(gm, n, :on_off_control_valve_pressure_drop2, k, @constraint(gm.model,  pi <= pj + ((1-v)*i_pmax^2)))
+    end
+#    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
 end

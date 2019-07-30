@@ -484,10 +484,8 @@ end
 " constraints on flow an directed control valve"
 function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_control_valve_flow_one_way(gm, i)
-    constraint_on_off_control_valve_pressure_drop_directed(gm, i)
+    constraint_control_valve_pressure_drop_one_way(gm, i)
 end
-
-
 
 ######################################################
 # Flow Constraints for control valves
@@ -512,10 +510,7 @@ function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k,
     add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
 end
 
-" constraints on pressure drop across control valves when directions are constants "
-function constraint_on_off_control_valve_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIForms
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
-end
+
 
 " constraints on pressure drop across control valves that are undirected "
 function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIForms
@@ -549,7 +544,7 @@ end
 "constraints on directed control value flows for expansion planning"
 function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_control_valve_flow_one_way(gm, i)
-    constraint_on_off_control_valve_pressure_drop_directed(gm, i)
+    constraint_control_valve_pressure_drop_one_way(gm, i)
 end
 
 ######################################################################
