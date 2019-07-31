@@ -182,10 +182,10 @@ function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) 
     constraint_short_pipe_flow_one_way(gm, i)
 end
 
-" Constraints for modeling flow on an undirected short pipe for expansion planning models"
-function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_short_pipe_pressure_drop(gm, i)
-end
+#" Constraints for modeling flow on an undirected short pipe for expansion planning models"
+#function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_short_pipe_pressure_drop(gm, i)
+#end
 
 ######################################################################################
 # Constraints associated with flow through a compressor
@@ -215,16 +215,16 @@ function constraint_new_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::I
     constraint_compressor_ratios_ne_one_way(gm, i)
 end
 
-"Constraints through a compressor that is undirected in an expansion model"
-function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_compressor_ratios(gm, i)
-end
+#"Constraints through a compressor that is undirected in an expansion model"
+#function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_compressor_ratios(gm, i)
+#end
 
-"Constraints through a compressor that is directed in an expansion model"
-function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_compressor_flow_one_way(gm, i)
-    constraint_compressor_ratios_one_way(gm, i)
-end
+#"Constraints through a compressor that is directed in an expansion model"
+#function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_compressor_flow_one_way(gm, i)
+#    constraint_compressor_ratios_one_way(gm, i)
+#end
 
 " enforces pressure changes bounds that obey compression ratios for an undirected compressor "
 function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractNLPForm
@@ -296,17 +296,17 @@ function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where
     constraint_on_off_valve_pressure_drop(gm, i)
 end
 
-" constraints on flow across an undirected valve in an expansion planning model"
-function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_on_off_valve_flow(gm, i)
-    constraint_valve_pressure_drop(gm, i)
-end
+#" constraints on flow across an undirected valve in an expansion planning model"
+#function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_on_off_valve_flow(gm, i)
+#    constraint_valve_pressure_drop(gm, i)
+#end
 
-" constraints on flow across a directed valve in an expansion planning model"
-function constraint_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_on_off_valve_flow_one_way(gm, i)
-    constraint_on_off_valve_pressure_drop(gm, i)
-end
+#" constraints on flow across a directed valve in an expansion planning model"
+#function constraint_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_on_off_valve_flow_one_way(gm, i)
+#    constraint_on_off_valve_pressure_drop(gm, i)
+#end
 
 " constraints on flow across undirected valves "
 function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractNLPForm
@@ -315,19 +315,6 @@ function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, m
     add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
     add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ##########################################################################################################
 # Constraints on control valves
@@ -345,17 +332,17 @@ function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, 
     constraint_control_valve_pressure_drop_one_way(gm, i)
 end
 
-"constraints on undirected control value flows for expansion planning"
-function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_on_off_control_valve_flow(gm, i)
-    constraint_control_valve_pressure_drop(gm, i)
-end
+#"constraints on undirected control value flows for expansion planning"
+#function constraint_control_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_on_off_control_valve_flow(gm, i)
+#    constraint_control_valve_pressure_drop(gm, i)
+#end
 
-"constraints on directed control value flows for expansion planning"
-function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_control_valve_flow_one_way(gm, i)
-    constraint_control_valve_pressure_drop_one_way(gm, i)
-end
+#"constraints on directed control value flows for expansion planning"
+#function constraint_control_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+#    constraint_control_valve_flow_one_way(gm, i)
+#    constraint_control_valve_pressure_drop_one_way(gm, i)
+#end
 
 " constraints on flow across control valves that are undirected "
 function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractNLPForm
