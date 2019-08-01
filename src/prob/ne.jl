@@ -38,7 +38,7 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_short_pipe_flow_ne(gm, i)
+        constraint_short_pipe_flow(gm, i)
     end
 
     # We assume that we already have a short pipe connecting two nodes
@@ -46,7 +46,7 @@ function post_ne(gm::GenericGasModel; kwargs...)
     # constraint_on_off_compressor_flow_expansion to disallow flow
     # if the compressor is not built
     for i in ids(gm, :compressor)
-        constraint_compressor_flow_ne(gm, i)
+        constraint_compressor_flow(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)
@@ -54,11 +54,11 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in ids(gm, :valve)
-        constraint_valve_flow_ne(gm, i)
+        constraint_valve_flow(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-        constraint_control_valve_flow_ne(gm, i)
+        constraint_control_valve_flow(gm, i)
     end
 
     exclusive = Dict()
