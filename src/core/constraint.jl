@@ -65,26 +65,17 @@ constraint_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_control_
 " All constraints associated with flows through a control valve that has flow in one direction"
 constraint_control_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_directed(gm, gm.cnw, k)
 
-" All constraints associated with flows through a pipe for expansion planning problems"
+" All constraints associated with flows through an expansion pipe"
 constraint_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne(gm, gm.cnw, k)
 
-#" All constraints associated with flows through a control valve for expansion planning problems"
-#constraint_control_valve_flow_ne(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne(gm, gm.cnw, k)
-
-#" All constraints associated with flows through a control valve for expansion planning problems when flow has one direction"
-#constraint_control_valve_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_ne_directed(gm, gm.cnw, k)
-
-" All constraints associated with flows through an expansion pipe"
-constraint_new_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne(gm, gm.cnw, k)
-
 " All constraints associated with flows through an expansion pipe which has flow in one direction"
-constraint_new_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_new_pipe_flow_ne_directed(gm, gm.cnw, k)
+constraint_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne_directed(gm, gm.cnw, k)
 
 " All constraints associated with flows through an expansion compressor"
-constraint_new_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_new_compressor_flow_ne(gm, gm.cnw, k)
+constraint_compressor_flow_ne(gm::GenericGasModel, k::Int) = constraint_compressor_flow_ne(gm, gm.cnw, k)
 
 " All constraints associated with flows through an expansion compressor which has flow in one direction"
-constraint_new_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_new_compressor_flow_ne_directed(gm, gm.cnw, k)
+constraint_compressor_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_compressor_flow_ne_directed(gm, gm.cnw, k)
 
 # Constraints with templates
 

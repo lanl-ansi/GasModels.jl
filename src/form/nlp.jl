@@ -98,11 +98,6 @@ function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where 
     constraint_weymouth_one_way(gm, i)
 end
 
-" constraints for modeling flow across an undirected pipe when there are new edges "
-function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_weymouth(gm, i)
-end
-
 "Weymouth equation with absolute value "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
@@ -127,13 +122,13 @@ end
 ############################################################################################################
 
 "Constraints for an expansion pipe with undirected flow"
-function constraint_new_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_pipe_ne(gm, i)
     constraint_weymouth_ne(gm, i)
 end
 
 "Constraints for an expansion pipe with undirected flow"
-function constraint_new_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+function constraint_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_pressure_drop_ne_one_way(gm, i)
     constraint_pipe_flow_ne_one_way(gm, i)
     constraint_on_off_pipe_ne(gm, i)
@@ -203,28 +198,17 @@ function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) 
 end
 
 "Constraints through a new compressor that is undirected"
-function constraint_new_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_compressor_ratios_ne(gm, i)
     constraint_on_off_compressor_ne(gm, i)
 end
 
 "Constraints through a new compressor that is directed"
-function constraint_new_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
+function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_compressor_ne(gm, i)
     constraint_compressor_flow_ne_one_way(gm, i)
     constraint_compressor_ratios_ne_one_way(gm, i)
 end
-
-#"Constraints through a compressor that is undirected in an expansion model"
-#function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-#    constraint_compressor_ratios(gm, i)
-#end
-
-#"Constraints through a compressor that is directed in an expansion model"
-#function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-#    constraint_compressor_flow_one_way(gm, i)
-#    constraint_compressor_ratios_one_way(gm, i)
-#end
 
 " enforces pressure changes bounds that obey compression ratios for an undirected compressor "
 function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractNLPForm
