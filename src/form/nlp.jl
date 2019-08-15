@@ -47,11 +47,6 @@ function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where 
     constraint_junction_mass_flow_balance(gm, n, i)
 end
 
-"Constraint for computing mass flow balance at a node when some edges are directed"
-function constraint_junction_mass_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_junction_mass_flow_balance(gm, n, i)
-end
-
 "Constraint for computing mass flow balance at node when injections are variables"
 function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_junction_mass_flow_balance_ls(gm, n, i)
@@ -67,21 +62,6 @@ function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) whe
     constraint_junction_mass_flow_balance_ne(gm, n, i)
 end
 
-"Constraint for computing mass flow balance at node when there are expansion edges and some edges are directed"
-function constraint_junction_mass_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_junction_mass_flow_balance_ne(gm, n, i)
-end
-
-"Constraint for computing mass flow balance at node when there are expansion edges and variable injections"
-function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
-end
-
-"Constraint for computing mass flow balance at node when there are expansion edges, variable injections, and some edges are directed"
-function constraint_junction_mass_flow_ne_ls_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
-end
-
 #############################################################################################################
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
@@ -89,13 +69,6 @@ end
 "Constraints the define the pressure drop across a pipe"
 function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_weymouth(gm, i)
-end
-
-"Constraints the define the pressure drop across a pipe when some pipe directions are known"
-function constraint_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_pressure_drop_one_way(gm, i)
-    constraint_pipe_flow_one_way(gm, i)
-    constraint_weymouth_one_way(gm, i)
 end
 
 "Weymouth equation with absolute value "
@@ -123,16 +96,8 @@ end
 
 "Constraints for an expansion pipe with undirected flow"
 function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_on_off_pipe_ne(gm, i)
+    constraint_pipe_ne(gm, i)
     constraint_weymouth_ne(gm, i)
-end
-
-"Constraints for an expansion pipe with undirected flow"
-function constraint_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_pressure_drop_ne_one_way(gm, i)
-    constraint_pipe_flow_ne_one_way(gm, i)
-    constraint_on_off_pipe_ne(gm, i)
-    constraint_weymouth_ne_one_way(gm, i)
 end
 
 "Weymouth equation for directed expansion pipes"
@@ -171,17 +136,6 @@ function constraint_short_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <
     constraint_short_pipe_pressure_drop(gm, i)
 end
 
-" Constraints for modeling flow on a directed short pipe"
-function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_short_pipe_pressure_drop(gm, i)
-    constraint_short_pipe_flow_one_way(gm, i)
-end
-
-#" Constraints for modeling flow on an undirected short pipe for expansion planning models"
-#function constraint_short_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-#    constraint_short_pipe_pressure_drop(gm, i)
-#end
-
 ######################################################################################
 # Constraints associated with flow through a compressor
 ######################################################################################
@@ -200,12 +154,12 @@ end
 "Constraints through a new compressor that is undirected"
 function constraint_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_compressor_ratios_ne(gm, i)
-    constraint_on_off_compressor_ne(gm, i)
+    constraint_compressor_ne(gm, i)
 end
 
 "Constraints through a new compressor that is directed"
 function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-    constraint_on_off_compressor_ne(gm, i)
+    constraint_compressor_ne(gm, i)
     constraint_compressor_flow_ne_one_way(gm, i)
     constraint_compressor_ratios_ne_one_way(gm, i)
 end
@@ -271,26 +225,14 @@ end
 " constraints on a valve that is undirected"
 function constraint_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
     constraint_on_off_valve_flow(gm, i)
-    constraint_on_off_valve_pressure_drop(gm, i)
+    constraint_valve_pressure_drop(gm, i)
 end
 
 " constraints on a valve that is directed"
 function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
-    constraint_on_off_valve_flow_one_way(gm, i)
-    constraint_on_off_valve_pressure_drop(gm, i)
+    constraint_valve_flow_one_way(gm, i)
+    constraint_valve_pressure_drop(gm, i)
 end
-
-#" constraints on flow across an undirected valve in an expansion planning model"
-#function constraint_valve_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-#    constraint_on_off_valve_flow(gm, i)
-#    constraint_valve_pressure_drop(gm, i)
-#end
-
-#" constraints on flow across a directed valve in an expansion planning model"
-#function constraint_valve_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractNLPForm
-#    constraint_on_off_valve_flow_one_way(gm, i)
-#    constraint_on_off_valve_pressure_drop(gm, i)
-#end
 
 " constraints on flow across undirected valves "
 function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractNLPForm
