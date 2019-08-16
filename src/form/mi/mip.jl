@@ -32,96 +32,61 @@ end
 ######################################################################################################
 ## Constraints
 ######################################################################################################
-function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_pipe_flow(gm, i)
+
+"Constraint: Weymouth equation--not applicable for MIP models"
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMIPForm
+    #TODO we could think about putting a polyhendra around the weymouth
 end
 
-function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_pipe_ne(gm, i)
+"Constraint: Weymouth equation with one way direction--not applicable for MIP models"
+function constraint_weymouth_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMIPForm
+    #TODO we could think about putting a polyhendra around the weymouth
 end
 
-function constraint_on_off_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIPForm
-    f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, -min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
-    add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+" Constraint: constraints on pressure drop across where direction is constrained"
+function constraint_pressure_drop_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
 end
 
-function constraint_compressor_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_compressor_flow(gm, i)
+" Constraint: Constraint on pressure drop across a short pipe--not applicable for MIP models"
+function constraint_short_pipe_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j) where T <: AbstractMIPForm
 end
 
-function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIPForm
-    f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -mf <= f))
-    add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= mf))
+"Constraint: Compressor ratio constraints on pressure differentials--not applicable for MIP models"
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio) where T <: AbstractMIPForm
 end
 
-function constraint_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_valve_flow(gm, i)
+" Constraint: Compressor ratio when the flow direction is constrained--not applicable for MIP models"
+function constraint_compressor_ratios_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, yp, yn) where T <: AbstractMIPForm
 end
 
-function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIPForm
-    add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
-    add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+" Constraint: Constraints on pressure drop across valves where the valve can open or close--not applicable for MIP models"
+function constraint_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, i_pmax, j_pmax) where T <: AbstractMIPForm
 end
 
-function constraint_short_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_short_pipe_flow(gm, i)
+" constraints on pressure drop across control valves that are undirected--not applicable for MIP models"
+function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIPForm
 end
 
-function constraint_on_off_short_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIPForm
-    f = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_short_pipe_flow1, k, @constraint(gm.model, -mf <= f))
-    add_constraint(gm, n, :on_off_short_pipe_flow2, k, @constraint(gm.model, f <= mf))
+" Constraint: Pressure drop across a control valves when directions is constrained--not applicable for MIP models"
+function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIPForm
 end
 
-function constraint_control_valve_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_on_off_control_valve_flow(gm, i)
+"Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMIPForm
 end
 
-function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIPForm
-    f = var(gm,n,:f,k)
-    v = var(gm,n,:v,k)
-    add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f ))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+" Constraint: Pressure drop across an expansion pipe when direction is constrained--not applicable for MIP models"
+function constraint_pressure_drop_ne_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
 end
 
-function constraint_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_junction_mass_flow_balance(gm, n, i)
+"Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
+function constraint_weymouth_ne_one_way(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractMIPForm
 end
 
-function constraint_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_junction_mass_flow_balance_ls(gm, n, i)
+"Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for MIP models"
+function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax) where T <: AbstractMIPForm
 end
 
-function constraint_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_junction_mass_flow_balance_ne(gm, n, i)
-end
-
-function constraint_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_junction_mass_flow_balance_ne_ls(gm, n, i)
-end
-
-function constraint_pipe_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_pipe_flow_ne_one_way(gm, i)
-end
-
-function constraint_short_pipe_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_short_pipe_flow_one_way(gm, i)
-end
-
-function constraint_compressor_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_compressor_flow_one_way(gm, i)
-end
-
-function constraint_compressor_flow_ne_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_compressor_flow_ne_one_way(gm, i)
-end
-
-function constraint_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_valve_flow_one_Way(gm, i)
-end
-
-function constraint_control_valve_flow_directed(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIPForm
-    constraint_control_valve_flow_one_way(gm, i)
+" Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for MIP models"
+function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn) where T <: AbstractMIPForm
 end

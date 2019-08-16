@@ -40,6 +40,24 @@ end
     # end
 end
 
+
+#Check the MIP model
+@testset "test mip gf" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib 40 mip gf")
+        result = run_gf("../test/data/gaslib-40.json", MIPGasModel, cvx_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+    end
+    @testset "gaslib 135 case" begin
+        println("Testing gaslib 135 mip gf")
+        result = run_gf("../test/data/gaslib-135.json", MIPGasModel, cvx_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+     end
+end
+
+
 @testset "test minlp gf mathematical program" begin
     data = GasModels.parse_file("../test/data/gaslib-582.json")
     gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
