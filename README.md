@@ -1,5 +1,7 @@
 # GasModels.jl 
 
+<img src="https://lanl-ansi.github.io/GasModels.jl/dev/assets/logo.svg" align="left" width="200" alt="GasModels logo">
+
 Release: [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/GasModels.jl/stable)
 
 Dev:
