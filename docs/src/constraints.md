@@ -86,7 +86,7 @@ constraint_on_off_control_valve_pressure_drop
 
 ```@docs
 constraint_on_off_valve_flow
-constraint_on_off_valve_pressure_drop
+constraint_valve_pressure_drop
 ```
 
 ## Short Pipes

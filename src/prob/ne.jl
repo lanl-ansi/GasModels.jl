@@ -30,11 +30,11 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_pipe_flow_ne(gm, i)
+        constraint_pipe_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)
-        constraint_new_pipe_flow_ne(gm, i)
+        constraint_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
@@ -50,7 +50,7 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in ids(gm, :ne_compressor)
-        constraint_new_compressor_flow_ne(gm, i)
+        constraint_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :valve)

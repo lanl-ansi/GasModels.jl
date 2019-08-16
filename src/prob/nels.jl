@@ -39,7 +39,7 @@ function post_nels(gm::GenericGasModel)
     end
 
     for i in ids(gm,:ne_pipe)
-        constraint_new_pipe_flow_ne(gm, i)
+        constraint_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
@@ -51,7 +51,7 @@ function post_nels(gm::GenericGasModel)
     end
 
     for i in ids(gm, :ne_compressor)
-        constraint_new_compressor_flow_ne(gm, i)
+        constraint_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :valve)
@@ -100,7 +100,7 @@ function post_nels_directed(gm::GenericGasModel)
     end
 
     for i in [collect(ids(gm,:undirected_pipe)); collect(ids(gm,:undirected_resistor))]
-        constraint_pipe_flow_ne(gm, i)
+        constraint_pipe_flow(gm, i)
     end
 
     for i in [collect(ids(gm,:directed_pipe)); collect(ids(gm,:directed_resistor))]
@@ -108,11 +108,11 @@ function post_nels_directed(gm::GenericGasModel)
     end
 
     for i in ids(gm,:undirected_ne_pipe)
-        constraint_new_pipe_flow_ne(gm, i)
+        constraint_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm,:directed_ne_pipe)
-        constraint_new_pipe_flow_ne_directed(gm, i)
+        constraint_pipe_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_short_pipe)
@@ -132,11 +132,11 @@ function post_nels_directed(gm::GenericGasModel)
     end
 
     for i in ids(gm, :undirected_ne_compressor)
-        constraint_new_compressor_flow_ne(gm, i)
+        constraint_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :directed_ne_compressor)
-        constraint_new_compressor_flow_ne_directed(gm, i)
+        constraint_compressor_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_valve)
