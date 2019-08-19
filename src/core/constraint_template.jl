@@ -341,7 +341,7 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
     min_ratio      = compressor["c_ratio_min"]
     j_pmax         = ref(gm,n,:junction,j)["pmax"]
     i_pmax         = ref(gm,n,:junction,i)["pmax"]
-    i_pmax         = ref(gm,n,:junction,i)["pmin"]
+    i_pmin         = ref(gm,n,:junction,i)["pmin"]
     mf       = ref(gm,n,:max_mass_flow)
 
     constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax)
