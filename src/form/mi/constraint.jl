@@ -135,7 +135,7 @@ end
 "Constraint: Constraints which define the pressure drop across a pipe when there are on/off direction variables"
 function constraint_pipe_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
     constraint_on_off_pressure_drop(gm, i)
-    constraint_on_off_pipe_flow(gm, i)
+    constraint_on_off_pipe_mass_flow(gm, i)
     constraint_weymouth(gm, i)
     constraint_flow_direction_choice(gm, i)
     constraint_parallel_flow(gm, i)
@@ -152,7 +152,7 @@ function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 "Constraint: Constraint on flow across a pipe when there are on/off direction variables "
-function constraint_on_off_pipe_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
+function constraint_on_off_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
@@ -170,7 +170,6 @@ function constraint_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: A
     constraint_on_off_pipe_flow_ne(gm, i)
     constraint_pipe_ne(gm, i)
     constraint_weymouth_ne(gm, i)
-
     constraint_flow_direction_choice_ne(gm, i)
     constraint_parallel_flow_ne(gm, i)
 end
@@ -304,11 +303,6 @@ end
 function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
-    constraint_on_off_valve_flow(gm, n, k, i, j, mf, yp, yn)
-end
-
-"Constraint: constraints on flow across valves with on/off direction variables "
-function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
     add_constraint(gm, n,:on_off_valve_flow_direction1, k, @constraint(gm.model, -mf*(1-yp) <= f))
@@ -317,7 +311,7 @@ function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, m
     add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
 end
 
-######################################################
+#######################################################
 # Flow Constraints for control valves
 #######################################################
 
@@ -333,11 +327,6 @@ end
 function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
-    constraint_on_off_control_valve_flow(gm, n, k, i, j, mf, yp, yn)
-end
-
-"Constraint: Constraints on flow across control valves with on/off direction variables"
-function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, yp, yn) where T <: AbstractMIForms
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
     add_constraint(gm, n, :on_off_control_valve_flow_direction1, k, @constraint(gm.model, -mf*(1-yp) <= f))
@@ -350,11 +339,6 @@ end
 function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
-end
-
-"Constraint: Constraints on pressure drop across control valves that have on/off direction variables"
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIForms
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v,k)

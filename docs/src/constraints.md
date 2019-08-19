@@ -9,41 +9,74 @@ Constraint templates help simplify data wrangling across multiple Gas Flow formu
 
 These templates should be defined over `GenericGasModel` and should not refer to model variables. For more details, see the files: `core/constraint_template.jl` and `core/constraint.jl`.
 
+The convention is to define a function for each constraint. Utility functions are defined to collect together sets of constraints which are associated with individual components or capabilities of a component such as flow through a pipe.
+
 ## Junction Constraints
 
-### Flow Balance Constraints
+### Flow balance constraints
 
 ```@docs
-constraint_junction_flow_balance
+constraint_junction_mass_flow_balance
 ```
 
-### Load Shedding Constraints
+### Flow balance constraints with load shedding
 
 ```@docs
-constraint_junction_flow_balance_ls
+constraint_junction_mass_flow_balance_ls
 ```
 
-### Network Expansion Constraints
+### Flow balance constraints for network expansion problems
 
 ```@docs
-constraint_junction_flow_balance_ne
-constraint_junction_flow_balance_ne_ls
-```
-
-
-## Pipe Constraints
-
-### Weymouth's Law Constraints
-
-```@docs
-constraint_weymouth
+constraint_junction_mass_flow_balance_ne
+constraint_junction_mass_flow_balance_ne_ls
 ```
 
 ### Direction On/off Constraints
 
 ```@docs
+constraint_source_flow
+constraint_sink_flow
+constraint_conserve_flow
+constraint_source_flow_ne
+constraint_sink_flow_ne
+constraint_conserve_flow_ne
+```
+
+### Constraint collections
+
+```@docs
+constraint_junction_mass_flow
+constraint_junction_mass_flow_directed
+constraint_junction_mass_flow_ls
+constraint_junction_mass_flow_ls_directed
+constraint_junction_mass_flow_ne
+constraint_junction_mass_flow_ne_directed
+constraint_junction_mass_flow_ne_ls
+constraint_junction_mass_flow_ne_ls_directed
+```
+
+## Pipe Constraints
+
+### Weymouth's law constraints
+
+```@docs
+constraint_weymouth
+```
+
+### Direction on/off constraints
+
+```@docs
 constraint_on_off_pressure_drop
 constraint_on_off_pipe_flow
+constraint_flow_direction_choice
+constraint_parallel_flow
+```
+
+### One way flow constraints
+```@docs
+  constraint_pressure_drop_one_way
+  constraint_pipe_flow_one_way
 ```
 
 ### Network Expansion Constraints
@@ -52,6 +85,19 @@ constraint_on_off_pipe_flow
 constraint_weymouth_ne
 constraint_on_off_pressure_drop_ne
 constraint_on_off_pipe_flow_ne
+constraint_flow_direction_choice_ne
+constraint_parallel_flow_ne
+constraint_pressure_drop_ne_one_way
+constraint_pipe_flow_ne_one_way
+```
+
+### Constraint collections
+
+```@docs
+constraint_pipe_flow
+constraint_pipe_flow_directed
+constraint_pipe_flow_ne
+constraint_pipe_flow_ne_directed
 ```
 
 ## Compressor Constraints
@@ -101,17 +147,11 @@ constraint_short_pipe_pressure_drop
 ## Direction Cutting Constraints
 
 ```@docs
-constraint_source_flow
-constraint_sink_flow
-constraint_conserve_flow
 constraint_parallel_flow
 ```
 
 ### Network Expansion Constraints
 
 ```@docs
-constraint_source_flow_ne
-constraint_sink_flow_ne
-constraint_conserve_flow_ne
 constraint_parallel_flow_ne
 ```
