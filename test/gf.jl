@@ -57,6 +57,23 @@ end
      end
 end
 
+#Check the LP model
+@testset "test lp gf" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib 40 lp gf")
+        result = run_gf("../test/data/gaslib-40.json", LPGasModel, cvx_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+    end
+    @testset "gaslib 135 case" begin
+        println("Testing gaslib 135 lp gf")
+        result = run_gf("../test/data/gaslib-135.json", LPGasModel, cvx_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+     end
+end
+
+
 
 @testset "test minlp gf mathematical program" begin
     data = GasModels.parse_file("../test/data/gaslib-582.json")

@@ -24,7 +24,17 @@ end
         println("Testing gaslib mip ls gaslib 40")
         result = run_ls("../test/data/gaslib-40-ls.json", MIPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 828.241566956375; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 828.241566956375; atol = 1e0)
+     end
+end
+
+#Check the lp model on load shedding
+@testset "test lp ls" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib lp ls gaslib 40")
+        result = run_ls("../test/data/gaslib-40-ls.json", LPGasModel, cvx_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 828.241566956375; atol = 1e0)
      end
 end
 

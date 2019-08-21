@@ -23,11 +23,21 @@ end
     end
 end
 
-#Check the second order cone model
+#Check the mip model
 @testset "test mip nels directed" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib mip nels gaslib 40")
         result = run_nels_directed("../test/data/gaslib-40-nelsfd.json", MIPGasModel, cvx_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1560.1204003868688; atol = 1e-1)
+    end
+end
+
+#Check the lp model
+@testset "test lp nels directed" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib lp nels gaslib 40")
+        result = run_nels_directed("../test/data/gaslib-40-nelsfd.json", LPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
         @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1560.1204003868688; atol = 1e-1)
     end
