@@ -334,7 +334,7 @@ constraint_compressor_flow_one_way(gm::GenericGasModel, k::Int) = constraint_com
 
 "Template: constraints on pressure drop across a compressor "
 function constraint_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
-    compressor = ref(gm,n,:ne_connection, k)
+    compressor     = ref(gm,n,:ne_connection, k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
@@ -342,7 +342,7 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
     j_pmax         = ref(gm,n,:junction,j)["pmax"]
     i_pmax         = ref(gm,n,:junction,i)["pmax"]
     i_pmin         = ref(gm,n,:junction,i)["pmin"]
-    mf       = ref(gm,n,:max_mass_flow)
+    mf             = ref(gm,n,:max_mass_flow)
 
     constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax)
 end

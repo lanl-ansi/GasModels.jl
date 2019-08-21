@@ -38,6 +38,7 @@ include("core/solution.jl")
 
 include("form/mip.jl")
 include("form/lp.jl")
+include("form/nlp.jl")
 include("form/mi/minlp.jl")
 include("form/mi/misocp.jl")
 include("form/mi/shared.jl")
@@ -45,7 +46,6 @@ include("form/mi/variable.jl")
 include("form/mi/constraint.jl")
 include("form/mi/constraint_template.jl")
 
-#include("form/nlp.jl")
 
 include("prob/gf.jl")
 include("prob/ne.jl")
