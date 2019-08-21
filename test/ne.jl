@@ -59,3 +59,22 @@ end
         @test isapprox(result["objective"]*obj_normalization, 0.0001848186414315826; atol = 1e-1)
     end
 end
+
+
+@testset "test lp ne" begin
+    @testset "A1 LP case" begin
+        println("Testing A1 lp ne")
+        obj_normalization = 1.0
+        result = run_ne("../test/data/A1.json", LPGasModel, cvx_minlp_solver; obj_normalization = obj_normalization)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"]*obj_normalization, 0.0001168127693870263; atol = 1e-1)
+    end
+
+    @testset "A2 LP case" begin
+        println("Testing A2 lp ne")
+        obj_normalization = 1.0
+        result = run_ne("../test/data/A2.json", LPGasModel, cvx_minlp_solver; obj_normalization = obj_normalization)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"]*obj_normalization, 0.0001848186414315826; atol = 1e-1)
+    end
+end

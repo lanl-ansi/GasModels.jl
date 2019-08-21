@@ -47,7 +47,7 @@ function variable_compressor_ne(gm::GenericGasModel, n::Int=gm.cnw)
 end
 
 " 0-1 variables associated with operating valves "
-function variable_valve_operation(gm::GenericGasModel, n::Int=gm.cnw)
+function variable_valve_operation(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractGasFormulation
     gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], binary=true, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))
 end
 
