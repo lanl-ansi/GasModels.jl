@@ -26,39 +26,35 @@ function post_ne(gm::GenericGasModel; kwargs...)
     objective_min_ne_cost(gm; normalization =  obj_normalization)
 
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow_ne(gm, i)
+        constraint_set_junction_mass_flow_ne(gm, i)
     end
 
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_pipe_flow(gm, i)
+        constraint_set_pipe_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)
-        constraint_pipe_flow_ne(gm, i)
+        constraint_set_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_short_pipe_flow(gm, i)
+        constraint_set_short_pipe_flow(gm, i)
     end
 
-    # We assume that we already have a short pipe connecting two nodes
-    # and we just want to add a compressor to it.  Use constraint
-    # constraint_on_off_compressor_flow_expansion to disallow flow
-    # if the compressor is not built
     for i in ids(gm, :compressor)
-        constraint_compressor_flow(gm, i)
+        constraint_set_compressor_flow(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)
-        constraint_compressor_flow_ne(gm, i)
+        constraint_set_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i)
+        constraint_set_valve_flow(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-        constraint_control_valve_flow(gm, i)
+        constraint_set_control_valve_flow(gm, i)
     end
 
     exclusive = Dict()

@@ -54,7 +54,7 @@ end
         println("Testing gaslib lp ls priority gaslib 40")
         result = run_ls("../test/data/gaslib-40-ls-priority.json", LPGasModel, cvx_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 745.3635379170676; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 745.5144120833442; atol = 1e-1)
      end
 end
 

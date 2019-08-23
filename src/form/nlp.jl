@@ -18,31 +18,11 @@ NLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardN
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
 
-"Customized definition of absolute value for computing derivatives at 0"
-function weymouth_abs(x)
-    return abs(x)
-end
-
-"Compute jacobian of the weymouth abs term"
-function derivative_weymouth_abs(x)
-    return x == 0 ? 0 : 1
-end
-
-"Compute jacobian of the weymouth abs term"
-function second_derivative_weymouth_abs(x)
-    return 0
-end
-
 "Weymouth equation with absolute value "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
-
-#    JuMP
-
-#    JuMP.register(gm.model, :weymouth_abs, 1, weymouth_abs, derivative_weymouth_abs, second_derivative_weymouth_abs)
-
     add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f)))
     add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f)))
 end
@@ -109,6 +89,7 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
+    f  = var(gm,n,:f_ne,k)
 
     #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
@@ -125,6 +106,7 @@ function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, 
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v,k)
+    f  = var(gm,n,:f,k)
 
     #TODO this constraint is only valid if max_ratio = 1
     add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))

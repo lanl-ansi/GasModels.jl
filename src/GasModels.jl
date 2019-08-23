@@ -33,6 +33,7 @@ include("core/data.jl")
 include("core/variable.jl")
 include("core/constraint.jl")
 include("core/constraint_template.jl")
+include("core/constraint_set.jl")
 include("core/objective.jl")
 include("core/solution.jl")
 
@@ -45,6 +46,7 @@ include("form/mi/shared.jl")
 include("form/mi/variable.jl")
 include("form/mi/constraint.jl")
 include("form/mi/constraint_template.jl")
+include("form/mi/constraint_set.jl")
 
 
 include("prob/gf.jl")
