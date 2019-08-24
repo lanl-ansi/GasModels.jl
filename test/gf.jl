@@ -73,6 +73,22 @@ end
      end
 end
 
+#Check the NLP model
+@testset "test nlp gf" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib 40 nlp gf")
+        result = run_gf("../test/data/gaslib-40.json", NLPGasModel, cvx_solver)
+    #    @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+    #    @test isapprox(result["objective"], 0; atol = 1e-6)
+    end
+    @testset "gaslib 135 case" begin
+        println("Testing gaslib 135 nlp gf")
+        result = run_gf("../test/data/gaslib-135.json", NLPGasModel, cvx_solver)
+    #    @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+    #    @test isapprox(result["objective"], 0; atol = 1e-6)
+     end
+end
+
 
 
 @testset "test minlp gf mathematical program" begin
@@ -313,28 +329,61 @@ end
     # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 + (1.0 - yn[222]) * 1.0 ^ 2.0) <= 0"
     # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 1.0 ^ 2.0) >= 0"
     ref = gm.con[:nw][gm.cnw][:weymouth1][222]
-    c = gm.model.nlp_data.nlconstr[ref.index.value]
-    @test JuMP._sense(c) == :>=
-    @test isapprox(c.lb, 0.0; atol = 1e-4)
-    @test length(c.terms.nd) == 17
+    constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
+    constraint = JuMP.constraint_object(constraint_ref)
+    func = constraint.func
+    set = constraint.set
+
+    @test isa(set, MOI.GreaterThan{Float64})
+    @test isapprox(set.lower, -1.0; atol = 1e-4)
+    @test length(func.terms) == 1
+#    c = gm.model.nlp_data.nlconstr[ref.index.value]
+#    @test JuMP._sense(c) == :>=
+#    @test isapprox(c.lb, 0.0; atol = 1e-4)
+#    @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth2][222]
-    c = gm.model.nlp_data.nlconstr[ref.index.value]
-    @test JuMP._sense(c) == :<=
-    @test isapprox(c.ub, 0.0; atol = 1e-4)
-    @test length(c.terms.nd) == 17
+    constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
+    constraint = JuMP.constraint_object(constraint_ref)
+    func = constraint.func
+    set = constraint.set
+
+
+    @test isa(set, MOI.LessThan{Float64})
+    @test isapprox(set.upper, 1.0; atol = 1e-4)
+    @test length(func.terms) == 1
+#    c = gm.model.nlp_data.nlconstr[ref.index.value]
+    #@test JuMP._sense(c) == :<=
+#    @test isapprox(c.ub, 0.0; atol = 1e-4)
+#    @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth4][222]
-    c = gm.model.nlp_data.nlconstr[ref.index.value]
-    @test JuMP._sense(c) == :<=
-    @test isapprox(c.ub, 0.0; atol = 1e-4)
-    @test length(c.terms.nd) == 17
+    constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
+    constraint = JuMP.constraint_object(constraint_ref)
+    func = constraint.func
+    set = constraint.set
+
+    @test isa(set, MOI.LessThan{Float64})
+    @test isapprox(set.upper, 1.0; atol = 1e-4)
+    @test length(func.terms) == 1
+#    c = gm.model.nlp_data.nlconstr[ref.index.value]
+    #@test JuMP._sense(c) == :<=
+#    @test isapprox(c.ub, 0.0; atol = 1e-4)
+#    @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth3][222]
-    c = gm.model.nlp_data.nlconstr[ref.index.value]
-    @test JuMP._sense(c) == :>=
-    @test isapprox(c.lb, 0.0; atol = 1e-4)
-    @test length(c.terms.nd) == 17
+    constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
+    constraint = JuMP.constraint_object(constraint_ref)
+    func = constraint.func
+    set = constraint.set
+
+    @test isa(set, MOI.GreaterThan{Float64})
+    @test isapprox(set.lower, -1.0; atol = 1e-4)
+    @test length(func.terms) == 1
+#    c = gm.model.nlp_data.nlconstr[ref.index.value]
+#    @test JuMP._sense(c) == :>=
+#    @test isapprox(c.lb, 0.0; atol = 1e-4)
+#    @test length(c.terms.nd) == 17
 
     # p[302] - p[83] == 0
     ref = gm.con[:nw][gm.cnw][:short_pipe_pressure_drop][423]

@@ -23,18 +23,26 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
-
-    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) == f * abs(f)))
+    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f)))
+    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f)))
 end
 
 "Weymouth equation with one way direction"
-function constraint_weymouth_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractNLPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
 
-    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) >= (yp-yn) * f^2))
-    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) <= (yp-yn) * f^2))
+    if yp == 1
+        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
+        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2))
+    else
+        add_constraint(gm, n, :weymouth_ne3, k, @constraint(gm.model, w*(pj - pi) >= f^2))
+        add_constraint(gm, n, :weymouth_ne4, k, @constraint(gm.model, w*(pj - pi) <= f^2))
+    end
+
+#    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) >= (yp-yn) * f^2))
+#    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) <= (yp-yn) * f^2))
 end
 
 #############################################################################################################
@@ -42,18 +50,18 @@ end
 ############################################################################################################
 
 "Weymouth equation for directed expansion pipes"
-function constraint_weymouth_ne_one_way(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractNLPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
 
     if yp == 1
-        add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f^2 - zp*mf^2))
-        add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f^2 + zp*mf^2))
+        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2 - (1-zp)*mf^2))
+        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp)*mf^2))
     else
-        add_constraint(gm, n, :weymouth_ne3, k, @NLconstraint(gm.model, w*(pj - pi) >= f^2 - zp*mf^2))
-        add_constraint(gm, n, :weymouth_ne4, k, @NLconstraint(gm.model, w*(pj - pi) <= f^2 + zp*mf^2))
+        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp)*mf^2))
+        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pj - pi) <= f^2 + (1-zp)*mf^2))
     end
 end
 
@@ -76,12 +84,12 @@ end
 function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f = var(gm,n,:yn,f)
+    f  = var(gm,n,:f,k)
 
     #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
     add_constraint(gm, n, :compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
-    add_constraint(gm, n, :compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= 0))
+    add_constraint(gm, n, :compressor_ratios3, k, @NLconstraint(gm.model, f * (1-pj/pi) <= 0))
 end
 
 " constraints on pressure drop across a compressor "
@@ -89,11 +97,12 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
+    f  = var(gm,n,:f_ne,k)
 
     #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
     add_constraint(gm, n, :compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
-    add_constraint(gm, n, :compressor_ratios3, k, @constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
+    add_constraint(gm, n, :compressor_ratios3, k, @NLconstraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
 end
 
 ##########################################################################################################
@@ -104,10 +113,11 @@ end
 function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    v = var(gm,n,:v,k)
+    v  = var(gm,n,:v,k)
+    f  = var(gm,n,:f,k)
 
     #TODO this constraint is only valid if max_ratio = 1
     add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
     add_constraint(gm, n, :control_valve_pressure_drop2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
-    add_constraint(gm, n, :control_valve_pressure_drop3, k, @constraint(gm.model, f * (1-pj/pi) >= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
+    add_constraint(gm, n, :control_valve_pressure_drop3, k, @NLconstraint(gm.model, f * (1-pj/pi) >= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
 end

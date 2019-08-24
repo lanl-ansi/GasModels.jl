@@ -72,7 +72,7 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Weymouth equation with a pipe with one way flow"
-function constraint_weymouth_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMISOCPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l,k)
@@ -101,7 +101,7 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 "Weymouth equation for expansion pipes with undirected expansion pipes"
-function constraint_weymouth_ne_one_way(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <:  AbstractMISOCPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <:  AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
@@ -109,5 +109,5 @@ function constraint_weymouth_ne_one_way(gm::GenericGasModel{T},  n::Int, k, i, j
     f  = var(gm,n,:f_ne,k)
 
     add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, l == (yp-yn) * (pi - pj)))
-    add_constraint(gm, n, :weymouth_ne5, k,  @constraint(gm.model, zp*w*l >= f^2))
+    add_constraint(gm, n, :weymouth_ne5, k, @constraint(gm.model, zp*w*l >= f^2))
 end

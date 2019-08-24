@@ -3,14 +3,16 @@ GasModels.jl Change Log
 
 ### Pending
 - Implement non-binary variable model of compressors and control valves  
-- Implement nlp version(s) of the problems (abs, x - x^2 = 0, compressor directionality)
-- Implement Constraints on compressor power
+- Implement constraints on compressor power
 - Implement a multi-network test
 
+### v0.4.2
+- Implement nlp version(s) of the problems
+- Renamed constraint utility functions to contain the keywork "set"
 
 ### v0.4.1
-- Remove bounds on binary variables for increased solver robustness 
-- Impoved support for infeasible status codes
+- Remove bounds on binary variables for increased solver robustness
+- Improved support for infeasible status codes
 - Fixed AMPLNLWriter name in extra tests
 
 ### v0.4.0

@@ -31,35 +31,35 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow_ne_ls(gm, i)
+        constraint_set_junction_mass_flow_ne_ls(gm, i)
     end
 
     for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_pipe_flow(gm, i)
+        constraint_set_pipe_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)
-        constraint_pipe_flow_ne(gm, i)
+        constraint_set_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_short_pipe_flow(gm, i)
+        constraint_set_short_pipe_flow(gm, i)
     end
 
     for i in ids(gm,:compressor)
-        constraint_compressor_flow(gm, i)
+        constraint_set_compressor_flow(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)
-        constraint_compressor_flow_ne(gm, i)
+        constraint_set_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i)
+        constraint_set_valve_flow(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-         constraint_control_valve_flow(gm, i)
+         constraint_set_control_valve_flow(gm, i)
     end
 
     exclusive = Dict()
@@ -96,63 +96,63 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow_ne_ls_directed(gm, i)
+        constraint_set_junction_mass_flow_ne_ls_directed(gm, i)
     end
 
     for i in [collect(ids(gm,:undirected_pipe)); collect(ids(gm,:undirected_resistor))]
-        constraint_pipe_flow(gm, i)
+        constraint_set_pipe_flow(gm, i)
     end
 
     for i in [collect(ids(gm,:directed_pipe)); collect(ids(gm,:directed_resistor))]
-        constraint_pipe_flow_directed(gm, i)
+        constraint_set_pipe_flow_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_ne_pipe)
-        constraint_pipe_flow_ne(gm, i)
+        constraint_set_pipe_flow_ne(gm, i)
     end
 
     for i in ids(gm,:directed_ne_pipe)
-        constraint_pipe_flow_ne_directed(gm, i)
+        constraint_set_pipe_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_short_pipe)
-        constraint_short_pipe_flow(gm, i)
+       constraint_set_short_pipe_flow(gm, i)
     end
 
     for i in ids(gm, :directed_short_pipe)
-        constraint_short_pipe_flow_directed(gm, i)
+        constraint_set_short_pipe_flow_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_compressor)
-        constraint_compressor_flow(gm, i)
+        constraint_set_compressor_flow(gm, i)
     end
 
     for i in ids(gm,:directed_compressor)
-        constraint_compressor_flow_directed(gm, i)
+        constraint_set_compressor_flow_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_ne_compressor)
-        constraint_compressor_flow_ne(gm, i)
+        constraint_set_compressor_flow_ne(gm, i)
     end
 
     for i in ids(gm, :directed_ne_compressor)
-        constraint_compressor_flow_ne_directed(gm, i)
+        constraint_set_compressor_flow_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_valve)
-        constraint_valve_flow(gm, i)
+        constraint_set_valve_flow(gm, i)
     end
 
     for i in ids(gm, :directed_valve)
-        constraint_valve_flow_directed(gm, i)
+        constraint_set_valve_flow_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_control_valve)
-         constraint_control_valve_flow(gm, i)
+         constraint_set_control_valve_flow(gm, i)
     end
 
     for i in ids(gm, :directed_control_valve)
-         constraint_control_valve_flow_directed(gm, i)
+         constraint_set_control_valve_flow_directed(gm, i)
     end
 
     exclusive = Dict()

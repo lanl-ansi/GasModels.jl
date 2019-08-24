@@ -19,7 +19,7 @@ end
         println("Testing gaslib misocp nels gaslib 40")
         result = run_nels_directed("../test/data/gaslib-40-nelsfd.json", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 108.255 * 10^6 / 24.0 / 60.0 / 60.0; atol = 1e-1) # conversion from 10^6 cubic meters per day to cubic meters per second
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1252.95138889; atol = 1e-1)
     end
 end
 
@@ -40,5 +40,15 @@ end
         result = run_nels_directed("../test/data/gaslib-40-nelsfd.json", LPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
         @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1560.1204003868688; atol = 1e-1)
+    end
+end
+
+#Check the nlp model
+@testset "test nlp nels directed" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib nlp nels gaslib 40")
+        result = run_nels_directed("../test/data/gaslib-40-nelsfd.json", NLPGasModel, abs_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1254.3181889121502; atol = 1e-1)
     end
 end

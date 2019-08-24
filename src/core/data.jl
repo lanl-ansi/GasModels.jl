@@ -124,7 +124,7 @@ end
 "Calculates pipeline resistance from this paper Thorley and CH Tiley. Unsteady and transient flow of compressible
 fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
-This is used in many of Zlotniks papers
+This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
 function calc_pipe_resistance_thorley(data::Dict{String,Any}, pipe::Dict{String,Any})
     R          = 8.314 # universal gas constant

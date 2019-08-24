@@ -9,12 +9,9 @@ using Ipopt
 using Cbc
 using Juniper
 
-ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0, sb="yes")
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-12, print_level=0, sb="yes")
 cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
-juniper_solver = JuMP.with_optimizer(Juniper.Optimizer,
-    nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0),
-    mip_solver=cbc_solver, log_levels=[])
-
+juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0, sb="yes"),mip_solver=cbc_solver, log_levels=[])
 
 import LinearAlgebra
 using Test
@@ -23,6 +20,7 @@ using Test
 cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 cvx_solver = ipopt_solver
+abs_minlp_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-12, print_level=0, sb="yes"), mip_solver=cbc_solver, log_levels=[])
 
 @testset "GasModels" begin
 

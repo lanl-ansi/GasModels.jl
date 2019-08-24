@@ -28,40 +28,40 @@ end
 constraint_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_pipe_mass_flow(gm, gm.cnw, k)
 
 " Template: Constraint on pressure drop across a pipe where the flow is constrained to one direction as defined by data attributes yp and yn"
-function constraint_pressure_drop_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_pressure_drop_directed(gm::GenericGasModel, n::Int, k)
     pipe           = ref(gm, n, :connection, k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     yp             = pipe["yp"]
     yn             = pipe["yn"]
-    constraint_pressure_drop_one_way(gm, n, k, i, j, yp, yn)
+    constraint_pressure_drop_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_pressure_drop_one_way(gm::GenericGasModel, k::Int) = constraint_pressure_drop_one_way(gm, gm.cnw, k)
+constraint_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_pressure_drop_directed(gm, gm.cnw, k)
 
 " Template: Constraint on flow across a pipe where the flow is constrained to one direction as defined by data attributes yp and yn"
-function constraint_pipe_flow_one_way(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_pipe_flow_directed(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe           = ref(gm,n,:connection,k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     yp             = pipe["yp"]
     yn             = pipe["yn"]
-    constraint_pipe_flow_one_way(gm, n, k, i, j, yp, yn)
+    constraint_pipe_flow_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_pipe_flow_one_way(gm::GenericGasModel, k::Int) = constraint_pipe_flow_one_way(gm, gm.cnw, k)
+constraint_pipe_flow_directed(gm::GenericGasModel, k::Int) = constraint_pipe_flow_directed(gm, gm.cnw, k)
 
 " Template: Constraint on pressure drop across an expansion pipe where the flow is constrained to one direction as defined by data attributes yp and yn"
-function constraint_pressure_drop_ne_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_pressure_drop_ne_directed(gm::GenericGasModel, n::Int, k)
     pipe           = ref(gm, n, :ne_connection, k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     yp             = pipe["yp"]
     yn             = pipe["yn"]
-    constraint_pressure_drop_ne_one_way(gm, n, k, i, j, yp, yn)
+    constraint_pressure_drop_ne_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_pressure_drop_ne_one_way(gm::GenericGasModel, k::Int) = constraint_pressure_drop_ne_one_way(gm, gm.cnw, k)
+constraint_pressure_drop_ne_directed(gm::GenericGasModel, k::Int) = constraint_pressure_drop_ne_directed(gm, gm.cnw, k)
 
 "Template: Constraints on flow across an expansion pipe where the flow is constrained to one direction "
-function constraint_pipe_flow_ne_one_way(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_pipe_flow_ne_directed(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:ne_connection, k)
 
     i              = pipe["f_junction"]
@@ -69,9 +69,9 @@ function constraint_pipe_flow_ne_one_way(gm::GenericGasModel, n::Int, k; pipe_re
     yp             = pipe["yp"]
     yn             = pipe["yn"]
 
-    constraint_pipe_flow_ne_one_way(gm, n, k, i, j, yp, yn)
+    constraint_pipe_flow_ne_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_pipe_flow_ne_one_way(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne_one_way(gm, gm.cnw, k)
+constraint_pipe_flow_ne_directed(gm::GenericGasModel, k::Int) = constraint_pipe_flow_ne_directed(gm, gm.cnw, k)
 
 "Template: Weymouth equation for defining the relationship between pressure drop and flow across a pipe "
 function constraint_weymouth(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
@@ -87,16 +87,16 @@ end
 constraint_weymouth(gm::GenericGasModel, k::Int) = constraint_weymouth(gm, gm.cnw, k)
 
 "Template: Weymouth equation for defining the relationship between pressure drop and flow across a pipe where flow is constrained in one direction"
-function constraint_weymouth_one_way(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_weymouth_directed(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = ref(gm,n,:connection,k)
     i    = pipe["f_junction"]
     j    = pipe["t_junction"]
     w    = haskey(gm.ref[:nw][n][:pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     yp   = pipe["yp"]
     yn   = pipe["yn"]
-    constraint_weymouth_one_way(gm, n, k, i, j, w, yp, yn)
+    constraint_weymouth_directed(gm, n, k, i, j, w, yp, yn)
 end
-constraint_weymouth_one_way(gm::GenericGasModel, k::Int) = constraint_weymouth_one_way(gm, gm.cnw, k)
+constraint_weymouth_directed(gm::GenericGasModel, k::Int) = constraint_weymouth_directed(gm, gm.cnw, k)
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::GenericGasModel, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
@@ -123,7 +123,7 @@ end
 constraint_weymouth_ne(gm::GenericGasModel, k::Int) = constraint_weymouth_ne(gm, gm.cnw, k)
 
 " Template: Weymouth equation for expansion pipes where flow is restricted to one direction "
-function constraint_weymouth_ne_one_way(gm::GenericGasModel,  n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
+function constraint_weymouth_ne_directed(gm::GenericGasModel,  n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple)
     pipe = gm.ref[:nw][n][:ne_connection][k]
     i    = pipe["f_junction"]
     j    = pipe["t_junction"]
@@ -131,9 +131,9 @@ function constraint_weymouth_ne_one_way(gm::GenericGasModel,  n::Int, k; pipe_re
     w    = haskey(gm.ref[:nw][n][:ne_pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     yp   = pipe["yp"]
     yn   = pipe["yn"]
-    constraint_weymouth_ne_one_way(gm, n, k, i, j, w, mf, yp, yn)
+    constraint_weymouth_ne_directed(gm, n, k, i, j, w, mf, yp, yn)
 end
-constraint_weymouth_ne_one_way(gm::GenericGasModel, k::Int) = constraint_weymouth_ne_one_way(gm, gm.cnw, k)
+constraint_weymouth_ne_directed(gm::GenericGasModel, k::Int) = constraint_weymouth_ne_directed(gm, gm.cnw, k)
 
 #################################################################################################
 # Templates for constraints associated with junctions
@@ -234,15 +234,15 @@ end
 constraint_short_pipe_pressure_drop(gm::GenericGasModel, k::Int) = constraint_short_pipe_pressure_drop(gm, gm.cnw, k)
 
 " Template: Constraint on flow across a short pipe when the flow direction is constrained in one direction"
-function constraint_short_pipe_flow_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_short_pipe_flow_directed(gm::GenericGasModel, n::Int, k)
     pipe = ref(gm,n,:connection,k)
     i    = pipe["f_junction"]
     j    = pipe["t_junction"]
     yp   = pipe["yp"]
     yn   = pipe["yn"]
-    constraint_short_pipe_flow_one_way(gm, n, k, i, j, yp, yn)
+    constraint_short_pipe_flow_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_short_pipe_flow_one_way(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow_one_way(gm, gm.cnw, k)
+constraint_short_pipe_flow_directed(gm::GenericGasModel, k::Int) = constraint_short_pipe_flow_directed(gm, gm.cnw, k)
 
 #################################################################################################
 # Templates for constraints associated with valves
@@ -271,16 +271,16 @@ end
 constraint_on_off_valve_flow(gm::GenericGasModel, k::Int) = constraint_on_off_valve_flow(gm, gm.cnw, k)
 
 " Template: Constraints on flow across a valve when flow is restricted in one direction and the valve may be turned on or off"
-function constraint_valve_flow_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_valve_flow_directed(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)
     i     = valve["f_junction"]
     j     = valve["t_junction"]
     mf    = ref(gm,n,:max_mass_flow)
     yp    = valve["yp"]
     yn    = valve["yn"]
-    constraint_valve_flow_one_way(gm, n, k, i, j, mf, yp, yn)
+    constraint_valve_flow_directed(gm, n, k, i, j, mf, yp, yn)
 end
-constraint_valve_flow_one_way(gm::GenericGasModel, k::Int) = constraint_valve_flow_one_way(gm, gm.cnw, k)
+constraint_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_valve_flow_directed(gm, gm.cnw, k)
 
 #################################################################################################
 # Templates for constraints associated with compressors
@@ -307,7 +307,7 @@ end
 constraint_compressor_ne(gm::GenericGasModel, k::Int) = constraint_compressor_ne(gm, gm.cnw, k::Int)
 
 " Template: Constraints on compressor ratios when flow is restricted to one direction"
-function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_compressor_ratios_directed(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:connection,k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
@@ -315,12 +315,12 @@ function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k)
     min_ratio      = compressor["c_ratio_min"]
     yp             = compressor["yp"]
     yn             = compressor["yn"]
-    constraint_compressor_ratios_one_way(gm, n, k, i, j, min_ratio, max_ratio, yp, yn)
+    constraint_compressor_ratios_directed(gm, n, k, i, j, min_ratio, max_ratio, yp, yn)
 end
-constraint_compressor_ratios_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_one_way(gm, gm.cnw, k)
+constraint_compressor_ratios_directed(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_directed(gm, gm.cnw, k)
 
 " Template: Constraints on flow across a compressor when flow is restricted to one direction"
-function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_compressor_flow_directed(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm, n, :connection, k)
 
     i        = compressor["f_junction"]
@@ -328,13 +328,13 @@ function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k)
     yp       = compressor["yp"]
     yn       = compressor["yn"]
 
-    constraint_compressor_flow_one_way(gm, n, k, i, j, yp, yn)
+    constraint_compressor_flow_directed(gm, n, k, i, j, yp, yn)
 end
-constraint_compressor_flow_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_flow_one_way(gm, gm.cnw, k)
+constraint_compressor_flow_directed(gm::GenericGasModel, k::Int) = constraint_compressor_flow_directed(gm, gm.cnw, k)
 
 "Template: constraints on pressure drop across a compressor "
 function constraint_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
-    compressor = ref(gm,n,:ne_connection, k)
+    compressor     = ref(gm,n,:ne_connection, k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
     max_ratio      = compressor["c_ratio_max"]
@@ -342,14 +342,14 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel, n::Int, k)
     j_pmax         = ref(gm,n,:junction,j)["pmax"]
     i_pmax         = ref(gm,n,:junction,i)["pmax"]
     i_pmin         = ref(gm,n,:junction,i)["pmin"]
-    mf       = ref(gm,n,:max_mass_flow)
+    mf             = ref(gm,n,:max_mass_flow)
 
     constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax)
 end
 constraint_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_ne(gm, gm.cnw, k)
 
 " Template: Constraints on compressor ratios when flow is restricted to one direction and the compressor is an expanson option"
-function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_compressor_ratios_ne_directed(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm,n,:ne_connection, k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
@@ -361,21 +361,21 @@ function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, n::Int, k)
     mf             = gm.ref[:nw][n][:max_mass_flow]
     yp             = compressor["yp"]
     yn             = compressor["yn"]
-    constraint_compressor_ratios_ne_one_way(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn)
+    constraint_compressor_ratios_ne_directed(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn)
 end
-constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_ne_one_way(gm, gm.cnw, k)
+constraint_compressor_ratios_ne_directed(gm::GenericGasModel, k::Int) = constraint_compressor_ratios_ne_directed(gm, gm.cnw, k)
 
 " Template: Constraints on compressor flows when flow is restricted to one direction and the compressor is an expanson option"
-function constraint_compressor_flow_ne_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_compressor_flow_ne_directed(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm,n,:ne_connection,k)
     i          = compressor["f_junction"]
     j          = compressor["t_junction"]
     mf         = ref(gm,n,:max_mass_flow)
     yp         = compressor["yp"]
     yn         = compressor["yn"]
-    constraint_compressor_flow_ne_one_way(gm, n, k, i, j, mf, yp, yn)
+    constraint_compressor_flow_ne_directed(gm, n, k, i, j, mf, yp, yn)
 end
-constraint_compressor_flow_ne_one_way(gm::GenericGasModel, i::Int) = constraint_one_way_compressor_flow_ne(gm, gm.cnw, i)
+constraint_compressor_flow_ne_directed(gm::GenericGasModel, i::Int) = constraint_compressor_flow_ne_directed(gm, gm.cnw, i)
 
 #################################################################################################
 # Templates for control valves
@@ -393,16 +393,16 @@ end
 constraint_on_off_control_valve_flow(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_flow(gm, gm.cnw, k)
 
 " Template: Constraints on control valve flows when flow is restricted to one direction"
-function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_control_valve_flow_directed(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:connection,k)
     i     = valve["f_junction"]
     j     = valve["t_junction"]
     mf    = ref(gm,n,:max_mass_flow)
     yp    = valve["yp"]
     yn    = valve["yn"]
-    constraint_control_valve_flow_one_way(gm, n, k, i, j, mf, yp, yn)
+    constraint_control_valve_flow_directed(gm, n, k, i, j, mf, yp, yn)
 end
-constraint_control_valve_flow_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_one_way(gm, gm.cnw, k)
+constraint_control_valve_flow_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_flow_directed(gm, gm.cnw, k)
 
 "Constraint Enforces pressure changes bounds that obey decompression ratios for "
 function constraint_control_valve_pressure_drop(gm::GenericGasModel, n::Int, k)
@@ -417,7 +417,7 @@ end
 constraint_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop(gm, gm.cnw, k)
 
 " Template: Constraints on control valve pressure when flow is restricted to one direction"
-function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::Int, k)
+function constraint_control_valve_pressure_drop_directed(gm::GenericGasModel, n::Int, k)
     valve     = ref(gm,n,:connection,k)
     i         = valve["f_junction"]
     j         = valve["t_junction"]
@@ -427,9 +427,9 @@ function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::
     i_pmax    = ref(gm,n,:junction,i)["pmax"]
     yp        = valve["yp"]
     yn        = valve["yn"]
-    constraint_control_valve_pressure_drop_one_way(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+    constraint_control_valve_pressure_drop_directed(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
 end
-constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop_one_way(gm, gm.cnw, k)
+constraint_control_valve_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_control_valve_pressure_drop_directed(gm, gm.cnw, k)
 
 #################################################################################################
 # Templates for misc constraints

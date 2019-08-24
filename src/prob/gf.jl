@@ -7,7 +7,7 @@ export run_gf
 
 " entry point into running the gas flow feasability problem "
 function run_gf(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gf; kwargs...) 
+    return run_generic_model(file, model_constructor, solver, post_gf; kwargs...)
 end
 
 ""
@@ -25,29 +25,28 @@ function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
-    
+
     for i in ids(gm, :junction)
-        constraint_junction_mass_flow(gm, i)
+        constraint_set_junction_mass_flow(gm, i)
     end
-    
-    for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))] 
-        constraint_pipe_flow(gm, i) 
+
+    for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))]
+        constraint_set_pipe_flow(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_short_pipe_flow(gm, i) 
+        constraint_set_short_pipe_flow(gm, i)
     end
-        
-    for i in ids(gm, :compressor)
-        constraint_compressor_flow(gm, i) 
-    end
-    
-    for i in ids(gm, :valve)
-        constraint_valve_flow(gm, i) 
-    end
-    
-    for i in ids(gm, :control_valve)     
-        constraint_control_valve_flow(gm, i) 
-    end    
-end
 
+    for i in ids(gm, :compressor)
+        constraint_set_compressor_flow(gm, i)
+    end
+
+    for i in ids(gm, :valve)
+        constraint_set_valve_flow(gm, i)
+    end
+
+    for i in ids(gm, :control_valve)
+        constraint_set_control_valve_flow(gm, i)
+    end
+end
