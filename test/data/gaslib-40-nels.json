@@ -1,1 +1,1328 @@
-{"temperature":273.15,"ne_compressor":{},"multinetwork":false,"gas_molar_mass":0.0185674,"compressor":{"41":{"c_ratio_max":5,"f_junction":21,"t_junction":100021,"c_ratio_min":1},"100003":{"c_ratio_max":5,"f_junction":27,"t_junction":400037,"c_ratio_min":1},"100001":{"c_ratio_max":5,"f_junction":35,"t_junction":200002,"c_ratio_min":1},"100002":{"c_ratio_max":5,"f_junction":38,"t_junction":300001,"c_ratio_min":1},"100000":{"c_ratio_max":5,"f_junction":33,"t_junction":100021,"c_ratio_min":1},"42":{"c_ratio_max":5,"f_junction":2,"t_junction":200002,"c_ratio_min":1},"43":{"c_ratio_max":5,"f_junction":1,"t_junction":300001,"c_ratio_min":1},"100004":{"c_ratio_max":5,"f_junction":39,"t_junction":500005,"c_ratio_min":1},"39":{"c_ratio_max":5,"f_junction":37,"t_junction":400037,"c_ratio_min":1},"40":{"c_ratio_max":5,"f_junction":13,"t_junction":600013,"c_ratio_min":1},"44":{"c_ratio_max":5,"f_junction":5,"t_junction":500005,"c_ratio_min":1},"100005":{"c_ratio_max":5,"f_junction":32,"t_junction":600013,"c_ratio_min":1}},"consumer":{"29":{"qlmax":0.009625668449197862,"ql_junc":29,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10011":{"qlmax":0.009625668449197862,"ql_junc":11,"qlmin":0.0,"dispatchable":1,"ql":0},"27":{"qlmax":0.009625668449197862,"ql_junc":27,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"28":{"qlmax":0.009625668449197862,"ql_junc":28,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10005":{"qlmax":0.009625668449197862,"ql_junc":5,"qlmin":0.0,"dispatchable":1,"ql":0},"26":{"qlmax":0.009625668449197862,"ql_junc":26,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10010":{"qlmax":0.009625668449197862,"ql_junc":10,"qlmin":0.0,"dispatchable":1,"ql":0},"10":{"qlmax":0.009625668449197862,"ql_junc":10,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10023":{"qlmax":0.009625668449197862,"ql_junc":23,"qlmin":0.0,"dispatchable":1,"ql":0},"10007":{"qlmax":0.009625668449197862,"ql_junc":7,"qlmin":0.0,"dispatchable":1,"ql":0},"10029":{"qlmax":0.009625668449197862,"ql_junc":29,"qlmin":0.0,"dispatchable":1,"ql":0},"10026":{"qlmax":0.009625668449197862,"ql_junc":26,"qlmin":0.0,"dispatchable":1,"ql":0},"24":{"qlmax":0.009625668449197862,"ql_junc":24,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10028":{"qlmax":0.009625668449197862,"ql_junc":28,"qlmin":0.0,"dispatchable":1,"ql":0},"25":{"qlmax":0.009625668449197862,"ql_junc":25,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"23":{"qlmax":0.009625668449197862,"ql_junc":23,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10020":{"qlmax":0.009625668449197862,"ql_junc":20,"qlmin":0.0,"dispatchable":1,"ql":0},"10022":{"qlmax":0.009625668449197862,"ql_junc":22,"qlmin":0.0,"dispatchable":1,"ql":0},"5":{"qlmax":0.009625668449197862,"ql_junc":5,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"31":{"qlmax":0.009625668449197862,"ql_junc":31,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10003":{"qlmax":0.009625668449197862,"ql_junc":3,"qlmin":0.0,"dispatchable":1,"ql":0},"10014":{"qlmax":0.009625668449197862,"ql_junc":14,"qlmin":0.0,"dispatchable":1,"ql":0},"10025":{"qlmax":0.009625668449197862,"ql_junc":25,"qlmin":0.0,"dispatchable":1,"ql":0},"10006":{"qlmax":0.009625668449197862,"ql_junc":6,"qlmin":0.0,"dispatchable":1,"ql":0},"17":{"qlmax":0.009625668449197862,"ql_junc":17,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"9":{"qlmax":0.009625668449197862,"ql_junc":9,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10018":{"qlmax":0.009625668449197862,"ql_junc":18,"qlmin":0.0,"dispatchable":1,"ql":0},"10017":{"qlmax":0.009625668449197862,"ql_junc":17,"qlmin":0.0,"dispatchable":1,"ql":0},"12":{"qlmax":0.009625668449197862,"ql_junc":12,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10016":{"qlmax":0.009625668449197862,"ql_junc":16,"qlmin":0.0,"dispatchable":1,"ql":0},"20":{"qlmax":0.009625668449197862,"ql_junc":20,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10021":{"qlmax":0.009625668449197862,"ql_junc":21,"qlmin":0.0,"dispatchable":1,"ql":0},"6":{"qlmax":0.009625668449197862,"ql_junc":6,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10013":{"qlmax":0.009625668449197862,"ql_junc":13,"qlmin":0.0,"dispatchable":1,"ql":0},"10004":{"qlmax":0.5347593582887701,"ql_junc":4,"qlmin":0.0,"dispatchable":1,"ql":0},"10027":{"qlmax":0.009625668449197862,"ql_junc":27,"qlmin":0.0,"dispatchable":1,"ql":0},"10030":{"qlmax":0.009625668449197862,"ql_junc":30,"qlmin":0.0,"dispatchable":1,"ql":0},"14":{"qlmax":0.009625668449197862,"ql_junc":14,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"7":{"qlmax":0.009625668449197862,"ql_junc":7,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10012":{"qlmax":0.009625668449197862,"ql_junc":12,"qlmin":0.0,"dispatchable":1,"ql":0},"10008":{"qlmax":0.009625668449197862,"ql_junc":8,"qlmin":0.0,"dispatchable":1,"ql":0},"8":{"qlmax":0.009625668449197862,"ql_junc":8,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10024":{"qlmax":0.009625668449197862,"ql_junc":24,"qlmin":0.0,"dispatchable":1,"ql":0},"10015":{"qlmax":0.009625668449197862,"ql_junc":15,"qlmin":0.0,"dispatchable":1,"ql":0},"19":{"qlmax":0.009625668449197862,"ql_junc":19,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10031":{"qlmax":0.009625668449197862,"ql_junc":31,"qlmin":0.0,"dispatchable":1,"ql":0},"10009":{"qlmax":0.009625668449197862,"ql_junc":9,"qlmin":0.0,"dispatchable":1,"ql":0},"4":{"qlmax":0.009625668449197862,"ql_junc":4,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"22":{"qlmax":0.009625668449197862,"ql_junc":22,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"11":{"qlmax":0.009625668449197862,"ql_junc":11,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"13":{"qlmax":0.009625668449197862,"ql_junc":13,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"15":{"qlmax":0.009625668449197862,"ql_junc":15,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"16":{"qlmax":0.009625668449197862,"ql_junc":16,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"21":{"qlmax":0.009625668449197862,"ql_junc":21,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"10019":{"qlmax":0.009625668449197862,"ql_junc":19,"qlmin":0.0,"dispatchable":1,"ql":0},"18":{"qlmax":0.009625668449197862,"ql_junc":18,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"30":{"qlmax":0.009625668449197862,"ql_junc":30,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862},"3":{"qlmax":0.009625668449197862,"ql_junc":3,"qlmin":0.009625668449197862,"dispatchable":0,"ql":0.009625668449197862}},"standard_density":1.0,"baseQ":2164.3518518518517,"compressibility_factor":0.8,"resistor":{},"short_pipe":{},"producer":{"1":{"qgmin":0.09304812834224599,"qg":0.09304812834224599,"qgmax":0.09304812834224599,"dispatchable":0,"qg_junc":1},"10002":{"qgmin":0.0,"qg":0,"qgmax":0.09304812834224599,"dispatchable":1,"qg_junc":2},"10000":{"qgmin":0.0,"qg":0,"qgmax":0.5347593582887701,"dispatchable":1,"qg_junc":0},"2":{"qgmin":0.09304812834224599,"qg":0.09304812834224599,"qgmax":0.09304812834224599,"dispatchable":0,"qg_junc":2},"0":{"qgmin":0.09304812834224599,"qg":0.09304812834224599,"qgmax":0.09304812834224599,"dispatchable":0,"qg_junc":0},"10001":{"qgmin":0.0,"qg":0,"qgmax":0.09304812834224599,"dispatchable":1,"qg_junc":1}},"ne_pipe":{"82":{"length":18136.59729,"f_junction":12,"friction_factor":0.007128148225449546,"t_junction":13,"diameter":1.0,"construction_cost":3.7501246241352e7},"81":{"length":26427.48165,"f_junction":29,"friction_factor":0.007421324004155109,"t_junction":21,"diameter":0.8,"construction_cost":4.0805944712072e7},"54":{"length":35218.83909,"f_junction":28,"friction_factor":0.007826764431786652,"t_junction":6,"diameter":0.6,"construction_cost":4.2314361962641e7},"78":{"length":3479.454666,"f_junction":21,"friction_factor":0.007421324004155085,"t_junction":34,"diameter":0.8,"construction_cost":5.3725298766391e6},"79":{"length":3418.0082509999997,"f_junction":35,"friction_factor":0.007128148225449465,"t_junction":36,"diameter":1.0,"construction_cost":7.0674541109427e6},"58":{"length":3802.586677,"f_junction":8,"friction_factor":0.007826764431786313,"t_junction":9,"diameter":0.6,"construction_cost":4.5686920183175e6},"74":{"length":31179.6191,"f_junction":31,"friction_factor":0.007421324004155126,"t_junction":4,"diameter":0.8,"construction_cost":4.8143588934743e7},"65":{"length":20634.69827,"f_junction":7,"friction_factor":0.00782676443178631,"t_junction":19,"diameter":0.6,"construction_cost":2.4791961181781e7},"84":{"length":65532.21270999999,"f_junction":12,"friction_factor":0.007421324004155177,"t_junction":34,"diameter":0.8,"construction_cost":1.0118648019964e8},"51":{"length":86690.26556999999,"f_junction":27,"friction_factor":0.007421324004155099,"t_junction":28,"diameter":0.8,"construction_cost":1.3385604541416e8},"49":{"length":6998.053779,"f_junction":15,"friction_factor":0.007128148225449479,"t_junction":16,"diameter":1.0,"construction_cost":1.4469954522351e7},"53":{"length":10022.78298,"f_junction":11,"friction_factor":0.007826764431786436,"t_junction":20,"diameter":0.6,"construction_cost":1.2042068331808e7},"80":{"length":32449.37205,"f_junction":29,"friction_factor":0.007128148225449397,"t_junction":36,"diameter":1.0,"construction_cost":6.7095931621928e7},"59":{"length":39036.04181,"f_junction":8,"friction_factor":0.00742132400415515,"t_junction":24,"diameter":0.8,"construction_cost":6.0274474313257e7},"61":{"length":18017.8496,"f_junction":24,"friction_factor":0.007826764431786296,"t_junction":3,"diameter":0.6,"construction_cost":2.1647897246542e7},"67":{"length":10452.03118,"f_junction":19,"friction_factor":0.007826764431786435,"t_junction":10,"diameter":0.6,"construction_cost":1.2557796963867e7},"75":{"length":12766.70341,"f_junction":4,"friction_factor":0.007128148225449467,"t_junction":17,"diameter":1.0,"construction_cost":2.6397856257893e7},"62":{"length":3067.54744,"f_junction":26,"friction_factor":0.007826764431786632,"t_junction":23,"diameter":0.6,"construction_cost":3.6855647735018e6},"70":{"length":66036.59462999999,"f_junction":27,"friction_factor":0.007826764431786364,"t_junction":22,"diameter":0.6,"construction_cost":7.9340956151715e7},"50":{"length":58218.969549999994,"f_junction":16,"friction_factor":0.007421324004155154,"t_junction":12,"diameter":0.8,"construction_cost":8.989430336625e7},"52":{"length":16579.325999999997,"f_junction":28,"friction_factor":0.007826764431786372,"t_junction":11,"diameter":0.6,"construction_cost":1.9919554976468e7},"46":{"length":13071.085229999999,"f_junction":0,"friction_factor":0.007128148225449466,"t_junction":5,"diameter":1.0,"construction_cost":2.7027229971203e7},"63":{"length":12015.874829999999,"f_junction":23,"friction_factor":0.0084570907765482,"t_junction":14,"diameter":0.4,"construction_cost":1.0203262230002e7},"72":{"length":36061.00987,"f_junction":17,"friction_factor":0.007421324004155061,"t_junction":31,"diameter":0.8,"construction_cost":5.5680809639942e7},"83":{"length":65057.17427,"f_junction":12,"friction_factor":0.007421324004155063,"t_junction":33,"diameter":0.8,"construction_cost":1.0045298646098e8},"57":{"length":47488.28385,"f_junction":27,"friction_factor":0.007421324004155117,"t_junction":39,"diameter":0.8,"construction_cost":7.332534786773e7},"56":{"length":32868.202529999995,"f_junction":20,"friction_factor":0.00742132400415507,"t_junction":8,"diameter":0.8,"construction_cost":5.0750883984603e7},"68":{"length":12397.35216,"f_junction":5,"friction_factor":0.007421324004155028,"t_junction":25,"diameter":0.8,"construction_cost":1.9142409160165e7},"55":{"length":20322.20543,"f_junction":6,"friction_factor":0.007826764431786521,"t_junction":22,"diameter":0.6,"construction_cost":2.441651055694e7},"64":{"length":14043.11354,"f_junction":9,"friction_factor":0.008457090776548253,"t_junction":7,"diameter":0.4,"construction_cost":1.1924688963684e7},"66":{"length":10586.12947,"f_junction":19,"friction_factor":0.0078267644317864,"t_junction":6,"diameter":0.6,"construction_cost":1.2718911973e7},"76":{"length":32921.25982000001,"f_junction":31,"friction_factor":0.007421324004155075,"t_junction":38,"diameter":0.8,"construction_cost":5.0832808281098e7},"71":{"length":18969.41271,"f_junction":27,"friction_factor":0.007128148225449574,"t_junction":17,"diameter":1.0,"construction_cost":3.9223268053913e7},"47":{"length":76893.55076,"f_junction":32,"friction_factor":0.007421324004155214,"t_junction":18,"diameter":0.8,"construction_cost":1.1872920857851e8},"48":{"length":21557.566189999998,"f_junction":37,"friction_factor":0.0071281482254495435,"t_junction":15,"diameter":1.0,"construction_cost":4.4574822119537e7},"69":{"length":19303.192020000002,"f_junction":10,"friction_factor":0.007826764431786322,"t_junction":22,"diameter":0.6,"construction_cost":2.3192196996651e7},"73":{"length":22224.15325,"f_junction":31,"friction_factor":0.007421324004155136,"t_junction":30,"diameter":0.8,"construction_cost":3.4315701390038e7},"60":{"length":38659.82436,"f_junction":9,"friction_factor":0.008457090776548526,"t_junction":26,"diameter":0.4,"construction_cost":3.282793232217e7},"77":{"length":49866.14839,"f_junction":35,"friction_factor":0.007421324004155179,"t_junction":21,"diameter":0.8,"construction_cost":7.6996942847421e7}},"valve":{},"per_unit":true,"junction":{"32":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"29":{"pmax":1.0,"pmin":0.012507213326215157},"1":{"pmax":1.0,"pmin":0.3828170083288845},"2":{"pmax":1.0,"pmin":0.3828170083288845},"600013":{"pmax":1.0,"pmin":0.012507213326215157},"27":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"200002":{"pmax":1.0,"pmin":0.012507213326215157},"33":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"28":{"pmax":1.0,"pmin":0.012507213326215157},"26":{"pmax":1.0,"pmin":0.012507213326215157},"10":{"pmax":1.0,"pmin":0.012507213326215157},"24":{"pmax":1.0,"pmin":0.012507213326215157},"25":{"pmax":1.0,"pmin":0.012507213326215157},"23":{"pmax":1.0,"pmin":0.012507213326215157},"5":{"pmax":1.0,"pmin":0.3828170083288845},"31":{"pmax":1.0,"pmin":0.012507213326215157},"39":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"34":{"pmax":1.0,"pmin":0.012507213326215157},"17":{"pmax":1.0,"pmin":0.012507213326215157},"37":{"pmax":1.0,"pmin":0.3828170083288845},"9":{"pmax":1.0,"pmin":0.012507213326215157},"12":{"pmax":1.0,"pmin":0.012507213326215157},"20":{"pmax":1.0,"pmin":0.012507213326215157},"6":{"pmax":1.0,"pmin":0.012507213326215157},"400037":{"pmax":1.0,"pmin":0.012507213326215157},"14":{"pmax":1.0,"pmin":0.012507213326215157},"7":{"pmax":1.0,"pmin":0.012507213326215157},"8":{"pmax":1.0,"pmin":0.012507213326215157},"19":{"pmax":1.0,"pmin":0.012507213326215157},"0":{"pmax":1.0,"pmin":0.012507213326215157},"4":{"pmax":1.0,"pmin":0.012507213326215157},"22":{"pmax":1.0,"pmin":0.012507213326215157},"11":{"pmax":1.0,"pmin":0.012507213326215157},"35":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"13":{"pmax":1.0,"pmin":0.3828170083288845},"100021":{"pmax":1.0,"pmin":0.012507213326215157},"15":{"pmax":1.0,"pmin":0.012507213326215157},"16":{"pmax":1.0,"pmin":0.012507213326215157},"21":{"pmax":1.0,"pmin":0.3828170083288845},"38":{"pmax":0.8765634016657768,"pmin":0.012507213326215157},"300001":{"pmax":1.0,"pmin":0.012507213326215157},"36":{"pmax":1.0,"pmin":0.012507213326215157},"500005":{"pmax":1.0,"pmin":0.012507213326215157},"18":{"pmax":1.0,"pmin":0.012507213326215157},"30":{"pmax":1.0,"pmin":0.012507213326215157},"3":{"pmax":1.0,"pmin":0.012507213326215157}},"pipe":{"32":{"length":3479.454666,"f_junction":21,"friction_factor":0.007421324004155085,"t_junction":34,"diameter":0.8},"29":{"length":12766.70341,"f_junction":4,"friction_factor":0.007128148225449467,"t_junction":17,"diameter":1.0},"1":{"length":76893.55076,"f_junction":32,"friction_factor":0.007421324004155214,"t_junction":18,"diameter":0.8},"24":{"length":66036.59462999999,"f_junction":27,"friction_factor":0.007826764431786364,"t_junction":22,"diameter":0.6},"12":{"length":3802.586677,"f_junction":8,"friction_factor":0.007826764431786313,"t_junction":9,"diameter":0.6},"20":{"length":10586.12947,"f_junction":19,"friction_factor":0.0078267644317864,"t_junction":6,"diameter":0.6},"4":{"length":58218.969549999994,"f_junction":16,"friction_factor":0.007421324004155154,"t_junction":12,"diameter":0.8},"2":{"length":21557.566189999998,"f_junction":37,"friction_factor":0.0071281482254495435,"t_junction":15,"diameter":1.0},"25":{"length":18969.41271,"f_junction":27,"friction_factor":0.007128148225449574,"t_junction":17,"diameter":1.0},"6":{"length":16579.325999999997,"f_junction":28,"friction_factor":0.007826764431786372,"t_junction":11,"diameter":0.6},"23":{"length":19303.192020000002,"f_junction":10,"friction_factor":0.007826764431786322,"t_junction":22,"diameter":0.6},"22":{"length":12397.35216,"f_junction":5,"friction_factor":0.007421324004155028,"t_junction":25,"diameter":0.8},"11":{"length":47488.28385,"f_junction":27,"friction_factor":0.007421324004155117,"t_junction":39,"diameter":0.8},"35":{"length":26427.48165,"f_junction":29,"friction_factor":0.007421324004155109,"t_junction":21,"diameter":0.8},"13":{"length":39036.04181,"f_junction":8,"friction_factor":0.00742132400415515,"t_junction":24,"diameter":0.8},"27":{"length":22224.15325,"f_junction":31,"friction_factor":0.007421324004155136,"t_junction":30,"diameter":0.8},"5":{"length":86690.26556999999,"f_junction":27,"friction_factor":0.007421324004155099,"t_junction":28,"diameter":0.8},"31":{"length":49866.14839,"f_junction":35,"friction_factor":0.007421324004155179,"t_junction":21,"diameter":0.8},"15":{"length":18017.8496,"f_junction":24,"friction_factor":0.007826764431786296,"t_junction":3,"diameter":0.6},"33":{"length":3418.0082509999997,"f_junction":35,"friction_factor":0.007128148225449465,"t_junction":36,"diameter":1.0},"28":{"length":31179.6191,"f_junction":31,"friction_factor":0.007421324004155126,"t_junction":4,"diameter":0.8},"16":{"length":3067.54744,"f_junction":26,"friction_factor":0.007826764431786632,"t_junction":23,"diameter":0.6},"14":{"length":38659.82436,"f_junction":9,"friction_factor":0.008457090776548526,"t_junction":26,"diameter":0.4},"21":{"length":10452.03118,"f_junction":19,"friction_factor":0.007826764431786435,"t_junction":10,"diameter":0.6},"38":{"length":65532.21270999999,"f_junction":12,"friction_factor":0.007421324004155177,"t_junction":34,"diameter":0.8},"7":{"length":10022.78298,"f_junction":11,"friction_factor":0.007826764431786436,"t_junction":20,"diameter":0.6},"34":{"length":32449.37205,"f_junction":29,"friction_factor":0.007128148225449397,"t_junction":36,"diameter":1.0},"8":{"length":35218.83909,"f_junction":28,"friction_factor":0.007826764431786652,"t_junction":6,"diameter":0.6},"36":{"length":18136.59729,"f_junction":12,"friction_factor":0.007128148225449546,"t_junction":13,"diameter":1.0},"26":{"length":36061.00987,"f_junction":17,"friction_factor":0.007421324004155061,"t_junction":31,"diameter":0.8},"17":{"length":12015.874829999999,"f_junction":23,"friction_factor":0.0084570907765482,"t_junction":14,"diameter":0.4},"10":{"length":32868.202529999995,"f_junction":20,"friction_factor":0.00742132400415507,"t_junction":8,"diameter":0.8},"19":{"length":20634.69827,"f_junction":7,"friction_factor":0.00782676443178631,"t_junction":19,"diameter":0.6},"0":{"length":13071.085229999999,"f_junction":0,"friction_factor":0.007128148225449466,"t_junction":5,"diameter":1.0},"37":{"length":65057.17427,"f_junction":12,"friction_factor":0.007421324004155063,"t_junction":33,"diameter":0.8},"9":{"length":20322.20543,"f_junction":6,"friction_factor":0.007826764431786521,"t_junction":22,"diameter":0.6},"18":{"length":14043.11354,"f_junction":9,"friction_factor":0.008457090776548253,"t_junction":7,"diameter":0.4},"30":{"length":32921.25982000001,"f_junction":31,"friction_factor":0.007421324004155075,"t_junction":38,"diameter":0.8},"3":{"length":6998.053779,"f_junction":15,"friction_factor":0.007128148225449479,"t_junction":16,"diameter":1.0}},"baseP":8.101325e6,"control_valve":{}}
+
+
+{
+  "temperature": 273.15,
+  "ne_compressor": {
+
+  },
+  "multinetwork": false,
+  "gas_molar_mass": 0.0185674,
+  "compressor": {
+    "41": {
+      "c_ratio_max": 5,
+      "f_junction": 21,
+      "t_junction": 100021,
+      "c_ratio_min": 1
+    },
+    "100003": {
+      "c_ratio_max": 5,
+      "f_junction": 27,
+      "t_junction": 400037,
+      "c_ratio_min": 1
+    },
+    "100001": {
+      "c_ratio_max": 5,
+      "f_junction": 35,
+      "t_junction": 200002,
+      "c_ratio_min": 1
+    },
+    "100002": {
+      "c_ratio_max": 5,
+      "f_junction": 38,
+      "t_junction": 300001,
+      "c_ratio_min": 1
+    },
+    "100000": {
+      "c_ratio_max": 5,
+      "f_junction": 33,
+      "t_junction": 100021,
+      "c_ratio_min": 1
+    },
+    "42": {
+      "c_ratio_max": 5,
+      "f_junction": 2,
+      "t_junction": 200002,
+      "c_ratio_min": 1
+    },
+    "43": {
+      "c_ratio_max": 5,
+      "f_junction": 1,
+      "t_junction": 300001,
+      "c_ratio_min": 1
+    },
+    "100004": {
+      "c_ratio_max": 5,
+      "f_junction": 39,
+      "t_junction": 500005,
+      "c_ratio_min": 1
+    },
+    "39": {
+      "c_ratio_max": 5,
+      "f_junction": 37,
+      "t_junction": 400037,
+      "c_ratio_min": 1
+    },
+    "40": {
+      "c_ratio_max": 5,
+      "f_junction": 13,
+      "t_junction": 600013,
+      "c_ratio_min": 1
+    },
+    "44": {
+      "c_ratio_max": 5,
+      "f_junction": 5,
+      "t_junction": 500005,
+      "c_ratio_min": 1
+    },
+    "100005": {
+      "c_ratio_max": 5,
+      "f_junction": 32,
+      "t_junction": 600013,
+      "c_ratio_min": 1
+    }
+  },
+  "consumer": {
+    "29": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 29,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10011": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 11,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "27": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 27,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "28": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 28,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10005": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 5,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "26": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 26,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10010": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 10,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 10,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10023": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 23,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10007": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 7,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10029": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 29,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10026": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 26,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "24": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 24,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10028": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 28,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "25": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 25,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "23": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 23,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10020": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 20,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10022": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 22,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "5": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 5,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "31": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 31,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10003": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 3,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10014": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 14,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10025": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 25,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10006": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 6,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "17": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 17,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "9": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 9,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10018": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 18,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10017": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 17,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "12": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 12,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10016": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 16,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "20": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 20,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10021": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 21,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "6": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 6,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10013": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 13,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10004": {
+      "qlmax": 0.53475935828877,
+      "ql_junc": 4,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10027": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 27,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10030": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 30,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "14": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 14,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "7": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 7,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10012": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 12,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10008": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 8,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "8": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 8,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10024": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 24,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10015": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 15,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "19": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 19,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10031": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 31,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "10009": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 9,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "4": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 4,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "22": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 22,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "11": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 11,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "13": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 13,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "15": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 15,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "16": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 16,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "21": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 21,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "10019": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 19,
+      "qlmin": 0,
+      "dispatchable": 1,
+      "ql": 0
+    },
+    "18": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 18,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "30": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 30,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    },
+    "3": {
+      "qlmax": 0.0096256684491979,
+      "ql_junc": 3,
+      "qlmin": 0.0096256684491979,
+      "dispatchable": 0,
+      "ql": 0.0096256684491979
+    }
+  },
+  "standard_density": 1,
+  "baseQ": 2164.3518518519,
+  "compressibility_factor": 0.8,
+  "resistor": {
+
+  },
+  "short_pipe": {
+
+  },
+  "producer": {
+    "1": {
+      "qgmin": 0.093048128342246,
+      "qg": 0.093048128342246,
+      "qgmax": 0.093048128342246,
+      "dispatchable": 0,
+      "qg_junc": 1
+    },
+    "10002": {
+      "qgmin": 0,
+      "qg": 0,
+      "qgmax": 0.093048128342246,
+      "dispatchable": 1,
+      "qg_junc": 2
+    },
+    "10000": {
+      "qgmin": 0,
+      "qg": 0,
+      "qgmax": 0.53475935828877,
+      "dispatchable": 1,
+      "qg_junc": 0
+    },
+    "2": {
+      "qgmin": 0.093048128342246,
+      "qg": 0.093048128342246,
+      "qgmax": 0.093048128342246,
+      "dispatchable": 0,
+      "qg_junc": 2
+    },
+    "0": {
+      "qgmin": 0.093048128342246,
+      "qg": 0.093048128342246,
+      "qgmax": 0.093048128342246,
+      "dispatchable": 0,
+      "qg_junc": 0
+    },
+    "10001": {
+      "qgmin": 0,
+      "qg": 0,
+      "qgmax": 0.093048128342246,
+      "dispatchable": 1,
+      "qg_junc": 1
+    }
+  },
+  "ne_pipe": {
+    "82": {
+      "length": 18136.59729,
+      "f_junction": 12,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 13,
+      "diameter": 1,
+      "construction_cost": 37501246.241352
+    },
+    "81": {
+      "length": 26427.48165,
+      "f_junction": 29,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 21,
+      "diameter": 0.8,
+      "construction_cost": 40805944.712072
+    },
+    "54": {
+      "length": 35218.83909,
+      "f_junction": 28,
+      "friction_factor": 0.0078267644317867,
+      "t_junction": 6,
+      "diameter": 0.6,
+      "construction_cost": 42314361.962641
+    },
+    "78": {
+      "length": 3479.454666,
+      "f_junction": 21,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 34,
+      "diameter": 0.8,
+      "construction_cost": 5372529.8766391
+    },
+    "79": {
+      "length": 3418.008251,
+      "f_junction": 35,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 36,
+      "diameter": 1,
+      "construction_cost": 7067454.1109427
+    },
+    "58": {
+      "length": 3802.586677,
+      "f_junction": 8,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 9,
+      "diameter": 0.6,
+      "construction_cost": 4568692.0183175
+    },
+    "74": {
+      "length": 31179.6191,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 4,
+      "diameter": 0.8,
+      "construction_cost": 48143588.934743
+    },
+    "65": {
+      "length": 20634.69827,
+      "f_junction": 7,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 19,
+      "diameter": 0.6,
+      "construction_cost": 24791961.181781
+    },
+    "84": {
+      "length": 65532.21271,
+      "f_junction": 12,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 34,
+      "diameter": 0.8,
+      "construction_cost": 101186480.19964
+    },
+    "51": {
+      "length": 86690.26557,
+      "f_junction": 27,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 28,
+      "diameter": 0.8,
+      "construction_cost": 133856045.41416
+    },
+    "49": {
+      "length": 6998.053779,
+      "f_junction": 15,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 16,
+      "diameter": 1,
+      "construction_cost": 14469954.522351
+    },
+    "53": {
+      "length": 10022.78298,
+      "f_junction": 11,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 20,
+      "diameter": 0.6,
+      "construction_cost": 12042068.331808
+    },
+    "80": {
+      "length": 32449.37205,
+      "f_junction": 29,
+      "friction_factor": 0.0071281482254494,
+      "t_junction": 36,
+      "diameter": 1,
+      "construction_cost": 67095931.621928
+    },
+    "59": {
+      "length": 39036.04181,
+      "f_junction": 8,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 24,
+      "diameter": 0.8,
+      "construction_cost": 60274474.313257
+    },
+    "61": {
+      "length": 18017.8496,
+      "f_junction": 24,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 3,
+      "diameter": 0.6,
+      "construction_cost": 21647897.246542
+    },
+    "67": {
+      "length": 10452.03118,
+      "f_junction": 19,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 10,
+      "diameter": 0.6,
+      "construction_cost": 12557796.963867
+    },
+    "75": {
+      "length": 12766.70341,
+      "f_junction": 4,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 17,
+      "diameter": 1,
+      "construction_cost": 26397856.257893
+    },
+    "62": {
+      "length": 3067.54744,
+      "f_junction": 26,
+      "friction_factor": 0.0078267644317866,
+      "t_junction": 23,
+      "diameter": 0.6,
+      "construction_cost": 3685564.7735018
+    },
+    "70": {
+      "length": 66036.59463,
+      "f_junction": 27,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 22,
+      "diameter": 0.6,
+      "construction_cost": 79340956.151715
+    },
+    "50": {
+      "length": 58218.96955,
+      "f_junction": 16,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 12,
+      "diameter": 0.8,
+      "construction_cost": 89894303.36625
+    },
+    "52": {
+      "length": 16579.326,
+      "f_junction": 28,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 11,
+      "diameter": 0.6,
+      "construction_cost": 19919554.976468
+    },
+    "46": {
+      "length": 13071.08523,
+      "f_junction": 0,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 5,
+      "diameter": 1,
+      "construction_cost": 27027229.971203
+    },
+    "63": {
+      "length": 12015.87483,
+      "f_junction": 23,
+      "friction_factor": 0.0084570907765482,
+      "t_junction": 14,
+      "diameter": 0.4,
+      "construction_cost": 10203262.230002
+    },
+    "72": {
+      "length": 36061.00987,
+      "f_junction": 17,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 31,
+      "diameter": 0.8,
+      "construction_cost": 55680809.639942
+    },
+    "83": {
+      "length": 65057.17427,
+      "f_junction": 12,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 33,
+      "diameter": 0.8,
+      "construction_cost": 100452986.46098
+    },
+    "57": {
+      "length": 47488.28385,
+      "f_junction": 27,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 39,
+      "diameter": 0.8,
+      "construction_cost": 73325347.86773
+    },
+    "56": {
+      "length": 32868.20253,
+      "f_junction": 20,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 8,
+      "diameter": 0.8,
+      "construction_cost": 50750883.984603
+    },
+    "68": {
+      "length": 12397.35216,
+      "f_junction": 5,
+      "friction_factor": 0.007421324004155,
+      "t_junction": 25,
+      "diameter": 0.8,
+      "construction_cost": 19142409.160165
+    },
+    "55": {
+      "length": 20322.20543,
+      "f_junction": 6,
+      "friction_factor": 0.0078267644317865,
+      "t_junction": 22,
+      "diameter": 0.6,
+      "construction_cost": 24416510.55694
+    },
+    "64": {
+      "length": 14043.11354,
+      "f_junction": 9,
+      "friction_factor": 0.0084570907765483,
+      "t_junction": 7,
+      "diameter": 0.4,
+      "construction_cost": 11924688.963684
+    },
+    "66": {
+      "length": 10586.12947,
+      "f_junction": 19,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 6,
+      "diameter": 0.6,
+      "construction_cost": 12718911.973
+    },
+    "76": {
+      "length": 32921.25982,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 38,
+      "diameter": 0.8,
+      "construction_cost": 50832808.281098
+    },
+    "71": {
+      "length": 18969.41271,
+      "f_junction": 27,
+      "friction_factor": 0.0071281482254496,
+      "t_junction": 17,
+      "diameter": 1,
+      "construction_cost": 39223268.053913
+    },
+    "47": {
+      "length": 76893.55076,
+      "f_junction": 32,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 18,
+      "diameter": 0.8,
+      "construction_cost": 118729208.57851
+    },
+    "48": {
+      "length": 21557.56619,
+      "f_junction": 37,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 15,
+      "diameter": 1,
+      "construction_cost": 44574822.119537
+    },
+    "69": {
+      "length": 19303.19202,
+      "f_junction": 10,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 22,
+      "diameter": 0.6,
+      "construction_cost": 23192196.996651
+    },
+    "73": {
+      "length": 22224.15325,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 30,
+      "diameter": 0.8,
+      "construction_cost": 34315701.390038
+    },
+    "60": {
+      "length": 38659.82436,
+      "f_junction": 9,
+      "friction_factor": 0.0084570907765485,
+      "t_junction": 26,
+      "diameter": 0.4,
+      "construction_cost": 32827932.32217
+    },
+    "77": {
+      "length": 49866.14839,
+      "f_junction": 35,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 21,
+      "diameter": 0.8,
+      "construction_cost": 76996942.847421
+    }
+  },
+  "valve": {
+
+  },
+  "per_unit": true,
+  "junction": {
+    "32": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "29": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "1": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "2": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "600013": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "27": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "200002": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "33": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "28": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "26": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "10": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "24": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "25": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "23": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "5": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "31": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "39": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "34": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "17": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "37": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "9": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "12": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "20": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "6": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "400037": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "14": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "7": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "8": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "19": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "0": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "4": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "22": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "11": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "35": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "13": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "100021": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "15": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "16": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "21": {
+      "pmax": 1,
+      "pmin": 0.38281700832888
+    },
+    "38": {
+      "pmax": 0.87656340166578,
+      "pmin": 0.012507213326215
+    },
+    "300001": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "36": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "500005": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "18": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "30": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    },
+    "3": {
+      "pmax": 1,
+      "pmin": 0.012507213326215
+    }
+  },
+  "pipe": {
+    "32": {
+      "length": 3479.454666,
+      "f_junction": 21,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 34,
+      "diameter": 0.8
+    },
+    "29": {
+      "length": 12766.70341,
+      "f_junction": 4,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 17,
+      "diameter": 1
+    },
+    "1": {
+      "length": 76893.55076,
+      "f_junction": 32,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 18,
+      "diameter": 0.8
+    },
+    "24": {
+      "length": 66036.59463,
+      "f_junction": 27,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 22,
+      "diameter": 0.6
+    },
+    "12": {
+      "length": 3802.586677,
+      "f_junction": 8,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 9,
+      "diameter": 0.6
+    },
+    "20": {
+      "length": 10586.12947,
+      "f_junction": 19,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 6,
+      "diameter": 0.6
+    },
+    "4": {
+      "length": 58218.96955,
+      "f_junction": 16,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 12,
+      "diameter": 0.8
+    },
+    "2": {
+      "length": 21557.56619,
+      "f_junction": 37,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 15,
+      "diameter": 1
+    },
+    "25": {
+      "length": 18969.41271,
+      "f_junction": 27,
+      "friction_factor": 0.0071281482254496,
+      "t_junction": 17,
+      "diameter": 1
+    },
+    "6": {
+      "length": 16579.326,
+      "f_junction": 28,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 11,
+      "diameter": 0.6
+    },
+    "23": {
+      "length": 19303.19202,
+      "f_junction": 10,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 22,
+      "diameter": 0.6
+    },
+    "22": {
+      "length": 12397.35216,
+      "f_junction": 5,
+      "friction_factor": 0.007421324004155,
+      "t_junction": 25,
+      "diameter": 0.8
+    },
+    "11": {
+      "length": 47488.28385,
+      "f_junction": 27,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 39,
+      "diameter": 0.8
+    },
+    "35": {
+      "length": 26427.48165,
+      "f_junction": 29,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 21,
+      "diameter": 0.8
+    },
+    "13": {
+      "length": 39036.04181,
+      "f_junction": 8,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 24,
+      "diameter": 0.8
+    },
+    "27": {
+      "length": 22224.15325,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 30,
+      "diameter": 0.8
+    },
+    "5": {
+      "length": 86690.26557,
+      "f_junction": 27,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 28,
+      "diameter": 0.8
+    },
+    "31": {
+      "length": 49866.14839,
+      "f_junction": 35,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 21,
+      "diameter": 0.8
+    },
+    "15": {
+      "length": 18017.8496,
+      "f_junction": 24,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 3,
+      "diameter": 0.6
+    },
+    "33": {
+      "length": 3418.008251,
+      "f_junction": 35,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 36,
+      "diameter": 1
+    },
+    "28": {
+      "length": 31179.6191,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 4,
+      "diameter": 0.8
+    },
+    "16": {
+      "length": 3067.54744,
+      "f_junction": 26,
+      "friction_factor": 0.0078267644317866,
+      "t_junction": 23,
+      "diameter": 0.6
+    },
+    "14": {
+      "length": 38659.82436,
+      "f_junction": 9,
+      "friction_factor": 0.0084570907765485,
+      "t_junction": 26,
+      "diameter": 0.4
+    },
+    "21": {
+      "length": 10452.03118,
+      "f_junction": 19,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 10,
+      "diameter": 0.6
+    },
+    "38": {
+      "length": 65532.21271,
+      "f_junction": 12,
+      "friction_factor": 0.0074213240041552,
+      "t_junction": 34,
+      "diameter": 0.8
+    },
+    "7": {
+      "length": 10022.78298,
+      "f_junction": 11,
+      "friction_factor": 0.0078267644317864,
+      "t_junction": 20,
+      "diameter": 0.6
+    },
+    "34": {
+      "length": 32449.37205,
+      "f_junction": 29,
+      "friction_factor": 0.0071281482254494,
+      "t_junction": 36,
+      "diameter": 1
+    },
+    "8": {
+      "length": 35218.83909,
+      "f_junction": 28,
+      "friction_factor": 0.0078267644317867,
+      "t_junction": 6,
+      "diameter": 0.6
+    },
+    "36": {
+      "length": 18136.59729,
+      "f_junction": 12,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 13,
+      "diameter": 1
+    },
+    "26": {
+      "length": 36061.00987,
+      "f_junction": 17,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 31,
+      "diameter": 0.8
+    },
+    "17": {
+      "length": 12015.87483,
+      "f_junction": 23,
+      "friction_factor": 0.0084570907765482,
+      "t_junction": 14,
+      "diameter": 0.4
+    },
+    "10": {
+      "length": 32868.20253,
+      "f_junction": 20,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 8,
+      "diameter": 0.8
+    },
+    "19": {
+      "length": 20634.69827,
+      "f_junction": 7,
+      "friction_factor": 0.0078267644317863,
+      "t_junction": 19,
+      "diameter": 0.6
+    },
+    "0": {
+      "length": 13071.08523,
+      "f_junction": 0,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 5,
+      "diameter": 1
+    },
+    "37": {
+      "length": 65057.17427,
+      "f_junction": 12,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 33,
+      "diameter": 0.8
+    },
+    "9": {
+      "length": 20322.20543,
+      "f_junction": 6,
+      "friction_factor": 0.0078267644317865,
+      "t_junction": 22,
+      "diameter": 0.6
+    },
+    "18": {
+      "length": 14043.11354,
+      "f_junction": 9,
+      "friction_factor": 0.0084570907765483,
+      "t_junction": 7,
+      "diameter": 0.4
+    },
+    "30": {
+      "length": 32921.25982,
+      "f_junction": 31,
+      "friction_factor": 0.0074213240041551,
+      "t_junction": 38,
+      "diameter": 0.8
+    },
+    "3": {
+      "length": 6998.053779,
+      "f_junction": 15,
+      "friction_factor": 0.0071281482254495,
+      "t_junction": 16,
+      "diameter": 1
+    }
+  },
+  "baseP": 8101325,
+  "control_valve": {
+
+  }
+}

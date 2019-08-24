@@ -75,8 +75,8 @@ constraint_parallel_flow
 
 ### One way flow constraints
 ```@docs
-  constraint_pressure_drop_one_way
-  constraint_pipe_flow_one_way
+  constraint_pressure_drop_directed
+  constraint_pipe_flow_directed
 ```
 
 ### Network Expansion Constraints
@@ -87,8 +87,8 @@ constraint_on_off_pressure_drop_ne
 constraint_on_off_pipe_flow_ne
 constraint_flow_direction_choice_ne
 constraint_parallel_flow_ne
-constraint_pressure_drop_ne_one_way
-constraint_pipe_flow_ne_one_way
+constraint_pressure_drop_ne_directed
+constraint_pipe_flow_ne_directed
 ```
 
 ### Constraint collections

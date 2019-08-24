@@ -118,9 +118,9 @@ end
 
 "Constraint: Constraints which define the flow across a pipe when the pipe is directed"
 function constraint_set_pipe_flow_directed(gm::GenericGasModel, n::Int, i)
-    constraint_pressure_drop_one_way(gm, i)
-    constraint_pipe_flow_one_way(gm, i)
-    constraint_weymouth_one_way(gm, i)
+    constraint_pressure_drop_directed(gm, i)
+    constraint_pipe_flow_directed(gm, i)
+    constraint_weymouth_directed(gm, i)
 end
 
 "Constraint: Constraints for modeling flow on a short pipe"
@@ -131,7 +131,7 @@ end
 "Constraint: Constraints for modeling flow on a short pipe with a known direction"
 function constraint_set_short_pipe_flow_directed(gm::GenericGasModel, n::Int, i)
     constraint_short_pipe_pressure_drop(gm, i)
-    constraint_short_pipe_flow_one_way(gm, i)
+    constraint_short_pipe_flow_directed(gm, i)
 end
 
 "Constraint: Constraints on flow through a compressor"
@@ -141,8 +141,8 @@ end
 
 "Constraint: Constraints on flow through a compressor where the compressor has a known direction of flow"
 function constraint_set_compressor_flow_directed(gm::GenericGasModel, n::Int, i)
-    constraint_compressor_flow_one_way(gm, i)
-    constraint_compressor_ratios_one_way(gm, i)
+    constraint_compressor_flow_directed(gm, i)
+    constraint_compressor_ratios_directed(gm, i)
 end
 
 "Constraints: Valve flow"
@@ -153,7 +153,7 @@ end
 
 "Constraint: constraints on a valve that has known flow direction"
 function constraint_set_valve_flow_directed(gm::GenericGasModel, n::Int, i)
-    constraint_valve_flow_one_way(gm, i)
+    constraint_valve_flow_directed(gm, i)
     constraint_valve_pressure_drop(gm, i)
 end
 
@@ -165,8 +165,8 @@ end
 
 "Constraint: Constraints on flow through a control valve where the direction of flow is known"
 function constraint_set_control_valve_flow_directed(gm::GenericGasModel, n::Int, i)
-    constraint_control_valve_flow_one_way(gm, i)
-    constraint_control_valve_pressure_drop_one_way(gm, i)
+    constraint_control_valve_flow_directed(gm, i)
+    constraint_control_valve_pressure_drop_directed(gm, i)
 end
 
 "Constraint: Constraints which define flow across a pipe"
@@ -177,10 +177,10 @@ end
 
 "Constraint: Constraints for an expansion pipe where the direction of flow is constrained"
 function constraint_set_pipe_flow_ne_directed(gm::GenericGasModel, n::Int, i)
-    constraint_pressure_drop_ne_one_way(gm, i)
-    constraint_pipe_flow_ne_one_way(gm, i)
+    constraint_pressure_drop_ne_directed(gm, i)
+    constraint_pipe_flow_ne_directed(gm, i)
     constraint_pipe_ne(gm, i)
-    constraint_weymouth_ne_one_way(gm, i)
+    constraint_weymouth_ne_directed(gm, i)
 end
 
 "Constraints through a new compressor that is undirected"
@@ -192,6 +192,6 @@ end
 "Constraint: Constraints through a new compressor that has a known flow direction"
 function constraint_set_compressor_flow_ne_directed(gm::GenericGasModel, n::Int, i)
     constraint_compressor_ne(gm, i)
-    constraint_compressor_flow_ne_one_way(gm, i)
-    constraint_compressor_ratios_ne_one_way(gm, i)
+    constraint_compressor_flow_ne_directed(gm, i)
+    constraint_compressor_ratios_ne_directed(gm, i)
 end

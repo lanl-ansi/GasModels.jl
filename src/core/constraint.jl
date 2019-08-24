@@ -56,7 +56,7 @@ function constraint_short_pipe_pressure_drop(gm::GenericGasModel, n::Int, k, i, 
 end
 
 " Constraint: Constraints on flow across a short pipe where direction of flow is constrained"
-function constraint_short_pipe_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_short_pipe_flow_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f = var(gm,n,:f,k)
     if yp == 1
         add_constraint(gm, n, :short_pipe_flow, k, @constraint(gm.model, f >= 0))
@@ -87,7 +87,7 @@ function constraint_on_off_valve_flow(gm::GenericGasModel, n::Int, k, i, j, mf)
 end
 
 " Constraint: constraints on flow across valves when the direction of flow is constrained. "
-function constraint_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
+function constraint_valve_flow_directed(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
 
@@ -109,17 +109,17 @@ function constraint_pipe_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min, pd_ma
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
     add_constraint(gm, n, :pipe_ne1, k, @constraint(gm.model, f <= zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
-    add_constraint(gm, n, :pipe_ne2, k,  @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
+    add_constraint(gm, n, :pipe_ne2, k, @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pressure_drop_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_pressure_drop_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     if yp == 1
-        add_constraint(gm, n, :pressure_drop_one_way, k, @constraint(gm.model, pi - pj >= 0))
+        add_constraint(gm, n, :pressure_drop_directed, k, @constraint(gm.model, pi - pj >= 0))
     else
-        add_constraint(gm, n, :pressure_drop_one_way, k, @constraint(gm.model, pi - pj <= 0))
+        add_constraint(gm, n, :pressure_drop_directed, k, @constraint(gm.model, pi - pj <= 0))
     end
 end
 
@@ -131,17 +131,17 @@ function constraint_pipe_mass_flow(gm::GenericGasModel, n::Int, k, i, j, mf, pd_
 end
 
 " Constraint: constraint on flow across the pipe where direction is constrained"
-function constraint_pipe_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_pipe_flow_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f  = var(gm,n,:f,k)
     if yp == 1
-        add_constraint(gm, n, :pipe_flow_one_way, k, @constraint(gm.model, f >= 0))
+        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= 0))
     else
-        add_constraint(gm, n, :pipe_flow_one_way, k, @constraint(gm.model, f <= 0))
+        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f <= 0))
     end
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained"
-function constraint_pressure_drop_ne_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_pressure_drop_ne_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     if yp == 1
@@ -152,7 +152,7 @@ function constraint_pressure_drop_ne_one_way(gm::GenericGasModel, n::Int, k, i, 
 end
 
 " Constraint: Flow across an expansion pipe when direction is constrained "
-function constraint_pipe_flow_ne_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_pipe_flow_ne_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f  = var(gm,n,:f_ne,k)
     if yp == 1
         add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= 0))
@@ -174,7 +174,7 @@ function constraint_compressor_ne(gm::GenericGasModel,  n::Int, k, mf)
 end
 
 " Constraint: flow across a compressor when flow is restricted to one direction"
-function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
+function constraint_compressor_flow_directed(gm::GenericGasModel, n::Int, k, i, j, yp, yn)
     f  = var(gm,n,:f,k)
     if yp == 1
         add_constraint(gm, n, :compressor_flow, k, @constraint(gm.model, f >= 0))
@@ -184,7 +184,7 @@ function constraint_compressor_flow_one_way(gm::GenericGasModel, n::Int, k, i, j
 end
 
 " Constraint: Compressor ratio when the flow direction is constrained "
-function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, yp, yn)
+function constraint_compressor_ratios_directed(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, yp, yn)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
 
@@ -197,7 +197,7 @@ function constraint_compressor_ratios_one_way(gm::GenericGasModel, n::Int, k, i,
 end
 
 " Constraint: flow across expansion compressors when the direction is constrained "
-function constraint_compressor_flow_ne_one_way(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
+function constraint_compressor_flow_ne_directed(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
     f  = var(gm,n,:f_ne,k)
 
     if yp == 1
@@ -208,7 +208,7 @@ function constraint_compressor_flow_ne_one_way(gm::GenericGasModel, n::Int, k, i
 end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained"
-function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn)
+function constraint_compressor_ratios_ne_directed(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
@@ -234,7 +234,7 @@ function constraint_on_off_control_valve_flow(gm::GenericGasModel, n::Int, k, i,
 end
 
 " Constraint: Flow across control valves when direction is constrained "
-function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
+function constraint_control_valve_flow_directed(gm::GenericGasModel, n::Int, k, i, j, mf, yp, yn)
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
 
@@ -248,7 +248,7 @@ function constraint_control_valve_flow_one_way(gm::GenericGasModel, n::Int, k, i
 end
 
 " Constraint: Pressure drop across a control valves when directions is constrained "
-function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+function constraint_control_valve_pressure_drop_directed(gm::GenericGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v,k)

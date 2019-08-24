@@ -12,13 +12,6 @@ constraint_flow_direction_choice(gm::GenericGasModel, i::Int) = constraint_flow_
 "Constraint: Constraint that states a flow direction must be chosen for expansion connections "
 constraint_flow_direction_choice_ne(gm::GenericGasModel, i::Int) = constraint_flow_direction_choice_ne(gm, gm.cnw, i)
 
-
-
-
-
-
-
-
 #############################################################################################################
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
@@ -132,11 +125,11 @@ end
 function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax) where T <: AbstractMIForms
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
-
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
 
+    # TODO these are modeled as
     add_constraint(gm, n, :on_off_compressor_ratios_ne1, k, @constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-yp-zc)*j_pmax^2))
     add_constraint(gm, n, :on_off_compressor_ratios_ne2, k, @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-zc)*(min_ratio^2*i_pmax^2)))
     add_constraint(gm, n, :on_off_compressor_ratios_ne3, k, @constraint(gm.model,  pi - (max_ratio^2*pj) <= (2-yn-zc)*i_pmax^2))
