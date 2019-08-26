@@ -9,6 +9,9 @@ Constraint templates help simplify data wrangling across multiple Gas Flow formu
 
 These templates should be defined over `GenericGasModel` and should not refer to model variables. For more details, see the files: `core/constraint_template.jl` and `core/constraint.jl`.
 
+## Constraint Set
+
+
 The convention is to define a function for each constraint. Utility functions are defined to collect together sets of constraints which are associated with individual components or capabilities of a component such as flow through a pipe.
 
 ## Junction Constraints
