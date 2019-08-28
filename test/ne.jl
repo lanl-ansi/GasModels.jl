@@ -17,7 +17,7 @@
 
     # @testset "A3 MINLP case" begin
     #     obj_normalization = 1.0
-    #     result = run_ne("../test/data/A3.json", MINLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+    #     result = run_ne("../test/data/A3.m", MINLPGasModel, minlp_solver; obj_normalization = obj_normalization)
     #     @test result["status"] == :LocalOptimal || result["status"] == :Optimal
     #     @test isapprox(result["objective"]*obj_normalization, 1781; atol = 1.0)
     # end

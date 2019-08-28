@@ -15,7 +15,7 @@
 
     @testset "A3 MISCOP case" begin
         obj_normalization = 1000000.0
-        result = run_ne("../test/data/A3.json", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
+        result = run_ne("../test/data/A3.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"]*obj_normalization, 1781; atol = 1.0)
     end
@@ -23,7 +23,7 @@
     @testset "gaslib 40 case 5%" begin
         println("gaslib 40 - MISOCP 5%")
         obj_normalization = 1000000.0
-        result = run_ne("../test/data/gaslib-40-5.json", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
+        result = run_ne("../test/data/gaslib-40-5.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"]*obj_normalization, 11924688; atol = 1e3)
     end
