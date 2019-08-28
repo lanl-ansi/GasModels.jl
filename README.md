@@ -1,4 +1,4 @@
-# GasModels.jl 
+# GasModels.jl
 
 Release: [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/GasModels.jl/stable)
 
@@ -18,9 +18,11 @@ This enables the definition of a wide variety of gas network formulations and th
 * Load Shed (ls)
 
 **Core Network Formulations**
-* MINLP 
+* MINLP
+* NLP
 * MISOCP
 * MIP
+* LP
 
 ## Basic Usage
 

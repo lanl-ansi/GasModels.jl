@@ -77,7 +77,7 @@ end
 @testset "test nlp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 nlp gf")
-        result = run_gf("../test/data/gaslib-40.json", NLPGasModel, cvx_solver)
+        result = run_gf("../test/data/gaslib-40.json", NLPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
