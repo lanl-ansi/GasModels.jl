@@ -48,6 +48,7 @@ mgc.specific_heat_capacity_ratio = 1.4;       % Heat capacity ratio of the gas
 mgc.standard_density = 1.0;                   % Standard density value
 mgc.baseP = 8101325;                          % Normalization constant for pressure
 mgc.baseF = 604.167;                          % Normalization constant for flow
+mgc.per_unit = true;                          % Whether or not the parameters are in per unit
 ```
 
 Junction data is defined with the following tabular format

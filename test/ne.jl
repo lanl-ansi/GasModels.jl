@@ -82,15 +82,21 @@ end
     @testset "A1 NLP case" begin
         println("Testing A1 nlp ne")
         obj_normalization = 1.0
-        result = run_ne("../test/data/A1.json", NLPGasModel, abs_minlp_solver; obj_normalization = obj_normalization)
+        result = run_ne("../test/data/A1.json", NLPGasModel, cvx_minlp_solver; obj_normalization = obj_normalization)
+        if !(result["status"] == :LocalOptimal || result["status"] == :Optimal)
+            result = run_ne("../test/data/A1.json", NLPGasModel, abs_minlp_solver; obj_normalization = obj_normalization)
+        end
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"]*obj_normalization, 144.4; atol = 1e-1)
     end
 
     @testset "A2 NLP case" begin
         println("Testing A2 nlp ne")
-        obj_normalization = 0.1
-        result = run_ne("../test/data/A2.json", NLPGasModel, abs_minlp_solver; obj_normalization = obj_normalization)
+        obj_normalization = 1.0
+        result = run_ne("../test/data/A2.json", NLPGasModel, cvx_minlp_solver; obj_normalization = obj_normalization)
+        if !(result["status"] == :LocalOptimal || result["status"] == :Optimal)
+            result = run_ne("../test/data/A2.json", NLPGasModel, abs_minlp_solver; obj_normalization = obj_normalization)
+        end
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         # some discpreany between windows, mac, and linux
         @test isapprox(result["objective"]*obj_normalization, 3222.1,; atol = 1e-1) || isapprox(result["objective"]*obj_normalization, 3187.45,; atol = 1e-1) || isapprox(result["objective"]*obj_normalization, 3338.4,; atol = 1e-1)
