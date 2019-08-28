@@ -16,7 +16,7 @@ function run_soc_gf(file, solver; kwargs...)
 end
 
 ""
-function run_nl_gf(file, solver; kwargs...)
+function run_minl_gf(file, solver; kwargs...)
     return run_gf(file, MINLPGasModel, solver; kwargs...)
 end
 

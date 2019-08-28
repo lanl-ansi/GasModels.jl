@@ -11,14 +11,14 @@ These templates should be defined over `GenericGasModel` and should not refer to
 
 ## Constraint Sets
 
-Constraint sets help simplify constraint generation by collecting together common sets of constraints that are associated with a specific components of capabilities of a component, such as flow through a pipe. See filessee the files: `core/constraint_set.jl`
+Constraint sets help simplify constraint generation by collecting together common sets of constraints that are associated with a specific components of capabilities of a component, such as flow through a pipe. See the files: `core/constraint_set.jl`
 
 
 ## Junction Constraints
 
 ### Flow balance constraints
 
-The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are variable or constant injections (variable injections are denoted by \_ls in the name of the function) and if there are network design options (denoted by \_ne in the name of the function).
+The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are variable or constant injections (variable injections are denoted by `\_ls` in the name of the function) and if there are network design options (denoted by `\_ne` in the name of the function).
 
 ```@docs
 constraint_junction_mass_flow_balance
@@ -44,7 +44,7 @@ constraint_conserve_flow_ne
 
 ### Weymouth's law constraints
 
-The primary constraints related to pipes ensure that that pressure drop and flow across a pipe is related through the Weymouth relationships. Here, the naming convention \_ne is used to denote the form of the constraint used for expansion pipes and \_directed is used to denote the form of the constraint used when the direction of flow is constrained.
+The primary constraints related to pipes ensure that that pressure drop and flow across a pipe is related through the Weymouth relationships. Here, the naming convention `\_ne` is used to denote the form of the constraint used for expansion pipes and `\_directed` is used to denote the form of the constraint used when the direction of flow is constrained.
 
 ```@docs
 constraint_weymouth
@@ -55,7 +55,7 @@ constraint_weymouth_ne_directed
 
 ### Mass flow and pressure drop constraints
 
-Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the \_ne and \_directed naming conventions.
+Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the `\_ne` and `\_directed` naming conventions.
 
 ```@docs
 constraint_pipe_mass_flow
@@ -80,16 +80,25 @@ constraint_on_off_pressure_drop
 constraint_on_off_pipe_flow
 constraint_flow_direction_choice
 constraint_parallel_flow
+constraint_parallel_flow_ne
 ```
-
-
-
-
-
 
 ## Compressor Constraints
 
+### Operations Constraints
+
+The primary constraints related to compressors ensure that that the compressors operate within the limits of their capability (boost ratio, energy consumption, etc.). These constraints use the `\_ne` and `\_directed` naming conventions to denote constraints where the compressor is an expansion option or direction of flow is fixed, respectively
+
+```@docs
+constraint_compressor_ratios
+constraint_compressor_ratios_directed
+constraint_compressor_ratios_ne
+constraint_compressor_ratios_ne_directed
+```
+
 ### Direction On/off Constraints
+
+The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
 constraint_on_off_compressor_flow
@@ -98,15 +107,29 @@ constraint_on_off_compressor_ratios
 
 ### Network Expansion Constraints
 
-```@docs
-constraint_on_off_compressor_flow_ne
-constraint_on_off_compressor_ratios_ne
-```
+Constraints are also used to turn on/off flow through a compressor in expansion planning formulations
 
+```@docs
+constraint_compressor_ne
+```
 
 ## Control Valve Constraints
 
+### Operations Constraints
+
+The primary constraints related to control valves ensure that that the valves operate within the limits of their capability (pressure reduction). These constraints use the `\_directed` naming conventions to denote constraints where the control valve direction of flow is fixed.  The control valve also has an open/close variable to determine whether or not flow is allowed through the valve
+
+
+```@docs
+constraint_on_off_control_valve_flow
+constraint_control_valve_pressure_drop
+constraint_control_valve_flow_directed
+constraint_control_valve_pressure_drop_directed
+```
+
 ### Direction On/off Constraints
+
+The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
 constraint_on_off_control_valve_flow
@@ -115,7 +138,18 @@ constraint_on_off_control_valve_pressure_drop
 
 ## Valve Constraints
 
+### Operations Constraints
+
+The primary function of a valve is to open or close a pipe. These constraints use the `\_directed` naming conventions to denote constraints where the valve direction of flow is fixed.
+
+```@docs
+constraint_on_off_valve_flow
+constraint_valve_pressure_drop
+```
+
 ### Direction On/off Constraints
+
+The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
 constraint_on_off_valve_flow
@@ -124,21 +158,20 @@ constraint_valve_pressure_drop
 
 ## Short Pipes
 
+### Pressure Constraints
+
+Short pipes are used to model frictionless connections between junctions.  The primary constraint ensures the pressure on both sides of the short pipe are the same. These constraints use the `\_directed` naming conventions to denote constraints where the control valve direction of flow is fixed.
+
+```@docs
+constraint_short_pipe_pressure_drop
+cconstraint_short_pipe_flow_directed
+```
+
 ### Direction On/off Constraints
+
+The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
 constraint_on_off_short_pipe_flow
 constraint_short_pipe_pressure_drop
-```
-
-## Direction Cutting Constraints
-
-```@docs
-constraint_parallel_flow
-```
-
-### Network Expansion Constraints
-
-```@docs
-constraint_parallel_flow_ne
 ```

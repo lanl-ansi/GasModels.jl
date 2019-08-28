@@ -19,9 +19,11 @@ The network data dictionary structure is roughly as follows:
 "baseP":<float>,                   # Base for non-dimensionalizing pressure. SI units are pascal.
 "junction":{
     "1":{
-      "pmax": <float>,   # maximum pressure. SI units are pascals
-      "pmin": <float>,   # minimum pressure. SI units are pascals
-      "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
+      "pmax": <float>,    # maximum pressure. SI units are pascals
+      "pmin": <float>,    # minimum pressure. SI units are pascals
+      "status": <int>,    # status of the component (0 = off, 1 = on). Default is 1.
+      "latitude":<float>, # latitude position of the junction (optional)
+      "longitude":<float>, # latitude position of the junction (optional)
        ...
     },
     "2":{...},
@@ -130,7 +132,7 @@ The network data dictionary structure is roughly as follows:
 }
 ```
 
-All data is assumed to have consistent units (i.e. metric, English, etc.)
+All data is assumed to have consistent units (i.e. SI units or non-dimensionalized units)
 
 The following commands can be used to explore the network data dictionary,
 

@@ -1,24 +1,25 @@
 # Network Formulations
 
 ## Type Hierarchy
-We begin with the top of the hierarchy, where we can distinguish between gas flow models. Currently, there are two variations
-of the weymouth equations, one where the directions of flux are known and one where they are unknown.
+We begin with the top of the hierarchy, where we can distinguish between gas flow models. There are currently five formulations supported in GasModels. Two full non convex formulations and three relaxations.
+
 ```julia
-AbstractDirectedGasFormulation <: AbstractGasFormulation
-AbstractUndirectedGasFormulation <: AbstractGasFormulation
-```
-Each of these have a disjunctive form of the weymouth equations: The full non convex formulation and its conic relaxation.
-```julia
+AbstractNLPForm <: AbstractGasFormulation
 AbstractMINLPForm <: AbstractGasFormulation
 AbstractMISOCPForm <: AbstractGasFormulation
+AbstractMIPForm <: AbstractGasFormulation
+AbstractLPForm <: AbstractGasFormulation
 ```
 
 ## Gas Models
 Each of these forms can be used as the type parameter for a GasModel, i.e.:
+
 ```julia
+NLPGasModel = GenericGasModel(StandardNLPForm)
 MINLPGasModel = GenericGasModel(StandardMINLPForm)
 MISOCPGasModel = GenericGasModel(StandardMISOCPForm)
 MIPGasModel = GenericGasModel(StandardMIPForm)
+LPGasModel = GenericGasModel(StandardLPForm)
 ```
 
 For details on `GenericGasModel`, see the section on [Gas Model](@ref).
@@ -26,12 +27,23 @@ For details on `GenericGasModel`, see the section on [Gas Model](@ref).
 ## User-Defined Abstractions
 
 The user-defined abstractions begin from a root abstract like the `AbstractGasFormulation` abstract type, i.e.
+
 ```julia
 AbstractMyFooForm <: AbstractGasFormulation
 
 StandardMyFooForm <: AbstractFooForm
 FooGasModel = GenericGasModel{StandardFooForm}
 ```
+
+## NLP
+
+```@autodocs
+Modules = [GasModels]
+Pages   = ["form/nlp.jl"]
+Order   = [:function]
+Private  = true
+```
+
 ## MINLP
 
 ```@autodocs
@@ -54,7 +66,16 @@ Private  = true
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/mi/mip.jl"]
+Pages   = ["form/mip.jl"]
+Order   = [:function]
+Private  = true
+```
+
+## LP
+
+```@autodocs
+Modules = [GasModels]
+Pages   = ["form/lp.jl"]
 Order   = [:function]
 Private  = true
 ```

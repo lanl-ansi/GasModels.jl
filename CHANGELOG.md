@@ -8,7 +8,8 @@ GasModels.jl Change Log
 
 ### v0.4.2
 - Implement nlp version(s) of the problems
-- Renamed constraint utility functions to contain the keywork "set"
+- Renamed constraint utility functions to contain the keyword "set"
+- Updated the documentation
 
 ### v0.4.1
 - Remove bounds on binary variables for increased solver robustness

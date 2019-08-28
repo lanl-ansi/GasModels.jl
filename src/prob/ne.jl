@@ -15,10 +15,7 @@ function post_ne(gm::GenericGasModel; kwargs...)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
-
     variable_valve_operation(gm)
-
-    # expansion variables
     variable_pipe_ne(gm)
     variable_compressor_ne(gm)
 
