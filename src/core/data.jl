@@ -72,9 +72,6 @@ function add_default_construction_cost(data::Dict{String,Any})
         for entry in [data["ne_pipe"];data["ne_compressor"]]
            for (idx, connection) in entry
                if !haskey(connection,"construction_cost")
-                   println(idx)
-                   println(connection)
-                   println()
                    connection["construction_cost"] = 0
                end
            end
@@ -267,7 +264,6 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
 
 end
 
-
 "Transforms network data into si-units (inverse of per-unit)--non-dimensionalized"
 function make_si_units(data::Dict{String,Any})
     if haskey(data, "per_unit") && data["per_unit"] == true
@@ -283,7 +279,6 @@ function make_si_units(data::Dict{String,Any})
         end
     end
 end
-
 
 ""
 function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
@@ -364,32 +359,32 @@ end
 
 "calculates minimum mass flow consumption"
 function calc_flmin(data::Dict{String,Any}, consumer::Dict{String,Any})
-    consumer["qlmin"] * data["standard_density"]
+    return consumer["qlmin"] * data["standard_density"]
 end
 
 "calculates maximum mass flow consumption"
 function calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
-    consumer["qlmax"] * data["standard_density"]
+    return consumer["qlmax"] * data["standard_density"]
 end
 
 "calculates constant mass flow consumption"
 function calc_fl(data::Dict{String,Any}, consumer::Dict{String,Any})
-    consumer["ql"] * data["standard_density"]
+    return consumer["ql"] * data["standard_density"]
 end
 
 "calculates minimum mass flow production"
 function calc_fgmin(data::Dict{String,Any}, producer::Dict{String,Any})
-    producer["qgmin"] * data["standard_density"]
+    return producer["qgmin"] * data["standard_density"]
 end
 
 "calculates maximum mass flow production"
 function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
-    producer["qgmax"] * data["standard_density"]
+    return producer["qgmax"] * data["standard_density"]
 end
 
 "calculates constant mass flow production"
 function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
-    producer["qg"] * data["standard_density"]
+    return producer["qg"] * data["standard_density"]
 end
 
 "prints the text summary for a data file or dictionary to stdout"

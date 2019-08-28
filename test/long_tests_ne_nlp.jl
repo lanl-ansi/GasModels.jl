@@ -10,7 +10,7 @@
 #    @testset "A2 NLP case" begin
 #        println("A2 MINLP")
 #        obj_normalization = 10.0
-#        result = run_ne("../test/data/A2.json", NLPGasModel, scip_solver; obj_normalization = obj_normalization)
+#        result = run_ne("../test/data/A2.m", NLPGasModel, scip_solver; obj_normalization = obj_normalization)
 #        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
 #        @test isapprox(result["objective"]*obj_normalization, 1687; atol = 1.0)
 #    end
