@@ -18,9 +18,11 @@ ga('send', 'pageview');
 &quot;baseP&quot;:&lt;float&gt;,                   # Base for non-dimensionalizing pressure. SI units are pascal.
 &quot;junction&quot;:{
     &quot;1&quot;:{
-      &quot;pmax&quot;: &lt;float&gt;,   # maximum pressure. SI units are pascals
-      &quot;pmin&quot;: &lt;float&gt;,   # minimum pressure. SI units are pascals
-      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;pmax&quot;: &lt;float&gt;,    # maximum pressure. SI units are pascals
+      &quot;pmin&quot;: &lt;float&gt;,    # minimum pressure. SI units are pascals
+      &quot;status&quot;: &lt;int&gt;,    # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;latitude&quot;:&lt;float&gt;, # latitude position of the junction (optional)
+      &quot;longitude&quot;:&lt;float&gt;, # latitude position of the junction (optional)
        ...
     },
     &quot;2&quot;:{...},
@@ -126,5 +128,5 @@ ga('send', 'pageview');
     &quot;2&quot;:{...},
     ...
 }
-}</code></pre><p>All data is assumed to have consistent units (i.e. metric, English, etc.)</p><p>The following commands can be used to explore the network data dictionary,</p><pre><code class="language-julia">network_data = GasModels.parse_file(&quot;gaslib-40.json&quot;)
+}</code></pre><p>All data is assumed to have consistent units (i.e. SI units or non-dimensionalized units)</p><p>The following commands can be used to explore the network data dictionary,</p><pre><code class="language-julia">network_data = GasModels.parse_file(&quot;gaslib-40.json&quot;)
 display(network_data)</code></pre><footer><hr/><a class="previous" href="../quickguide/"><span class="direction">Previous</span><span class="title">Getting Started</span></a><a class="next" href="../result-data/"><span class="direction">Next</span><span class="title">Result Data Format</span></a></footer></article></body></html>
