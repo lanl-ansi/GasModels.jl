@@ -13,7 +13,7 @@ mgc.baseF = 604.167;
 
 %% junction data
 %  junction_i type pmin pmax status p
-mgc.junction = [ 
+mgc.junction = [
 32 	 	 0 	 101325 	 7101325 	 1 	 101325
 29 	 	 0 	 101325 	 8101325 	 1 	 101325
 1 	 	 0 	 3101325 	 8101325 	 1 	 3101325
@@ -61,8 +61,8 @@ mgc.junction = [
 30 	 	 0 	 101325 	 8101325 	 1 	 101325
 3 	 	 0 	 101325 	 8101325 	 1 	 101325
 ];
-	
-%% pipeline data 
+
+%% pipeline data
 % pipeline_i f_junction t_junction diameter length friction_factor status
 mgc.pipe = [
 32 	 21 	 34 	 0.8 	 3479.4547 	 	 0.0074 	 1
@@ -106,7 +106,7 @@ mgc.pipe = [
 3 	 15 	 16 	 1.0 	 6998.0538 	 	 0.0071 	 1
 ];
 
-%% compressor data 
+%% compressor data
 % compressor_i f_junction t_junction cmin cmax power_max fmin fmax status
 mgc.compressor = [
 41 	 	 21 	 100021 	 1.0 	 5.0 	 3500 	 0 	 700 	 1
@@ -123,24 +123,24 @@ mgc.compressor = [
 100005 	 32 	 600013 	 1.0 	 5.0 	 3500 	 0 	 700 	 1
 ];
 
-%% producer 
+%% producer
 % producer_i junction fgmin fgmax fg status dispatchable
-mgc.producer = [ 
+mgc.producer = [
 1 	 1 	 0 	 201.38888888889 201.38888888889 	 1 0
 2 	 2 	 0 	 201.38888888889 201.38888888889	 1 0
 0 	 0 	 0 	 201.38888888889 201.38888888889	 1 0
-]; 
+];
 
-%% consumer 
+%% consumer
 % consumer_i junction fd status dispatchable
 mgc.consumer = [
-24 	 24 	 20.833333333333 	 1 0	
-4 	 4 	 	 20.833333333333 	 1 0	
-29 	 29 	 20.833333333333 	 1 0	
-12 	 12 	 20.833333333333 	 1 0	
-20 	 20 	 20.833333333333 	 1 0	
-6 	 6 	 	 20.833333333333 	 1 0	
-25 	 25 	 20.833333333333 	 1 0	
+24 	 24 	 20.833333333333 	 1 0
+4 	 4 	 	 20.833333333333 	 1 0
+29 	 29 	 20.833333333333 	 1 0
+12 	 12 	 20.833333333333 	 1 0
+20 	 20 	 20.833333333333 	 1 0
+6 	 6 	 	 20.833333333333 	 1 0
+25 	 25 	 20.833333333333 	 1 0
 23 	 23 	 20.833333333333 	 1 0
 22 	 22 	 20.833333333333 	 1 0
 11 	 11 	 20.833333333333 	 1 0
@@ -163,6 +163,6 @@ mgc.consumer = [
 18 	 18 	 20.833333333333 	 1 0
 30 	 30 	 20.833333333333 	 1 0
 3 	 3 	 	 20.833333333333 	 1 0
-]; 
-	
-end 
+];
+
+end

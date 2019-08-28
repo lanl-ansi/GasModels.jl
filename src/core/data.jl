@@ -64,7 +64,6 @@ function add_default_consumer_priority(data::Dict{String,Any})
     end
 end
 
-
 "Ensures that construction cost exists as a field for new connections"
 function add_default_construction_cost(data::Dict{String,Any})
     nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
@@ -198,11 +197,14 @@ end
 function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
     rescale_q      = x -> x/q_base
     rescale_p      = x -> x/p_base
+    rescale_psqr   = x -> x/p_base^2
 
     if haskey(data, "junction")
         for (i, junction) in data["junction"]
             apply_func(junction, "pmax", rescale_p)
             apply_func(junction, "pmin", rescale_p)
+            apply_func(junction, "p", rescale_p)
+            apply_func(junction, "psqr", rescale_psqr)
         end
     end
 
@@ -211,7 +213,7 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
             apply_func(consumer, "qlmin", rescale_q)
             apply_func(consumer, "qlmax", rescale_q)
             apply_func(consumer, "ql", rescale_q)
-
+            apply_func(consumer, "fl", rescale_q)
         end
     end
 
@@ -220,7 +222,43 @@ function _make_per_unit(data::Dict{String,Any}, p_base::Real, q_base::Real)
             apply_func(producer, "qgmin", rescale_q)
             apply_func(producer, "qgmax", rescale_q)
             apply_func(producer, "qg", rescale_q)
+            apply_func(producer, "fg", rescale_q)
+        end
+    end
 
+    if haskey(data, "pipe")
+        for (i, pipe) in data["pipe"]
+            apply_func(pipe, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "compressor")
+        for (i, compressor) in data["compressor"]
+            apply_func(compressor, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "resistor")
+        for (i, resistor) in data["resistor"]
+            apply_func(resistor, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "short_pipe")
+        for (i, pipe) in data["short_pipe"]
+            apply_func(pipe, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "valve")
+        for (i, valve) in data["valve"]
+            apply_func(valve, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "control_valve")
+        for (i, valve) in data["control_valve"]
+            apply_func(valve, "f", rescale_q)
         end
     end
 
@@ -248,11 +286,14 @@ end
 function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
     rescale_q      = x -> x*q_base
     rescale_p      = x -> x*p_base
+    rescale_psqr   = x -> x*p_base^2
 
     if haskey(data, "junction")
         for (i, junction) in data["junction"]
             apply_func(junction, "pmax", rescale_p)
             apply_func(junction, "pmin", rescale_p)
+            apply_func(junction, "p", rescale_p)
+            apply_func(junction, "psqr", rescale_psqr)
         end
     end
 
@@ -261,7 +302,7 @@ function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
             apply_func(consumer, "qlmin", rescale_q)
             apply_func(consumer, "qlmax", rescale_q)
             apply_func(consumer, "ql", rescale_q)
-
+            apply_func(consumer, "fl", rescale_q)
         end
     end
 
@@ -270,14 +311,52 @@ function _make_si_units(data::Dict{String,Any}, p_base::Real, q_base::Real)
             apply_func(producer, "qgmin", rescale_q)
             apply_func(producer, "qgmax", rescale_q)
             apply_func(producer, "qg", rescale_q)
+            apply_func(producer, "fg", rescale_q)
+        end
+    end
 
+    if haskey(data, "pipe")
+        for (i, pipe) in data["pipe"]
+            apply_func(pipe, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "compressor")
+        for (i, compressor) in data["compressor"]
+            apply_func(compressor, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "resistor")
+        for (i, resistor) in data["resistor"]
+            apply_func(resistor, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "short_pipe")
+        for (i, pipe) in data["short_pipe"]
+            apply_func(pipe, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "valve")
+        for (i, valve) in data["valve"]
+            apply_func(valve, "f", rescale_q)
+        end
+    end
+
+    if haskey(data, "control_valve")
+        for (i, valve) in data["control_valve"]
+            apply_func(valve, "f", rescale_q)
         end
     end
 end
 
 ""
 function apply_func(data::Dict{String,Any}, key::String, func)
-    data[key] = func(data[key])
+    if haskey(data, key)
+        data[key] = func(data[key])
+    end
 end
 
 "calculates minimum mass flow consumption"
