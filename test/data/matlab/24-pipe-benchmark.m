@@ -3,10 +3,10 @@
 %   Please see CASEFORMAT for details on the case file format.
 %
 %   Based on data from ...
-%     Zlotnik, Anatoly, et al. "Coordinated scheduling for interdependent electric power and natural gas infrastructures." 
+%     Zlotnik, Anatoly, et al. "Coordinated scheduling for interdependent electric power and natural gas infrastructures."
 %	  IEEE Transactions on Power Systems 32.1 (2017): 600-610.
 %
-	
+
 function mgc = 24_pipe
 
 mgc.sound_speed = 377.968; % meters per second
@@ -19,10 +19,11 @@ mgc.specific_heat_capacity_ratio = 1.4;
 mgc.standard_density = 1.0;
 mgc.baseP = 3447380;
 mgc.baseF = 100;
+mgc.per_unit = 0;
 
 %% junction data
 %  junction_i type pmin pmax status p
-mgc.junction = [ 
+mgc.junction = [
 1	1	3447380	5515808	1	3447380
 2	0	3447380	5515808	1	3447380
 3	0	3447380	5515808	1	3447380
@@ -54,8 +55,8 @@ mgc.junction = [
 29	0	3447380	5515808	1	3447380
 30	0	3447380	5515808	1	3447380
 ];
-	
-%% pipeline data 
+
+%% pipeline data
 % pipeline_i f_junction t_junction diameter length friction_factor status
 mgc.pipe = [
 1	26	2	0.9144	100000	0.01	1
@@ -84,7 +85,7 @@ mgc.pipe = [
 24	22	25	0.635	8000	0.01	1
 ];
 
-%% compressor data 
+%% compressor data
 % compressor_i f_junction t_junction cmin cmax power_max fmin fmax status
 mgc.compressor = [
 1   1	26	1	1.4	3500	0	700 1
@@ -94,13 +95,13 @@ mgc.compressor = [
 5   20	30	1	1.4	1000	0	600 1
 ];
 
-%% producer 
+%% producer
 % producer_i junction fgmin fgmax fg status dispatchable
-mgc.producer = [ 
+mgc.producer = [
 1   1   0   1000    680.6534 1 0
-]; 
+];
 
-%% consumer 
+%% consumer
 % consumer_i junction fd status dispatchable
 mgc.consumer = [
 1	6	74.5264	1 0
@@ -118,6 +119,6 @@ mgc.consumer = [
 13	24	27.4019	1 0
 14	24	9.9643	1 0
 15	25	12.4554	1 0
-]; 
-	
-end 
+];
+
+end

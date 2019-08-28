@@ -72,6 +72,9 @@ function add_default_construction_cost(data::Dict{String,Any})
         for entry in [data["ne_pipe"];data["ne_compressor"]]
            for (idx, connection) in entry
                if !haskey(connection,"construction_cost")
+                   println(idx)
+                   println(connection)
+                   println()
                    connection["construction_cost"] = 0
                end
            end

@@ -1,7 +1,7 @@
 @testset "test misocp ne" begin
     @testset "A1 MISCOP case" begin
         obj_normalization = 1000000.0
-        result = run_ne("../test/data/A1.json", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
+        result = run_ne("../test/data/A1.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"]*obj_normalization, 144.4; atol = 1e-1)
     end
