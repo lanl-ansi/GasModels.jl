@@ -19,10 +19,10 @@ end
 @testset "test misocp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 misocp gf")
-        result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
-        data = GasModels.parse_file("../test/data/gaslib-40.json")
+        data = GasModels.parse_file("../test/data/gaslib-40.m")
         gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
         check_pressure_status(result["solution"], gm)
         check_ratio(result["solution"], gm)
@@ -45,7 +45,7 @@ end
 @testset "test mip gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 mip gf")
-        result = run_gf("../test/data/gaslib-40.json", MIPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib-40.m", MIPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
@@ -61,7 +61,7 @@ end
 @testset "test lp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 lp gf")
-        result = run_gf("../test/data/gaslib-40.json", LPGasModel, cvx_solver)
+        result = run_gf("../test/data/gaslib-40.m", LPGasModel, cvx_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
@@ -77,7 +77,7 @@ end
 @testset "test nlp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 nlp gf")
-        result = run_gf("../test/data/gaslib-40.json", NLPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib-40.m", NLPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end

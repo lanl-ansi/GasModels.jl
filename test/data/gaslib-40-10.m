@@ -1,4 +1,4 @@
-function mgc = gaslib-40-5
+function mgc = gaslib-40-10
 
 mgc.sound_speed = 312.805;
 mgc.temperature = 273.15;
@@ -9,7 +9,7 @@ mgc.gas_specific_gravity = 0.6;
 mgc.specific_heat_capacity_ratio = 1.4;
 mgc.standard_density = 1;
 mgc.baseP = 8101325;
-mgc.baseF = 634.375;
+mgc.baseF = 664.58333333333;
 mgc.per_unit= 1;
 
 %% junction data
