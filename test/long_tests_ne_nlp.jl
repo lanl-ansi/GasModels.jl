@@ -90,7 +90,7 @@
 #            obj_normalization = 1000000.0
 
 
-  #          result = run_ne("../test/data/gaslib-135-5.json", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+  #          result = run_ne("../test/data/gaslib-135-5.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
    #         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
     #        @test isapprox(result["objective"]*obj_normalization, 0.0; atol = 1e-2)
     #    end
@@ -98,7 +98,7 @@
 #            println("gaslib 135 - NLP 25%")
 #            obj_normalization = 1000000.0
 
-#            result = run_ne("../test/data/gaslib-135-25.json", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+#            result = run_ne("../test/data/gaslib-135-25.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
 #            @test result["status"] == :LocalOptimal || result["status"] == :Optimal
 #            @test isapprox(result["objective"]*obj_normalization, 6040000; atol = 1.0)
 #        end
@@ -106,20 +106,20 @@
 #    @testset "gaslib 135 125% case" begin
 #        println("gaslib 135 - NLP 125%")
 #        obj_normalization = 1000000.0
-#        result = run_ne("../test/data/gaslib-135-125.json", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+#        result = run_ne("../test/data/gaslib-135-125.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
 #        @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
 #    end
 
 #    @testset "gaslib 135 150% case" begin
 #        println("gaslib 135 - NLP 150%")
 #        obj_normalization = 1000000.0
-#        result = run_ne("../test/data/gaslib-135-150.json", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+#        result = run_ne("../test/data/gaslib-135-150.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
 #        @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
 #    end
 
 #    @testset "gaslib 135 200% case" begin
 #        println("gaslib 135 - NLP 200%")
-#        result = run_ne("../test/data/gaslib-135-200.json", NLPGasModel, minlp_solver)
+#        result = run_ne("../test/data/gaslib-135-200.m", NLPGasModel, minlp_solver)
 #        @test result["status"] == :Infeasible || result["status"] == :LocalInfeasible
 #    end
 end

@@ -30,10 +30,10 @@ end
     # @testset "gaslib 135 case" begin
         ## THIS TEST IS TIMING OUT ON LINUX in Travis
 #        println("Testing gaslib 135 misocp gf")
-#        result = run_gf("../test/data/gaslib-135.json", MISOCPGasModel, cvx_minlp_solver)
+#        result = run_gf("../test/data/gaslib-135.m", MISOCPGasModel, cvx_minlp_solver)
 #        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
 #        @test isapprox(result["objective"], 0; atol = 1e-6)
-#        data = GasModels.parse_file("../test/data/gaslib-135.json")
+#        data = GasModels.parse_file("../test/data/gaslib-135.m")
 #        gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
 #        check_pressure_status(result["solution"], gm)
 #        check_ratio(result["solution"], gm)
@@ -51,7 +51,7 @@ end
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 mip gf")
-        result = run_gf("../test/data/gaslib-135.json", MIPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib-135.m", MIPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
@@ -67,7 +67,7 @@ end
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 lp gf")
-        result = run_gf("../test/data/gaslib-135.json", LPGasModel, cvx_solver)
+        result = run_gf("../test/data/gaslib-135.m", LPGasModel, cvx_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
@@ -83,7 +83,7 @@ end
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 nlp gf")
-        result = run_gf("../test/data/gaslib-135.json", NLPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib-135.m", NLPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
