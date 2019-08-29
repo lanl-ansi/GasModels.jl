@@ -12,7 +12,7 @@
     end
 
 @testset "status = false" begin
-    gm = build_generic_model("../test/data/status.json",  MISOCPGasModel, GasModels.post_ls)
+    gm = build_generic_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
     @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
 
     try
