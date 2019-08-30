@@ -98,5 +98,5 @@ solve_generic_model(gm, juniper_solver)
 The default behavior of GasModels produces solution results in non-dimensionalized units. To recover solutions in SI units, the following function can be used
 
 ```julia
-GasModels.make_si_units(result["solution"])
+GasModels.make_si_unit!(result["solution"])
 ```

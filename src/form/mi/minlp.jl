@@ -31,12 +31,12 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Weymouth equation with one way direction"
-function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMINLPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, direction) where T <: AbstractMINLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
 
-    if yp == 1
+    if direction == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
         add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2))
     else
@@ -65,13 +65,13 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 "Weymouth equation for directed expansion pipes"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractMINLPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <: AbstractMINLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
 
-    if yp == 1
+    if direction == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2 - (1-zp)*mf^2))
         add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp)*mf^2))
     else

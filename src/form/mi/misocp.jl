@@ -15,16 +15,16 @@ const MISOCPGasModel = GenericGasModel{StandardMISOCPForm} # the standard MISCOP
 MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm)
 
 ""
-function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForm
-    max_flow = gm.ref[:nw][n][:max_mass_flow]
+function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    max_flow = ref(gm,n,:max_mass_flow)
     resistance = Dict{Int, Float64}()
 
-    for (i,pipe) in gm.ref[:nw][n][:pipe]
-        resistance[i] = pipe_resistance(gm.data, pipe)
+    for (i,pipe) in ref(gm,n,:pipe)
+        resistance[i] = ref(gm, n, :w)[i]#pipe_resistance(gm.data, pipe)
     end
 
-    for (i,pipe) in gm.ref[:nw][n][:resistor]
-        resistance[i] = resistor_resistance(gm.data, pipe)
+    for (i,pipe) in ref(gm,n,:resistor)
+        resistance[i] = ref(gm, n, :w)[i] #resistor_resistance(gm.data, pipe)
     end
 
     if bounded
@@ -37,12 +37,12 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
 end
 
 ""
-function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true, pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMISOCPForm
-    max_flow = gm.ref[:nw][n][:max_mass_flow]
+function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    max_flow = ref(gm,n,:max_mass_flow)
     resistance = Dict{Int, Float64}()
-    for i in  keys(gm.ref[:nw][n][:ne_pipe])
-        pipe =  gm.ref[:nw][n][:ne_pipe][i]
-        resistance[i] = pipe_resistance(gm.data, pipe)
+
+    for (i,pipe) in  ref(gm,n,:ne_pipe)
+        resistance[i] = ref(gm,n,:w_ne)[i]#pipe_resistance(gm.data, pipe)
     end
 
     if bounded
@@ -72,13 +72,13 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Weymouth equation with a pipe with one way flow"
-function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMISOCPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, direction) where T <: AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l,k)
     f  = var(gm,n,:f,k)
 
-    add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l == (yp-yn) * (pi - pj)))
+    add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l == direction * (pi - pj)))
     add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))
 end
 
@@ -101,13 +101,13 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 "Weymouth equation for expansion pipes with undirected expansion pipes"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <:  AbstractMISOCPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <:  AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     l  = var(gm,n,:l_ne,k)
     f  = var(gm,n,:f_ne,k)
 
-    add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, l == (yp-yn) * (pi - pj)))
+    add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, l == direction * (pi - pj)))
     add_constraint(gm, n, :weymouth_ne5, k, @constraint(gm.model, zp*w*l >= f^2))
 end

@@ -33,12 +33,12 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Constraint: Weymouth equation with one way direction--not applicable for LP models"
-function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractLPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, direction) where T <: AbstractLPForm
     #TODO we could think about putting a polyhendra around the weymouth
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractLPForm
+function constraint_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, direction) where T <: AbstractLPForm
 end
 
 " Constraint: Constraint on pressure drop across a short pipe--not applicable for LP models"
@@ -50,7 +50,7 @@ function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, m
 end
 
 " Constraint: Compressor ratio when the flow direction is constrained--not applicable for LP models"
-function constraint_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, yp, yn) where T <: AbstractLPForm
+function constraint_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, direction) where T <: AbstractLPForm
 end
 
 " Constraint: Constraints on pressure drop across valves where the valve can open or close--not applicable for LP models"
@@ -74,7 +74,7 @@ function constraint_pressure_drop_ne_directed(gm::GenericGasModel{T}, n::Int, k,
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for LP models"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractLPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <: AbstractLPForm
 end
 
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for LP models"
@@ -82,5 +82,5 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for LP models"
-function constraint_compressor_ratios_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn) where T <: AbstractLPForm
+function constraint_compressor_ratios_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction) where T <: AbstractLPForm
 end

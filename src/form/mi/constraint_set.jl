@@ -25,7 +25,8 @@ function constraint_set_junction_mass_flow(gm::GenericGasModel{T}, n::Int, i) wh
         constraint_sink_flow(gm, n, i)
     end
 
-    if fg == 0.0 && fl == 0.0 && junction["degree"] == 2
+#    if fg == 0.0 && fl == 0.0 && junction["degree"] == 2
+    if fg == 0.0 && fl == 0.0 && ref(gm,n,:degree)[i] == 2
         constraint_conserve_flow(gm, n, i)
     end
 end
@@ -59,7 +60,8 @@ function constraint_set_junction_mass_flow_ls(gm::GenericGasModel{T}, n::Int, i)
         constraint_sink_flow(gm, n, i)
     end
 
-    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree"] == 2
+#    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree"] == 2
+    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && ref(gm,n,:degree)[i] == 2
         constraint_conserve_flow(gm, n, i)
     end
 end
@@ -83,7 +85,9 @@ function constraint_set_junction_mass_flow_ne(gm::GenericGasModel{T}, n::Int, i)
     if fg == 0.0 && fl > 0.0
         constraint_sink_flow_ne(gm, n, i)
     end
-    if fg == 0.0 && fl == 0.0 && junction["degree_all"] == 2
+
+#    if fg == 0.0 && fl == 0.0 && junction["degree_all"] == 2
+    if fg == 0.0 && fl == 0.0 && ref(gm,n,:degree_ne)[i] == 2
         constraint_conserve_flow_ne(gm, n, i)
     end
 end
@@ -115,7 +119,8 @@ function constraint_set_junction_mass_flow_ne_ls(gm::GenericGasModel{T}, n::Int,
     if fgmax == 0.0 && fgmin == 0.0 && fg == 0.0 && max(flmin,fl) > 0.0 && flmin >= 0.0
         constraint_sink_flow_ne(gm, i)
     end
-    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree_all"] == 2
+#    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && junction["degree_all"] == 2
+    if fgmax == 0 && fgmin == 0 && fg == 0 && flmax == 0 && flmin == 0 && fl == 0 && ref(gm,n,:degree_ne)[i] == 2
         constraint_conserve_flow_ne(gm, i)
     end
 end
