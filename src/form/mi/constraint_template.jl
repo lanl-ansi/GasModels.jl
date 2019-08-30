@@ -8,21 +8,24 @@ function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k) wher
     pipe           = ref(gm, n, :connection, k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    pd_min         = pipe["pd_min"]
-    pd_max         = pipe["pd_max"]
+#    pd_min         = pipe["pd_min"]
+#    pd_max         = pipe["pd_max"]
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pd_min         = ref(gm,n,:pd_min)[k]
     constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max)
 end
 constraint_on_off_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop(gm, gm.cnw, k)
 
 " Template: Constraint on flow across a pipe with on/off direction variables"
-function constraint_on_off_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMIForms
+function constraint_on_off_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
     pipe           = ref(gm,n,:connection,k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
-    w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pd_min         = ref(gm,n,:pd_min)[k]
+#    w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = ref(gm,n,:w)[k]
     constraint_on_off_pipe_mass_flow(gm, n, k, i, j, mf, pd_min, pd_max, w)
 end
 constraint_on_off_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_mass_flow(gm, gm.cnw, k)
@@ -34,27 +37,24 @@ constraint_on_off_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_of
 "Template: Constraints on pressure drop across pipes with on/off direction variables"
 function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
     pipe = ref(gm, n, :ne_connection, k)
-
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-    pd_min         = pipe["pd_min"]
-    pd_max         = pipe["pd_max"]
-
+    pd_max         = ref(gm,n,:pd_max_ne)[k]
+    pd_min         = ref(gm,n,:pd_min_ne)[k]
     constraint_on_off_pressure_drop_ne(gm, n, k, i, j, pd_min, pd_max)
 end
 constraint_on_off_pressure_drop_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_ne(gm, gm.cnw, k)
 
 "Template: Constraints on flow across an expansion pipe with on/off direction variables "
-function constraint_on_off_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, k; pipe_resistance=calc_pipe_resistance_thorley, resistor_resistance=calc_resistor_resistance_simple) where T <: AbstractMIForms
+function constraint_on_off_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
     pipe = ref(gm,n,:ne_connection, k)
-
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
-    w              = haskey(ref(gm,n,:ne_pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
-
+    pd_max         = ref(gm,n,:pd_max_ne)[k]
+    pd_min         = ref(gm,n,:pd_min_ne)[k]
+#    w              = haskey(ref(gm,n,:ne_pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
+    w              = ref(gm,n,:w_ne)[k]
     constraint_on_off_pipe_flow_ne(gm, n, k, i, j, mf, pd_min, pd_max, w)
 end
 constraint_on_off_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_ne(gm, gm.cnw, k)

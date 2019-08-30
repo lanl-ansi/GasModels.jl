@@ -12,7 +12,7 @@
     end
 
 @testset "status = false" begin
-    gm = build_generic_model("../test/data/status.json",  MISOCPGasModel, GasModels.post_ls)
+    gm = build_generic_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
     @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
 
     try
@@ -44,16 +44,16 @@ end
 
 
 @testset "data summary" begin
-    gas_file = "../test/data/gaslib-40.json"
+    gas_file = "../test/data/gaslib-40.m"
     gas_data = GasModels.parse_file(gas_file)
-    GasModels.make_si_units(gas_data)
+    GasModels.make_si_unit!(gas_data)
 
     output = sprint(GasModels.summary, gas_data)
 
     line_count = count(c -> c == '\n', output)
 
-    @test line_count >= 175 && line_count <= 200
-    @test occursin("name: gaslib 40", output)
+    @test line_count >= 180 && line_count <= 220
+    @test occursin("name: gaslib-40", output)
     @test occursin("pipe: 39", output)
     @test occursin("consumer: 29", output)
     @test occursin("junction: 46", output)
@@ -63,9 +63,9 @@ end
 end
 
 @testset "solution summary" begin
-    gas_file = "../test/data/gaslib-40.json"
+    gas_file = "../test/data/gaslib-40.m"
     gas_data = GasModels.parse_file(gas_file)
-    result = run_gf("../test/data/gaslib-40.json", MISOCPGasModel, cvx_minlp_solver)
+    result = run_gf("../test/data/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
 
     output = sprint(GasModels.summary, result["solution"])
 
@@ -99,23 +99,27 @@ end
 
 @testset "resistance calculation" begin
     @testset "smeers" begin
-        gas_file = "../test/data/gaslib-40.json"
+        gas_file = "../test/data/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
+        gas_ref  = GasModels.build_ref(gas_data)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_data, gas_data["pipe"]["32"]), 5.9719269834653; atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_smeers(gas_ref[:nw][0], gas_data["pipe"]["32"]), 5.9719269834653; atol=1e-4)
     end
 
     @testset "thorley" begin
-        gas_file = "../test/data/A1.json"
+        gas_file = "../test/data/A1.m"
         gas_data = GasModels.parse_file(gas_file)
+        gas_ref  = GasModels.build_ref(gas_data)
 
-        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_data, gas_data["ne_pipe"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+        @test  isapprox(GasModels.calc_pipe_resistance_thorley(gas_ref[:nw][0], gas_data["ne_pipe"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
 
     @testset "resistor" begin
         gas_file = "../test/data/gaslib-582.json"
         gas_data = GasModels.parse_file(gas_file)
-        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_data, gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+        gas_ref  = GasModels.build_ref(gas_data)
+
+        @test  isapprox(GasModels.calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
     end
 
 

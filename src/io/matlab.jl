@@ -18,8 +18,8 @@ mlab_data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
     "mgc.compressibility_factor", "mgc.gas_molar_mass",
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
     "mgc.standard_density", "mgc.baseP", "mgc.baseF", "mgc.junction",
-    "mgc.pipe", "mgc.compressor", "mgc.producer", "mgc.consumer",
-    "mgc.junction_name"
+    "mgc.pipe", "mgc.ne_pipe", "mgc.compressor", "mgc.ne_compressor",
+    "mgc.producer", "mgc.consumer","mgc.junction_name", "mgc.per_unit"
 ]
 
 mlab_junction_columns = [
@@ -44,6 +44,17 @@ mlab_pipe_columns = [
     ("status", Int)
 ]
 
+mlab_ne_pipe_columns = [
+    ("pipline_i", Int),
+    ("f_junction", Int),
+    ("t_junction", Int),
+    ("diameter", Float64),
+    ("length", Float64),
+    ("friction_factor", Float64),
+    ("status", Int),
+    ("construction_cost", Float64)
+]
+
 mlab_compressor_columns = [
     ("compressor_i", Int),
     ("f_junction", Int),
@@ -53,6 +64,18 @@ mlab_compressor_columns = [
     ("fmin", Float64),
     ("fmax", Float64),
     ("status", Int)
+]
+
+mlab_ne_compressor_columns = [
+    ("compressor_i", Int),
+    ("f_junction", Int),
+    ("t_junction", Int),
+    ("c_ratio_min", Float64), ("c_ratio_max", Float64),
+    ("power_max", Float64),
+    ("fmin", Float64),
+    ("fmax", Float64),
+    ("status", Int),
+    ("construction_cost", Float64)
 ]
 
 mlab_producer_columns = [
@@ -140,6 +163,13 @@ function parse_m_string(data_string::String)
             The file seems to be missing \"mgc.baseF = ...\" "))
     end
 
+    if haskey(matlab_data, "mgc.per_unit")
+        case["per_unit"] = matlab_data["mgc.per_unit"] == 1 ? true : false
+    else
+        error(LOGGER, string("no per_unit found in .m file.
+            The file seems to be missing \"mgc.per_unit = ...\" "))
+    end
+
     if haskey(matlab_data, "mgc.junction")
         junctions = []
         for junction_row in matlab_data["mgc.junction"]
@@ -166,6 +196,16 @@ function parse_m_string(data_string::String)
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
+    if haskey(matlab_data, "mgc.ne_pipe")
+        ne_pipes = []
+        for pipe_row in matlab_data["mgc.ne_pipe"]
+            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, mlab_ne_pipe_columns)
+            pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
+            push!(ne_pipes, pipe_data)
+        end
+        case["ne_pipe"] = ne_pipes
+    end
+
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
@@ -177,6 +217,16 @@ function parse_m_string(data_string::String)
     else
         error(LOGGER, string("no compressor table found in .m file.
             The file seems to be missing \"mgc.compressor = [...];\""))
+    end
+
+    if haskey(matlab_data, "mgc.ne_compressor")
+        ne_compressors = []
+        for compressor_row in matlab_data["mgc.ne_compressor"]
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_ne_compressor_columns)
+            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
+            push!(ne_compressors, compressor_data)
+        end
+        case["ne_compressor"] = ne_compressors
     end
 
     if haskey(matlab_data, "mgc.producer")
@@ -198,7 +248,6 @@ function parse_m_string(data_string::String)
         end
         case["consumer"] = consumers
     end
-
 
     if haskey(matlab_data, "mgc.junction_name")
         junction_names = []
@@ -263,7 +312,8 @@ function matlab_to_gasmodels(mlab_data::Dict{String,Any})
     mlab2gm_baseQ(gm_data)
     mlab2gm_producer(gm_data)
     mlab2gm_consumer(gm_data)
-    mlab2gm_connection(gm_data)
+    mlab2gm_conmpressor(gm_data)
+    mlab2gm_ne_compressor(gm_data)
 
     # merge data tables
     merge_junction_name_data(gm_data)
@@ -309,14 +359,27 @@ function mlab2gm_consumer(data::Dict{String,Any})
     end
 end
 
-"merges pipes and compressor to connections"
-function mlab2gm_connection(data::Dict{String,Any})
+"converts compressor q values to f"
+function mlab2gm_conmpressor(data::Dict{String,Any})
     compressors = [compressor for compressor in data["compressor"]]
     for compressor in compressors
         compressor["qmin"] = compressor["fmin"] * data["standard_density"]
         compressor["qmax"] = compressor["fmax"] * data["standard_density"]
         delete!(compressor, "fmin")
         delete!(compressor, "fmax")
+    end
+end
+
+"converts ne_compressor q values to f"
+function mlab2gm_ne_compressor(data::Dict{String,Any})
+    if (haskey(data, "ne_compressor"))
+        compressors = [compressor for compressor in data["ne_compressor"]]
+        for compressor in compressors
+            compressor["qmin"] = compressor["fmin"] * data["standard_density"]
+            compressor["qmax"] = compressor["fmax"] * data["standard_density"]
+            delete!(compressor, "fmin")
+            delete!(compressor, "fmax")
+        end
     end
 end
 

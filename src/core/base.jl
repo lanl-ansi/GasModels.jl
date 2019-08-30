@@ -84,7 +84,6 @@ ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
 ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
 ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
 
-
 var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
 var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
 var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
@@ -199,22 +198,11 @@ Some of the common keys include:
 * `:junction_ne_connections` -- the set of all new connections of junction i,
 * `:junction_consumers` -- the mapping `Dict(i => [consumer["ql_junc"] for (i,consumer) in ref[:consumer]])`.
 * `:junction_producers` -- the mapping `Dict(i => [producer["qg_junc"] for (i,producer) in ref[:producer]])`.
-* `junction[degree]` -- the degree of junction i using existing connections (see `add_degree`)),
-* `junction[all_degree]` -- the degree of junction i using existing and new connections (see `add_degree`)),
-* `connection[pd_min,pd_max]` -- the max and min square pressure difference (see `add_pd_bounds_swr`)),
-
-If `:ne_connection` does not exist, then an empty reference is added
-If `status` does not exist in the data, then 1 is added
-If `construction cost` does not exist in the `:ne_connection`, then 0 is added
+* `:degree` -- the degree of junction i using existing connections (see `degree_ref!`)),
+* `degree_ne` -- the degree of junction i using existing and new connections (see `degree_ne_ref!`)),
+* `:pd_min,:pd_max` -- the max and min square pressure difference (see `calc_pd_bounds_sqr`)),
 """
 function build_ref(data::Dict{String,Any})
-    # Do some robustness on the data to add missing fields
-    add_default_data(data)
-    add_default_status(data)
-    add_default_consumer_priority(data)
-    add_default_construction_cost(data)
-    add_default_direction(data)
-
     refs = Dict{Symbol,Any}()
     nws = refs[:nw] = Dict{Int,Any}()
 
@@ -234,17 +222,17 @@ function build_ref(data::Dict{String,Any})
         end
 
         # filter turned off stuff
-        ref[:junction] = Dict(x for x in ref[:junction] if x.second["status"] == 1)
-        ref[:consumer] = Dict(x for x in ref[:consumer] if x.second["status"] == 1 && x.second["ql_junc"] in keys(ref[:junction]))
-        ref[:producer] = Dict(x for x in ref[:producer] if x.second["status"] == 1 && x.second["qg_junc"] in keys(ref[:junction]))
-        ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:compressor] = haskey(ref, :compressor) ? Dict(x for x in ref[:compressor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:valve] = haskey(ref, :valve) ? Dict(x for x in ref[:valve] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:control_valve] = haskey(ref, :control_valve) ? Dict(x for x in ref[:control_valve] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:resistor] = haskey(ref, :resistor) ? Dict(x for x in ref[:resistor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
-        ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:junction]      =                               Dict(x for x in ref[:junction]      if  !haskey(x.second,"status") || x.second["status"] == 1)
+        ref[:consumer]      =                               Dict(x for x in ref[:consumer]      if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["ql_junc"]    in keys(ref[:junction]))
+        ref[:producer]      =                               Dict(x for x in ref[:producer]      if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["qg_junc"]    in keys(ref[:junction]))
+        ref[:pipe]          = haskey(ref, :pipe)          ? Dict(x for x in ref[:pipe]          if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:short_pipe]    = haskey(ref, :short_pipe)    ? Dict(x for x in ref[:short_pipe]    if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:compressor]    = haskey(ref, :compressor)    ? Dict(x for x in ref[:compressor]    if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:valve]         = haskey(ref, :valve)         ? Dict(x for x in ref[:valve]         if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:control_valve] = haskey(ref, :control_valve) ? Dict(x for x in ref[:control_valve] if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:resistor]      = haskey(ref, :resistor)      ? Dict(x for x in ref[:resistor]      if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:ne_pipe]       = haskey(ref, :ne_pipe)       ? Dict(x for x in ref[:ne_pipe]       if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
+        ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
         max_mass_flow = calc_max_mass_flow(data)
@@ -256,26 +244,26 @@ function build_ref(data::Dict{String,Any})
         check_connection_ids(ref::Dict)
 
         # create references to directed and undirected edges
-        ref[:directed_pipe] = Dict(x for x in ref[:pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_valve] = Dict(x for x in ref[:valve] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_pipe]          = Dict(x for x in ref[:pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_short_pipe]    = Dict(x for x in ref[:short_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_compressor]    = Dict(x for x in ref[:compressor] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_valve]         = Dict(x for x in ref[:valve] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_control_valve] = Dict(x for x in ref[:control_valve] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_resistor] = Dict(x for x in ref[:resistor] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_ne_pipe] = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_resistor]      = Dict(x for x in ref[:resistor] if haskey(x.second, "directed") && x.second["directed"] != 0)
+        ref[:directed_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_ne_compressor] = Dict(x for x in ref[:ne_compressor] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_connection] =  merge(ref[:directed_pipe],ref[:directed_short_pipe],ref[:directed_compressor],ref[:directed_valve],ref[:directed_control_valve],ref[:directed_resistor])
+        ref[:directed_connection]    =  merge(ref[:directed_pipe],ref[:directed_short_pipe],ref[:directed_compressor],ref[:directed_valve],ref[:directed_control_valve],ref[:directed_resistor])
         ref[:directed_ne_connection] =  merge(ref[:directed_ne_pipe],ref[:directed_ne_compressor])
 
-        ref[:undirected_pipe] = Dict(x for x in ref[:pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_short_pipe] = Dict(x for x in ref[:short_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_compressor] = Dict(x for x in ref[:compressor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_valve] = Dict(x for x in ref[:valve] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_pipe]          = Dict(x for x in ref[:pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_short_pipe]    = Dict(x for x in ref[:short_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_compressor]    = Dict(x for x in ref[:compressor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_valve]         = Dict(x for x in ref[:valve] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_control_valve] = Dict(x for x in ref[:control_valve] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_resistor] = Dict(x for x in ref[:resistor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_ne_pipe] = Dict(x for x in ref[:ne_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_resistor]      = Dict(x for x in ref[:resistor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
+        ref[:undirected_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_ne_compressor] = Dict(x for x in ref[:ne_compressor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_connection] =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
+        ref[:undirected_connection]    =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
         ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
 
         # collect all the parallel connections and connections of a junction
@@ -362,42 +350,43 @@ function build_ref(data::Dict{String,Any})
         ref[:junction_dispatchable_producers] = junction_dispatchable_producers
         ref[:junction_nondispatchable_producers] = junction_nondispatchable_producers
 
-        add_degree(ref)
-        add_pd_bounds_sqr(ref)
+        degree_ref!(ref)
+        degree_ne_ref!(ref)
+
+        ref[:pd_min]    = Dict()
+        ref[:pd_max]    = Dict()
+        ref[:pd_min_ne] = Dict()
+        ref[:pd_max_ne] = Dict()
+
+        for (idx,connection) in ref[:connection]
+            pd_min, pd_max = calc_pd_bounds_sqr(ref, connection)
+            ref[:pd_min][idx] = pd_min
+            ref[:pd_max][idx] = pd_max
+        end
+
+        for (idx,connection) in ref[:ne_connection]
+            pd_min, pd_max = calc_pd_bounds_sqr(ref, connection)
+            ref[:pd_min_ne][idx] = pd_min
+            ref[:pd_max_ne][idx] = pd_max
+        end
+
+        ref[:w]  = Dict()
+        ref[:w_ne]  = Dict()
+
+        for (idx,pipe) in ref[:pipe]
+            ref[:w][idx] = calc_pipe_resistance_thorley(ref, pipe)
+        end
+
+        for (idx,pipe) in ref[:ne_pipe]
+            ref[:w_ne][idx] = calc_pipe_resistance_thorley(ref, pipe)
+        end
+
+        for (idx,resistor) in ref[:resistor]
+            ref[:w][idx] = calc_resistor_resistance_simple(ref, resistor)
+        end
+
     end
     return refs
-end
-
-"Just make sure there is an empty set for new connections if it does not exist"
-function add_default_data(data :: Dict{String,Any})
-    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
-
-    for (n,data) in nws_data
-        if !haskey(data, "ne_pipe")
-            data["ne_pipe"] = []
-        end
-        if !haskey(data, "ne_compressor")
-            data["ne_compressor"] = []
-        end
-        if !haskey(data, "compressor")
-            data["compressor"] = []
-        end
-        if !haskey(data, "pipe")
-            data["pipe"] = []
-        end
-        if !haskey(data, "short_pipe")
-            data["short_pipe"] = []
-        end
-        if !haskey(data, "resistor")
-            data["resistor"] = []
-        end
-        if !haskey(data, "valve")
-            data["valve"] = []
-        end
-        if !haskey(data, "control_valve")
-            data["control_valve"] = []
-        end
-    end
 end
 
 "Utility function for checking if ids of connections are the same"
@@ -411,5 +400,35 @@ function check_connection_ids(ref::Dict)
     num_ne_connections = length(ref[:ne_pipe]) + length(ref[:ne_compressor])
     if num_connections != length(ref[:connection])
         Memento.error(LOGGER, "There are new connection elements with non-unique ids")
+    end
+end
+
+"Add reference information for the degree of junction"
+function degree_ref!(ref::Dict{Symbol,Any})
+    ref[:degree] = Dict()
+    for (i,junction) in ref[:junction]
+        ref[:degree][i] = 0
+    end
+
+    for (i,j) in keys(ref[:parallel_connections])
+        if length(ref[:parallel_connections]) > 0
+            ref[:degree][i] = ref[:degree][i] + 1
+            ref[:degree][j] = ref[:degree][j] + 1
+        end
+    end
+end
+
+"Add reference information for the degree of junction with expansion edges"
+function degree_ne_ref!(ref::Dict{Symbol,Any})
+    ref[:degree_ne] = Dict()
+    for (i,junction) in ref[:junction]
+        ref[:degree_ne][i] = 0
+    end
+
+    for (i,j) in keys(ref[:all_parallel_connections])
+        if length(ref[:all_parallel_connections]) > 0
+            ref[:degree_ne][i] = ref[:degree_ne][i] + 1
+            ref[:degree_ne][j] = ref[:degree_ne][j] + 1
+        end
     end
 end

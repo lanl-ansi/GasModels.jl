@@ -10,6 +10,7 @@ mgc.specific_heat_capacity_ratio = 1.4;
 mgc.standard_density = 1.0;
 mgc.baseP = 8101325;
 mgc.baseF = 604.167;
+mgc.per_unit = 0;
 
 %% junction data
 %  junction_i type pmin pmax status p

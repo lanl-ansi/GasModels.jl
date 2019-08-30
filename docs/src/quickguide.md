@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Once Gas Models is installed, Juniper is installed, and a network data file (e.g. `"test/data/gaslib-40.json"`) has been acquired, a Gas Flow with the second order cone (SOC) relaxation can be executed with,
+Once Gas Models is installed, Juniper is installed, and a network data file (e.g. `"test/data/gaslib-40.m"`) has been acquired, a Gas Flow with the second order cone (SOC) relaxation can be executed with,
 
 ```julia
 using GasModels
@@ -12,7 +12,7 @@ using JuMP
 ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer)
 cbc_solver = JuMP.with_optimizer(Cbc.Optimizer)
 juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=ipopt_solver, mip_solver=cbc_solver)
-GasModels.run_soc_gf("test/data/gaslib-40.json", juniper_solver)
+GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 ```
 
 Similarly, a full non-convex Gas Flow can be executed with an MINLP solver like
@@ -23,7 +23,7 @@ using AmplNLWriter
 using JuMP
 
 couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "path/to/couenne")
-GasModels.run_minl_gf("test/data/gaslib-40.json", couenne_solver)
+GasModels.run_minl_gf("test/data/gaslib-40.m", couenne_solver)
 ```
 ## Getting Results
 
@@ -31,7 +31,7 @@ The run commands in GasModels return detailed results data in the form of a dict
 This dictionary can be saved for further processing as follows,
 
 ```julia
-result = GasModels.run_soc_gf("test/data/gaslib-40.json", juniper_solver)
+result = GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 ```
 
 For example, the algorithm's runtime, final objective value, and status can be accessed with,
@@ -54,24 +54,24 @@ For more information about GasModels result data see the [GasModels Result Data 
 
 ## Accessing Different Formulations
 
-The function "run_soc_gf" and "run_minl_gf" are shorthands for a more general formulation-independent gas flow execution, "run_gf".
-For example, `run_soc_gf` is equivalent to,
+The function ```run_soc_gf``` and ```run_minl_gf``` are shorthands for a more general formulation-independent gas flow execution, ```run_gf```.
+For example, ```run_soc_gf``` is equivalent to,
 
 ```julia
-run_gf("test/data/gaslib-40.json", MISOCPGasModel, juniper_solver)
+run_gf("test/data/gaslib-40.m", MISOCPGasModel, juniper_solver)
 ```
 
 where "MISOCPGasModel" indicates an SOC formulation of the gas flow equations.  This more generic `run_gf()` allows one to solve a gas flow feasability problem with any gas network formulation implemented in GasModels.  For example, the full non convex Gas Flow can be run with,
 
 ```julia
-run_gf("test/data/gaslib-40.json", MINLPGasModel, couenne_solver)
+run_gf("test/data/gaslib-40.m", MINLPGasModel, couenne_solver)
 ```
 
 ## Modifying Network Data
 The following example demonstrates one way to perform multiple GasModels solves while modify the network data in Julia,
 
 ```julia
-network_data = GasModels.parse_file("test/data/gaslib-40.json")
+network_data = GasModels.parse_file("test/data/gaslib-40.m")
 
 run_gf(network_data, MISOCPGasModel, juniper_solver)
 
@@ -86,7 +86,7 @@ For additional details about the network data, see the [GasModels Network Data F
 The following example demonstrates how to break a `run_gf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by GasModels for the gas flow problem,
 
 ```julia
-gm = build_generic_model("test/data/gaslib-40.json", MISOCPGasModel, GasModels.post_gf)
+gm = build_generic_model("test/data/gaslib-40.m", MISOCPGasModel, GasModels.post_gf)
 
 print(gm.model)
 
@@ -98,5 +98,5 @@ solve_generic_model(gm, juniper_solver)
 The default behavior of GasModels produces solution results in non-dimensionalized units. To recover solutions in SI units, the following function can be used
 
 ```julia
-GasModels.make_si_units(result["solution"])
+GasModels.make_si_unit!(result["solution"])
 ```
