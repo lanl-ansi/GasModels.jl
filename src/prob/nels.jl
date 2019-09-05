@@ -31,11 +31,19 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_set_junction_mass_flow_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne_ls(gm, i)
     end
 
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_set_pipe_flow(gm, i)
+    for i in ids(gm,:pipe)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
+    end
+
+    for i in ids(gm,:resistor)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
@@ -96,15 +104,31 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_set_junction_mass_flow_ne_ls_directed(gm, i)
+        constraint_mass_flow_balance_ne_ls(gm, i)
     end
 
-    for i in [collect(ids(gm,:undirected_pipe)); collect(ids(gm,:undirected_resistor))]
-        constraint_set_pipe_flow(gm, i)
+    for i in ids(gm,:undirected_pipe)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
     end
 
-    for i in [collect(ids(gm,:directed_pipe)); collect(ids(gm,:directed_resistor))]
-        constraint_set_pipe_flow_directed(gm, i)
+    for i in ids(gm,:undirected_resistor)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
+    end
+
+    for i in ids(gm,:directed_pipe)
+        constraint_pipe_pressure_directed(gm, i)
+        constraint_pipe_flow_directed(gm, i)
+        constraint_weymouth_directed(gm, i)
+    end
+
+    for i in ids(gm,:directed_resistor)
+        constraint_pipe_pressure_directed(gm, i)
+        constraint_pipe_flow_directed(gm, i)
+        constraint_weymouth_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_ne_pipe)

@@ -23,11 +23,19 @@ function post_ne(gm::GenericGasModel; kwargs...)
     objective_min_ne_cost(gm; normalization =  obj_normalization)
 
     for i in ids(gm, :junction)
-        constraint_set_junction_mass_flow_ne(gm, i)
+        constraint_mass_flow_balance_ne(gm, i)
     end
 
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_set_pipe_flow(gm, i)
+    for i in ids(gm,:pipe)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
+    end
+
+    for i in ids(gm,:resistor)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
@@ -69,8 +77,8 @@ function post_ne(gm::GenericGasModel; kwargs...)
         end
     end
 
-    zp = gm.var[:nw][gm.cnw][:zp]
-    zc = gm.var[:nw][gm.cnw][:zc]
+#    zp = gm.var[:nw][gm.cnw][:zp]
+#    zc = gm.var[:nw][gm.cnw][:zc]
 end
 
 # Special function for whether or not a connection is added

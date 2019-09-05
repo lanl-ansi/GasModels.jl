@@ -22,21 +22,33 @@ function constraint_pipe_mass_flow(gm::GenericGasModel, n::Int, k)
     mf             = ref(gm,n,:max_mass_flow)
     pd_max         = ref(gm,n,:pd_max)[k]
     pd_min         = ref(gm,n,:pd_min)[k]
-    #w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     w              = ref(gm,n,:w)[k]
     constraint_pipe_mass_flow(gm, n, k, i, j, mf, pd_min, pd_max, w)
 end
 constraint_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_pipe_mass_flow(gm, gm.cnw, k)
 
+"Template: Pressure drop across pipes with on/off direction variables"
+function constraint_pipe_pressure(gm::GenericGasModel, n::Int, k)
+    pipe           = ref(gm, n, :connection, k)
+    i              = pipe["f_junction"]
+    j              = pipe["t_junction"]
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pd_min         = ref(gm,n,:pd_min)[k]
+    constraint_pipe_pressure(gm, n, k, i, j, pd_min, pd_max)
+end
+constraint_pipe_pressure(gm::GenericGasModel, k::Int) = constraint_pipe_pressure(gm, gm.cnw, k)
+
 " Template: Constraint on pressure drop across a pipe where the flow is constrained to one direction as defined by data attribute directed"
-function constraint_pressure_drop_directed(gm::GenericGasModel, n::Int, k)
+function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k)
     pipe           = ref(gm, n, :connection, k)
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
     direction      = pipe["directed"]
-    constraint_pressure_drop_directed(gm, n, k, i, j, direction)
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pd_min         = ref(gm,n,:pd_min)[k]
+    constraint_pipe_pressure_directed(gm, n, k, i, j, direction, pd_min, pd_max)
 end
-constraint_pressure_drop_directed(gm::GenericGasModel, k::Int) = constraint_pressure_drop_directed(gm, gm.cnw, k)
+constraint_pipe_pressure_directed(gm::GenericGasModel, k::Int) = constraint_pipe_pressure_directed(gm, gm.cnw, k)
 
 " Template: Constraint on flow across a pipe where the flow is constrained to one direction as defined by data attribute directed"
 function constraint_pipe_flow_directed(gm::GenericGasModel, n::Int, k)
@@ -126,7 +138,6 @@ function constraint_weymouth_ne_directed(gm::GenericGasModel,  n::Int, k)
     i         = pipe["f_junction"]
     j         = pipe["t_junction"]
     mf        = gm.ref[:nw][n][:max_mass_flow]
-#    w         = haskey(gm.ref[:nw][n][:ne_pipe],k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
     w         = ref(gm,n,:w_ne)[k]
     direction = pipe["directed"]
     constraint_weymouth_ne_directed(gm, n, k, i, j, w, mf, direction)
@@ -137,8 +148,8 @@ constraint_weymouth_ne_directed(gm::GenericGasModel, k::Int) = constraint_weymou
 # Templates for constraints associated with junctions
 #################################################################################################
 
-" Template: Constraints for mass flow balance equation where demand and production are constants "
-function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
+" Template: Constraints for mass flow balance equation where demand and production are constants"
+function constraint_mass_flow_balance(gm::GenericGasModel, n::Int, i)
     junction   = ref(gm,n,:junction,i)
     consumer   = ref(gm,n,:consumer)
     producer   = ref(gm,n,:producer)
@@ -149,12 +160,12 @@ function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i)
 
     fg         = length(producers) > 0 ? sum(calc_fg(gm.data,producer[j]) for j in producers) : 0
     fl         = length(consumers) > 0 ? sum(calc_fl(gm.data,consumer[j]) for j in consumers) : 0
-    constraint_junction_mass_flow_balance(gm, n, i, f_branches, t_branches, fg, fl)
+    constraint_mass_flow_balance(gm, n, i, f_branches, t_branches, fg, fl)
 end
-constraint_junction_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance(gm, gm.cnw, i)
+constraint_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance(gm, gm.cnw, i)
 
 " Template: Constraints for mass flow balance equation where demand and production are constants and there are expansion connections "
-function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
+function constraint_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
     junction      = ref(gm,n,:junction,i)
     consumer      = ref(gm,n,:consumer)
     producer      = ref(gm,n,:producer)
@@ -168,33 +179,37 @@ function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i
     fg         = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
     fl         = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
 
-    constraint_junction_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
+    constraint_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
 end
-constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne(gm, gm.cnw, i)
+constraint_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ne(gm, gm.cnw, i)
 
 " Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i)
-    junction      = ref(gm,n,:junction,i)
-    f_branches    = ref(gm,n,:f_connections,i)
-    t_branches    = ref(gm,n,:t_connections,i)
-    consumer      = ref(gm,n,:consumer)
-    producer      = ref(gm,n,:producer)
-    consumers     = ref(gm,n,:junction_consumers,i)
-    producers     = ref(gm,n,:junction_producers,i)
+function constraint_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i)
+    junction                = ref(gm,n,:junction,i)
+    f_branches              = ref(gm,n,:f_connections,i)
+    t_branches              = ref(gm,n,:t_connections,i)
+    consumer                = ref(gm,n,:consumer)
+    producer                = ref(gm,n,:producer)
+    consumers               = ref(gm,n,:junction_consumers,i)
+    producers               = ref(gm,n,:junction_producers,i)
     dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
     nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
     dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
     nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    fg = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fg       = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in dispatch_consumers) : 0
+    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in dispatch_consumers) : 0
 
-    constraint_junction_mass_flow_balance_ls(gm, n, i, f_branches, t_branches, fl, fg, dispatch_consumers, dispatch_producers)
+    constraint_mass_flow_balance_ls(gm, n, i, f_branches, t_branches, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
 end
-constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ls(gm, gm.cnw, i)
+constraint_mass_flow_balance_ls(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ls(gm, gm.cnw, i)
 
 " Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables and there are expansion connections"
-function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)
+function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)
     junction      = ref(gm,n,:junction,i)
     consumer      = ref(gm,n,:consumer)
     producer      = ref(gm,n,:producer)
@@ -210,12 +225,16 @@ function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int
     dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
     nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    fg  = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl  = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in dispatch_producers)  : 0
+    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
+    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers)  : 0
+    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
 
-    constraint_junction_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl, fg, dispatch_consumers, dispatch_producers)
+    constraint_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
 end
-constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_junction_mass_flow_balance_ne_ls(gm, gm.cnw, i)
+constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
 #################################################################################################
 # Templates for constraints associated with short pipes

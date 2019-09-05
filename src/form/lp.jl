@@ -38,7 +38,7 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, direction) where T <: AbstractLPForm
+function constraint_pipe_pressure_directed(gm::GenericGasModel{T}, n::Int, k, i, j, direction) where T <: AbstractLPForm
 end
 
 " Constraint: Constraint on pressure drop across a short pipe--not applicable for LP models"
@@ -83,4 +83,8 @@ end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for LP models"
 function constraint_compressor_ratios_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction) where T <: AbstractLPForm
+end
+
+"Constraint: Constraints which define pressure drop across a pipe "
+function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractLPForm
 end

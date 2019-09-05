@@ -21,10 +21,10 @@ Constraint sets help simplify constraint generation by collecting together commo
 The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are variable or constant injections (variable injections are denoted by `ls` in the name of the function) and if there are network design options (denoted by `\_ne` in the name of the function).
 
 ```@docs
-constraint_junction_mass_flow_balance
-constraint_junction_mass_flow_balance_ls
-constraint_junction_mass_flow_balance_ne
-constraint_junction_mass_flow_balance_ne_ls
+constraint_mass_flow_balance
+constraint_mass_flow_balance_ls
+constraint_mass_flow_balance_ne
+constraint_mass_flow_balance_ne_ls
 ```
 
 ### Direction On/off Constraints
@@ -59,8 +59,7 @@ Secondarily, there are constraints associated with limits on pressure drop or ma
 
 ```@docs
 constraint_pipe_mass_flow
-constraint_pressure_drop_directed
-constraint_pipe_flow_directed
+constraint_pipe_pressure
 ```
 
 ### Network expansion constraints

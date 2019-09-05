@@ -15,20 +15,20 @@ end
 #################################################################################################
 
 " Constraint: standard mass flow balance equation where demand and production are constants "
-function constraint_junction_mass_flow_balance(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fg, fl)
+function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fg, fl) where T <: AbstractGasFormulation
     f = var(gm,n,:f)
     add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
 end
 
 " Constraint: standard flow balance equation where demand and production are constants and there are expansion connections"
-function constraint_junction_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
+function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl) where T <: AbstractGasFormulation
     f    = var(gm,n,:f)
     f_ne = var(gm,n,:f_ne)
     add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
 end
 
 " Constraint: standard flow balance equation where demand and production are variables "
-function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers)
+function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f  = var(gm,n,:f)
     fg = var(gm,n,:fg)
     fl = var(gm,n,:fl)
@@ -36,7 +36,7 @@ function constraint_junction_mass_flow_balance_ls(gm::GenericGasModel, n::Int, i
 end
 
 " Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_junction_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_constant, fg_constant, consumers, producers)
+function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f    = var(gm,n,:f)
     f_ne = var(gm,n,:f_ne)
     fg   = var(gm,n,:fg)
@@ -112,19 +112,29 @@ function constraint_pipe_ne(gm::GenericGasModel, n::Int, k, w, mf, pd_min, pd_ma
     add_constraint(gm, n, :pipe_ne2, k, @constraint(gm.model, f >= -zp*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
 end
 
+"Constraint: Constraints which define pressure drop across a pipe "
+function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractGasFormulation
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pd_min <= pi - pj))
+    add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pi - pj <= pd_max))
+end
+
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pressure_drop_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
+function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k, i, j, direction, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     if direction == 1
-        add_constraint(gm, n, :pressure_drop_directed, k, @constraint(gm.model, pi - pj >= 0))
+        add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj >= 0))
+        add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pi - pj <= pd_max))
     else
-        add_constraint(gm, n, :pressure_drop_directed, k, @constraint(gm.model, pi - pj <= 0))
+        add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj <= 0))
+        add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pd_min <= pi - pj))
     end
 end
 
 " Constraint: Constraint on mass flow across the pipe"
-function constraint_pipe_mass_flow(gm::GenericGasModel, n::Int, k, i, j, mf, pd_min, pd_max, w)
+function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractGasFormulation
     f  = var(gm,n,:f,k)
     add_constraint(gm, n, :pipe_flow1, k, @constraint(gm.model, -min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
     add_constraint(gm, n, :pipe_flow2, k, @constraint(gm.model, f <= min(mf, sqrt(w*max(pd_max, abs(pd_min))))))

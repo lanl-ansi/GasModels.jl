@@ -12,11 +12,13 @@ variable_valve_operation(gm)
 ### Constraints
 ```julia
 for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow(gm, i)
+    constraint_mass_flow_balance(gm, i)
 end
 
 for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))]
-    constraint_set_pipe_flow(gm, i)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
@@ -59,11 +61,13 @@ objective_max_load(gm)
 
 ```julia
 for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-    constraint_set_pipe_flow(gm, i)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow_ls(gm, i)
+    constraint_mass_flow_balance_ls(gm, i)
 end
 
 for i in ids(gm, :short_pipe)
@@ -105,15 +109,19 @@ objective_min_ne_cost(gm)
 ### Constraints
 ```julia
 for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow_ne(gm, i)
+    constraint_mass_flow_balance_ne(gm, i)
 end
 
 for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-    constraint_set_pipe_flow(gm, i)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm,:ne_pipe)
-    constraint_set_pipe_flow_ne(gm, i)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)

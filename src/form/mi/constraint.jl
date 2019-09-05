@@ -2,7 +2,7 @@
 ## Versions of constraints used to compute flow balance
 ########################################################################################################
 
-##############################################################################################################
+############################################################################################################
 # Constraints that don't need a template
 #############################################################################################################
 
@@ -12,13 +12,121 @@ constraint_flow_direction_choice(gm::GenericGasModel, i::Int) = constraint_flow_
 "Constraint: Constraint that states a flow direction must be chosen for expansion connections "
 constraint_flow_direction_choice_ne(gm::GenericGasModel, i::Int) = constraint_flow_direction_choice_ne(gm, gm.cnw, i)
 
+##############################################################################################################
+# Constraints for modeling junction_nondispatchable_consumers
+#############################################################################################################
+
+" Constraint: standard mass flow balance equation where demand and production are constants "
+function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fg, fl) where T <: AbstractMIForms
+    f  = var(gm,n,:f)
+    yp = var(gm,n,:yp)
+
+    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+
+    is_disjunction = apply_mass_flow_cuts(yp, f_branches) && apply_mass_flow_cuts(yp, t_branches)
+
+    if fg > 0.0 && fl == 0.0 && is_disjunction
+        constraint_source_flow(gm, n, i)
+    end
+
+    if fg == 0.0 && fl > 0.0 && is_disjunction
+        constraint_sink_flow(gm, n, i)
+    end
+
+    if fg == 0.0 && fl == 0.0 && ref(gm,n,:degree)[i] == 2 && is_disjunction
+        constraint_conserve_flow(gm, n, i)
+    end
+end
+
+"Helper function for determining if direction cuts can be applied"
+function apply_mass_flow_cuts(yp, branches)
+    is_disjunction = true
+    for k in branches
+        is_disjunction &= isassigned(yp,k)
+    end
+    return is_disjunction
+end
+
+" Constraint: standard flow balance equation where demand and production are constants and there are expansion connections"
+function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl) where T <: AbstractMIForms
+    f     = var(gm,n,:f)
+    f_ne  = var(gm,n,:f_ne)
+    yp    = var(gm,n,:yp)
+    yp_ne = var(gm,n,:yp_ne)
+
+    add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
+
+    is_disjunction = apply_mass_flow_cuts(yp, f_branches) && apply_mass_flow_cuts(yp, t_branches) && apply_mass_flow_cuts(yp_ne, f_branches_ne) && apply_mass_flow_cuts(yp_ne, t_branches_ne)
+
+    if fg > 0.0 && fl == 0.0 && is_disjunction
+        constraint_source_flow_ne(gm, n, i)
+    end
+
+    if fg == 0.0 && fl > 0.0 && is_disjunction
+        constraint_sink_flow_ne(gm, n, i)
+    end
+
+    if fg == 0.0 && fl == 0.0 && ref(gm,n,:degree_ne)[i] == 2 && is_disjunction
+        constraint_conserve_flow_ne(gm, n, i)
+    end
+end
+
+" Constraint: standard flow balance equation where demand and production are variables "
+function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
+    f  = var(gm,n,:f)
+    fg = var(gm,n,:fg)
+    fl = var(gm,n,:fl)
+    yp = var(gm,n,:yp)
+    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+
+    is_disjunction = apply_mass_flow_cuts(yp, f_branches) && apply_mass_flow_cuts(yp, t_branches)
+
+    if max(fgmin,fg_constant) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
+        constraint_source_flow(gm, n, i)
+    end
+
+    if fgmax == 0.0 && fgmin == 0.0 && fg_constant == 0.0 && max(flmin,fl_constant) > 0.0 && flmin >= 0.0 && is_disjunction
+        constraint_sink_flow(gm, n, i)
+    end
+
+    if fgmax == 0 && fgmin == 0 && fg_constant == 0 && flmax == 0 && flmin == 0 && fl_constant == 0 && ref(gm,n,:degree)[i] == 2 && is_disjunction
+        constraint_conserve_flow(gm, n, i)
+    end
+end
+
+" Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
+function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
+    f     = var(gm,n,:f)
+    f_ne  = var(gm,n,:f_ne)
+    fg    = var(gm,n,:fg)
+    fl    = var(gm,n,:fl)
+    yp    = var(gm,n,:yp)
+    yp_ne = var(gm,n,:yp_ne)
+
+    add_constraint(gm, n, :junction_mass_flow_balance_ne_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) + sum(f_ne[a] for a in f_branches_ne) - sum(f_ne[a] for a in t_branches_ne)))
+
+    is_disjunction = apply_mass_flow_cuts(yp, f_branches) && apply_mass_flow_cuts(yp, t_branches) && apply_mass_flow_cuts(yp_ne, f_branches_ne) && apply_mass_flow_cuts(yp_ne, t_branches_ne)
+
+    if max(fgmin,fg_constant) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
+        constraint_source_flow_ne(gm, i)
+    end
+
+    if fgmax == 0.0 && fgmin == 0.0 && fg_constant == 0.0 && max(flmin,fl_constant) > 0.0 && flmin >= 0.0 && is_disjunction
+        constraint_sink_flow_ne(gm, i)
+    end
+
+    if fgmax == 0 && fgmin == 0 && fg_constant == 0 && flmax == 0 && flmin == 0 && fl_constant == 0 && ref(gm,n,:degree_ne)[i] == 2 && is_disjunction
+        constraint_conserve_flow_ne(gm, i)
+    end
+
+end
+
 #############################################################################################################
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
 
-
 "Constraint: Constraints which define pressure drop across a pipe when there are on/off direction variables"
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIForms
+function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     pi = var(gm,n,:p,i)
@@ -28,12 +136,15 @@ function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 "Constraint: Constraint on flow across a pipe when there are on/off direction variables "
-function constraint_on_off_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
+function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
     add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
     add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+
+    constraint_flow_direction_choice(gm, k)
+    constraint_parallel_flow(gm, k)
 end
 
 #############################################################################################################
@@ -89,8 +200,6 @@ constraint_on_off_short_pipe_flow(gm::GenericGasModel, k::Int) = constraint_on_o
 # Constraints associated with flow through a compressor
 ######################################################################################
 
-
-
 "Constraint: constraints on flow across a compressor with on/off direction variables "
 function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
@@ -137,8 +246,6 @@ function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, 
 
 end
 
-
-
 "Constraint: Constraints on flow across valves with on/off direction variables "
 function constraint_on_off_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
@@ -154,8 +261,6 @@ end
 #######################################################
 # Flow Constraints for control valves
 #######################################################
-
-
 
 "Constraint: Constraints on flow across control valves with on/off direction variables "
 function constraint_on_off_control_valve_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
