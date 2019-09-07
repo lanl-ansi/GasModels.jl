@@ -37,19 +37,23 @@ function post_ls(gm::GenericGasModel)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_set_short_pipe_flow(gm, i)
+        constraint_short_pipe_pressure(gm, i)
+        constraint_short_pipe_mass_flow(gm, i)
     end
 
     for i in ids(gm, :compressor)
-        constraint_set_compressor_flow(gm, i)
+        constraint_compressor_ratios(gm, i)
+        constraint_compressor_mass_flow(gm, i)
     end
 
     for i in ids(gm, :valve)
-        constraint_set_valve_flow(gm, i)
+        constraint_on_off_valve_mass_flow(gm, i)
+        constraint_on_off_valve_pressure(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-        constraint_set_control_valve_flow(gm, i)
+        constraint_on_off_control_valve_mass_flow(gm, i)
+        constraint_on_off_control_valve_pressure(gm, i)
     end
 end
 

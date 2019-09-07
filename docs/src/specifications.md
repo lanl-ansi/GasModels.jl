@@ -15,26 +15,36 @@ for i in ids(gm, :junction)
     constraint_mass_flow_balance(gm, i)
 end
 
-for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))]
+for i in ids(gm, :pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm, :resistor)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
     constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end
 ```
 
@@ -60,7 +70,13 @@ objective_max_load(gm)
 ### Constraints
 
 ```julia
-for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
+for i in ids(gm,:pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm,:resistor)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
     constraint_weymouth(gm,i)
@@ -71,19 +87,23 @@ for i in ids(gm, :junction)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end
 ```
 
@@ -112,7 +132,13 @@ for i in ids(gm, :junction)
     constraint_mass_flow_balance_ne(gm, i)
 end
 
-for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
+for i in ids(gm,:pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm,:resistor)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
     constraint_weymouth(gm,i)
@@ -125,22 +151,28 @@ for i in ids(gm,:ne_pipe)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :ne_compressor)
-    constraint_set_compressor_flow_ne(gm, i)
+    constraint_compressor_ratios_ne(gm, i)
+    constraint_compressor_ne(gm, i)
+    constraint_compressor_mass_flow_ne(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end
 ```
