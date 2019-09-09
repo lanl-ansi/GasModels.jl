@@ -51,8 +51,8 @@ function post_ne(gm::GenericGasModel; kwargs...)
     end
 
     for i in ids(gm, :compressor)
-        constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
+        constraint_compressor_ratios(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)

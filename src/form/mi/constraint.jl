@@ -201,7 +201,10 @@ function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
 
-    constraint_flow_direction_choice(gm, k)
+    # TODO seems to add stability with junuper
+    add_constraint(gm, n, :flow_direction_choice1, i,  @constraint(gm.model, yp + yn <= 1))
+    add_constraint(gm, n, :flow_direction_choice2, i,  @constraint(gm.model, yp + yn >= 1))
+#    constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
 end
 

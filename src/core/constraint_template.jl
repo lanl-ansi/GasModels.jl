@@ -473,8 +473,10 @@ function constraint_on_off_control_valve_pressure(gm::GenericGasModel, n::Int, k
     j              = control_valve["t_junction"]
     max_ratio      = control_valve["c_ratio_max"]
     min_ratio      = control_valve["c_ratio_min"]
+    j_pmax    = ref(gm,n,:junction,j)["pmax"]
+    i_pmax    = ref(gm,n,:junction,i)["pmax"]
 
-    constraint_on_off_control_valve_pressure(gm, n, k, i, j, min_ratio, max_ratio)
+    constraint_on_off_control_valve_pressure(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
 end
 constraint_on_off_control_valve_pressure(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure(gm, gm.cnw, k)
 
