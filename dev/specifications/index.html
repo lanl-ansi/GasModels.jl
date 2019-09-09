@@ -9,86 +9,126 @@ ga('send', 'pageview');
 </script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.svg" alt="GasModels logo"/></a><h1>GasModels</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="../quickguide/">Getting Started</a></li><li><a class="toctext" href="../network-data/">Network Data Format</a></li><li><a class="toctext" href="../result-data/">Result Data Format</a></li><li><a class="toctext" href="../math-model/">Mathematical Model</a></li></ul></li><li><span class="toctext">Library</span><ul><li><a class="toctext" href="../formulations/">Network Formulations</a></li><li class="current"><a class="toctext" href>Problem Specifications</a><ul class="internal"><li><a class="toctext" href="#Gas-Flow-(GF)-1">Gas Flow (GF)</a></li><li><a class="toctext" href="#Maximum-Load-(LS)-1">Maximum Load (LS)</a></li><li><a class="toctext" href="#Expansion-Planning-(NE)-1">Expansion Planning (NE)</a></li></ul></li><li><span class="toctext">Modeling Components</span><ul><li><a class="toctext" href="../model/">GasModel</a></li><li><a class="toctext" href="../objective/">Objective</a></li><li><a class="toctext" href="../variables/">Variables</a></li><li><a class="toctext" href="../constraints/">Constraints</a></li></ul></li><li><a class="toctext" href="../parser/">File IO</a></li></ul></li><li><a class="toctext" href="../developer/">Developer</a></li></ul></nav><article id="docs"><header><nav><ul><li>Library</li><li><a href>Problem Specifications</a></li></ul><a class="edit-page" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/specifications.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Problem Specifications</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Problem-Specifications-1" href="#Problem-Specifications-1">Problem Specifications</a></h1><h2><a class="nav-anchor" id="Gas-Flow-(GF)-1" href="#Gas-Flow-(GF)-1">Gas Flow (GF)</a></h2><h3><a class="nav-anchor" id="Variables-1" href="#Variables-1">Variables</a></h3><pre><code class="language-julia">variable_pressure_sqr(gm)
 variable_flow(gm)
 variable_valve_operation(gm)</code></pre><h3><a class="nav-anchor" id="Constraints-1" href="#Constraints-1">Constraints</a></h3><pre><code class="language-julia">for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow(gm, i)
+    constraint_mass_flow_balance(gm, i)
 end
 
-for i in [collect(ids(gm, :pipe)); collect(ids(gm, :resistor))]
-    constraint_set_pipe_flow(gm, i)
+for i in ids(gm, :pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm, :resistor)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end</code></pre><h2><a class="nav-anchor" id="Maximum-Load-(LS)-1" href="#Maximum-Load-(LS)-1">Maximum Load (LS)</a></h2><h3><a class="nav-anchor" id="Variables-2" href="#Variables-2">Variables</a></h3><pre><code class="language-julia">variable_flow(gm)
 variable_pressure_sqr(gm)
 variable_valve_operation(gm)
 variable_load_mass_flow(gm)
-variable_production_mass_flow(gm)</code></pre><h3><a class="nav-anchor" id="Objective-1" href="#Objective-1">Objective</a></h3><pre><code class="language-julia">objective_max_load(gm)</code></pre><h3><a class="nav-anchor" id="Constraints-2" href="#Constraints-2">Constraints</a></h3><pre><code class="language-julia">for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-    constraint_set_pipe_flow(gm, i)
+variable_production_mass_flow(gm)</code></pre><h3><a class="nav-anchor" id="Objective-1" href="#Objective-1">Objective</a></h3><pre><code class="language-julia">objective_max_load(gm)</code></pre><h3><a class="nav-anchor" id="Constraints-2" href="#Constraints-2">Constraints</a></h3><pre><code class="language-julia">for i in ids(gm,:pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm,:resistor)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow_ls(gm, i)
+    constraint_mass_flow_balance_ls(gm, i)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end</code></pre><h2><a class="nav-anchor" id="Expansion-Planning-(NE)-1" href="#Expansion-Planning-(NE)-1">Expansion Planning (NE)</a></h2><h3><a class="nav-anchor" id="Variables-3" href="#Variables-3">Variables</a></h3><pre><code class="language-julia">variable_pressure_sqr(gm)
 variable_flow(gm)
 variable_flow_ne(gm)
 variable_valve_operation(gm)
 variable_pipe_ne(gm)
 variable_compressor_ne(gm)</code></pre><h3><a class="nav-anchor" id="Objective-2" href="#Objective-2">Objective</a></h3><pre><code class="language-julia">objective_min_ne_cost(gm)</code></pre><h3><a class="nav-anchor" id="Constraints-3" href="#Constraints-3">Constraints</a></h3><pre><code class="language-julia">for i in ids(gm, :junction)
-    constraint_set_junction_mass_flow_ne(gm, i)
+    constraint_mass_flow_balance_ne(gm, i)
 end
 
-for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-    constraint_set_pipe_flow(gm, i)
+for i in ids(gm,:pipe)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
+end
+
+for i in ids(gm,:resistor)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm,:ne_pipe)
-    constraint_set_pipe_flow_ne(gm, i)
+    constraint_pipe_pressure(gm, i)
+    constraint_pipe_mass_flow(gm,i)
+    constraint_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
-    constraint_set_short_pipe_flow(gm, i)
+  constraint_short_pipe_pressure(gm, i)
+  constraint_short_pipe_mass_flow(gm, i)
 end
 
 for i in ids(gm, :compressor)
-    constraint_set_compressor_flow(gm, i)
+    constraint_compressor_mass_flow(gm, i)
+    constraint_compressor_ratio(gm, i)
 end
 
 for i in ids(gm, :ne_compressor)
-    constraint_set_compressor_flow_ne(gm, i)
+    constraint_compressor_ratios_ne(gm, i)
+    constraint_compressor_ne(gm, i)
+    constraint_compressor_mass_flow_ne(gm, i)
 end
 
 for i in ids(gm, :valve)
-    constraint_set_valve_flow(gm, i)
+  constraint_on_off_valve_mass_flow(gm, i)
+  constraint_on_off_valve_pressure(gm, i)
 end
 
 for i in ids(gm, :control_valve)
-    constraint_set_control_valve_flow(gm, i)
+  constraint_on_off_control_valve_mass_flow(gm, i)
+  constraint_on_off_control_valve_pressure(gm, i)
 end</code></pre><footer><hr/><a class="previous" href="../formulations/"><span class="direction">Previous</span><span class="title">Network Formulations</span></a><a class="next" href="../model/"><span class="direction">Next</span><span class="title">GasModel</span></a></footer></article></body></html>
