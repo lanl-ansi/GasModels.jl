@@ -43,9 +43,6 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
         add_constraint(gm, n, :weymouth_ne3, k, @constraint(gm.model, w*(pj - pi) >= f^2))
         add_constraint(gm, n, :weymouth_ne4, k, @constraint(gm.model, w*(pj - pi) <= f^2))
     end
-
-#    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) >= (yp-yn) * f^2))
-#    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) <= (yp-yn) * f^2))
 end
 
 " Weymouth equation for an undirected expansion pipe "

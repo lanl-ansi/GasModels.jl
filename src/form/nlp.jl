@@ -81,7 +81,7 @@ end
 ######################################################################################
 
 " enforces pressure changes bounds that obey compression ratios for an undirected compressor. "
-function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio) where T <: AbstractNLPForm
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
@@ -110,7 +110,7 @@ end
 ##########################################################################################################
 
 " constraints on pressure drop across control valves that are undirected "
-function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractNLPForm
+function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v,k)

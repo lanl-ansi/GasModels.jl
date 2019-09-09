@@ -26,7 +26,6 @@ cplex_solver = JuMP.with_optimizer(CPLEX.Optimizer, CPX_PARAM_SCRIND = 0)
 couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "couenne.exe")
 bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "bonmin.exe")
 
-
 misocp_solver = gurobi_solver
 
 if scip_solver != nothing

@@ -1,116 +1,9 @@
 
-#################################################################################################
-# Constraints associated with pipes
-#################################################################################################
-
-"Template: Pressure drop across pipes with on/off direction variables"
-function constraint_on_off_pressure_drop(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    pipe           = ref(gm, n, :connection, k)
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-#    pd_min         = pipe["pd_min"]
-#    pd_max         = pipe["pd_max"]
-    pd_max         = ref(gm,n,:pd_max)[k]
-    pd_min         = ref(gm,n,:pd_min)[k]
-    constraint_on_off_pressure_drop(gm, n, k, i, j, pd_min, pd_max)
-end
-constraint_on_off_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop(gm, gm.cnw, k)
-
-" Template: Constraint on flow across a pipe with on/off direction variables"
-function constraint_on_off_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    pipe           = ref(gm,n,:connection,k)
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max)[k]
-    pd_min         = ref(gm,n,:pd_min)[k]
-#    w              = haskey(ref(gm,n,:pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
-    w              = ref(gm,n,:w)[k]
-    constraint_on_off_pipe_mass_flow(gm, n, k, i, j, mf, pd_min, pd_max, w)
-end
-constraint_on_off_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_mass_flow(gm, gm.cnw, k)
-
-#############################################################################################################
-## Constraints associated with expansion pipes
-############################################################################################################
-
-"Template: Constraints on pressure drop across pipes with on/off direction variables"
-function constraint_on_off_pressure_drop_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    pipe = ref(gm, n, :ne_connection, k)
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-    pd_max         = ref(gm,n,:pd_max_ne)[k]
-    pd_min         = ref(gm,n,:pd_min_ne)[k]
-    constraint_on_off_pressure_drop_ne(gm, n, k, i, j, pd_min, pd_max)
-end
-constraint_on_off_pressure_drop_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pressure_drop_ne(gm, gm.cnw, k)
-
-"Template: Constraints on flow across an expansion pipe with on/off direction variables "
-function constraint_on_off_pipe_flow_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    pipe = ref(gm,n,:ne_connection, k)
-    i              = pipe["f_junction"]
-    j              = pipe["t_junction"]
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max_ne)[k]
-    pd_min         = ref(gm,n,:pd_min_ne)[k]
-#    w              = haskey(ref(gm,n,:ne_pipe),k) ? pipe_resistance(gm.data, pipe) : resistor_resistance(gm.data, pipe)
-    w              = ref(gm,n,:w_ne)[k]
-    constraint_on_off_pipe_flow_ne(gm, n, k, i, j, mf, pd_min, pd_max, w)
-end
-constraint_on_off_pipe_flow_ne(gm::GenericGasModel, k::Int) = constraint_on_off_pipe_flow_ne(gm, gm.cnw, k)
-
 ######################################################################################
 # Constraints associated with compressors
 ######################################################################################
 
-"Template: constraints on flow across a compressor with on/off direction variables"
-function constraint_on_off_compressor_flow(gm::GenericGasModel{T}, n::Int, k)  where T <: AbstractMIForms
-    compressor = ref(gm, n, :connection, k)
-    i          = compressor["f_junction"]
-    j          = compressor["t_junction"]
-    mf         = ref(gm,n,:max_mass_flow)
-    constraint_on_off_compressor_flow(gm, n, k, i, j, mf)
-end
-constraint_on_off_compressor_flow(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_flow(gm, gm.cnw, k)
 
-"Template: constraints on compression ratios for compressors modeled with on/off direction variables "
-function constraint_on_off_compressor_ratios(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    compressor     = ref(gm,n,:connection,k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = ref(gm,n,:junction,j)["pmax"]
-    j_pmin         = ref(gm,n,:junction,j)["pmin"]
-    i_pmax         = ref(gm,n,:junction,i)["pmax"]
-    i_pmin         = ref(gm,n,:junction,i)["pmin"]
-    constraint_on_off_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin)
-end
-constraint_on_off_compressor_ratios(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios(gm, gm.cnw, k)
-
-"Template: constraints on flow across compressors where direction is controlled via on/off variables "
-function constraint_on_off_compressor_flow_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    compressor     = ref(gm,n,:ne_connection,k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    mf             = ref(gm,n,:max_mass_flow)
-    constraint_on_off_compressor_flow_ne(gm, n, k, i, j, mf)
-end
-constraint_on_off_compressor_flow_ne(gm::GenericGasModel, i::Int) = constraint_on_off_compressor_flow_ne(gm, gm.cnw, i)
-
-"Template: constraints on pressure drop on compressors where direction is controlled via on/off variables "
-function constraint_on_off_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    compressor     = ref(gm,n,:ne_connection, k)
-    i              = compressor["f_junction"]
-    j              = compressor["t_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = ref(gm,n,:junction,j)["pmax"]
-    i_pmax         = ref(gm,n,:junction,i)["pmax"]
-
-    constraint_on_off_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, j_pmax, i_pmax)
-end
-constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint_on_off_compressor_ratios_ne(gm, gm.cnw, k)
 
 ######################################################################################
 # Constraints associated witn valves
@@ -121,18 +14,18 @@ constraint_on_off_compressor_ratios_ne(gm::GenericGasModel, k::Int) = constraint
 # Constraints associated witn control valves
 ######################################################################################
 
-"Template: constraints on pressure drop across control valves with on/off direction variables "
-function constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-    valve     = ref(gm,n,:connection,k)
-    i         = valve["f_junction"]
-    j         = valve["t_junction"]
-    max_ratio = valve["c_ratio_max"]
-    min_ratio = valve["c_ratio_min"]
-    j_pmax    = ref(gm,n,:junction,j)["pmax"]
-    i_pmax    = ref(gm,n,:junction,i)["pmax"]
-    constraint_on_off_control_valve_pressure_drop(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
-end
-constraint_on_off_control_valve_pressure_drop(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure_drop(gm, gm.cnw, k)
+#"Template: constraints on pressure drop across control valves with on/off direction variables "
+#function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
+#    valve     = ref(gm,n,:connection,k)
+#    i         = valve["f_junction"]
+#    j         = valve["t_junction"]
+#    max_ratio = valve["c_ratio_max"]
+#    min_ratio = valve["c_ratio_min"]
+#    j_pmax    = ref(gm,n,:junction,j)["pmax"]
+#    i_pmax    = ref(gm,n,:junction,i)["pmax"]
+#    constraint_on_off_control_valve_pressure(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
+#end
+#constraint_on_off_control_valve_pressure(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure(gm, gm.cnw, k)
 
 ######################################################################################
 # Constraints associated witn cutting planes on the direction variables

@@ -20,11 +20,11 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
     resistance = Dict{Int, Float64}()
 
     for (i,pipe) in ref(gm,n,:pipe)
-        resistance[i] = ref(gm, n, :w)[i]#pipe_resistance(gm.data, pipe)
+        resistance[i] = ref(gm, n, :w)[i]
     end
 
     for (i,pipe) in ref(gm,n,:resistor)
-        resistance[i] = ref(gm, n, :w)[i] #resistor_resistance(gm.data, pipe)
+        resistance[i] = ref(gm, n, :w)[i] 
     end
 
     if bounded

@@ -31,35 +31,52 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_set_junction_mass_flow_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne_ls(gm, i)
     end
 
-    for i in [collect(ids(gm,:pipe)); collect(ids(gm,:resistor))]
-        constraint_set_pipe_flow(gm, i)
+    for i in ids(gm,:pipe)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
+    end
+
+    for i in ids(gm,:resistor)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
-        constraint_set_pipe_flow_ne(gm, i)
+        constraint_pipe_pressure_ne(gm, i)
+        constraint_pipe_ne(gm, i)
+        constraint_pipe_mass_flow_ne(gm,i)
+        constraint_weymouth_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
-        constraint_set_short_pipe_flow(gm, i)
+        constraint_short_pipe_pressure(gm, i)
+        constraint_short_pipe_mass_flow(gm, i)
     end
 
     for i in ids(gm,:compressor)
-        constraint_set_compressor_flow(gm, i)
+        constraint_compressor_ratios(gm, i)
+        constraint_compressor_mass_flow(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)
-        constraint_set_compressor_flow_ne(gm, i)
+        constraint_compressor_ratios_ne(gm, i)
+        constraint_compressor_ne(gm, i)
+        constraint_compressor_mass_flow_ne(gm, i)
     end
 
     for i in ids(gm, :valve)
-        constraint_set_valve_flow(gm, i)
+        constraint_on_off_valve_mass_flow(gm, i)
+        constraint_on_off_valve_pressure(gm, i)
     end
 
     for i in ids(gm, :control_valve)
-         constraint_set_control_valve_flow(gm, i)
+        constraint_on_off_control_valve_mass_flow(gm, i)
+        constraint_on_off_control_valve_pressure(gm, i)
     end
 
     exclusive = Dict()
@@ -96,63 +113,97 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_set_junction_mass_flow_ne_ls_directed(gm, i)
+        constraint_mass_flow_balance_ne_ls(gm, i)
     end
 
-    for i in [collect(ids(gm,:undirected_pipe)); collect(ids(gm,:undirected_resistor))]
-        constraint_set_pipe_flow(gm, i)
+    for i in ids(gm,:undirected_pipe)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
     end
 
-    for i in [collect(ids(gm,:directed_pipe)); collect(ids(gm,:directed_resistor))]
-        constraint_set_pipe_flow_directed(gm, i)
+    for i in ids(gm,:undirected_resistor)
+        constraint_pipe_pressure(gm, i)
+        constraint_pipe_mass_flow(gm,i)
+        constraint_weymouth(gm,i)
+    end
+
+    for i in ids(gm,:directed_pipe)
+        constraint_pipe_pressure_directed(gm, i)
+        constraint_pipe_flow_directed(gm, i)
+        constraint_weymouth_directed(gm, i)
+    end
+
+    for i in ids(gm,:directed_resistor)
+        constraint_pipe_pressure_directed(gm, i)
+        constraint_pipe_flow_directed(gm, i)
+        constraint_weymouth_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_ne_pipe)
-        constraint_set_pipe_flow_ne(gm, i)
+        constraint_pipe_pressure_ne(gm, i)
+        constraint_pipe_ne(gm, i)
+        constraint_pipe_mass_flow_ne(gm,i)
+        constraint_weymouth_ne(gm, i)
     end
 
     for i in ids(gm,:directed_ne_pipe)
-        constraint_set_pipe_flow_ne_directed(gm, i)
+        constraint_pressure_drop_ne_directed(gm, i)
+        constraint_pipe_flow_ne_directed(gm, i)
+        constraint_pipe_ne(gm, i)
+        constraint_weymouth_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_short_pipe)
-       constraint_set_short_pipe_flow(gm, i)
+        constraint_short_pipe_pressure(gm, i)
+        constraint_short_pipe_mass_flow(gm, i)
     end
 
     for i in ids(gm, :directed_short_pipe)
-        constraint_set_short_pipe_flow_directed(gm, i)
+        constraint_short_pipe_pressure(gm, i)
+        constraint_short_pipe_flow_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_compressor)
-        constraint_set_compressor_flow(gm, i)
+        constraint_compressor_ratios(gm, i)
+        constraint_compressor_mass_flow(gm, i)
     end
 
     for i in ids(gm,:directed_compressor)
-        constraint_set_compressor_flow_directed(gm, i)
+        constraint_compressor_mass_flow_directed(gm, i)
+        constraint_compressor_ratios_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_ne_compressor)
-        constraint_set_compressor_flow_ne(gm, i)
+        constraint_compressor_ratios_ne(gm, i)
+        constraint_compressor_ne(gm, i)
+        constraint_compressor_mass_flow_ne(gm, i)
     end
 
     for i in ids(gm, :directed_ne_compressor)
-        constraint_set_compressor_flow_ne_directed(gm, i)
+        constraint_compressor_ne(gm, i)
+        constraint_compressor_mass_flow_ne_directed(gm, i)
+        constraint_compressor_ratios_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_valve)
-        constraint_set_valve_flow(gm, i)
+        constraint_on_off_valve_mass_flow(gm, i)
+        constraint_on_off_valve_pressure(gm, i)
     end
 
     for i in ids(gm, :directed_valve)
-        constraint_set_valve_flow_directed(gm, i)
+        constraint_on_off_valve_mass_flow_directed(gm, i)
+        constraint_on_off_valve_pressure(gm, i)
     end
 
     for i in ids(gm, :undirected_control_valve)
-         constraint_set_control_valve_flow(gm, i)
+        constraint_on_off_control_valve_mass_flow(gm, i)
+        constraint_on_off_control_valve_pressure(gm, i)
     end
 
     for i in ids(gm, :directed_control_valve)
-         constraint_set_control_valve_flow_directed(gm, i)
+        constraint_on_off_control_valve_mass_flow_directed(gm, i)
+        constraint_on_off_control_valve_pressure_directed(gm, i)
     end
 
     exclusive = Dict()
