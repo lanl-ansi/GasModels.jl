@@ -2,13 +2,12 @@ GasModels.jl Change Log
 =======================
 
 ### Pending
-- Implement non-binary variable model of compressors and control valves  
 - Implement constraints on compressor power
 - Implement a multi-network test
 
 ### v0.4.2
 - Implement nlp version(s) of the problems
-- Renamed constraint utility functions to contain the keyword "set"
+- Renamed various function names for consistency
 - Updated the documentation
 
 ### v0.4.1

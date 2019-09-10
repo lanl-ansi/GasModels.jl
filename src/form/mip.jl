@@ -33,7 +33,7 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pipe_pressure_directed(gm::GenericGasModel{T}, n::Int, k, i, j, direction) where T <: AbstractMIPForm
+function constraint_pipe_pressure_directed(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIPForm
 end
 
 " Constraint: Constraint on pressure drop across a short pipe--not applicable for MIP models"
@@ -65,7 +65,7 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained--not applicable for MIP models"
-function constraint_pressure_drop_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
+function constraint_pressure_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"

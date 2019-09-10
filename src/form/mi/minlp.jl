@@ -37,11 +37,11 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
     f  = var(gm,n,:f,k)
 
     if direction == 1
-        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
-        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2))
+        add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
+        add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, w*(pi - pj) <= f^2))
     else
-        add_constraint(gm, n, :weymouth_ne3, k, @constraint(gm.model, w*(pj - pi) >= f^2))
-        add_constraint(gm, n, :weymouth_ne4, k, @constraint(gm.model, w*(pj - pi) <= f^2))
+        add_constraint(gm, n, :weymouth3, k, @constraint(gm.model, w*(pj - pi) >= f^2))
+        add_constraint(gm, n, :weymouth4, k, @constraint(gm.model, w*(pj - pi) <= f^2))
     end
 end
 

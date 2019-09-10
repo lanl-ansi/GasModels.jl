@@ -29,7 +29,7 @@ end
         println("Testing gaslib mip nels gaslib 40")
         result = run_nels_directed("../test/data/gaslib-40-nelsfd.m", MIPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1560.1204003868688; atol = 1e-1)
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1371.8466068710943; atol = 1e-1)
     end
 end
 
@@ -39,7 +39,7 @@ end
         println("Testing gaslib lp nels gaslib 40")
         result = run_nels_directed("../test/data/gaslib-40-nelsfd.m", LPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1560.1204003868688; atol = 1e-1)
+        @test isapprox(result["objective"] * result["solution"]["baseQ"] , 1371.8466068710943; atol = 1e-1)
     end
 end
 
