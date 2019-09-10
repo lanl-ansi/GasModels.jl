@@ -136,12 +136,12 @@ function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_mi
 end
 
 "Constraint: Constraint on flow across a pipe when there are on/off direction variables "
-function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
+function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
-    add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+    add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, (1-yp) * f_min <= f))
+    add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= (1-yn) * f_max))
 
     constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow_ne(gm, k)
@@ -162,7 +162,7 @@ function constraint_pipe_pressure_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd
 end
 
 "Constraint: constraints on flow across an expansion pipe with on/off direction variables "
-function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractMIForms
+function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, mf, pd_min, pd_max, w) where T <: AbstractMIForms
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
     f  = var(gm,n,:f_ne,k)
@@ -201,7 +201,7 @@ function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
 
-    # TODO seems to add stability with junuper
+    # TODO Too many equality constraints on integer variables causes an issue with juniper
     add_constraint(gm, n, :flow_direction_choice1, i,  @constraint(gm.model, yp + yn <= 1))
     add_constraint(gm, n, :flow_direction_choice2, i,  @constraint(gm.model, yp + yn >= 1))
 #    constraint_flow_direction_choice(gm, k)

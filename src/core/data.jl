@@ -296,6 +296,38 @@ function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
     return producer["qg"] * data["standard_density"]
 end
 
+"calculates the minimum flow on a pipe"
+function calc_pipe_fmin(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_min         = ref(gm,n,:pd_min)[k]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+"calculates the maximum flow on a pipe"
+function calc_pipe_fmax(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
+"calculates the minimum flow on a pipe"
+function calc_pipe_ne_fmin(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_min         = ref(gm,n,:pd_min_ne)[k]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+"calculates the maximum flow on a pipe"
+function calc_pipe_ne_fmax(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_max         = ref(gm,n,:pd_max_ne)[k]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
 "prints the text summary for a data file or dictionary to stdout"
 function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)
     summary(stdout, obj; kwargs...)

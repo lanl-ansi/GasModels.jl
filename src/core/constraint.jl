@@ -63,7 +63,7 @@ function constraint_short_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 " Constraint: Constraints on flow across a short pipe where direction of flow is constrained"
-function constraint_short_pipe_flow_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
+function constraint_short_pipe_mass_flow_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
     f = var(gm,n,:f,k)
     if direction == 1
         add_constraint(gm, n, :short_pipe_flow, k, @constraint(gm.model, f >= 0))
@@ -128,16 +128,11 @@ function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_mi
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k, i, j, direction, pd_min, pd_max)
+function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    if direction == 1
-        add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj >= 0))
-        add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pi - pj <= pd_max))
-    else
-        add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj <= 0))
-        add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pd_min <= pi - pj))
-    end
+    add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj <= pd_max))
+    add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pd_min <= pi - pj))
 end
 
 "Constraint: constraints on pressure drop across an expansion pipe"
@@ -149,48 +144,55 @@ function constraint_pipe_pressure_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd
 end
 
 " Constraint: Constraint on mass flow across the pipe"
-function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractGasFormulation
+function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractGasFormulation
     f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :pipe_flow1, k, @constraint(gm.model, -min(mf, sqrt(w*max(pd_max, abs(pd_min)))) <= f))
-    add_constraint(gm, n, :pipe_flow2, k, @constraint(gm.model, f <= min(mf, sqrt(w*max(pd_max, abs(pd_min))))))
+    lb = has_lower_bound(f) ? max(lower_bound(f), f_min) : f_min
+    ub = has_upper_bound(f) ? min(upper_bound(f), f_max) : f_max
+    set_lower_bound(f, lb)
+    set_upper_bound(f, ub)
 end
 
 "Constraint: constraints on flow across an expansion pipe "
-function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf, pd_min, pd_max, w) where T <: AbstractGasFormulation
+function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, mf, pd_min, pd_max, w) where T <: AbstractGasFormulation
     f  = var(gm,n,:f_ne,k)
     add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, -min(mf, sqrt(w*max(abs(pd_max), abs(pd_min)))) <= f))
     add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
 end
 
 " Constraint: constraint on flow across the pipe where direction is constrained"
-function constraint_pipe_flow_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
+function constraint_pipe_mass_flow_directed(gm::GenericGasModel, n::Int, k, f_min, f_max)
     f  = var(gm,n,:f,k)
-    if direction == 1
-        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= 0))
-    else
-        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f <= 0))
-    end
+    lb = has_lower_bound(f) ? max(lower_bound(f), f_min) : f_min
+    ub = has_upper_bound(f) ? min(upper_bound(f), f_max) : f_max
+    set_lower_bound(f, lb)
+    set_upper_bound(f, ub)
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained"
-function constraint_pressure_drop_ne_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
+function constraint_pressure_ne_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max, direction)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
+    z  = var(gm,n,:zp,k)
+
     if direction == 1
-        add_constraint(gm, n, :pressure_drop_ne, k, @constraint(gm.model, pi - pj >= 0))
+        add_constraint(gm, n, :pressure_drop_ne, k, @constraint(gm.model, pi - pj >= (1-z)*pd_max))
     else
-        add_constraint(gm, n, :pressure_drop_ne, k, @constraint(gm.model, pi - pj <= 0))
+        add_constraint(gm, n, :pressure_drop_ne, k, @constraint(gm.model, pi - pj <= (1-z)*pd_min))
     end
 end
 
 " Constraint: Flow across an expansion pipe when direction is constrained "
-function constraint_pipe_flow_ne_directed(gm::GenericGasModel, n::Int, k, i, j, direction)
+function constraint_pipe_mass_flow_ne_directed(gm::GenericGasModel, n::Int, k, f_min, f_max)
     f  = var(gm,n,:f_ne,k)
-    if direction == 1
-        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= 0))
-    else
-        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f <= 0))
-    end
+    add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= f_min))
+    add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f <= f_max))
+
+
+#    if direction == 1
+#        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f >= 0))
+#    else
+#        add_constraint(gm, n, :pipe_flow, k, @constraint(gm.model, f <= 0))
+#    end
 end
 
 #################################################################################################

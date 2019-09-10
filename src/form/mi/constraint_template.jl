@@ -1,32 +1,3 @@
-
-######################################################################################
-# Constraints associated with compressors
-######################################################################################
-
-
-
-######################################################################################
-# Constraints associated witn valves
-######################################################################################
-
-
-######################################################################################
-# Constraints associated witn control valves
-######################################################################################
-
-#"Template: constraints on pressure drop across control valves with on/off direction variables "
-#function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k) where T <: AbstractMIForms
-#    valve     = ref(gm,n,:connection,k)
-#    i         = valve["f_junction"]
-#    j         = valve["t_junction"]
-#    max_ratio = valve["c_ratio_max"]
-#    min_ratio = valve["c_ratio_min"]
-#    j_pmax    = ref(gm,n,:junction,j)["pmax"]
-#    i_pmax    = ref(gm,n,:junction,i)["pmax"]
-#    constraint_on_off_control_valve_pressure(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
-#end
-#constraint_on_off_control_valve_pressure(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_pressure(gm, gm.cnw, k)
-
 ######################################################################################
 # Constraints associated witn cutting planes on the direction variables
 ######################################################################################
