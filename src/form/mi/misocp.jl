@@ -24,7 +24,7 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
     end
 
     for (i,pipe) in ref(gm,n,:resistor)
-        resistance[i] = ref(gm, n, :w)[i] 
+        resistance[i] = ref(gm, n, :w)[i]
     end
 
     if bounded
@@ -55,10 +55,9 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
 end
 
 " Weymouth equation for an undirected pipe "
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMISOCPForm
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractMISOCPForm
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
-
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l,k)
@@ -83,10 +82,9 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
 end
 
 "Weymouth equation for an undirected expansion pipe"
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMISOCPForm
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max) where T <: AbstractMISOCPForm
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
-
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
@@ -101,7 +99,7 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 "Weymouth equation for expansion pipes with undirected expansion pipes"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <:  AbstractMISOCPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, pd_min, pd_max, direction) where T <:  AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)

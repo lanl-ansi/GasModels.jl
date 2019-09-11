@@ -28,7 +28,7 @@ end
 ######################################################################################################
 
 "Constraint: Weymouth equation--not applicable for LP models"
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractLPForm
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractLPForm
     #TODO we could think about putting a polyhendra around the weymouth
 end
 
@@ -46,7 +46,7 @@ function constraint_short_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j)
 end
 
 "Constraint: Compressor ratio constraints on pressure differentials--not applicable for LP models"
-function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin) where T <: AbstractLPForm
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractLPForm
 end
 
 " Constraint: Compressor ratio when the flow direction is constrained--not applicable for LP models"
@@ -58,7 +58,7 @@ function constraint_on_off_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, 
 end
 
 " constraints on pressure drop across control valves that are undirected--not applicable for LP models"
-function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractLPForm
+function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractLPForm
 end
 
 " Constraint: Pressure drop across a control valves when directions is constrained--not applicable for LP models"
@@ -66,7 +66,7 @@ function constraint_on_off_control_valve_pressure_directed(gm::GenericGasModel{T
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for LP models"
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractLPForm
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max) where T <: AbstractLPForm
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained--not applicable for LP models"
@@ -74,11 +74,11 @@ function constraint_pressure_drop_ne_directed(gm::GenericGasModel{T}, n::Int, k,
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for LP models"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <: AbstractLPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, pd_min, pd_max, direction) where T <: AbstractLPForm
 end
 
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for LP models"
-function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax) where T <: AbstractLPForm
+function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractLPForm
 end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for LP models"
