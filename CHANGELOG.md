@@ -5,9 +5,12 @@ GasModels.jl Change Log
 - Implement constraints on compressor power
 - Implement a multi-network test
 
+### v0.4.3
+- Renamed various function names for consistency (breaking)
+
 ### v0.4.2
 - Implement nlp version(s) of the problems
-- Renamed various function names for consistency
+- Renamed various function names for consistency (breaking)
 - Updated the documentation
 
 ### v0.4.1

@@ -162,12 +162,12 @@ function constraint_pipe_pressure_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd
 end
 
 "Constraint: constraints on flow across an expansion pipe with on/off direction variables "
-function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, mf, pd_min, pd_max, w) where T <: AbstractMIForms
+function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
     f  = var(gm,n,:f_ne,k)
-    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, -(1-yp)*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min)))) <= f))
-    add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= (1-yn)*min(mf, sqrt(w*max(abs(pd_max), abs(pd_min))))))
+    add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, (1-yp)*f_min <= f))
+    add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= (1-yn)*f_max))
 
     constraint_flow_direction_choice_ne(gm, k)
     constraint_parallel_flow_ne(gm, k)
@@ -178,12 +178,12 @@ end
 ###########################################################################################
 
 "Constraint: Constraints on flow across a short pipe with on/off direction variables"
-function constraint_short_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
+function constraint_short_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_short_pipe_flow1, k, @constraint(gm.model, -mf*(1-yp) <= f))
-    add_constraint(gm, n, :on_off_short_pipe_flow2, k, @constraint(gm.model, f <= mf*(1-yn)))
+    add_constraint(gm, n, :on_off_short_pipe_flow1, k, @constraint(gm.model, f_min*(1-yp) <= f))
+    add_constraint(gm, n, :on_off_short_pipe_flow2, k, @constraint(gm.model, f <= f_max*(1-yn)))
 
     constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
@@ -194,22 +194,22 @@ end
 ######################################################################################
 
 "Constraint: constraints on flow across a compressor with on/off direction variables "
-function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
+function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
-    add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
+    add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, (1-yp)*f_min <= f))
+    add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*f_max))
 
     # TODO Too many equality constraints on integer variables causes an issue with juniper
-    add_constraint(gm, n, :flow_direction_choice1, i,  @constraint(gm.model, yp + yn <= 1))
-    add_constraint(gm, n, :flow_direction_choice2, i,  @constraint(gm.model, yp + yn >= 1))
+    add_constraint(gm, n, :flow_direction_choice1, k,  @constraint(gm.model, yp + yn <= 1))
+    add_constraint(gm, n, :flow_direction_choice2, k,  @constraint(gm.model, yp + yn >= 1))
 #    constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
 end
 
 "Constraint: enforces pressure changes bounds that obey compression ratios for a compressor with on/off direction variables"
-function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, j_pmax, j_pmin, i_pmax, i_pmin) where T <: AbstractMIForms
+function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     pi = var(gm,n,:p,i)
@@ -221,19 +221,19 @@ function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, m
 end
 
 "Constraint: constraints on flow across compressors with on/off direction variables"
-function constraint_compressor_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
+function constraint_compressor_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
     f  = var(gm,n,:f_ne,k)
-    add_constraint(gm, n, :on_off_compressor_flow_direction_ne1, k, @constraint(gm.model, -(1-yp)*mf <= f))
-    add_constraint(gm, n, :on_off_compressor_flow_direction_ne2, k, @constraint(gm.model, f <= (1-yn)*mf))
+    add_constraint(gm, n, :on_off_compressor_flow_direction_ne1, k, @constraint(gm.model, (1-yp)*f_min <= f))
+    add_constraint(gm, n, :on_off_compressor_flow_direction_ne2, k, @constraint(gm.model, f <= (1-yn)*f_max))
 
     constraint_flow_direction_choice_ne(gm, k)
     constraint_parallel_flow_ne(gm, k)
 end
 
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables "
-function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax) where T <: AbstractMIForms
+function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractMIForms
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
     pi = var(gm,n,:p,i)
@@ -249,15 +249,15 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 "Constraint: Constraints on flow across valves with on/off direction variables "
-function constraint_on_off_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
+function constraint_on_off_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
-    add_constraint(gm, n,:on_off_valve_flow_direction1, k, @constraint(gm.model, -mf*(1-yp) <= f))
-    add_constraint(gm, n,:on_off_valve_flow_direction2, k, @constraint(gm.model, f <= mf*(1-yn)))
-    add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f))
-    add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+    add_constraint(gm, n,:on_off_valve_flow_direction1, k, @constraint(gm.model, f_min*(1-yp) <= f))
+    add_constraint(gm, n,:on_off_valve_flow_direction2, k, @constraint(gm.model, f <= f_max*(1-yn)))
+    add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f))
+    add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= f_max*v))
 
     constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
@@ -268,31 +268,31 @@ end
 #######################################################
 
 "Constraint: Constraints on flow across control valves with on/off direction variables "
-function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, i, j, mf) where T <: AbstractMIForms
+function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f = var(gm,n,:f,k)
     v = var(gm,n,:v,k)
-    add_constraint(gm, n, :on_off_control_valve_flow_direction1, k, @constraint(gm.model, -mf*(1-yp) <= f))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction2, k, @constraint(gm.model, f <= mf*(1-yn)))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, -mf*v <= f ))
-    add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= mf*v))
+    add_constraint(gm, n, :on_off_control_valve_flow_direction1, k, @constraint(gm.model, f_min*(1-yp) <= f))
+    add_constraint(gm, n, :on_off_control_valve_flow_direction2, k, @constraint(gm.model, f <= f_max*(1-yn)))
+    add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f ))
+    add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= f_max*v))
 
     constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
 end
 
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables "
-function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractMIForms
+function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractMIForms
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v,k)
     add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-yp-v)*j_pmax^2))
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop2, k, @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-v)*(i_pmax^2) ))
+    add_constraint(gm, n, :on_off_control_valve_pressure_drop2, k, @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-yp-v)*i_pmax^2))
     add_constraint(gm, n, :on_off_control_valve_pressure_drop3, k, @constraint(gm.model,  pj - pi <= (2-yn-v)*j_pmax^2))
-    add_constraint(gm, n, :on_off_control_valve_pressure_drop4, k, @constraint(gm.model,  pi - pj <= (2-yn-v)*(i_pmax^2)))
+    add_constraint(gm, n, :on_off_control_valve_pressure_drop4, k, @constraint(gm.model,  pi - pj <= (2-yn-v)*i_pmax^2))
 end
 
 ######################################################################

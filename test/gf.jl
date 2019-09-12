@@ -324,10 +324,10 @@ end
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
-    # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 1.0 ^ 2.0) >= 0"
-    # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0 + (1.0 - yp[222]) * 1.0 ^ 2.0) <= 0"
-    # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 + (1.0 - yn[222]) * 1.0 ^ 2.0) <= 0"
-    # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 1.0 ^ 2.0) >= 0"
+    # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 2.0) >= 0"
+    # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0) <= 0"
+    # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0) <= 0"
+    # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 2.0) >= 0"
     ref = gm.con[:nw][gm.cnw][:weymouth1][222]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
@@ -335,7 +335,7 @@ end
     set = constraint.set
 
     @test isa(set, MOI.GreaterThan{Float64})
-    @test isapprox(set.lower, -1.0; atol = 1e-4)
+    @test isapprox(set.lower, -2.0; atol = 1e-4)
     @test length(func.terms) == 1
 #    c = gm.model.nlp_data.nlconstr[ref.index.value]
 #    @test JuMP._sense(c) == :>=
@@ -350,7 +350,7 @@ end
 
 
     @test isa(set, MOI.LessThan{Float64})
-    @test isapprox(set.upper, 1.0; atol = 1e-4)
+    @test isapprox(set.upper, 0.0; atol = 1e-4)
     @test length(func.terms) == 1
 #    c = gm.model.nlp_data.nlconstr[ref.index.value]
     #@test JuMP._sense(c) == :<=
@@ -364,7 +364,7 @@ end
     set = constraint.set
 
     @test isa(set, MOI.LessThan{Float64})
-    @test isapprox(set.upper, 1.0; atol = 1e-4)
+    @test isapprox(set.upper, 0.0; atol = 1e-4)
     @test length(func.terms) == 1
 #    c = gm.model.nlp_data.nlconstr[ref.index.value]
     #@test JuMP._sense(c) == :<=
@@ -378,7 +378,7 @@ end
     set = constraint.set
 
     @test isa(set, MOI.GreaterThan{Float64})
-    @test isapprox(set.lower, -1.0; atol = 1e-4)
+    @test isapprox(set.lower, -2.0; atol = 1e-4)
     @test length(func.terms) == 1
 #    c = gm.model.nlp_data.nlconstr[ref.index.value]
 #    @test JuMP._sense(c) == :>=
