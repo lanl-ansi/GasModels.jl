@@ -198,11 +198,8 @@ function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_mi
     yp = var(gm,n,:yp,k)
     yn = var(gm,n,:yn,k)
     f  = var(gm,n,:f,k)
-#    add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, -(1-yp)*mf <= f))
-#    add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*mf))
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, (1-yp)*f_min <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= (1-yn)*f_max))
-
 
     # TODO Too many equality constraints on integer variables causes an issue with juniper
     add_constraint(gm, n, :flow_direction_choice1, k,  @constraint(gm.model, yp + yn <= 1))
@@ -228,12 +225,8 @@ function constraint_compressor_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f
     yp = var(gm,n,:yp_ne,k)
     yn = var(gm,n,:yn_ne,k)
     f  = var(gm,n,:f_ne,k)
-#    add_constraint(gm, n, :on_off_compressor_flow_direction_ne1, k, @constraint(gm.model, -(1-yp)*mf <= f))
-#    add_constraint(gm, n, :on_off_compressor_flow_direction_ne2, k, @constraint(gm.model, f <= (1-yn)*mf))
-
     add_constraint(gm, n, :on_off_compressor_flow_direction_ne1, k, @constraint(gm.model, (1-yp)*f_min <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction_ne2, k, @constraint(gm.model, f <= (1-yn)*f_max))
-
 
     constraint_flow_direction_choice_ne(gm, k)
     constraint_parallel_flow_ne(gm, k)

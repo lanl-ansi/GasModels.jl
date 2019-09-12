@@ -38,7 +38,7 @@
 
     @testset "gaslib 40 case 25%" begin
         println("gaslib 40 - MISOCP 25%")
-        obj_normalization = 1000000.0
+        obj_normalization = 1e7
         result = run_ne("../test/data/gaslib-40-25.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
         @test isapprox(result["objective"]*obj_normalization, 41082189; atol = 1e3)

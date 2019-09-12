@@ -53,14 +53,6 @@ function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, 
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
 
-#    if directed == 1
-#        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2 - (1-zp)*mf^2))
-#        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp)*mf^2))
-#    else
-#        add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp)*mf^2))
-#        add_constraint(gm, n, :weymouth_ne2, k, @constraint(gm.model, w*(pj - pi) <= f^2 + (1-zp)*mf^2))
-#    end
-
     # The big M needs to be the min and max pressure difference in either direction multiplied by w (referenced by i to j or j to i)
     if direction == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
@@ -77,12 +69,6 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_m
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne,k)
-
-#    add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) - (1-zp)*mf^2))
-#    add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp)*mf^2))
-
-#    add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) - (1-zp)*f_min^2))
-#    add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp)*f_max^2))
 
     add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) + (1-zp) * w * pd_min))
     add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp) * w * pd_max))
