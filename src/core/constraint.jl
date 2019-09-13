@@ -281,7 +281,6 @@ function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel, n::Int, 
     add_constraint(gm, n,:on_off_valve_flow1, k, @constraint(gm.model, f_min*v <= f))
     add_constraint(gm, n,:on_off_valve_flow2, k, @constraint(gm.model, f <= f_max*v))
 
-    constraint_flow_direction_choice(gm, k)
     constraint_parallel_flow(gm, k)
 end
 

@@ -98,10 +98,8 @@ end
 
 # Get the direction solutions
 function add_direction_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "yp", :yp_ne)
-    add_setpoint(sol, gm, "ne_pipe", "yn", :yn_ne)
-    add_setpoint(sol, gm, "ne_compressor", "yp", :yp_ne)
-    add_setpoint(sol, gm, "ne_compressor", "yn", :yn_ne)
+    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne)
+    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne)
 end
 
 " Add the compressor solutions "

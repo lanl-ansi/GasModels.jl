@@ -70,7 +70,6 @@ constraint_pipe_ne
 The disjunctive forms of problems (where directions are controlled by on/off variables) include special (redundant) constraints which tie the direction variables together.  Examples include ensuring that ensuring that parallel pipes have flow in the same direction.
 
 ```@docs
-constraint_flow_direction_choice
 constraint_parallel_flow
 constraint_parallel_flow_ne
 ```
@@ -94,7 +93,6 @@ constraint_compressor_mass_flow
 The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
-constraint_flow_direction_choice
 constraint_parallel_flow
 constraint_parallel_flow_ne
 ```
@@ -126,7 +124,6 @@ constraint_on_off_control_valve_pressure_directed
 The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
-constraint_flow_direction_choice
 constraint_parallel_flow
 constraint_parallel_flow_ne
 ```
@@ -147,7 +144,6 @@ constraint_on_off_valve_pressure
 The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
-constraint_flow_direction_choice
 constraint_parallel_flow
 constraint_parallel_flow_ne
 ```
@@ -169,8 +165,6 @@ cconstraint_short_pipe_mass_flow_directed
 The disjunctive forms of problems (where directions are controlled by on/off variables) include special constraints to connect direction of flow with the choice of the binary variable.
 
 ```@docs
-
-constraint_flow_direction_choice
 constraint_parallel_flow
 constraint_parallel_flow_ne
 ```

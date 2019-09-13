@@ -103,18 +103,12 @@ end
 
 " Get the direction set points"
 function add_direction_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "pipe", "yp", :yp)
-    add_setpoint(sol, gm, "pipe", "yn", :yn)
-    add_setpoint(sol, gm, "compressor", "yp", :yp)
-    add_setpoint(sol, gm, "compressor", "yn", :yn)
-    add_setpoint(sol, gm, "valve", "yp", :yp)
-    add_setpoint(sol, gm, "valve", "yn", :yn)
-    add_setpoint(sol, gm, "control_valve", "yp", :yp)
-    add_setpoint(sol, gm, "control_valve", "yn", :yn)
-    add_setpoint(sol, gm, "resistor", "yp", :yp)
-    add_setpoint(sol, gm, "resistor", "yn", :yn)
-    add_setpoint(sol, gm, "short_pipe", "yp", :yp)
-    add_setpoint(sol, gm, "short_pipe", "yn", :yn)
+    add_setpoint(sol, gm, "pipe", "y", :y)
+    add_setpoint(sol, gm, "compressor", "y", :y)
+    add_setpoint(sol, gm, "valve", "y", :y)
+    add_setpoint(sol, gm, "control_valve", "y", :y)
+    add_setpoint(sol, gm, "resistor", "y", :y)
+    add_setpoint(sol, gm, "short_pipe", "y", :y)
 end
 
 " Get the valve solutions "
@@ -190,7 +184,7 @@ end
 
 function guard_getobjbound(model)
     try
-        JuMP.getobjbound(model)
+        JuMP.objective_bound(model)
     catch
         -Inf
     end

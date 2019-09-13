@@ -158,6 +158,8 @@ function parse_status(termination_status::MOI.TerminationStatusCode)
         return :Optimal
     elseif termination_status == MOI.LOCALLY_SOLVED
         return :LocalOptimal
+    elseif termination_status == MOI.TIME_LIMIT
+        return :LocalOptimal
     elseif termination_status == MOI.INFEASIBLE
         return :Infeasible
     elseif termination_status == MOI.LOCALLY_INFEASIBLE
