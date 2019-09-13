@@ -56,8 +56,7 @@ end
 
 " Weymouth equation for an undirected pipe "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractMISOCPForm
-    y = var(gm,n,:yp,k)
-    #yn = var(gm,n,:yn,k)
+    y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l,k)
@@ -83,8 +82,7 @@ end
 
 "Weymouth equation for an undirected expansion pipe"
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max) where T <: AbstractMISOCPForm
-    y = var(gm,n,:yp_ne,k)
-    #yn = var(gm,n,:yn_ne,k)
+    y = var(gm,n,:y_ne,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)

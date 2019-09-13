@@ -16,18 +16,17 @@ MINLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, Standar
 
 "Weymouth equation with discrete direction variables "
 function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractMINLPForm
-    y = var(gm,n,:yp,k)
-    #yn = var(gm,n,:yn,k)
+    y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     f  = var(gm,n,:f,k)
 
-    # when yp = 1, the first two equations say w*(pi - pj) == f^2.
+    # when y = 1, the first two equations say w*(pi - pj) == f^2.
     # This implies the third equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
     # Given that flow is from i -> j, the largest value is f_max^2. Thus 2*f_max^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
     # The fourth equation staets -f^2 <= f^2 which is always true.
 
-    # when yn = 1, the last two equations say w*(pj - pi) == f^2.
+    # when y = 0, the last two equations say w*(pj - pi) == f^2.
     # This implies the first equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
     # Given that flow is from j -> i, the largest value is f_min^2. Thus 2*f_min^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
     # The second equation staets -f^2 <= f^2 which is always true.
@@ -55,8 +54,7 @@ end
 
 " Weymouth equation for an undirected expansion pipe "
 function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max) where T <: AbstractMINLPForm
-    y = var(gm,n,:yp_ne,k)
-    #yn = var(gm,n,:yn_ne,k)
+    y = var(gm,n,:y_ne,k)
 
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
@@ -66,12 +64,12 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_m
     # when zp = 0, then f = 0 and pd_min and pd_max provide sufficiently large bounds
     # when zp = 1, then we have two euqations of the form w*(pi - pj) = +/- f^2 and w*(pj - pj) = -f^2
 
-    # when yp = 1, the first two equations say w*(pi - pj) == f^2.
+    # when y = 1, the first two equations say w*(pi - pj) == f^2.
     # This implies the third equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
     # Given that flow is from i -> j, the largest value is f_max^2. Thus 2*f_max^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
     # The fourth equation staets -f^2 <= f^2 which is always true.
 
-    # when yn = 1, the last two equations say w*(pj - pi) == f^2.
+    # when y = 0, the last two equations say w*(pj - pi) == f^2.
     # This implies the first equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
     # Given that flow is from j -> i, the largest value is f_min^2. Thus 2*f_min^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
     # The second equation staets -f^2 <= f^2 which is always true.
