@@ -190,7 +190,7 @@ end
 
 function guard_getobjbound(model)
     try
-        JuMP.getobjbound(model)
+        JuMP.objective_bound(model)
     catch
         -Inf
     end
