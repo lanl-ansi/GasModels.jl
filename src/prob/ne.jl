@@ -29,19 +29,19 @@ function post_ne(gm::GenericGasModel; kwargs...)
     for i in ids(gm,:pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm,:resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
-        constraint_weymouth_ne(gm, i)
+        constraint_pipe_weymouth_ne(gm, i)
         constraint_pipe_mass_flow_ne(gm,i)
     end
 

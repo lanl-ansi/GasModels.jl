@@ -11,6 +11,45 @@ function add_constraint(gm::GenericGasModel, n::Int, key, k, constraint)
 end
 
 #################################################################################################
+# Constraints associated with resistors
+#################################################################################################
+
+"Constraint: Constraints which define pressure drop across a resistor "
+function constraint_resistor_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractGasFormulation
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pd_min <= pi - pj))
+    add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pi - pj <= pd_max))
+end
+
+" Constraint: constraints on pressure drop across where direction is constrained"
+function constraint_resistor_pressure_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max)
+    pi = var(gm,n,:p,i)
+    pj = var(gm,n,:p,j)
+    add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj <= pd_max))
+    add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pd_min <= pi - pj))
+end
+
+" Constraint: Constraint on mass flow across the resistor"
+function constraint_resistor_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractGasFormulation
+    f  = var(gm,n,:f,k)
+    lb = has_lower_bound(f) ? max(lower_bound(f), f_min) : f_min
+    ub = has_upper_bound(f) ? min(upper_bound(f), f_max) : f_max
+    set_lower_bound(f, lb)
+    set_upper_bound(f, ub)
+end
+
+" Constraint: constraint on flow across the resistor where direction is constrained"
+function constraint_resistor_mass_flow_directed(gm::GenericGasModel, n::Int, k, f_min, f_max)
+    f  = var(gm,n,:f,k)
+    lb = has_lower_bound(f) ? max(lower_bound(f), f_min) : f_min
+    ub = has_upper_bound(f) ? min(upper_bound(f), f_max) : f_max
+    set_lower_bound(f, lb)
+    set_upper_bound(f, ub)
+end
+
+
+#################################################################################################
 # Constraints associated with junctions
 #################################################################################################
 
@@ -132,6 +171,7 @@ function constraint_pipe_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, pd_mi
     add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pi - pj <= pd_max))
 end
 
+
 " Constraint: constraints on pressure drop across where direction is constrained"
 function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
@@ -139,6 +179,7 @@ function constraint_pipe_pressure_directed(gm::GenericGasModel, n::Int, k, i, j,
     add_constraint(gm, n, :pressure_drop1, k, @constraint(gm.model, pi - pj <= pd_max))
     add_constraint(gm, n, :pressure_drop2, k, @constraint(gm.model, pd_min <= pi - pj))
 end
+
 
 "Constraint: constraints on pressure drop across an expansion pipe"
 function constraint_pipe_pressure_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractGasFormulation
@@ -156,6 +197,8 @@ function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_m
     set_lower_bound(f, lb)
     set_upper_bound(f, ub)
 end
+
+
 
 "Constraint: constraints on flow across an expansion pipe "
 function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractGasFormulation
@@ -176,7 +219,7 @@ function constraint_pipe_mass_flow_directed(gm::GenericGasModel, n::Int, k, f_mi
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained"
-function constraint_pressure_ne_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max, direction)
+function constraint_pipe_pressure_ne_directed(gm::GenericGasModel, n::Int, k, i, j, pd_min, pd_max, direction)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     z  = var(gm,n,:zp,k)
@@ -280,8 +323,6 @@ function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel, n::Int, 
     v = var(gm,n,:v,k)
     add_constraint(gm, n,:on_off_valve_flow1, k, @constraint(gm.model, f_min*v <= f))
     add_constraint(gm, n,:on_off_valve_flow2, k, @constraint(gm.model, f <= f_max*v))
-
-    constraint_parallel_flow(gm, k)
 end
 
 " Constraint: Flow across control valves when direction is constrained "

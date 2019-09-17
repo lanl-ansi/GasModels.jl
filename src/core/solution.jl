@@ -2,8 +2,12 @@
 "Build a gas solution"
 function build_solution(gm::GenericGasModel, status, solve_time; objective = NaN, solution_builder = get_solution)
     if status != :Error
-        objective = status != :Infeasible ? JuMP.objective_value(gm.model) : NaN
-        status = optimizer_status_dict(Symbol(typeof(gm.model.moi_backend).name.module), status)
+        try
+            objective = status != :Infeasible ? JuMP.objective_value(gm.model) : NaN
+            status = optimizer_status_dict(Symbol(typeof(gm.model.moi_backend).name.module), status)
+        catch
+            status = :Error
+        end
     end
 
     sol = init_solution(gm)

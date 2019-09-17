@@ -312,6 +312,22 @@ function calc_pipe_fmax(gm::GenericGasModel, n::Int, k, w)
     return min(mf, pf_max)
 end
 
+"calculates the minimum flow on a resistor"
+function calc_resistor_fmin(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_min         = ref(gm,n,:pd_min)[k]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+"calculates the maximum flow on a resistor"
+function calc_resistor_fmax(gm::GenericGasModel, n::Int, k, w)
+    mf             = ref(gm,n,:max_mass_flow)
+    pd_max         = ref(gm,n,:pd_max)[k]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
 "calculates the minimum flow on a pipe"
 function calc_pipe_ne_fmin(gm::GenericGasModel, n::Int, k, w)
     mf             = ref(gm,n,:max_mass_flow)

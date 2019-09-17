@@ -33,13 +33,13 @@ function post_gf(gm::GenericGasModel)
     for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm, :resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
 
