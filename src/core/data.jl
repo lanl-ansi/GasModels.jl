@@ -17,9 +17,9 @@ function calc_max_mass_flow(data::Dict{String,Any})
 end
 
 "Calculate the bounds on minimum and maximum pressure difference squared"
-function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, connection::Dict{String,Any})
-    i_idx = connection["f_junction"]
-    j_idx = connection["t_junction"]
+function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
+#    i_idx = connection["f_junction"]
+#    j_idx = connection["t_junction"]
 
     i = ref[:junction][i_idx]
     j = ref[:junction][j_idx]
@@ -297,51 +297,107 @@ function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
 end
 
 "calculates the minimum flow on a pipe"
-function calc_pipe_fmin(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_min         = ref(gm,n,:pd_min)[k]
+function calc_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:pipe_ref][k][:pd_min]
+    w              = ref[:pipe_ref][k][:w]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
 
 "calculates the maximum flow on a pipe"
-function calc_pipe_fmax(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max)[k]
+function calc_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:pipe_ref][k][:pd_max]
+    w              = ref[:pipe_ref][k][:w]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
 
 "calculates the minimum flow on a resistor"
-function calc_resistor_fmin(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_min         = ref(gm,n,:pd_min)[k]
+function calc_resistor_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:resistor_ref][k][:pd_min]
+    w              = ref[:resistor_ref][k][:w]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
 
 "calculates the maximum flow on a resistor"
-function calc_resistor_fmax(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max)[k]
+function calc_resistor_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:resistor_ref][k][:pd_max]
+    w              = ref[:resistor_ref][k][:w]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
 
 "calculates the minimum flow on a pipe"
-function calc_pipe_ne_fmin(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_min         = ref(gm,n,:pd_min_ne)[k]
+function calc_ne_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:ne_pipe_ref][k][:pd_min]
+    w              = ref[:ne_pipe_ref][k][:w]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
 
 "calculates the maximum flow on a pipe"
-function calc_pipe_ne_fmax(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max_ne)[k]
+function calc_ne_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:ne_pipe_ref][k][:pd_max]
+    w              = ref[:ne_pipe_ref][k][:w]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
+end
+
+"calculates the minimum flow on a short pipe"
+function calc_short_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a short pipe"
+function calc_short_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a valve"
+function calc_valve_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a valve"
+function calc_valve_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a compressor"
+function calc_compressor_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a compressor"
+function calc_compressor_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on an expansion compressor"
+function calc_ne_compressor_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on an expansion compressor"
+function calc_ne_compressor_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a control valve"
+function calc_control_valve_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a control valve"
+function calc_control_valve_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
 end
 
 "prints the text summary for a data file or dictionary to stdout"

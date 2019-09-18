@@ -20,11 +20,11 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
     resistance = Dict{Int, Float64}()
 
     for (i,pipe) in ref(gm,n,:pipe)
-        resistance[i] = ref(gm, n, :w)[i]
+        resistance[i] = ref(gm, n, :pipe_ref, i)[:w]
     end
 
     for (i,pipe) in ref(gm,n,:resistor)
-        resistance[i] = ref(gm, n, :w)[i]
+        resistance[i] = ref(gm, n, :resistor_ref,i)[:w]
     end
 
     if bounded
@@ -42,7 +42,7 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
     resistance = Dict{Int, Float64}()
 
     for (i,pipe) in  ref(gm,n,:ne_pipe)
-        resistance[i] = ref(gm,n,:w_ne)[i]#pipe_resistance(gm.data, pipe)
+        resistance[i] = ref(gm,n,:ne_pipe_ref,i)[:w]#pipe_resistance(gm.data, pipe)
     end
 
     if bounded

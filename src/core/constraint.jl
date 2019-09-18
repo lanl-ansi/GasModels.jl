@@ -198,8 +198,6 @@ function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_m
     set_upper_bound(f, ub)
 end
 
-
-
 "Constraint: constraints on flow across an expansion pipe "
 function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractGasFormulation
     f  = var(gm,n,:f_ne,k)
