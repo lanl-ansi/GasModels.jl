@@ -28,8 +28,8 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
 #    end
 
     if bounded
-        gm.var[:nw][n][:l_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", lower_bound=0.0, upper_bound=1/ref(gm, n, :pipe_ref, i)[:w] * max_flow^2, start = getstart(gm.ref[:nw][n][:pipe], i, "l_start", 0))
-        gm.var[:nw][n][:l_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", lower_bound=0.0, upper_bound=1/ref(gm, n, :resistor_ref,i)[:w] * max_flow^2, start = getstart(gm.ref[:nw][n][:resistor], i, "l_start", 0))
+        gm.var[:nw][n][:l_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :pipe_ref, i)[:pd_max]), abs(ref(gm, n, :pipe_ref, i)[:pd_max])), start = getstart(gm.ref[:nw][n][:pipe], i, "l_start", 0))
+        gm.var[:nw][n][:l_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :resistor_ref, i)[:pd_min]), abs(ref(gm, n, :resistor_ref, i)[:pd_max])), start = getstart(gm.ref[:nw][n][:resistor], i, "l_start", 0))
         gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
     else
         gm.var[:nw][n][:l_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", start = getstart(gm.ref[:nw][n][:pipe], i, "l_start", 0))
