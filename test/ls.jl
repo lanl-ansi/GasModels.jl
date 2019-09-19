@@ -74,7 +74,7 @@ end
 @testset "test nlp ls priority" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib nlp ls priority gaslib 40")
-        result = run_ls("../test/data/gaslib-40-ls-priority.m", NLPGasModel, cvx_solver)
+        result = run_ls("../test/data/gaslib-40-ls-priority.m", NLPGasModel, tol_ipopt_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
         @test isapprox(result["objective"]*result["solution"]["baseQ"], 340.92659091007965; atol = 1e-1)
      end

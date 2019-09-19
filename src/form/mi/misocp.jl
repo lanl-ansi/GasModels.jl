@@ -156,5 +156,4 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k
     else
         add_constraint(gm, n, :weymouth_ne7, k, @constraint(gm.model, w*l <= f_min * f + (1-zp) * (abs(f_min*f_max) + f_max^2)))
     end
-
 end

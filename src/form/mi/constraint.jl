@@ -207,7 +207,7 @@ function constraint_compressor_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f
 end
 
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables "
-function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractMIForms
+function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractMIForms
     y = var(gm,n,:y_ne,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)

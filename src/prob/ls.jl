@@ -28,7 +28,7 @@ function post_ls(gm::GenericGasModel)
 
     for i in ids(gm,:resistor)
         constraint_resistor_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
+        constraint_resistor_mass_flow(gm,i)
         constraint_resistor_weymouth(gm,i)
     end
 

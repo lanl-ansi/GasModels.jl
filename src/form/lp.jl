@@ -96,7 +96,7 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k
 end
 
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for LP models"
-function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractLPForm
+function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractLPForm
 end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for LP models"
