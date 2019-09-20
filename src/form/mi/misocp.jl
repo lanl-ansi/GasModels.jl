@@ -14,45 +14,52 @@ const MISOCPGasModel = GenericGasModel{StandardMISOCPForm} # the standard MISCOP
 "default MISOCP constructor"
 MISOCPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardMISOCPForm)
 
+"Variables needed for modeling flow in MI models"
+function variable_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    variable_pressure_difference(gm,n;bounded=bounded)
+    variable_mass_flow(gm,n; bounded=bounded)
+    variable_connection_direction(gm,n)
+end
+
+"Variables needed for modeling flow in MI models when some edges are directed"
+function variable_flow_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    variable_pressure_difference(gm,n;bounded=bounded)
+    variable_mass_flow(gm,n; bounded=bounded)
+    variable_connection_direction(gm,n;connection=ref(gm,n,:undirected_connection))
+end
+
+"Variables needed for modeling flow in MI models"
+function variable_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    variable_pressure_difference_ne(gm,n;bounded=bounded)
+    variable_mass_flow_ne(gm,n; bounded=bounded)
+    variable_connection_direction_ne(gm,n)
+end
+
+"Variables needed for modeling flow in MI models when some edges are directed"
+function variable_flow_ne_directed(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+    variable_pressure_difference_ne(gm,n;bounded=bounded)
+    variable_mass_flow_ne(gm,n; bounded=bounded)
+    variable_connection_direction_ne(gm,n;ne_connection=ref(gm,n,:undirected_ne_connection))
+end
+
 ""
-function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
-    max_flow = ref(gm,n,:max_mass_flow)
-#    resistance = Dict{Int, Float64}()
-
-#    for (i,pipe) in ref(gm,n,:pipe)
-#        resistance[i] = ref(gm, n, :pipe_ref, i)[:w]
-#    end
-
-#    for (i,pipe) in ref(gm,n,:resistor)
-#        resistance[i] = ref(gm, n, :resistor_ref,i)[:w]
-#    end
-
+function variable_pressure_difference(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
     if bounded
         gm.var[:nw][n][:l_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :pipe_ref, i)[:pd_max]), abs(ref(gm, n, :pipe_ref, i)[:pd_max])), start = getstart(gm.ref[:nw][n][:pipe], i, "l_start", 0))
         gm.var[:nw][n][:l_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :resistor_ref, i)[:pd_min]), abs(ref(gm, n, :resistor_ref, i)[:pd_max])), start = getstart(gm.ref[:nw][n][:resistor], i, "l_start", 0))
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
     else
         gm.var[:nw][n][:l_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", start = getstart(gm.ref[:nw][n][:pipe], i, "l_start", 0))
         gm.var[:nw][n][:l_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", start = getstart(gm.ref[:nw][n][:resistor], i, "l_start", 0))
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
     end
 end
 
 ""
-function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
+function variable_pressure_difference_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMISOCPForm
     max_flow = ref(gm,n,:max_mass_flow)
-#    resistance = Dict{Int, Float64}()
-
-#    for (i,pipe) in  ref(gm,n,:ne_pipe)
-#        resistance[i] = ref(gm,n,:ne_pipe_ref,i)[:w]
-#    end
-
     if bounded
-        gm.var[:nw][n][:l_ne_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=1/ref(gm,n,:ne_pipe_ref,i)[:w] * max_flow^2, start = getstart(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
-        gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+        gm.var[:nw][n][:l_ne_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :ne_pipe_ref, i)[:pd_max]), abs(ref(gm, n, :ne_pipe_ref, i)[:pd_max]), 1/ref(gm,n,:ne_pipe_ref,i)[:w] * max_flow^2), start = getstart(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
     else
         gm.var[:nw][n][:l_ne_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", start = getstart(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
-        gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
     end
 end
 
