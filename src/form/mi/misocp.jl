@@ -93,7 +93,7 @@ function constraint_resistor_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f
    add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
    add_constraint(gm, n, :weymouth3, k, @constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
    add_constraint(gm, n, :weymouth4, k, @constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-   add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))
+   add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, l >= f^2/w))
 
    add_constraint(gm, n, :weymouth6, k, @constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
    add_constraint(gm, n, :weymouth7, k, @constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))

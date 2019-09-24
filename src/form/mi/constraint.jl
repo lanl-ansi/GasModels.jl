@@ -252,7 +252,7 @@ function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel{T}, n::In
 end
 
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables "
-function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractMIForms
+function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)

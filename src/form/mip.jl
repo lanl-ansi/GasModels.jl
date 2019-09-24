@@ -63,7 +63,7 @@ function constraint_on_off_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, 
 end
 
 " constraints on pressure drop across control valves that are undirected--not applicable for MIP models"
-function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmax) where T <: AbstractMIPForm
+function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractMIPForm
 end
 
 " Constraint: Pressure drop across a control valves when directions is constrained--not applicable for MIP models"

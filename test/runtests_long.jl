@@ -34,9 +34,9 @@ else
     minlp_solver = couenne_solver
 end
 
-include("long_tests_gf.jl")
-include("long_tests_ne_minlp.jl")
+#include("long_tests_gf.jl")
+#include("long_tests_ne_minlp.jl")
 include("long_tests_ne_misocp.jl")
-include("long_tests_ne_nlp.jl")
+#include("long_tests_ne_nlp.jl")
 
 #include("long_tests_unstable.jl")

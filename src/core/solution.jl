@@ -48,6 +48,7 @@ function build_solution(gm::GenericGasModel, status, solve_time; objective = NaN
         "status" => status,
         "objective" => objective,
         "objective_lb" => guard_getobjbound(gm.model),
+        "objective_gap" => abs((objective - guard_getobjbound(gm.model)) / objective) * 100,
         "solve_time" => solve_time,
         "solution" => sol,
         "machine" => Dict(
