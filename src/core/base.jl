@@ -153,13 +153,13 @@ function build_generic_model(data::Dict{String,Any}, model_constructor, post_met
 end
 
 ""
-function parse_status(termination_status::MOI.TerminationStatusCode)
+function parse_status(termination_status::MOI.TerminationStatusCode, primal_status::MOI.ResultStatusCode)
     if termination_status == MOI.OPTIMAL
         return :Optimal
     elseif termination_status == MOI.LOCALLY_SOLVED
         return :LocalOptimal
     elseif termination_status == MOI.TIME_LIMIT
-        return :LocalOptimal # Incorrect if no feasible solution
+        return primal_status == MOI.NO_SOLUTION ? :LocalInfeasible : :LocalOptimal
     elseif termination_status == MOI.INFEASIBLE
         return :Infeasible
     elseif termination_status == MOI.LOCALLY_INFEASIBLE
@@ -174,7 +174,8 @@ end
 ""
 function solve_generic_model(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory; solution_builder = get_solution)
     termination_status, solve_time = optimize!(gm, optimizer)
-    status = parse_status(termination_status)
+    primal_status = MOI.get(gm.model, MOI.PrimalStatus())
+    status = parse_status(termination_status, primal_status)
 
     return build_solution(gm, status, solve_time; solution_builder = solution_builder)
 end
