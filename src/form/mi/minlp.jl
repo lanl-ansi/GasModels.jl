@@ -112,7 +112,7 @@ function constraint_pipe_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     # when zp = 0, then f = 0 and pd_min and pd_max provide sufficiently large bounds
     # when zp = 1, then we have two euqations of the form w*(pi - pj) = +/- f^2 and w*(pj - pj) = -f^2
@@ -139,7 +139,7 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     if direction == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))

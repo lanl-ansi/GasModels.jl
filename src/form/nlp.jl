@@ -75,7 +75,7 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     # The big M needs to be the min and max pressure difference in either direction multiplied by w (referenced by i to j or j to i)
     if direction == 1
@@ -92,7 +92,7 @@ function constraint_pipe_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     add_constraint(gm, n, :weymouth_ne1, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) + (1-zp) * w * pd_min))
     add_constraint(gm, n, :weymouth_ne2, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp) * w * pd_max))
@@ -120,7 +120,7 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zc = var(gm,n,:zc,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_compressor,k)
 
     M = abs(max(i_pmax,j_pmax)) - abs(min(i_pmin, j_pmin))
     #TODO this constraint is only valid if min_ratio = 1

@@ -30,9 +30,14 @@ end
 function variable_mass_flow_ne(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     if bounded
-         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+#         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+         gm.var[:nw][n][:f_ne_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_pipe], i, "f_start", 0))
+         gm.var[:nw][n][:f_ne_compressor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_compressor])], base_name="$(n)_f_ne", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:ne_compressor], i, "f_start", 0))
     else
-         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+#         gm.var[:nw][n][:f_ne] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_connection])], base_name="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_connection], i, "f_start", 0))
+         gm.var[:nw][n][:f_ne_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_pipe], i, "f_start", 0))
+         gm.var[:nw][n][:f_ne_compressor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_compressor])], base_name="$(n)_f_ne", start = getstart(gm.ref[:nw][n][:ne_compressor], i, "f_start", 0))
+
     end
 end
 

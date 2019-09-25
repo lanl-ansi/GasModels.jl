@@ -138,7 +138,7 @@ function constraint_pipe_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     l  = var(gm,n,:l_ne_pipe,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     add_constraint(gm, n, :weymouth_ne1, k,  @constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
     add_constraint(gm, n, :weymouth_ne2, k,  @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
@@ -156,7 +156,7 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     l  = var(gm,n,:l_ne_pipe,k)
-    f  = var(gm,n,:f_ne,k)
+    f  = var(gm,n,:f_ne_pipe,k)
 
     add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, l == direction * (pi - pj)))
     add_constraint(gm, n, :weymouth_ne5, k, @constraint(gm.model, zp*w*l >= f^2))

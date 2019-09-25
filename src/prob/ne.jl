@@ -109,8 +109,8 @@ end
 
 " Add the flow solutions to new lines"
 function add_connection_flow_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "f", :f_ne)
-    add_setpoint(sol, gm, "ne_compressor", "f", :f_ne)
+    add_setpoint(sol, gm, "ne_pipe", "f", :f_ne_pipe)
+    add_setpoint(sol, gm, "ne_compressor", "f", :f_ne_compressor)
 end
 
 # Get all the solution values

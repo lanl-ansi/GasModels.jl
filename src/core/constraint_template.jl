@@ -276,13 +276,16 @@ function constraint_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
     producers     = ref(gm,n,:junction_producers,i)
     f_branches    = ref(gm,n,:f_connections,i)
     t_branches    = ref(gm,n,:t_connections,i)
-    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
-    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
+    f_ne_pipes = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["f_junction"] == i)))
+    t_ne_pipes = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["t_junction"] == i)))
+    f_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["f_junction"] == i)))
+    t_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["t_junction"] == i)))
+
 
     fg         = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
     fl         = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
 
-    constraint_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fg, fl)
+    constraint_mass_flow_balance_ne(gm, n, i, f_branches, t_branches, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl)
 end
 constraint_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ne(gm, gm.cnw, i)
 
@@ -320,8 +323,11 @@ function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)
     producers     = ref(gm,n,:junction_producers,i)
     f_branches    = ref(gm,n,:f_connections,i)
     t_branches    = ref(gm,n,:t_connections,i)
-    f_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["f_junction"] == i)))
-    t_branches_ne = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_connection] if x.second["t_junction"] == i)))
+    f_ne_pipes = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["f_junction"] == i)))
+    t_ne_pipes = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["t_junction"] == i)))
+    f_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["f_junction"] == i)))
+    t_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["t_junction"] == i)))
+
 
     dispatch_producers      = ref(gm,n,:junction_dispatchable_producers,i)
     nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
@@ -335,7 +341,7 @@ function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)
     fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers)  : 0
     flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
 
-    constraint_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_branches_ne, t_branches_ne, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance_ne_ls(gm, n, i, f_branches, t_branches, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
 end
 constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ne_ls(gm, gm.cnw, i)
 
