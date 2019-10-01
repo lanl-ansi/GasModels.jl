@@ -20,7 +20,9 @@ LPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardLP
 
 " continous relaxation of variables associated with operating valves "
 function variable_valve_operation(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractLPForm
-    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))
+#    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_valve] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_valve", start = getstart(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_control_valve] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_control_valve", start = getstart(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
 end
 
 ######################################################################################################

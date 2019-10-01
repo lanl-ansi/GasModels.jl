@@ -20,9 +20,20 @@ end
 function variable_mass_flow(gm::GenericGasModel, n::Int=gm.cnw; bounded::Bool = true)
     max_flow = gm.ref[:nw][n][:max_mass_flow]
     if bounded
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
+#        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
+        gm.var[:nw][n][:f_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_f_pipe", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:pipe], i, "f_start", 0))
+        gm.var[:nw][n][:f_compressor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:compressor])], base_name="$(n)_f_compressor", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:compressor], i, "f_start", 0))
+        gm.var[:nw][n][:f_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_f_resistor", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:resistor], i, "f_start", 0))
+        gm.var[:nw][n][:f_short_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:short_pipe])], base_name="$(n)_f_short_pipe", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:short_pipe], i, "f_start", 0))
+        gm.var[:nw][n][:f_valve] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:valve])], base_name="$(n)_f_valve", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:valve], i, "f_start", 0))
+        gm.var[:nw][n][:f_control_valve] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:control_valve])], base_name="$(n)_f_control_valve", lower_bound=-max_flow, upper_bound=max_flow, start = getstart(gm.ref[:nw][n][:control_valve], i, "f_start", 0))
     else
-        gm.var[:nw][n][:f] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:connection])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:connection], i, "f_start", 0))
+        gm.var[:nw][n][:f_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:pipe], i, "f_start", 0))
+        gm.var[:nw][n][:f_compressor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:compressor])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:compressor], i, "f_start", 0))
+        gm.var[:nw][n][:f_resistor] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:resistor], i, "f_start", 0))
+        gm.var[:nw][n][:f_short_pipe] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:short_pipe])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:short_pipe], i, "f_start", 0))
+        gm.var[:nw][n][:f_valve] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:valve])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:valve], i, "f_start", 0))
+        gm.var[:nw][n][:f_control_valve] = @variable(gm.model, [i in keys(gm.ref[:nw][n][:control_valve])], base_name="$(n)_f", start = getstart(gm.ref[:nw][n][:control_valve], i, "f_start", 0))
     end
 end
 
@@ -53,7 +64,9 @@ end
 
 " 0-1 variables associated with operating valves "
 function variable_valve_operation(gm::GenericGasModel{T}, n::Int=gm.cnw) where T <: AbstractGasFormulation
-    gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], binary=true, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))
+    #gm.var[:nw][n][:v] = @variable(gm.model, [l in [collect(keys(gm.ref[:nw][n][:valve])); collect(keys(gm.ref[:nw][n][:control_valve]))]], binary=true, base_name="$(n)_v", start = getstart(gm.ref[:nw][n][:connection], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_valve]         = @variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])], binary=true, base_name="$(n)_v_valve", start = getstart(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_control_valve] = @variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])], binary=true, base_name="$(n)_v_control_valve", start = getstart(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
 end
 
 " variables associated with demand "

@@ -44,7 +44,7 @@ function constraint_pipe_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min
     y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_pipe,k)
 
     # when y = 1, the first two equations say w*(pi - pj) == f^2.
     # This implies the third equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
@@ -67,7 +67,7 @@ function constraint_resistor_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f
     y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
 
     add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, w*(pi - pj) >= f^2 - (1-y)*2*f_min^2))
     add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, w*(pi - pj) <= f^2))
@@ -79,7 +79,7 @@ end
 function constraint_pipe_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, f_min, f_max, direction) where T <: AbstractMINLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_pipe,k)
 
     if direction == 1
         add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
@@ -94,7 +94,7 @@ end
 function constraint_resistor_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, f_min, f_max, direction) where T <: AbstractMINLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
 
     if direction == 1
         add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, w*(pi - pj) >= f^2))

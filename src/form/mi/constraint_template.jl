@@ -40,37 +40,75 @@ constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(g
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
-    connections = ref(gm,n,:connection)
-    junction_connections = ref(gm,n,:junction_connections,idx)
+    f_pipes          = ref(gm,n,:f_pipes,idx)
+    t_pipes          = ref(gm,n,:t_pipes,idx)
+    f_compressors    = ref(gm,n,:f_compressors,idx)
+    t_compressors    = ref(gm,n,:t_compressors,idx)
+    f_resistors      = ref(gm,n,:f_resistors,idx)
+    t_resistors      = ref(gm,n,:t_resistors,idx)
+    f_short_pipes    = ref(gm,n,:f_short_pipes,idx)
+    t_short_pipes    = ref(gm,n,:t_short_pipes,idx)
+    f_valves         = ref(gm,n,:f_valves,idx)
+    t_valves         = ref(gm,n,:t_valves,idx)
+    f_control_valves = ref(gm,n,:f_control_valves,idx)
+    t_control_valves = ref(gm,n,:t_control_valves,idx)
 
-    first = nothing
-    last = nothing
+    constraint_conserve_flow(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves)
 
-    for i in junction_connections
-        connection = connections[i]
-        other = (connection["f_junction"] == idx) ? connection["t_junction"] :  connection["f_junction"]
 
-        if first == nothing
-            first = other
-        elseif first != other
-            if last != nothing && last != other
-                error(LOGGER, string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
-            end
-            last = other
-        end
-    end
+#    connections = ref(gm,n,:connection)
+#    junction_connections = ref(gm,n,:junction_connections,idx)
 
-    yp_first = filter(i -> connections[i]["f_junction"] == first, junction_connections)
-    yn_first = filter(i -> connections[i]["t_junction"] == first, junction_connections)
-    yp_last  = filter(i -> connections[i]["t_junction"] == last,  junction_connections)
-    yn_last  = filter(i -> connections[i]["f_junction"] == last,  junction_connections)
+#    first = nothing
+#    last = nothing
 
-    constraint_conserve_flow(gm, n, idx, yp_first, yn_first, yp_last, yn_last)
+#    for i in junction_connections
+#        connection = connections[i]
+#        other = (connection["f_junction"] == idx) ? connection["t_junction"] :  connection["f_junction"]
+
+#        if first == nothing
+#            first = other
+#        elseif first != other
+#            if last != nothing && last != other
+#                error(LOGGER, string("Error: adding a degree 2 constraint to a node with degree > 2: Junction ", idx))
+#            end
+#            last = other
+#        end
+#    end
+
+#    yp_first = filter(i -> connections[i]["f_junction"] == first, junction_connections)
+#    yn_first = filter(i -> connections[i]["t_junction"] == first, junction_connections)
+#    yp_last  = filter(i -> connections[i]["t_junction"] == last,  junction_connections)
+#    yn_last  = filter(i -> connections[i]["f_junction"] == last,  junction_connections)
+
+#    constraint_conserve_flow(gm, n, idx, yp_first, yn_first, yp_last, yn_last)
 end
 constraint_conserve_flow(gm::GenericGasModel, i::Int) = constraint_conserve_flow(gm, gm.cnw, i)
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+#    f_pipes          = ref(gm,n,:f_pipes,idx)
+#    t_pipes          = ref(gm,n,:t_pipes,idx)
+#    f_compressors    = ref(gm,n,:f_compressors,idx)
+#    t_compressors    = ref(gm,n,:t_compressors,idx)
+#    f_resistors      = ref(gm,n,:f_resistors,idx)
+#    t_resistors      = ref(gm,n,:t_resistors,idx)
+#    f_short_pipes    = ref(gm,n,:f_short_pipes,idx)
+#    t_short_pipes    = ref(gm,n,:t_short_pipes,idx)
+#    f_valves         = ref(gm,n,:f_valves,idx)
+#    t_valves         = ref(gm,n,:t_valves,idx)
+#    f_control_valves = ref(gm,n,:f_control_valves,idx)
+#    t_control_valves = ref(gm,n,:t_control_valves,idx)
+#    f_ne_pipes       = ref(gm,n,:f_ne_pipes,idx)
+#    t_ne_pipes       = ref(gm,n,:t_ne_pipes,idx)
+#    f_ne_compressors = ref(gm,n,:f_ne_compressors,idx)
+#    t_ne_compressors = ref(gm,n,:t_ne_compressors,idx)
+
+#    constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
+#                                    t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves,
+#                                    t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+
+
     connections = ref(gm,n,:connection)
     ne_connections = ref(gm,n,:ne_connection)
     junction_connections = ref(gm,n,:junction_connections,idx)
@@ -158,7 +196,7 @@ function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where 
     i = min(connection["f_junction"], connection["t_junction"])
     j = max(connection["f_junction"], connection["t_junction"])
 
-    all_parallel_connections = ref(gm,n,:all_parallel_connections, (i,j))
+    all_parallel_connections = ref(gm,n,:parallel_ne_connections, (i,j))
     parallel_connections = ref(gm,n,:parallel_connections, (i,j))
 
     if length(all_parallel_connections) <= 1

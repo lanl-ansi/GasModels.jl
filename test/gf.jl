@@ -95,10 +95,15 @@ end
     data = GasModels.parse_file("../test/data/gaslib-582.json")
     gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
     @test length(gm.var[:nw][gm.cnw][:p])  == 610
-    @test length(gm.var[:nw][gm.cnw][:f])  == 637
+    @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
+    @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 10
+    @test length(gm.var[:nw][gm.cnw][:f_short_pipe])  == 269
+    @test length(gm.var[:nw][gm.cnw][:f_resistor])  == 8
+    @test length(gm.var[:nw][gm.cnw][:f_valve])  == 26
+    @test length(gm.var[:nw][gm.cnw][:f_control_valve])  == 46
     @test length(gm.var[:nw][gm.cnw][:y]) == 637
     @test haskey(gm.var[:nw][gm.cnw],:l)   == false
-    @test length(gm.var[:nw][gm.cnw][:v])  == 72
+    @test length(gm.var[:nw][gm.cnw][:v_valve])  == 26
 
     ref = gm.con[:nw][gm.cnw][:junction_mass_flow_balance][100]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -108,7 +113,7 @@ end
     @test isapprox(set.value, 0.64266/data["baseQ"]; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 1
-    var_ref = gm.var[:nw][gm.cnw][:f][128]
+    var_ref = gm.var[:nw][gm.cnw][:f_pipe][128]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
 
     # -f[426] - f[77] + f[78] == 0
@@ -120,11 +125,11 @@ end
     @test isapprox(set.value, 0.0; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 3
-    var_ref = gm.var[:nw][gm.cnw][:f][426]
+    var_ref = gm.var[:nw][gm.cnw][:f_short_pipe][426]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
-    var_ref = gm.var[:nw][gm.cnw][:f][77]
+    var_ref = gm.var[:nw][gm.cnw][:f_pipe][77]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
-    var_ref = gm.var[:nw][gm.cnw][:f][78]
+    var_ref = gm.var[:nw][gm.cnw][:f_pipe][78]
     @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
 
     # -f[360] - f[269] == -526
@@ -137,9 +142,9 @@ end
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 
-    var_ref = gm.var[:nw][gm.cnw][:f][360]
+    var_ref = gm.var[:nw][gm.cnw][:f_short_pipe][360]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
-    var_ref = gm.var[:nw][gm.cnw][:f][269]
+    var_ref = gm.var[:nw][gm.cnw][:f_pipe][269]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
 
     # "yp[360] + yp[269] >= 1"
@@ -188,23 +193,23 @@ end
     end
 
     #  yp[238] - yn[239] == 0
-    ref = gm.con[:nw][gm.cnw][:conserve_flow1][523]
+    ref = gm.con[:nw][gm.cnw][:conserve_flow][523]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
 
-    @test isapprox(set.value, -1.0; atol = 1e-4)
+    @test isapprox(set.value, 1.0; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 
     var_ref = gm.var[:nw][gm.cnw][:y][239]
-    @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
+    @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
     var_ref = gm.var[:nw][gm.cnw][:y][238]
-    @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
+    @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
 
     # - yn[221] + yn[514] == 0
-    ref = gm.con[:nw][gm.cnw][:conserve_flow1][496]
+    ref = gm.con[:nw][gm.cnw][:conserve_flow][496]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
@@ -215,12 +220,12 @@ end
     @test length(func.terms) == 2
 
     var_ref = gm.var[:nw][gm.cnw][:y][221]
-    @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
-    var_ref = gm.var[:nw][gm.cnw][:y][514]
     @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
+    var_ref = gm.var[:nw][gm.cnw][:y][514]
+    @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
 
     # yp[77] - yp[76] == 0
-    ref = gm.con[:nw][gm.cnw][:conserve_flow1][305]
+    ref = gm.con[:nw][gm.cnw][:conserve_flow][305]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
@@ -231,9 +236,9 @@ end
     @test length(func.terms) == 2
 
     var_ref = gm.var[:nw][gm.cnw][:y][77]
-    @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
-    var_ref = gm.var[:nw][gm.cnw][:y][76]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
+    var_ref = gm.var[:nw][gm.cnw][:y][76]
+    @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
 
     # 0.34408340524232955 yp[161] + p[503] - p[415] <= 0.34408340524232955
     # p[415] - p[503] + 0.34408340524232955 yn[161] <= 0.34408340524232955
@@ -275,7 +280,7 @@ end
     # 0.12220764306078952 yp[186] - f[186] <= 0.12220764306078952
     # f[186] + 0.12220764306078952 yn[186] <= 0.12220764306078952
     ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow1][186]
-    var_ref = [gm.var[:nw][gm.cnw][:y][186], gm.var[:nw][gm.cnw][:f][186]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][186], gm.var[:nw][gm.cnw][:f_pipe][186]]
     coeff = [0.12220764306078952, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -292,7 +297,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow2][186]
-    var_ref = [gm.var[:nw][gm.cnw][:y][186], gm.var[:nw][gm.cnw][:f][186]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][186], gm.var[:nw][gm.cnw][:f_pipe][186]]
     coeff = [-0.12220764306078952, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -390,7 +395,7 @@ end
     # yp[321] - f[321] <= 1.0
     # f[321] + yn[321] <= 1.0
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow1][321]
-    var_ref = [gm.var[:nw][gm.cnw][:y][321], gm.var[:nw][gm.cnw][:f][321]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -407,7 +412,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow2][321]
-    var_ref = [gm.var[:nw][gm.cnw][:y][321], gm.var[:nw][gm.cnw][:f][321]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -427,7 +432,7 @@ end
     # yp[549] - f[549] <= 1.0
     # f[549] + yn[549] <= 1.0
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction1][549]
-    var_ref = [gm.var[:nw][gm.cnw][:y][549], gm.var[:nw][gm.cnw][:f][549]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -445,7 +450,7 @@ end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction2][549]
-    var_ref = [gm.var[:nw][gm.cnw][:y][549], gm.var[:nw][gm.cnw][:f][549]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -539,7 +544,7 @@ end
     # - v[558] - f[558] <= 0.0
     # f[558] -  v[558] <= 0.0
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction2][558]
-    var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:y][558]]
+    var_ref = [gm.var[:nw][gm.cnw][:f_valve][558], gm.var[:nw][gm.cnw][:y][558]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -556,7 +561,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction1][558]
-    var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:y][558]]
+    var_ref = [gm.var[:nw][gm.cnw][:f_valve][558], gm.var[:nw][gm.cnw][:y][558]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -573,7 +578,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction3][558]
-    var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:v][558]]
+    var_ref = [gm.var[:nw][gm.cnw][:f_valve][558], gm.var[:nw][gm.cnw][:v_valve][558]]
     coeff = [-1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -590,7 +595,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction4][558]
-    var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:v][558]]
+    var_ref = [gm.var[:nw][gm.cnw][:f_valve][558], gm.var[:nw][gm.cnw][:v_valve][558]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -609,7 +614,7 @@ end
     # - p[164] + 0.50520177292419455 v[571] + p[170] <= 0.5052017729241945
     # - p[170] + p[164] + 0.5052017729241945 v[571] <= 0.5052017729241945
     ref = gm.con[:nw][gm.cnw][:valve_pressure_drop2][571]
-    var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v][571], gm.var[:nw][gm.cnw][:p][170]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v_valve][571], gm.var[:nw][gm.cnw][:p][170]]
     coeff = [-1.0, 0.5052017729241945, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -626,7 +631,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:valve_pressure_drop1][571]
-    var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v][571], gm.var[:nw][gm.cnw][:p][170]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v_valve][571], gm.var[:nw][gm.cnw][:p][170]]
     coeff = [1.0, 0.5052017729241945, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -647,7 +652,7 @@ end
     # f[591] + yn[591] <= 1.0
     # - v[591] - f[591] <= 0.0
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction4][591]
-    var_ref = [gm.var[:nw][gm.cnw][:v][591], gm.var[:nw][gm.cnw][:f][591]]
+    var_ref = [gm.var[:nw][gm.cnw][:v_control_valve][591], gm.var[:nw][gm.cnw][:f_control_valve][591]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -664,7 +669,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction1][591]
-    var_ref = [gm.var[:nw][gm.cnw][:y][591], gm.var[:nw][gm.cnw][:f][591]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][591], gm.var[:nw][gm.cnw][:f_control_valve][591]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -681,7 +686,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction2][591]
-    var_ref = [gm.var[:nw][gm.cnw][:y][591], gm.var[:nw][gm.cnw][:f][591]]
+    var_ref = [gm.var[:nw][gm.cnw][:y][591], gm.var[:nw][gm.cnw][:f_control_valve][591]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -698,7 +703,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction3][591]
-    var_ref = [gm.var[:nw][gm.cnw][:v][591], gm.var[:nw][gm.cnw][:f][591]]
+    var_ref = [gm.var[:nw][gm.cnw][:v_control_valve][591], gm.var[:nw][gm.cnw][:f_control_valve][591]]
     coeff = [-1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -719,7 +724,7 @@ end
     # 0_p[2600217] - 0_p[217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     # 0_p[217] - 0_p[2600217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop2][585]
-    var_ref = [gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v][585]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v_control_valve][585]]
     coeff = [-1.0, 0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -736,7 +741,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop4][585]
-    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v][585]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v_control_valve][585]]
     coeff = [1.0, -1.0, -0.505201772924194, 0.505201772924196]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -753,7 +758,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop1][585]
-    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v][585]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v_control_valve][585]]
     coeff = [-1.0, 1.0, 0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -770,7 +775,7 @@ end
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop3][585]
-    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v][585]]
+    var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:y][585], gm.var[:nw][gm.cnw][:v_control_valve][585]]
     coeff = [-1.0, 1.0, -0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)

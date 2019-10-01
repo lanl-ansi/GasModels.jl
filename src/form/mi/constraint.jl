@@ -7,13 +7,29 @@
 #############################################################################################################
 
 " Constraint: standard mass flow balance equation where demand and production are constants "
-function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fg, fl) where T <: AbstractMIForms
-    f  = var(gm,n,:f)
-    y = var(gm,n,:y)
+function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fg, fl) where T <: AbstractMIForms
+    f_pipe          = var(gm,n,:f_pipe)
+    f_compressor    = var(gm,n,:f_compressor)
+    f_resistor      = var(gm,n,:f_resistor)
+    f_short_pipe    = var(gm,n,:f_short_pipe)
+    f_valve         = var(gm,n,:f_valve)
+    f_control_valve = var(gm,n,:f_control_valve)
+    y               = var(gm,n,:y)
 
-    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                                           sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                                           sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                                           sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                                           sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                                           sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves)
+                                                                     ))
 
-    is_disjunction = apply_mass_flow_cuts(y, f_branches) && apply_mass_flow_cuts(y, t_branches)
+    is_disjunction = apply_mass_flow_cuts(y, f_pipes) && apply_mass_flow_cuts(y, t_pipes) &&
+                     apply_mass_flow_cuts(y, f_compressors) && apply_mass_flow_cuts(y, t_compressors) &&
+                     apply_mass_flow_cuts(y, f_resistors) && apply_mass_flow_cuts(y, t_resistors) &&
+                     apply_mass_flow_cuts(y, f_short_pipes) && apply_mass_flow_cuts(y, t_short_pipes) &&
+                     apply_mass_flow_cuts(y, f_valves) && apply_mass_flow_cuts(y, t_valves) &&
+                     apply_mass_flow_cuts(y, f_control_valves) && apply_mass_flow_cuts(y, t_control_valves)
 
     if fg > 0.0 && fl == 0.0 && is_disjunction
         constraint_source_flow(gm, n, i)
@@ -38,20 +54,41 @@ function apply_mass_flow_cuts(yp, branches)
 end
 
 " Constraint: standard flow balance equation where demand and production are constants and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl) where T <: AbstractMIForms
-    f     = var(gm,n,:f)
-    f_ne_pipe  = var(gm,n,:f_ne_pipe)
+function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl) where T <: AbstractMIForms
+    f_pipe           = var(gm,n,:f_pipe)
+    f_compressor     = var(gm,n,:f_compressor)
+    f_resistor       = var(gm,n,:f_resistor)
+    f_short_pipe     = var(gm,n,:f_short_pipe)
+    f_valve          = var(gm,n,:f_valve)
+    f_control_valve  = var(gm,n,:f_control_valve)
+    f_ne_pipe        = var(gm,n,:f_ne_pipe)
     f_ne_compressor  = var(gm,n,:f_ne_compressor)
-    y    = var(gm,n,:y)
-    y_ne = var(gm,n,:y_ne)
+    y                = var(gm,n,:y)
+    y_ne             = var(gm,n,:y_ne)
 
     add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fg - fl ==
-                                                                                    sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) +
-                                                                                    sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                    sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)))
+                                                                                              sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                                              sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                                              sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                                              sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                                              sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                                              sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves) +
+                                                                                              sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
+                                                                                              sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
+                                                                        ))
 
-    is_disjunction = apply_mass_flow_cuts(y, f_branches) &&
-                     apply_mass_flow_cuts(y, t_branches) &&
+    is_disjunction = apply_mass_flow_cuts(y, f_pipes) &&
+                     apply_mass_flow_cuts(y, t_pipes) &&
+                     apply_mass_flow_cuts(y, f_compressors) &&
+                     apply_mass_flow_cuts(y, t_compressors) &&
+                     apply_mass_flow_cuts(y, f_resistors) &&
+                     apply_mass_flow_cuts(y, t_resistors) &&
+                     apply_mass_flow_cuts(y, f_short_pipes) &&
+                     apply_mass_flow_cuts(y, t_short_pipes) &&
+                     apply_mass_flow_cuts(y, f_valves) &&
+                     apply_mass_flow_cuts(y, t_valves) &&
+                     apply_mass_flow_cuts(y, f_control_valves) &&
+                     apply_mass_flow_cuts(y, t_control_valves) &&
                      apply_mass_flow_cuts(y_ne, f_ne_pipes) &&
                      apply_mass_flow_cuts(y_ne, t_ne_pipes) &&
                      apply_mass_flow_cuts(y_ne, f_ne_compressors) &&
@@ -72,14 +109,38 @@ function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_br
 end
 
 " Constraint: standard flow balance equation where demand and production are variables "
-function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
-    f  = var(gm,n,:f)
-    fg = var(gm,n,:fg)
-    fl = var(gm,n,:fl)
-    y = var(gm,n,:y)
-    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) == sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches)))
+function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
+    f_pipe           = var(gm,n,:f_pipe)
+    f_compressor     = var(gm,n,:f_compressor)
+    f_resistor       = var(gm,n,:f_resistor)
+    f_short_pipe     = var(gm,n,:f_short_pipe)
+    f_valve          = var(gm,n,:f_valve)
+    f_control_valve  = var(gm,n,:f_control_valve)
+    fg               = var(gm,n,:fg)
+    fl               = var(gm,n,:fl)
+    y                = var(gm,n,:y)
 
-    is_disjunction = apply_mass_flow_cuts(y, f_branches) && apply_mass_flow_cuts(y, t_branches)
+    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+                                                                               sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                               sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                               sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                               sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                               sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                               sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves)
+                                                                        ))
+
+    is_disjunction = apply_mass_flow_cuts(y, f_pipes) &&
+                     apply_mass_flow_cuts(y, t_pipes) &&
+                     apply_mass_flow_cuts(y, f_compressors) &&
+                     apply_mass_flow_cuts(y, t_compressors) &&
+                     apply_mass_flow_cuts(y, f_resistors) &&
+                     apply_mass_flow_cuts(y, t_resistors) &&
+                     apply_mass_flow_cuts(y, f_short_pipes) &&
+                     apply_mass_flow_cuts(y, t_short_pipes) &&
+                     apply_mass_flow_cuts(y, f_valves) &&
+                     apply_mass_flow_cuts(y, t_valves) &&
+                     apply_mass_flow_cuts(y, f_control_valves) &&
+                     apply_mass_flow_cuts(y, t_control_valves)
 
     if max(fgmin,fg_constant) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
         constraint_source_flow(gm, n, i)
@@ -95,8 +156,13 @@ function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_br
 end
 
 " Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
-    f                = var(gm,n,:f)
+function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractMIForms
+    f_pipe           = var(gm,n,:f_pipe)
+    f_compressor     = var(gm,n,:f_compressor)
+    f_resistor       = var(gm,n,:f_resistor)
+    f_short_pipe     = var(gm,n,:f_short_pipe)
+    f_valve          = var(gm,n,:f_valve)
+    f_control_valve  = var(gm,n,:f_control_valve)
     f_ne_pipe        = var(gm,n,:f_ne_pipe)
     f_ne_compressor  = var(gm,n,:f_ne_compressor)
     fg               = var(gm,n,:fg)
@@ -105,17 +171,32 @@ function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f
     y_ne             = var(gm,n,:y_ne)
 
     add_constraint(gm, n, :junction_mass_flow_balance_ne_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
-                                                                                        sum(f[a] for a in f_branches) - sum(f[a] for a in t_branches) +
-                                                                                        sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                        sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)))
+                                                                                      sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                                      sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                                      sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                                      sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                                      sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                                      sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves) +
+                                                                                      sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
+                                                                                      sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
+                                                                            ))
 
-    is_disjunction = apply_mass_flow_cuts(y, f_branches) &&
-                     apply_mass_flow_cuts(y, t_branches) &&
+    is_disjunction = apply_mass_flow_cuts(y, f_pipes) &&
+                     apply_mass_flow_cuts(y, t_pipes) &&
+                     apply_mass_flow_cuts(y, f_compressors) &&
+                     apply_mass_flow_cuts(y, t_compressors) &&
+                     apply_mass_flow_cuts(y, f_resistors) &&
+                     apply_mass_flow_cuts(y, t_resistors) &&
+                     apply_mass_flow_cuts(y, f_short_pipes) &&
+                     apply_mass_flow_cuts(y, t_short_pipes) &&
+                     apply_mass_flow_cuts(y, f_valves) &&
+                     apply_mass_flow_cuts(y, t_valves) &&
+                     apply_mass_flow_cuts(y, f_control_valves) &&
+                     apply_mass_flow_cuts(y, t_control_valves) &&
                      apply_mass_flow_cuts(y_ne, f_ne_pipes) &&
                      apply_mass_flow_cuts(y_ne, t_ne_pipes) &&
                      apply_mass_flow_cuts(y_ne, f_ne_compressors) &&
                      apply_mass_flow_cuts(y_ne, t_ne_compressors)
-
 
     if max(fgmin,fg_constant) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
         constraint_source_flow_ne(gm, i)
@@ -147,7 +228,7 @@ end
 "Constraint: Constraint on flow across a pipe when there are on/off direction variables "
 function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
-    f  = var(gm,n,:f,k)
+    f = var(gm,n,:f_pipe,k)
     add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, (1-y) * f_min <= f))
     add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= y * f_max))
 
@@ -184,7 +265,7 @@ end
 "Constraint: Constraints on flow across a short pipe with on/off direction variables"
 function constraint_short_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
-    f  = var(gm,n,:f,k)
+    f = var(gm,n,:f_short_pipe,k)
     add_constraint(gm, n, :on_off_short_pipe_flow1, k, @constraint(gm.model, f_min*(1-y) <= f))
     add_constraint(gm, n, :on_off_short_pipe_flow2, k, @constraint(gm.model, f <= f_max*y))
 
@@ -198,7 +279,7 @@ end
 "Constraint: constraints on flow across a compressor with on/off direction variables "
 function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
-    f  = var(gm,n,:f,k)
+    f = var(gm,n,:f_compressor,k)
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, (1-y)*f_min <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= y*f_max))
 
@@ -244,8 +325,8 @@ end
 "Constraint: Constraints on flow across valves with on/off direction variables "
 function constraint_on_off_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
-    f = var(gm,n,:f,k)
-    v = var(gm,n,:v,k)
+    f = var(gm,n,:f_valve,k)
+    v = var(gm,n,:v_valve,k)
     add_constraint(gm, n,:on_off_valve_flow_direction1, k, @constraint(gm.model, f_min*(1-y) <= f))
     add_constraint(gm, n,:on_off_valve_flow_direction2, k, @constraint(gm.model, f <= f_max*y))
     add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f))
@@ -261,8 +342,8 @@ end
 "Constraint: Constraints on flow across control valves with on/off direction variables "
 function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_max) where T <: AbstractMIForms
     y = var(gm,n,:y,k)
-    f = var(gm,n,:f,k)
-    v = var(gm,n,:v,k)
+    f = var(gm,n,:f_control_valve,k)
+    v = var(gm,n,:v_control_valve,k)
     add_constraint(gm, n, :on_off_control_valve_flow_direction1, k, @constraint(gm.model, f_min*(1-y) <= f))
     add_constraint(gm, n, :on_off_control_valve_flow_direction2, k, @constraint(gm.model, f <= f_max*y))
     add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f ))
@@ -273,10 +354,10 @@ end
 
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables "
 function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractMIForms
-    y = var(gm,n,:y,k)
+    y  = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    v  = var(gm,n,:v,k)
+    v  = var(gm,n,:v_control_valve,k)
     add_constraint(gm, n, :on_off_control_valve_pressure_drop1, k, @constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
     add_constraint(gm, n, :on_off_control_valve_pressure_drop2, k, @constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))
     add_constraint(gm, n, :on_off_control_valve_pressure_drop3, k, @constraint(gm.model,  pj - pi <= (1 + y - v)*j_pmax^2))
@@ -314,46 +395,129 @@ function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, 
 end
 
 "Constraint: This constraint is intended to ensure that flow is one direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, i, yp_first, yn_first, yp_last, yn_last) where T <: AbstractMIForms
+function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves) where T <: AbstractMIForms
     y = var(gm,n,:y)
 
-    if length(yn_first) > 0 && length(yp_last) > 0
-        for i1 in yn_first
-            for i2 in yp_last
-                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1])  == y[i2]))
-            end
+    y_fr = []
+    y_to  = []
+
+    for i in f_pipes push!(y_fr, y[i]) end
+    for i in f_compressors push!(y_fr, y[i]) end
+    for i in f_short_pipes push!(y_fr, y[i]) end
+    for i in f_resistors push!(y_fr, y[i]) end
+    for i in f_valves push!(y_fr, y[i]) end
+    for i in f_control_valves push!(y_fr, y[i]) end
+
+    for i in t_pipes push!(y_to, y[i]) end
+    for i in t_compressors push!(y_to, y[i]) end
+    for i in t_short_pipes push!(y_to, y[i]) end
+    for i in t_resistors push!(y_to, y[i]) end
+    for i in t_valves push!(y_to, y[i]) end
+    for i in t_control_valves push!(y_to, y[i]) end
+
+    for i = 1:length(y_fr)
+        for j = i+1:length(y_fr)
+            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] + y_fr[j] == 1))
         end
     end
 
-    if length(yn_first) > 0 && length(yn_last) > 0
-        for i1 in yn_first
-            for i2 in yn_last
-                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1]) == (1-y[i2])))
-            end
+    for i = 1:length(y_to)
+        for j = i+1:length(y_to)
+            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_to[i] + y_to[j] == 1))
         end
     end
 
-    if length(yp_first) > 0 && length(yp_last) > 0
-        for i1 in yp_first
-            for i2 in yp_last
-                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1]  == y[i2]))
-            end
+    for i = 1:length(y_fr)
+        for j = 1:length(y_to)
+            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] == y_to[i]))
         end
     end
 
-    if length(yp_first) > 0 && length(yn_last) > 0
-        for i1 in yp_first
-            for i2 in yn_last
-                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1] == (1-y[i2])))
-            end
-        end
-    end
+
+
+#    if length(yn_first) > 0 && length(yp_last) > 0
+#        for i1 in yn_first
+#            for i2 in yp_last
+#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1])  == y[i2]))
+#            end
+#        end
+#    end
+
+#    if length(yn_first) > 0 && length(yn_last) > 0
+#        for i1 in yn_first
+#            for i2 in yn_last
+#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1]) == (1-y[i2])))
+#            end
+#        end
+#    end
+
+#    if length(yp_first) > 0 && length(yp_last) > 0
+#        for i1 in yp_first
+#            for i2 in yp_last
+#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1]  == y[i2]))
+#            end
+#        end
+#    end
+
+#    if length(yp_first) > 0 && length(yn_last) > 0
+#        for i1 in yp_first
+#            for i2 in yn_last
+#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1] == (1-y[i2])))
+#            end
+#        end
+#    end
 end
 
 "Constraint: This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption for a node with expansion edges"
 function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last) where T <: AbstractMIForms
+#function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
+
     y = var(gm,n,:y)
     y_ne = var(gm,n,:y_ne)
+
+#    y_fr = []
+#    y_to  = []
+
+#    for i in f_pipes push!(y_fr, y[i]) end
+#    for i in f_compressors push!(y_fr, y[i]) end
+#    for i in f_short_pipes push!(y_fr, y[i]) end
+#    for i in f_resistors push!(y_fr, y[i]) end
+#    for i in f_valves push!(y_fr, y[i]) end
+#    for i in f_control_valves push!(y_fr, y[i]) end
+#    for i in f_ne_pipes push!(y_fr, y_ne[i]) end
+#    for i in f_ne_compressors push!(y_fr, y_ne[i]) end
+
+#    for i in t_pipes push!(y_to, y[i]) end
+#    for i in t_compressors push!(y_to, y[i]) end
+#    for i in t_short_pipes push!(y_to, y[i]) end
+#    for i in t_resistors push!(y_to, y[i]) end
+#    for i in t_valves push!(y_to, y[i]) end
+#    for i in t_control_valves push!(y_to, y[i]) end
+#    for i in t_ne_pipes push!(y_to, y_ne[i]) end
+#    for i in t_ne_compressors push!(y_to, y_ne[i]) end
+
+#    for i = 1:length(y_fr)
+#        for j = i+1:length(y_fr)
+#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] + y_fr[j] == 1))
+#        end
+#    end
+
+#    for i = 1:length(y_to)
+#        for j = i+1:length(y_to)
+#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_to[i] + y_to[j] == 1))
+#        end
+#    end
+
+#    for i = 1:length(y_fr)
+#        for j = 1:length(y_to)
+#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] == y_to[i]))
+#        end
+#    end
+
+
+
+
+
 
     if length(yn_first) > 0 && length(yp_last) > 0
         for i1 in yn_first
@@ -408,5 +572,5 @@ function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, f_
     y_ne = var(gm,n,:y_ne)
     y_k = haskey(ref(gm,n,:connection), k) ? y[k] : y_ne[k]
 
-    add_constraint(gm, n, :parallel_flow_ne1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) + sum(y_ne[i] for i in f_connections_ne) + sum( (1-y_ne[i]) for i in t_connections_ne) == y_k * length(ref(gm,n,:all_parallel_connections,(i,j)))))
+    add_constraint(gm, n, :parallel_flow_ne1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) + sum(y_ne[i] for i in f_connections_ne) + sum( (1-y_ne[i]) for i in t_connections_ne) == y_k * length(ref(gm,n,:parallel_ne_connections,(i,j)))))
 end

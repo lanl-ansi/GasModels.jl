@@ -65,11 +65,11 @@ end
 
 " Weymouth equation for an undirected pipe "
 function constraint_pipe_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractMISOCPForm
-    y = var(gm,n,:y,k)
+    y  = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l_pipe,k)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_pipe,k)
 
    add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
    add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
@@ -87,7 +87,7 @@ function constraint_resistor_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l_resistor,k)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
 
    add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
    add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
@@ -104,7 +104,7 @@ function constraint_pipe_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i,
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l_pipe,k)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_pipe,k)
 
     add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l == direction * (pi - pj)))
     add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))
@@ -120,7 +120,7 @@ function constraint_resistor_weymouth_directed(gm::GenericGasModel{T}, n::Int, k
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l_resistor,k)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
 
     add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l == direction * (pi - pj)))
     add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))

@@ -22,16 +22,16 @@ NLPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardN
 function constraint_pipe_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
-    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, w*(pi - pj) <= f * abs(f)))
-    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, w*(pi - pj) >= f * abs(f)))
+    f  = var(gm,n,:f_pipe,k)
+    add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
+    add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
 end
 
 "Weymouth equation with absolute value "
 function constraint_resistor_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
     add_constraint(gm, n, :weymouth1, k, @NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
     add_constraint(gm, n, :weymouth2, k, @NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
 end
@@ -40,7 +40,7 @@ end
 function constraint_pipe_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, f_min, f_max, directed) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_pipe,k)
 
     if directed == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
@@ -55,7 +55,7 @@ end
 function constraint_resistor_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, f_min, f_max, directed) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_resistor,k)
 
     if directed == 1
         add_constraint(gm, n, :weymouth_ne1, k, @constraint(gm.model, w*(pi - pj) >= f^2))
@@ -106,13 +106,12 @@ end
 function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    f  = var(gm,n,:f,k)
+    f  = var(gm,n,:f_compressor,k)
 
     #TODO this constraint is only valid if min_ratio = 1
     add_constraint(gm, n, :compressor_ratios1, k, @constraint(gm.model, pj - max_ratio^2*pi <= 0))
     add_constraint(gm, n, :compressor_ratios2, k, @constraint(gm.model, min_ratio^2*pi - pj <= 0))
-#    add_constraint(gm, n, :compressor_ratios3, k, @NLconstraint(gm.model, f * (1-pj/pi) <= 0))
-    add_constraint(gm, n, :compressor_ratios3, k, @constraint(gm.model, f* (pi - pj) <= 0))
+    add_constraint(gm, n, :compressor_ratios3, k, @constraint(gm.model, f*(pi - pj) <= 0))
 end
 
 " constraints on pressure drop across a compressor "
@@ -127,7 +126,6 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
     add_constraint(gm, n, :compressor_ratios_ne1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
     add_constraint(gm, n, :compressor_ratios_ne2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
     add_constraint(gm, n, :compressor_ratios_ne3, k, @constraint(gm.model, f * (pi - pj) <= (1-zc) * f_max * M))
-#    add_constraint(gm, n, :compressor_ratios_ne3, k, @NLconstraint(gm.model, f * (1-pj/pi) <= (1-zc) * f_max * (1-j_pmax^2/i_pmin^2)))
 end
 
 ##########################################################################################################
@@ -138,13 +136,12 @@ end
 function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax) where T <: AbstractNLPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    v  = var(gm,n,:v,k)
-    f  = var(gm,n,:f,k)
+    v  = var(gm,n,:v_control_valve,k)
+    f  = var(gm,n,:f_control_valve,k)
 
     M = abs(max(i_pmax,j_pmax)) - abs(min(i_pmin, j_pmin))
     #TODO this constraint is only valid if max_ratio = 1
     add_constraint(gm, n, :control_valve_pressure_drop1, k, @constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
     add_constraint(gm, n, :control_valve_pressure_drop2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
-    add_constraint(gm, n, :control_valve_pressure_drop3, k, @constraint(gm.model, f * (pi - pj) >= (1-v) * f_max * -M))
-#    add_constraint(gm, n, :control_valve_pressure_drop3, k, @NLconstraint(gm.model, f * (1-pj/pi) >= (1-v) * f_max * (1-j_pmax^2/i_pmin^2)))
+    add_constraint(gm, n, :control_valve_pressure_drop3, k, @constraint(gm.model, f * (pi - pj) >= 0))
 end
