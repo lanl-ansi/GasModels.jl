@@ -398,38 +398,44 @@ end
 function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves) where T <: AbstractMIForms
     y = var(gm,n,:y)
 
-    y_fr = []
-    y_to  = []
+    y_fr = Dict()
+    y_to  = Dict()
 
-    for i in f_pipes push!(y_fr, y[i]) end
-    for i in f_compressors push!(y_fr, y[i]) end
-    for i in f_short_pipes push!(y_fr, y[i]) end
-    for i in f_resistors push!(y_fr, y[i]) end
-    for i in f_valves push!(y_fr, y[i]) end
-    for i in f_control_valves push!(y_fr, y[i]) end
+    for (i,key) in f_pipes y_fr[y[i]] = key  end
+    for (i,key) in f_compressors y_fr[y[i]] = key  end
+    for (i,key) in f_resistors y_fr[y[i]] = key  end
+    for (i,key) in f_short_pipes y_fr[y[i]] = key  end
+    for (i,key) in f_valves y_fr[y[i]] = key  end
+    for (i,key) in f_control_valves y_fr[y[i]] = key  end
 
-    for i in t_pipes push!(y_to, y[i]) end
-    for i in t_compressors push!(y_to, y[i]) end
-    for i in t_short_pipes push!(y_to, y[i]) end
-    for i in t_resistors push!(y_to, y[i]) end
-    for i in t_valves push!(y_to, y[i]) end
-    for i in t_control_valves push!(y_to, y[i]) end
+    for (i,key) in t_pipes y_to[y[i]] = key  end
+    for (i,key) in t_compressors y_to[y[i]] = key  end
+    for (i,key) in t_resistors y_to[y[i]] = key  end
+    for (i,key) in t_short_pipes y_to[y[i]] = key  end
+    for (i,key) in t_valves y_to[y[i]] = key  end
+    for (i,key) in t_control_valves y_to[y[i]] = key  end
 
-    for i = 1:length(y_fr)
-        for j = i+1:length(y_fr)
-            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] + y_fr[j] == 1))
+    for (y1, t1) in y_fr
+        for (y2, t2) in y_fr
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 + y2 == 1))
+            end
         end
     end
 
-    for i = 1:length(y_to)
-        for j = i+1:length(y_to)
-            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_to[i] + y_to[j] == 1))
+    for (y1, t1) in y_to
+        for (y2, t2) in y_to
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 + y2 == 1))
+            end
         end
     end
 
-    for i = 1:length(y_fr)
-        for j = 1:length(y_to)
-            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] == y_to[i]))
+    for (y1, t1) in y_fr
+        for (y2, t2) in y_to
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 == y2))
+            end
         end
     end
 
@@ -469,55 +475,61 @@ function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx, f_pipes, 
 end
 
 "Constraint: This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption for a node with expansion edges"
-function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last) where T <: AbstractMIForms
-#function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
+#function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last) where T <: AbstractMIForms
+function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
 
     y = var(gm,n,:y)
     y_ne = var(gm,n,:y_ne)
 
-#    y_fr = []
-#    y_to  = []
+    y_fr = Dict()
+    y_to  = Dict()
 
-#    for i in f_pipes push!(y_fr, y[i]) end
-#    for i in f_compressors push!(y_fr, y[i]) end
-#    for i in f_short_pipes push!(y_fr, y[i]) end
-#    for i in f_resistors push!(y_fr, y[i]) end
-#    for i in f_valves push!(y_fr, y[i]) end
-#    for i in f_control_valves push!(y_fr, y[i]) end
-#    for i in f_ne_pipes push!(y_fr, y_ne[i]) end
-#    for i in f_ne_compressors push!(y_fr, y_ne[i]) end
+    for (i,key) in f_pipes y_fr[y[i]] = key  end
+    for (i,key) in f_compressors y_fr[y[i]] = key  end
+    for (i,key) in f_resistors y_fr[y[i]] = key  end
+    for (i,key) in f_short_pipes y_fr[y[i]] = key  end
+    for (i,key) in f_valves y_fr[y[i]] = key  end
+    for (i,key) in f_control_valves y_fr[y[i]] = key  end
+    for (i,key) in f_ne_pipes y_fr[y_ne[i]] = key  end
+    for (i,key) in f_ne_compressors y_fr[y_ne[i]] = key  end
 
-#    for i in t_pipes push!(y_to, y[i]) end
-#    for i in t_compressors push!(y_to, y[i]) end
-#    for i in t_short_pipes push!(y_to, y[i]) end
-#    for i in t_resistors push!(y_to, y[i]) end
-#    for i in t_valves push!(y_to, y[i]) end
-#    for i in t_control_valves push!(y_to, y[i]) end
-#    for i in t_ne_pipes push!(y_to, y_ne[i]) end
-#    for i in t_ne_compressors push!(y_to, y_ne[i]) end
+    for (i,key) in t_pipes y_to[y[i]] = key  end
+    for (i,key) in t_compressors y_to[y[i]] = key  end
+    for (i,key) in t_resistors y_to[y[i]] = key  end
+    for (i,key) in t_short_pipes y_to[y[i]] = key  end
+    for (i,key) in t_valves y_to[y[i]] = key  end
+    for (i,key) in t_control_valves y_to[y[i]] = key  end
+    for (i,key) in t_ne_pipes y_to[y_ne[i]] = key  end
+    for (i,key) in t_ne_compressors y_to[y_ne[i]] = key  end
 
-#    for i = 1:length(y_fr)
-#        for j = i+1:length(y_fr)
-#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] + y_fr[j] == 1))
-#        end
-#    end
+    for (y1, t1) in y_fr
+        for (y2, t2) in y_fr
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 + y2 == 1))
+            end
+        end
+    end
 
-#    for i = 1:length(y_to)
-#        for j = i+1:length(y_to)
-#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_to[i] + y_to[j] == 1))
-#        end
-#    end
+    for (y1, t1) in y_to
+        for (y2, t2) in y_to
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 + y2 == 1))
+            end
+        end
+    end
 
-#    for i = 1:length(y_fr)
-#        for j = 1:length(y_to)
-#            add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y_fr[i] == y_to[i]))
-#        end
-#    end
+    for (y1, t1) in y_fr
+        for (y2, t2) in y_to
+            if t1 != t2
+                add_constraint(gm, n, :conserve_flow, idx, @constraint(gm.model, y1 == y2))
+            end
+        end
+    end
 
 
 
 
-
+#=
 
     if length(yn_first) > 0 && length(yp_last) > 0
         for i1 in yn_first
@@ -558,6 +570,7 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_fir
             end
         end
     end
+    =#
 end
 
 "Constraint: ensures that parallel lines have flow in the same direction "

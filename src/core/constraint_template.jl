@@ -181,7 +181,6 @@ function constraint_pipe_weymouth(gm::GenericGasModel, n::Int, k)
     pipe    = ref(gm,n,:pipe,k)
     i       = pipe["f_junction"]
     j       = pipe["t_junction"]
-#    mf      = gm.ref[:nw][n][:max_mass_flow]
     w       = ref(gm,n,:pipe_ref,k)[:w]
     pd_max  = ref(gm,n,:pipe_ref,k)[:pd_max]
     pd_min  = ref(gm,n,:pipe_ref,k)[:pd_min]
@@ -219,7 +218,6 @@ function constraint_pipe_weymouth_ne(gm::GenericGasModel,  n::Int, k)
     pipe           = gm.ref[:nw][n][:ne_pipe][k]
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-#    mf             = gm.ref[:nw][n][:max_mass_flow]
     w              = ref(gm,n,:ne_pipe_ref,k)[:w]
     pd_max         = ref(gm,n,:ne_pipe_ref,k)[:pd_max]
     pd_min         = ref(gm,n,:ne_pipe_ref,k)[:pd_min]
@@ -293,10 +291,6 @@ function constraint_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
     t_valves         = ref(gm,n,:t_valves,i)
     f_control_valves = ref(gm,n,:f_control_valves,i)
     t_control_valves = ref(gm,n,:t_control_valves,i)
-#    f_ne_pipes       = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["f_junction"] == i)))
-#    t_ne_pipes       = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["t_junction"] == i)))
-#    f_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["f_junction"] == i)))
-#    t_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["t_junction"] == i)))
     f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
     t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
     f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
@@ -362,10 +356,6 @@ function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel, n::Int, i)
     t_valves         = ref(gm,n,:t_valves,i)
     f_control_valves = ref(gm,n,:f_control_valves,i)
     t_control_valves = ref(gm,n,:t_control_valves,i)
-    #f_ne_pipes       = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["f_junction"] == i)))
-    #t_ne_pipes       = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_pipe] if x.second["t_junction"] == i)))
-    #f_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["f_junction"] == i)))
-    #t_ne_compressors = collect(keys(Dict(x for x in gm.ref[:nw][n][:ne_compressor] if x.second["t_junction"] == i)))
     f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
     t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
     f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
@@ -404,9 +394,8 @@ constraint_short_pipe_pressure(gm::GenericGasModel, k::Int) = constraint_short_p
 "Constraint: constraints on flow across a short pipe"
 function constraint_short_pipe_mass_flow(gm::GenericGasModel, n::Int, k)
     pipe    = ref(gm,n,:short_pipe,k)
-#    mf      = ref(gm,n,:max_mass_flow)
-    f_min   = ref(gm,n,:short_pipe_ref,k)[:f_min] #-mf
-    f_max   = ref(gm,n,:short_pipe_ref,k)[:f_max] #mf
+    f_min   = ref(gm,n,:short_pipe_ref,k)[:f_min]
+    f_max   = ref(gm,n,:short_pipe_ref,k)[:f_max]
     constraint_short_pipe_mass_flow(gm, n, k, f_min, f_max)
 end
 constraint_short_pipe_mass_flow(gm::GenericGasModel, k::Int) = constraint_short_pipe_mass_flow(gm, gm.cnw, k)
@@ -417,7 +406,6 @@ function constraint_short_pipe_mass_flow_directed(gm::GenericGasModel, n::Int, k
     i         = pipe["f_junction"]
     j         = pipe["t_junction"]
     direction = pipe["directed"]
-#    mf        = ref(gm,n,:max_mass_flow)
     f_min     = (direction == 1) ? 0 : ref(gm,n,:short_pipe_ref,k)[:f_min]
     f_max     = (direction == 1) ? ref(gm,n,:short_pipe_ref,k)[:f_max] : 0
     constraint_short_pipe_mass_flow_directed(gm, n, k, f_min, f_max)
@@ -442,9 +430,8 @@ constraint_on_off_valve_pressure(gm::GenericGasModel, k::Int) = constraint_on_of
 "Template: constraints on flow across valves modeled with on/off direction variables "
 function constraint_on_off_valve_mass_flow(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:valve,k)
-#    mf    = ref(gm,n,:max_mass_flow)
-    f_min = ref(gm,n,:valve_ref,k)[:f_min] #-mf
-    f_max = ref(gm,n,:valve_ref,k)[:f_max] #mf
+    f_min = ref(gm,n,:valve_ref,k)[:f_min]
+    f_max = ref(gm,n,:valve_ref,k)[:f_max]
     constraint_on_off_valve_mass_flow(gm, n, k, f_min, f_max)
 end
 constraint_on_off_valve_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_off_valve_mass_flow(gm, gm.cnw, k)
@@ -452,7 +439,6 @@ constraint_on_off_valve_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_o
 " Template: Constraints on flow across a valve when flow is restricted in one direction and the valve may be turned on or off"
 function constraint_on_off_valve_mass_flow_directed(gm::GenericGasModel, n::Int, k)
     valve     = ref(gm,n,:valve,k)
-#    mf        = ref(gm,n,:max_mass_flow)
     direction = valve["directed"]
     f_min     = (direction == 1) ? 0 : ref(gm,n,:valve_ref,k)[:f_min]
     f_max     = (direction == 1) ? ref(gm,n,:valve_ref,k)[:f_max] : 0
@@ -480,9 +466,8 @@ constraint_compressor_ratios(gm::GenericGasModel, k::Int) = constraint_compresso
 " Template: Constraint for turning on or off flow through expansion compressor "
 function constraint_compressor_ne(gm::GenericGasModel,  n::Int, k)
     compressor = gm.ref[:nw][n][:ne_compressor][k]
-#    mf         = gm.ref[:nw][n][:max_mass_flow]
-    f_min      = ref(gm,n,:ne_compressor_ref,k)[:f_min] #-mf
-    f_max      = ref(gm,n,:ne_compressor_ref,k)[:f_max] #mf
+    f_min      = ref(gm,n,:ne_compressor_ref,k)[:f_min]
+    f_max      = ref(gm,n,:ne_compressor_ref,k)[:f_max]
     constraint_compressor_ne(gm, n, k, f_min, f_max)
 end
 constraint_compressor_ne(gm::GenericGasModel, k::Int) = constraint_compressor_ne(gm, gm.cnw, k::Int)
@@ -502,9 +487,8 @@ constraint_compressor_ratios_directed(gm::GenericGasModel, k::Int) = constraint_
 "Template: constraints on flow across a compressor"
 function constraint_compressor_mass_flow(gm::GenericGasModel, n::Int, k)
     compressor = ref(gm, n, :compressor, k)
-#    mf         = ref(gm,n,:max_mass_flow)
-    f_min      = ref(gm,n,:compressor_ref,k)[:f_min] #-mf
-    f_max      = ref(gm,n,:compressor_ref,k)[:f_max] #mf
+    f_min      = ref(gm,n,:compressor_ref,k)[:f_min]
+    f_max      = ref(gm,n,:compressor_ref,k)[:f_max]
     constraint_compressor_mass_flow(gm, n, k, f_min, f_max)
 end
 constraint_compressor_mass_flow(gm::GenericGasModel, k::Int) = constraint_compressor_mass_flow(gm, gm.cnw, k)
@@ -514,9 +498,8 @@ function constraint_compressor_mass_flow_ne(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:ne_compressor,k)
     i              = compressor["f_junction"]
     j              = compressor["t_junction"]
-#    mf             = ref(gm,n,:max_mass_flow)
-    f_min          = ref(gm,n,:ne_compressor_ref,k)[:f_min] #-mf
-    f_max          = ref(gm,n,:ne_compressor_ref,k)[:f_max] #mf
+    f_min          = ref(gm,n,:ne_compressor_ref,k)[:f_min]
+    f_max          = ref(gm,n,:ne_compressor_ref,k)[:f_max]
     constraint_compressor_mass_flow_ne(gm, n, k, f_min, f_max)
 end
 constraint_compressor_mass_flow_ne(gm::GenericGasModel, i::Int) = constraint_compressor_mass_flow_ne(gm, gm.cnw, i)
@@ -527,7 +510,6 @@ function constraint_compressor_mass_flow_directed(gm::GenericGasModel, n::Int, k
     i          = compressor["f_junction"]
     j          = compressor["t_junction"]
     direction  = compressor["directed"]
-#    mf         = ref(gm,n,:max_mass_flow)
     f_min      = (direction == 1) ? 0 : ref(gm,n,:compressor_ref,k)[:f_min]
     f_max      = (direction == 1) ? ref(gm,n,:compressor_ref,k)[:f_max] : 0
     constraint_compressor_mass_flow_directed(gm, n, k, f_min, f_max)
@@ -560,7 +542,6 @@ function constraint_compressor_ratios_ne_directed(gm::GenericGasModel, n::Int, k
     j_pmax         = ref(gm,n,:junction,j)["pmax"]
     i_pmax         = ref(gm,n,:junction,i)["pmax"]
     i_pmin         = ref(gm,n,:junction,i)["pmin"]
-#    mf             = gm.ref[:nw][n][:max_mass_flow]
     f_max          = ref(gm,n,:ne_compressor_ref,k)[:f_max]
     direction      = compressor["directed"]
     constraint_compressor_ratios_ne_directed(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction)
@@ -587,9 +568,8 @@ constraint_compressor_mass_flow_ne_directed(gm::GenericGasModel, i::Int) = const
 "Template: constraints on flow across control valves with on/off direction variables "
 function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel, n::Int, k)
     valve = ref(gm,n,:control_valve,k)
-#    mf    = ref(gm,n,:max_mass_flow)
-    f_min = ref(gm,n,:control_valve_ref,k)[:f_min] #-mf
-    f_max = ref(gm,n,:control_valve_ref,k)[:f_max] #mf
+    f_min = ref(gm,n,:control_valve_ref,k)[:f_min]
+    f_max = ref(gm,n,:control_valve_ref,k)[:f_max]
     constraint_on_off_control_valve_mass_flow(gm, n, k, f_min, f_max)
 end
 constraint_on_off_control_valve_mass_flow(gm::GenericGasModel, k::Int) = constraint_on_off_control_valve_mass_flow(gm, gm.cnw, k)
@@ -599,7 +579,6 @@ function constraint_on_off_control_valve_mass_flow_directed(gm::GenericGasModel,
     valve      = ref(gm,n,:control_valve,k)
     i          = valve["f_junction"]
     j          = valve["t_junction"]
-#    mf         = ref(gm,n,:max_mass_flow)
     direction  = valve["directed"]
     f_min = (direction == 1) ? 0 : ref(gm,n,:control_valve_ref,k)[:f_min]
     f_max = (direction == 1) ? ref(gm,n,:control_valve_ref,k)[:f_max] : 0

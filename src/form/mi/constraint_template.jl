@@ -40,18 +40,18 @@ constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(g
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
-    f_pipes          = ref(gm,n,:f_pipes,idx)
-    t_pipes          = ref(gm,n,:t_pipes,idx)
-    f_compressors    = ref(gm,n,:f_compressors,idx)
-    t_compressors    = ref(gm,n,:t_compressors,idx)
-    f_resistors      = ref(gm,n,:f_resistors,idx)
-    t_resistors      = ref(gm,n,:t_resistors,idx)
-    f_short_pipes    = ref(gm,n,:f_short_pipes,idx)
-    t_short_pipes    = ref(gm,n,:t_short_pipes,idx)
-    f_valves         = ref(gm,n,:f_valves,idx)
-    t_valves         = ref(gm,n,:t_valves,idx)
-    f_control_valves = ref(gm,n,:f_control_valves,idx)
-    t_control_valves = ref(gm,n,:t_control_valves,idx)
+    f_pipes          = Dict(i => ref(gm,n,:pipe,i)["t_junction"] for i in ref(gm,n,:f_pipes,idx))
+    t_pipes          = Dict(i => ref(gm,n,:pipe,i)["f_junction"] for i in ref(gm,n,:t_pipes,idx))
+    f_compressors    = Dict(i => ref(gm,n,:compressor,i)["t_junction"] for i in ref(gm,n,:f_compressors,idx))
+    t_compressors    = Dict(i => ref(gm,n,:compressor,i)["f_junction"] for i in ref(gm,n,:t_compressors,idx))
+    f_resistors      = Dict(i => ref(gm,n,:resistor,i)["t_junction"] for i in ref(gm,n,:f_resistors,idx))
+    t_resistors      = Dict(i => ref(gm,n,:resistor,i)["f_junction"] for i in ref(gm,n,:t_resistors,idx))
+    f_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["t_junction"] for i in ref(gm,n,:f_short_pipes,idx))
+    t_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["f_junction"] for i in ref(gm,n,:t_short_pipes,idx))
+    f_valves         = Dict(i => ref(gm,n,:valve,i)["t_junction"] for i in ref(gm,n,:f_valves,idx))
+    t_valves         = Dict(i => ref(gm,n,:valve,i)["f_junction"] for i in ref(gm,n,:t_valves,idx))
+    f_control_valves = Dict(i => ref(gm,n,:control_valve,i)["t_junction"] for i in ref(gm,n,:f_control_valves,idx))
+    t_control_valves = Dict(i => ref(gm,n,:control_valve,i)["f_junction"] for i in ref(gm,n,:t_control_valves,idx))
 
     constraint_conserve_flow(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves)
 
@@ -87,28 +87,28 @@ constraint_conserve_flow(gm::GenericGasModel, i::Int) = constraint_conserve_flow
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
-#    f_pipes          = ref(gm,n,:f_pipes,idx)
-#    t_pipes          = ref(gm,n,:t_pipes,idx)
-#    f_compressors    = ref(gm,n,:f_compressors,idx)
-#    t_compressors    = ref(gm,n,:t_compressors,idx)
-#    f_resistors      = ref(gm,n,:f_resistors,idx)
-#    t_resistors      = ref(gm,n,:t_resistors,idx)
-#    f_short_pipes    = ref(gm,n,:f_short_pipes,idx)
-#    t_short_pipes    = ref(gm,n,:t_short_pipes,idx)
-#    f_valves         = ref(gm,n,:f_valves,idx)
-#    t_valves         = ref(gm,n,:t_valves,idx)
-#    f_control_valves = ref(gm,n,:f_control_valves,idx)
-#    t_control_valves = ref(gm,n,:t_control_valves,idx)
-#    f_ne_pipes       = ref(gm,n,:f_ne_pipes,idx)
-#    t_ne_pipes       = ref(gm,n,:t_ne_pipes,idx)
-#    f_ne_compressors = ref(gm,n,:f_ne_compressors,idx)
-#    t_ne_compressors = ref(gm,n,:t_ne_compressors,idx)
+    f_pipes          = Dict(i => ref(gm,n,:pipe,i)["t_junction"] for i in ref(gm,n,:f_pipes,idx))
+    t_pipes          = Dict(i => ref(gm,n,:pipe,i)["f_junction"] for i in ref(gm,n,:t_pipes,idx))
+    f_compressors    = Dict(i => ref(gm,n,:compressor,i)["t_junction"] for i in ref(gm,n,:f_compressors,idx))
+    t_compressors    = Dict(i => ref(gm,n,:compressor,i)["f_junction"] for i in ref(gm,n,:t_compressors,idx))
+    f_resistors      = Dict(i => ref(gm,n,:resistor,i)["t_junction"] for i in ref(gm,n,:f_resistors,idx))
+    t_resistors      = Dict(i => ref(gm,n,:resistor,i)["f_junction"] for i in ref(gm,n,:t_resistors,idx))
+    f_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["t_junction"] for i in ref(gm,n,:f_short_pipes,idx))
+    t_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["f_junction"] for i in ref(gm,n,:t_short_pipes,idx))
+    f_valves         = Dict(i => ref(gm,n,:valve,i)["t_junction"] for i in ref(gm,n,:f_valves,idx))
+    t_valves         = Dict(i => ref(gm,n,:valve,i)["f_junction"] for i in ref(gm,n,:t_valves,idx))
+    f_control_valves = Dict(i => ref(gm,n,:control_valve,i)["t_junction"] for i in ref(gm,n,:f_control_valves,idx))
+    t_control_valves = Dict(i => ref(gm,n,:control_valve,i)["f_junction"] for i in ref(gm,n,:t_control_valves,idx))
+    f_ne_pipes       = Dict(i => ref(gm,n,:ne_pipe,i)["t_junction"] for i in ref(gm,n,:f_ne_pipes,idx))
+    t_ne_pipes       = Dict(i => ref(gm,n,:ne_pipe,i)["f_junction"] for i in ref(gm,n,:t_ne_pipes,idx))
+    f_ne_compressors = Dict(i => ref(gm,n,:ne_compressor,i)["t_junction"] for i in ref(gm,n,:f_ne_compressors,idx))
+    t_ne_compressors = Dict(i => ref(gm,n,:ne_compressor,i)["f_junction"] for i in ref(gm,n,:t_ne_compressors,idx))
 
-#    constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
-#                                    t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves,
-#                                    t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+    constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
+                                    t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves,
+                                    t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
 
-
+#=
     connections = ref(gm,n,:connection)
     ne_connections = ref(gm,n,:ne_connection)
     junction_connections = ref(gm,n,:junction_connections,idx)
@@ -163,6 +163,7 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where 
     ]
 
     constraint_conserve_flow_ne(gm, n, idx, yp_first, yn_first, yp_last, yn_last)
+    =#
 end
 constraint_conserve_flow_ne(gm::GenericGasModel, i::Int) = constraint_conserve_flow_ne(gm, gm.cnw, i)
 
