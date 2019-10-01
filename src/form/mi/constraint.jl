@@ -232,7 +232,8 @@ function constraint_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_min, f_m
     add_constraint(gm, n, :on_off_pipe_flow1, k, @constraint(gm.model, (1-y) * f_min <= f))
     add_constraint(gm, n, :on_off_pipe_flow2, k, @constraint(gm.model, f <= y * f_max))
 
-    constraint_parallel_flow(gm, k)
+    constraint_pipe_parallel_flow(gm,k)
+#    constraint_parallel_flow(gm, k)
 end
 
 #############################################################################################################
@@ -270,7 +271,8 @@ function constraint_short_pipe_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_mi
     add_constraint(gm, n, :on_off_short_pipe_flow1, k, @constraint(gm.model, f_min*(1-y) <= f))
     add_constraint(gm, n, :on_off_short_pipe_flow2, k, @constraint(gm.model, f <= f_max*y))
 
-    constraint_parallel_flow(gm, k)
+    constraint_short_pipe_parallel_flow(gm,k)
+#    constraint_parallel_flow(gm, k)
 end
 
 ######################################################################################
@@ -284,7 +286,8 @@ function constraint_compressor_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_mi
     add_constraint(gm, n, :on_off_compressor_flow_direction1, k, @constraint(gm.model, (1-y)*f_min <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction2, k, @constraint(gm.model, f <= y*f_max))
 
-    constraint_parallel_flow(gm, k)
+#    constraint_parallel_flow(gm, k)
+    constraint_compressor_parallel_flow(gm,k)
 end
 
 "Constraint: enforces pressure changes bounds that obey compression ratios for a compressor with on/off direction variables"
@@ -334,7 +337,8 @@ function constraint_on_off_valve_mass_flow(gm::GenericGasModel{T}, n::Int, k, f_
     add_constraint(gm, n,:on_off_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f))
     add_constraint(gm, n,:on_off_valve_flow_direction4, k, @constraint(gm.model, f <= f_max*v))
 
-    constraint_parallel_flow(gm, k)
+    constraint_valve_parallel_flow(gm,k)
+#    constraint_parallel_flow(gm, k)
 end
 
 #######################################################
@@ -351,7 +355,8 @@ function constraint_on_off_control_valve_mass_flow(gm::GenericGasModel{T}, n::In
     add_constraint(gm, n, :on_off_control_valve_flow_direction3, k, @constraint(gm.model, f_min*v <= f ))
     add_constraint(gm, n, :on_off_control_valve_flow_direction4, k, @constraint(gm.model, f <= f_max*v))
 
-    constraint_parallel_flow(gm, k)
+    constraint_control_valve_parallel_flow(gm,k)
+#    constraint_parallel_flow(gm, k)
 end
 
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables "
@@ -523,22 +528,6 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipe
 end
 
 "Constraint: ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections) where T <: AbstractMIForms
-    y = var(gm,n,:y)
-    add_constraint(gm, n, :parallel_flow1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) == y[k] * length(ref(gm,n,:parallel_connections,(i,j)))))
-end
-
-"Constraint: ensures that parallel lines have flow in the same direction "
-function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, f_connections, t_connections, f_connections_ne, t_connections_ne) where T <: AbstractMIForms
-    y = var(gm,n,:y)
-    y_ne = var(gm,n,:y_ne)
-    y_k = haskey(ref(gm,n,:connection), k) ? y[k] : y_ne[k]
-
-    add_constraint(gm, n, :parallel_flow_ne1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) +
-                            sum(y_ne[i] for i in f_connections_ne) + sum( (1-y_ne[i]) for i in t_connections_ne) == y_k * length(ref(gm,n,:parallel_ne_connections,(i,j)))))
-end
-
-"Constraint: ensures that parallel lines have flow in the same direction "
 function constraint_ne_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
                                  aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                  aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors) where T <: AbstractMIForms
@@ -573,5 +562,101 @@ function constraint_ne_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, 
                                                                       sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves) +
                                                                       sum(y_ne[i] for i in aligned_ne_pipes) + sum((1-y_ne[i]) for i in opposite_ne_pipes) +
                                                                       sum(y_ne[i] for i in aligned_ne_compressors) + sum((1-y_ne[i]) for i in opposite_ne_compressors)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_pipe_resistor_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_short_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_control_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_k  = y[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves)
                                                                       == y_k * num_connections))
 end
