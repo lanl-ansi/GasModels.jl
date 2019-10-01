@@ -255,7 +255,8 @@ function constraint_pipe_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f_min, 
     add_constraint(gm, n, :on_off_pipe_flow_ne1, k, @constraint(gm.model, (1-y)*f_min <= f))
     add_constraint(gm, n, :on_off_pipe_flow_ne2, k, @constraint(gm.model, f <= y*f_max))
 
-    constraint_parallel_flow_ne(gm, k)
+#    constraint_parallel_flow_ne(gm, k)
+    constraint_ne_pipe_parallel_flow(gm,k)
 end
 
 ###########################################################################################
@@ -304,7 +305,8 @@ function constraint_compressor_mass_flow_ne(gm::GenericGasModel{T}, n::Int, k, f
     add_constraint(gm, n, :on_off_compressor_flow_direction_ne1, k, @constraint(gm.model, (1-y)*f_min <= f))
     add_constraint(gm, n, :on_off_compressor_flow_direction_ne2, k, @constraint(gm.model, f <= y*f_max))
 
-    constraint_parallel_flow_ne(gm, k)
+#    constraint_parallel_flow_ne(gm, k)
+    constraint_ne_compressor_parallel_flow(gm,k)
 end
 
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables "
@@ -369,29 +371,57 @@ end
 #########################################################################
 
 "Constraint: Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches) where T <: AbstractMIForms
+function constraint_source_flow(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves) where T <: AbstractMIForms
     y = var(gm,n,:y)
-    add_constraint(gm, n, :source_flow, i,  @constraint(gm.model, sum(y[a] for a in f_branches) + sum( (1-y[a]) for a in t_branches) >= 1))
+    add_constraint(gm, n, :source_flow, i,  @constraint(gm.model, sum(y[a] for a in f_pipes) + sum((1-y[a]) for a in t_pipes) +
+                                                                  sum(y[a] for a in f_compressors) + sum((1-y[a]) for a in t_compressors) +
+                                                                  sum(y[a] for a in f_resistors) + sum((1-y[a]) for a in t_resistors) +
+                                                                  sum(y[a] for a in f_short_pipes) + sum((1-y[a]) for a in t_short_pipes) +
+                                                                  sum(y[a] for a in f_valves) + sum((1-y[a]) for a in t_valves) +
+                                                                  sum(y[a] for a in f_control_valves) + sum((1-y[a]) for a in t_control_valves)
+                                                                  >= 1))
 end
 
 "Constraint: Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne) where T <: AbstractMIForms
+function constraint_source_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
     y    = var(gm,n,:y)
     y_ne = var(gm,n,:y_ne)
-    add_constraint(gm, n, :source_flow_ne, i, @constraint(gm.model, sum(y[a] for a in f_branches) + sum( (1-y[a]) for a in t_branches) + sum(y_ne[a] for a in f_branches_ne) + sum( (1-y_ne[a]) for a in t_branches_ne) >= 1))
+    add_constraint(gm, n, :source_flow_ne, i, @constraint(gm.model, sum(y[a] for a in f_pipes) + sum((1-y[a]) for a in t_pipes) +
+                                                                    sum(y[a] for a in f_compressors) + sum((1-y[a]) for a in t_compressors) +
+                                                                    sum(y[a] for a in f_resistors) + sum((1-y[a]) for a in t_resistors) +
+                                                                    sum(y[a] for a in f_short_pipes) + sum((1-y[a]) for a in t_short_pipes) +
+                                                                    sum(y[a] for a in f_valves) + sum((1-y[a]) for a in t_valves) +
+                                                                    sum(y[a] for a in f_control_valves) + sum((1-y[a]) for a in t_control_valves) +
+                                                                    sum(y_ne[a] for a in f_ne_pipes) + sum( (1-y_ne[a]) for a in t_ne_pipes) +
+                                                                    sum(y_ne[a] for a in f_ne_compressors) + sum( (1-y_ne[a]) for a in t_ne_compressors)
+                                                                     >= 1))
 end
 
 "Constraint: Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches) where T <: AbstractMIForms
+function constraint_sink_flow(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves) where T <: AbstractMIForms
     y = var(gm,n,:y)
-    add_constraint(gm, n, :sink_flow, i, @constraint(gm.model, sum( (1-y[a]) for a in f_branches) + sum(y[a] for a in t_branches) >= 1))
+    add_constraint(gm, n, :sink_flow, i, @constraint(gm.model, sum((1-y[a]) for a in f_pipes) + sum(y[a] for a in t_pipes) +
+                                                               sum((1-y[a]) for a in f_compressors) + sum(y[a] for a in t_compressors) +
+                                                               sum((1-y[a]) for a in f_resistors) + sum(y[a] for a in t_resistors) +
+                                                               sum((1-y[a]) for a in f_short_pipes) + sum(y[a] for a in t_short_pipes) +
+                                                               sum((1-y[a]) for a in f_valves) + sum(y[a] for a in t_valves) +
+                                                               sum((1-y[a]) for a in f_control_valves) + sum(y[a] for a in t_control_valves)
+                                                               >= 1))
 end
 
 "Constraint: Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes) "
-function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_branches, t_branches, f_branches_ne, t_branches_ne) where T <: AbstractMIForms
+function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
     y   = var(gm,n,:y)
     y_ne = var(gm,n,:y_ne)
-    add_constraint(gm, n, :sink_flow_ne, i, @constraint(gm.model, sum( (1-y[a]) for a in f_branches) + sum(y[a] for a in t_branches) + sum( (1-y_ne[a]) for a in f_branches_ne) + sum(y_ne[a] for a in t_branches_ne) >= 1))
+    add_constraint(gm, n, :sink_flow_ne, i, @constraint(gm.model, sum((1-y[a]) for a in f_pipes) + sum(y[a] for a in t_pipes) +
+                                                                  sum((1-y[a]) for a in f_compressors) + sum(y[a] for a in t_compressors) +
+                                                                  sum((1-y[a]) for a in f_resistors) + sum(y[a] for a in t_resistors) +
+                                                                  sum((1-y[a]) for a in f_short_pipes) + sum(y[a] for a in t_short_pipes) +
+                                                                  sum((1-y[a]) for a in f_valves) + sum(y[a] for a in t_valves) +
+                                                                  sum((1-y[a]) for a in f_control_valves) + sum(y[a] for a in t_control_valves) +
+                                                                  sum((1-y_ne[a]) for a in f_ne_pipes) + sum(y_ne[a] for a in t_ne_pipes) +
+                                                                  sum((1-y_ne[a]) for a in f_ne_compressors) + sum(y_ne[a] for a in t_ne_compressors)
+                                                                  >= 1))
 end
 
 "Constraint: This constraint is intended to ensure that flow is one direction through a node with degree 2 and no production or consumption "
@@ -438,44 +468,9 @@ function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx, f_pipes, 
             end
         end
     end
-
-
-
-#    if length(yn_first) > 0 && length(yp_last) > 0
-#        for i1 in yn_first
-#            for i2 in yp_last
-#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1])  == y[i2]))
-#            end
-#        end
-#    end
-
-#    if length(yn_first) > 0 && length(yn_last) > 0
-#        for i1 in yn_first
-#            for i2 in yn_last
-#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, (1-y[i1]) == (1-y[i2])))
-#            end
-#        end
-#    end
-
-#    if length(yp_first) > 0 && length(yp_last) > 0
-#        for i1 in yp_first
-#            for i2 in yp_last
-#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1]  == y[i2]))
-#            end
-#        end
-#    end
-
-#    if length(yp_first) > 0 && length(yn_last) > 0
-#        for i1 in yp_first
-#            for i2 in yn_last
-#                add_constraint(gm, n, :conserve_flow1, i, @constraint(gm.model, y[i1] == (1-y[i2])))
-#            end
-#        end
-#    end
 end
 
 "Constraint: This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption for a node with expansion edges"
-#function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, yp_first, yn_first, yp_last, yn_last) where T <: AbstractMIForms
 function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors) where T <: AbstractMIForms
 
     y = var(gm,n,:y)
@@ -525,52 +520,6 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx, f_pipe
             end
         end
     end
-
-
-
-
-#=
-
-    if length(yn_first) > 0 && length(yp_last) > 0
-        for i1 in yn_first
-            for i2 in yp_last
-                y1 = haskey(ref(gm,n,:connection),i1) ? y[i1] : y_ne[i1]
-                y2 = haskey(ref(gm,n,:connection),i2) ? y[i2] : y_ne[i2]
-                add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, (1-y1)  == y2))
-            end
-        end
-    end
-
-    if length(yn_first) > 0 && length(yn_last) > 0
-        for i1 in yn_first
-            for i2 in yn_last
-                y1 = haskey(ref(gm,n,:connection),i1) ? y[i1] : y_ne[i1]
-                y2 = haskey(ref(gm,n,:connection),i2) ? y[i2] : y_ne[i2]
-                add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, (1-y1) == (1-y2)))
-            end
-        end
-    end
-
-    if length(yp_first) > 0 && length(yp_last) > 0
-        for i1 in yp_first
-            for i2 in yp_last
-                y1 = haskey(ref(gm,n,:connection),i1) ? y[i1] : y_ne[i1]
-                y2 = haskey(ref(gm,n,:connection),i2) ? y[i2] : y_ne[i2]
-                add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, y1 == y2))
-            end
-        end
-    end
-
-    if length(yp_first) > 0 && length(yn_last) > 0
-        for i1 in yp_first
-            for i2 in yn_last
-                y1 = haskey(ref(gm,n,:connection),i1) ? y[i1] : y_ne[i1]
-                y2 = haskey(ref(gm,n,:connection),i2) ? y[i2] : y_ne[i2]
-                add_constraint(gm, n, :conserve_flow_ne1, idx, @constraint(gm.model, y1 == (1-y2)))
-            end
-        end
-    end
-    =#
 end
 
 "Constraint: ensures that parallel lines have flow in the same direction "
@@ -585,5 +534,44 @@ function constraint_parallel_flow_ne(gm::GenericGasModel{T}, n::Int, k, i, j, f_
     y_ne = var(gm,n,:y_ne)
     y_k = haskey(ref(gm,n,:connection), k) ? y[k] : y_ne[k]
 
-    add_constraint(gm, n, :parallel_flow_ne1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) + sum(y_ne[i] for i in f_connections_ne) + sum( (1-y_ne[i]) for i in t_connections_ne) == y_k * length(ref(gm,n,:parallel_ne_connections,(i,j)))))
+    add_constraint(gm, n, :parallel_flow_ne1, k, @constraint(gm.model, sum(y[i] for i in f_connections) + sum( (1-y[i]) for i in t_connections) +
+                            sum(y_ne[i] for i in f_connections_ne) + sum( (1-y_ne[i]) for i in t_connections_ne) == y_k * length(ref(gm,n,:parallel_ne_connections,(i,j)))))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_ne_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_ne = var(gm,n,:y_ne)
+    y_k  = y_ne[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves) +
+                                                                      sum(y_ne[i] for i in aligned_ne_pipes) + sum((1-y_ne[i]) for i in opposite_ne_pipes) +
+                                                                      sum(y_ne[i] for i in aligned_ne_compressors) + sum((1-y_ne[i]) for i in opposite_ne_compressors)
+                                                                      == y_k * num_connections))
+end
+
+"Constraint: ensures that parallel lines have flow in the same direction "
+function constraint_ne_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+                                 aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                 aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors) where T <: AbstractMIForms
+    y    = var(gm,n,:y)
+    y_ne = var(gm,n,:y_ne)
+    y_k  = y_ne[k]
+
+    add_constraint(gm, n, :parallel_flow_ne, k, @constraint(gm.model, sum(y[i] for i in aligned_pipes) + sum((1-y[i]) for i in opposite_pipes) +
+                                                                      sum(y[i] for i in aligned_compressors) + sum((1-y[i]) for i in opposite_compressors) +
+                                                                      sum(y[i] for i in aligned_resistors) + sum((1-y[i]) for i in opposite_resistors) +
+                                                                      sum(y[i] for i in aligned_short_pipes) + sum((1-y[i]) for i in opposite_short_pipes) +
+                                                                      sum(y[i] for i in aligned_valves) + sum((1-y[i]) for i in opposite_valves) +
+                                                                      sum(y[i] for i in aligned_control_valves) + sum((1-y[i]) for i in opposite_control_valves) +
+                                                                      sum(y_ne[i] for i in aligned_ne_pipes) + sum((1-y_ne[i]) for i in opposite_ne_pipes) +
+                                                                      sum(y_ne[i] for i in aligned_ne_compressors) + sum((1-y_ne[i]) for i in opposite_ne_compressors)
+                                                                      == y_k * num_connections))
 end

@@ -5,7 +5,7 @@ GasModels.jl Change Log
 - Implement constraints on compressor power
 - Implement a multi-network test
 
-### v0.4.3
+### v0.5
 - Renamed various function names for consistency (breaking)
 - Replaced yn and yp variables with a single variable y
 - Broke out resistor constraints from pipe constraints (breaking)
