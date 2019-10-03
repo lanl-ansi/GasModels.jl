@@ -52,51 +52,6 @@ end
 # Constraints associated with junctions
 #################################################################################################
 
-#=
-" Constraint: standard mass flow balance equation where demand and production are constants "
-function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fg, fl) where T <: AbstractGasFormulation
-    f_pipe          = var(gm,n,:f_pipe)
-    f_compressor    = var(gm,n,:f_compressor)
-    f_resistor      = var(gm,n,:f_resistor)
-    f_short_pipe    = var(gm,n,:f_short_pipe)
-    f_valve         = var(gm,n,:f_valve)
-    f_control_valve = var(gm,n,:f_control_valve)
-
-    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg - fl == sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-                                                                                           sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
-                                                                                           sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
-                                                                                           sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
-                                                                                           sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                                           sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves)
-                                                                     ))
-end
-=#
-
-#=
-" Constraint: standard flow balance equation where demand and production are constants and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl) where T <: AbstractGasFormulation
-    f_pipe          = var(gm,n,:f_pipe)
-    f_compressor    = var(gm,n,:f_compressor)
-    f_resistor      = var(gm,n,:f_resistor)
-    f_short_pipe    = var(gm,n,:f_short_pipe)
-    f_valve         = var(gm,n,:f_valve)
-    f_control_valve = var(gm,n,:f_control_valve)
-    f_ne_pipe       = var(gm,n,:f_ne_pipe)
-    f_ne_compressor = var(gm,n,:f_ne_compressor)
-
-    add_constraint(gm, n, :junction_mass_flow_balance_ne, i, @constraint(gm.model, fg - fl ==
-                                                                                              sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-                                                                                              sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
-                                                                                              sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
-                                                                                              sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
-                                                                                              sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                                              sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves) +
-                                                                                              sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                              sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
-                                                                        ))
-end
-=#
-
 " Constraint: standard flow balance equation where demand and production are variables "
 function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
