@@ -102,6 +102,7 @@ class Junction(Node):
         return Junction(_id, location)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = ['latitude', 'longitude']
         else:
@@ -109,6 +110,7 @@ class Junction(Node):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             values = self.location
         else:
@@ -144,6 +146,7 @@ class Pipeline(Edge):
         return Pipeline(pid, f_junction, t_junction, diameter, length)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -151,6 +154,7 @@ class Pipeline(Edge):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
@@ -193,6 +197,7 @@ class Compressor(Edge):
         return Compressor(_id, f_junction, t_junction, power_max)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -200,6 +205,7 @@ class Compressor(Edge):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
@@ -242,6 +248,7 @@ class Regulator(Edge):
         return Regulator(_id, f_junction, t_junction, power_max)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -249,6 +256,7 @@ class Regulator(Edge):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
@@ -278,6 +286,7 @@ class Producer(Dispatchable):
         return None
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -285,6 +294,7 @@ class Producer(Dispatchable):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
@@ -314,6 +324,7 @@ class Consumer(Dispatchable):
         return None
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -321,6 +332,7 @@ class Consumer(Dispatchable):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
@@ -344,6 +356,7 @@ class Generator(Consumer):
         return Generator(None, junction, fdmax, fd, eiaid)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = ['eiaid']
         else:
@@ -351,6 +364,7 @@ class Generator(Consumer):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = ['eiaid']
         else:
@@ -373,6 +387,7 @@ class Storage(Consumer):
         return Storage(_id, junction, fdmax, fd)
 
     def get_matlab_column_names(self, is_ext_data=False):
+        ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
@@ -380,6 +395,7 @@ class Storage(Consumer):
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
+        ''' Get the Matlab record values for this component. '''
         if is_ext_data:
             keys = []
         else:
