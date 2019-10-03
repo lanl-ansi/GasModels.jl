@@ -2,8 +2,12 @@
 "Build a gas solution"
 function build_solution(gm::GenericGasModel, status, solve_time; objective = NaN, solution_builder = get_solution)
     if status != :Error
-        objective = status != :Infeasible ? JuMP.objective_value(gm.model) : NaN
-        status = optimizer_status_dict(Symbol(typeof(gm.model.moi_backend).name.module), status)
+        try
+            objective = status != :Infeasible ? JuMP.objective_value(gm.model) : NaN
+            status = optimizer_status_dict(Symbol(typeof(gm.model.moi_backend).name.module), status)
+        catch
+            status = :Error
+        end
     end
 
     sol = init_solution(gm)
@@ -44,6 +48,7 @@ function build_solution(gm::GenericGasModel, status, solve_time; objective = NaN
         "status" => status,
         "objective" => objective,
         "objective_lb" => guard_getobjbound(gm.model),
+        "objective_gap" => abs((objective - guard_getobjbound(gm.model)) / objective) * 100,
         "solve_time" => solve_time,
         "solution" => sol,
         "machine" => Dict(
@@ -103,28 +108,28 @@ end
 
 " Get the direction set points"
 function add_direction_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "pipe", "y", :y)
-    add_setpoint(sol, gm, "compressor", "y", :y)
-    add_setpoint(sol, gm, "valve", "y", :y)
-    add_setpoint(sol, gm, "control_valve", "y", :y)
-    add_setpoint(sol, gm, "resistor", "y", :y)
-    add_setpoint(sol, gm, "short_pipe", "y", :y)
+    add_setpoint(sol, gm, "pipe", "y", :y_pipe)
+    add_setpoint(sol, gm, "compressor", "y", :y_compressor)
+    add_setpoint(sol, gm, "valve", "y", :y_valve)
+    add_setpoint(sol, gm, "control_valve", "y", :y_control_valve)
+    add_setpoint(sol, gm, "resistor", "y", :y_resistor)
+    add_setpoint(sol, gm, "short_pipe", "y", :y_short_pipe)
 end
 
 " Get the valve solutions "
 function add_valve_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "valve", "v", :v)
-    add_setpoint(sol, gm, "control_valve", "v", :v)
+    add_setpoint(sol, gm, "valve", "v", :v_valve)
+    add_setpoint(sol, gm, "control_valve", "v", :v_control_valve)
 end
 
 " Add the flow solutions "
 function add_connection_flow_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "pipe", "f", :f)
-    add_setpoint(sol, gm, "compressor", "f", :f)
-    add_setpoint(sol, gm, "control_valve", "f", :f)
-    add_setpoint(sol, gm, "valve", "f", :f)
-    add_setpoint(sol, gm, "resistor", "f", :f)
-    add_setpoint(sol, gm, "short_pipe", "f", :f)
+    add_setpoint(sol, gm, "pipe", "f", :f_pipe)
+    add_setpoint(sol, gm, "compressor", "f", :f_compressor)
+    add_setpoint(sol, gm, "control_valve", "f", :f_control_valve)
+    add_setpoint(sol, gm, "valve", "f", :f_valve)
+    add_setpoint(sol, gm, "resistor", "f", :f_resistor)
+    add_setpoint(sol, gm, "short_pipe", "f", :f_short_pipe)
 end
 
 " Add the compressor solutions "

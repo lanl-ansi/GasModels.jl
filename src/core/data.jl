@@ -17,10 +17,7 @@ function calc_max_mass_flow(data::Dict{String,Any})
 end
 
 "Calculate the bounds on minimum and maximum pressure difference squared"
-function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, connection::Dict{String,Any})
-    i_idx = connection["f_junction"]
-    j_idx = connection["t_junction"]
-
+function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
     i = ref[:junction][i_idx]
     j = ref[:junction][j_idx]
 
@@ -297,41 +294,202 @@ function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
 end
 
 "calculates the minimum flow on a pipe"
-function calc_pipe_fmin(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_min         = ref(gm,n,:pd_min)[k]
+function calc_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:pipe_ref][k][:pd_min]
+    w              = ref[:pipe_ref][k][:w]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
 
 "calculates the maximum flow on a pipe"
-function calc_pipe_fmax(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max)[k]
+function calc_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:pipe_ref][k][:pd_max]
+    w              = ref[:pipe_ref][k][:w]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
+"calculates the minimum flow on a resistor"
+function calc_resistor_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:resistor_ref][k][:pd_min]
+    w              = ref[:resistor_ref][k][:w]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+"calculates the maximum flow on a resistor"
+function calc_resistor_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:resistor_ref][k][:pd_max]
+    w              = ref[:resistor_ref][k][:w]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
 
 "calculates the minimum flow on a pipe"
-function calc_pipe_ne_fmin(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_min         = ref(gm,n,:pd_min_ne)[k]
+function calc_ne_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_min         = ref[:ne_pipe_ref][k][:pd_min]
+    w              = ref[:ne_pipe_ref][k][:w]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
 
 "calculates the maximum flow on a pipe"
-function calc_pipe_ne_fmax(gm::GenericGasModel, n::Int, k, w)
-    mf             = ref(gm,n,:max_mass_flow)
-    pd_max         = ref(gm,n,:pd_max_ne)[k]
+function calc_ne_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    mf             = ref[:max_mass_flow]
+    pd_max         = ref[:ne_pipe_ref][k][:pd_max]
+    w              = ref[:ne_pipe_ref][k][:w]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
+end
+
+"calculates the minimum flow on a short pipe"
+function calc_short_pipe_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a short pipe"
+function calc_short_pipe_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a valve"
+function calc_valve_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a valve"
+function calc_valve_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a compressor"
+function calc_compressor_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a compressor"
+function calc_compressor_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on an expansion compressor"
+function calc_ne_compressor_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on an expansion compressor"
+function calc_ne_compressor_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
+end
+
+"calculates the minimum flow on a control valve"
+function calc_control_valve_fmin(ref::Dict{Symbol,Any}, k)
+    return -ref[:max_mass_flow]
+end
+
+"calculates the maximum flow on a control valve"
+function calc_control_valve_fmax(ref::Dict{Symbol,Any}, k)
+    return ref[:max_mass_flow]
 end
 
 "prints the text summary for a data file or dictionary to stdout"
 function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)
     summary(stdout, obj; kwargs...)
 end
+
+"calculates connections in parallel with one another and their orientation"
+function calc_parallel_ne_connections(gm::GenericGasModel, n::Int, connection::Dict{String,Any})
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+
+    parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
+    parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
+    parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
+    parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
+    parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
+    parallel_control_valves = haskey(ref(gm,n,:parallel_control_valves), (i,j)) ? ref(gm,n,:parallel_control_valves, (i,j)) : []
+    parallel_ne_pipes       = haskey(ref(gm,n,:parallel_ne_pipes), (i,j)) ? ref(gm,n,:parallel_ne_pipes, (i,j)) : []
+    parallel_ne_compressors = haskey(ref(gm,n,:parallel_ne_compressors), (i,j)) ? ref(gm,n,:parallel_ne_compressors, (i,j)) : []
+
+    num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
+                      length(parallel_valves) + length(parallel_control_valves) + length(parallel_ne_pipes) + length(parallel_ne_compressors)
+
+    pipes = ref(gm,n,:pipe)
+    compressors = ref(gm,n,:compressor)
+    resistors = ref(gm,n,:resistor)
+    short_pipes = ref(gm,n,:short_pipe)
+    valves = ref(gm,n,:valve)
+    control_valves = ref(gm,n,:control_valve)
+    ne_pipes = ref(gm,n,:ne_pipe)
+    ne_compressors = ref(gm,n,:ne_compressor)
+
+    aligned_pipes           = filter(i -> pipes[i]["f_junction"] == connection["f_junction"], parallel_pipes)
+    opposite_pipes          = filter(i -> pipes[i]["f_junction"] != connection["f_junction"], parallel_pipes)
+    aligned_compressors     = filter(i -> compressors[i]["f_junction"] == connection["f_junction"], parallel_compressors)
+    opposite_compressors    = filter(i -> compressors[i]["f_junction"] != connection["f_junction"], parallel_compressors)
+    aligned_resistors       = filter(i -> resistors[i]["f_junction"] == connection["f_junction"], parallel_resistors)
+    opposite_resistors      = filter(i -> resistors[i]["f_junction"] != connection["f_junction"], parallel_resistors)
+    aligned_short_pipes     = filter(i -> short_pipes[i]["f_junction"] == connection["f_junction"], parallel_short_pipes)
+    opposite_short_pipes    = filter(i -> short_pipes[i]["f_junction"] != connection["f_junction"], parallel_short_pipes)
+    aligned_valves          = filter(i -> valves[i]["f_junction"] == connection["f_junction"], parallel_valves)
+    opposite_valves         = filter(i -> valves[i]["f_junction"] != connection["f_junction"], parallel_valves)
+    aligned_control_valves  = filter(i -> control_valves[i]["f_junction"] == connection["f_junction"], parallel_control_valves)
+    opposite_control_valves = filter(i -> control_valves[i]["f_junction"] != connection["f_junction"], parallel_control_valves)
+    aligned_ne_pipes        = filter(i -> ne_pipes[i]["f_junction"] == connection["f_junction"], parallel_ne_pipes)
+    opposite_ne_pipes       = filter(i -> ne_pipes[i]["f_junction"] != connection["f_junction"], parallel_ne_pipes)
+    aligned_ne_compressors  = filter(i -> ne_compressors[i]["f_junction"] == connection["f_junction"], parallel_ne_compressors)
+    opposite_ne_compressors = filter(i -> ne_compressors[i]["f_junction"] != connection["f_junction"], parallel_ne_compressors)
+
+    return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors
+end
+
+"calculates connections in parallel with one another and their orientation"
+function calc_parallel_connections(gm::GenericGasModel, n::Int, connection::Dict{String,Any})
+    i = min(connection["f_junction"], connection["t_junction"])
+    j = max(connection["f_junction"], connection["t_junction"])
+
+    parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
+    parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
+    parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
+    parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
+    parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
+    parallel_control_valves = haskey(ref(gm,n,:parallel_control_valves), (i,j)) ? ref(gm,n,:parallel_control_valves, (i,j)) : []
+
+    num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
+                      length(parallel_valves) + length(parallel_control_valves)
+
+    pipes = ref(gm,n,:pipe)
+    compressors = ref(gm,n,:compressor)
+    resistors = ref(gm,n,:resistor)
+    short_pipes = ref(gm,n,:short_pipe)
+    valves = ref(gm,n,:valve)
+    control_valves = ref(gm,n,:control_valve)
+
+    aligned_pipes           = filter(i -> pipes[i]["f_junction"] == connection["f_junction"], parallel_pipes)
+    opposite_pipes          = filter(i -> pipes[i]["f_junction"] != connection["f_junction"], parallel_pipes)
+    aligned_compressors     = filter(i -> compressors[i]["f_junction"] == connection["f_junction"], parallel_compressors)
+    opposite_compressors    = filter(i -> compressors[i]["f_junction"] != connection["f_junction"], parallel_compressors)
+    aligned_resistors       = filter(i -> resistors[i]["f_junction"] == connection["f_junction"], parallel_resistors)
+    opposite_resistors      = filter(i -> resistors[i]["f_junction"] != connection["f_junction"], parallel_resistors)
+    aligned_short_pipes     = filter(i -> short_pipes[i]["f_junction"] == connection["f_junction"], parallel_short_pipes)
+    opposite_short_pipes    = filter(i -> short_pipes[i]["f_junction"] != connection["f_junction"], parallel_short_pipes)
+    aligned_valves          = filter(i -> valves[i]["f_junction"] == connection["f_junction"], parallel_valves)
+    opposite_valves         = filter(i -> valves[i]["f_junction"] != connection["f_junction"], parallel_valves)
+    aligned_control_valves  = filter(i -> control_valves[i]["f_junction"] == connection["f_junction"], parallel_control_valves)
+    opposite_control_valves = filter(i -> control_valves[i]["f_junction"] != connection["f_junction"], parallel_control_valves)
+
+    return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_control_valves, opposite_control_valves
+end
+
 
 
 "prints the text summary for a data file to IO"

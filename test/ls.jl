@@ -4,7 +4,8 @@
         println("Testing gaslib misocp ls gaslib 40")
         result = run_ls("../test/data/gaslib-40-ls.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 515.2312009025778; atol = 1e-1)
+        # after erlaxation
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 515.2312009025778; atol = 1e-1) || isapprox(result["objective"]*result["solution"]["baseQ"], 456.52; atol = 1e-1)
      end
 end
 
@@ -14,7 +15,8 @@ end
         println("Testing gaslib misocp ls priority gaslib 40")
         result = run_ls("../test/data/gaslib-40-ls-priority.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
-        @test isapprox(result["objective"]*result["solution"]["baseQ"], 463.624073939234; atol = 1e-1)
+        # After relaxation
+        @test isapprox(result["objective"]*result["solution"]["baseQ"], 463.624073939234; atol = 1e-1) || isapprox(result["objective"]*result["solution"]["baseQ"], 410.75; atol = 1e-1)
      end
 end
 
@@ -72,7 +74,7 @@ end
 @testset "test nlp ls priority" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib nlp ls priority gaslib 40")
-        result = run_ls("../test/data/gaslib-40-ls-priority.m", NLPGasModel, cvx_solver)
+        result = run_ls("../test/data/gaslib-40-ls-priority.m", NLPGasModel, tol_ipopt_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal || result["status"] == :Suboptimal
         @test isapprox(result["objective"]*result["solution"]["baseQ"], 340.92659091007965; atol = 1e-1)
      end

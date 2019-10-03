@@ -13,60 +13,70 @@
       "c_ratio_max": 5,
       "f_junction": 173,
       "t_junction": 1100173,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "100007": {
       "c_ratio_max": 5,
       "f_junction": 212,
       "t_junction": 800222,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "548": {
       "c_ratio_max": 5,
       "f_junction": 171,
       "t_junction": 2100171,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "549": {
       "c_ratio_max": 5,
       "f_junction": 170,
       "t_junction": 1300170,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "100010": {
       "c_ratio_max": 5,
       "f_junction": 548,
       "t_junction": 1100173,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "551": {
       "c_ratio_max": 5,
       "f_junction": 560,
       "t_junction": 2200560,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "550": {
       "c_ratio_max": 5,
       "f_junction": 222,
       "t_junction": 800222,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "100021": {
       "c_ratio_max": 5,
       "f_junction": 561,
       "t_junction": 2200560,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "100020": {
       "c_ratio_max": 5,
       "f_junction": 172,
       "t_junction": 2100171,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     },
     "100012": {
       "c_ratio_max": 5,
       "f_junction": 169,
       "t_junction": 1300170,
+      "power_max": 1.0e9,
       "c_ratio_min": 1
     }
   },

@@ -8,8 +8,8 @@ function objective_min_ne_cost(gm::GenericGasModel, nws=[gm.cnw]; normalization=
     zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)
 
     obj = JuMP.@objective(gm.model, Min, sum(
-                                        sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])) +
-                                        sum(gm.ref[:nw][n][:ne_connection][i]["construction_cost"]/normalization * zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor]))
+                                        sum(gm.ref[:nw][n][:ne_pipe][i]["construction_cost"]/normalization * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])) +
+                                        sum(gm.ref[:nw][n][:ne_compressor][i]["construction_cost"]/normalization * zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor]))
                                         for n in nws)
                     )
 end
@@ -20,5 +20,10 @@ function objective_max_load(gm::GenericGasModel, nws=[gm.cnw])
     priorities = Dict(n => Dict(i => haskey(ref(gm,n,:consumer,i),"priority") ?  ref(gm,n,:consumer,i)["priority"] : 1.0 for i in load_set[n]) for n in nws)
     fl         =  Dict(n => var(gm,n,:fl) for n in nws)
     obj = @objective(gm.model, Max, sum(sum(priorities[n][i] *  fl[n][i] for i in load_set[n]) for n in nws))
-
  end
+
+ " function for minimizing compressor energy"
+ function objective_min_compressor_energy(gm::GenericGasModel, nws=[gm.cnw])
+     ratio      = Dict(n => var(gm,n,:r) for n in nws)
+     obj = JuMP.@objective(gm.model, Min, sum(sum(5 * ratio[n][i] for i in keys(gm.ref[:nw][n][:compressor])) for n in nws))
+end

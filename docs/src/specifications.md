@@ -18,13 +18,13 @@ end
 for i in ids(gm, :pipe)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_pipe_weymouth(gm,i)
 end
 
 for i in ids(gm, :resistor)
-    constraint_pipe_pressure(gm, i)
-    constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_resistor_pressure(gm, i)
+    constraint_resistor_mass_flow(gm,i)
+    constraint_resistor_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
@@ -73,17 +73,17 @@ objective_max_load(gm)
 for i in ids(gm,:pipe)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_pipe_weymouth(gm,i)
 end
 
 for i in ids(gm,:resistor)
-    constraint_pipe_pressure(gm, i)
-    constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_resistor_pressure(gm, i)
+    constraint_resistor_mass_flow(gm,i)
+    constraint_resistor_weymouth(gm,i)
 end
 
 for i in ids(gm, :junction)
-    constraint_mass_flow_balance_ls(gm, i)
+    constraint_mass_flow_balance(gm, i)
 end
 
 for i in ids(gm, :short_pipe)
@@ -135,13 +135,13 @@ end
 for i in ids(gm,:pipe)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_pipe_weymouth(gm,i)
 end
 
 for i in ids(gm,:resistor)
-    constraint_pipe_pressure(gm, i)
-    constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_resistor_pressure(gm, i)
+    constraint_resistor_mass_flow(gm,i)
+    constraint_resistor_weymouth(gm,i)
 end
 
 for i in ids(gm,:ne_pipe)

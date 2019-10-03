@@ -13,16 +13,17 @@
 
 @testset "status = false" begin
     gm = build_generic_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
-    @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
+#    @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
+    @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
     try
-        gm.var[:nw][gm.cnw][:f][32] == nothing
-        gm.var[:nw][gm.cnw][:f][34] == nothing
+        gm.var[:nw][gm.cnw][:pipe][32] == nothing
+        gm.var[:nw][gm.cnw][:pipe][34] == nothing
         @test true == false
     catch
     end
 
-    @test gm.var[:nw][gm.cnw][:f][14] != nothing
+    @test gm.var[:nw][gm.cnw][:f_pipe][14] != nothing
 
     try
         gm.var[:nw][gm.cnw][:ql][24] == nothing

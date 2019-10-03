@@ -31,26 +31,26 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_mass_flow_balance_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne(gm, i)
     end
 
     for i in ids(gm,:pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm,:resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
         constraint_pipe_mass_flow_ne(gm,i)
-        constraint_weymouth_ne(gm, i)
+        constraint_pipe_weymouth_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
@@ -113,45 +113,45 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_mass_flow_balance_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne(gm, i)
     end
 
     for i in ids(gm,:undirected_pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm,:undirected_resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
     for i in ids(gm,:directed_pipe)
         constraint_pipe_pressure_directed(gm, i)
         constraint_pipe_mass_flow_directed(gm, i)
-        constraint_weymouth_directed(gm, i)
+        constraint_pipe_weymouth_directed(gm, i)
     end
 
     for i in ids(gm,:directed_resistor)
-        constraint_pipe_pressure_directed(gm, i)
-        constraint_pipe_mass_flow_directed(gm, i)
-        constraint_weymouth_directed(gm, i)
+        constraint_resistor_pressure_directed(gm, i)
+        constraint_resistor_mass_flow_directed(gm, i)
+        constraint_resistor_weymouth_directed(gm, i)
     end
 
     for i in ids(gm,:undirected_ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
         constraint_pipe_mass_flow_ne(gm,i)
-        constraint_weymouth_ne(gm, i)
+        constraint_pipe_weymouth_ne(gm, i)
     end
 
     for i in ids(gm,:directed_ne_pipe)
-        constraint_pressure_ne_directed(gm, i)
+        constraint_pipe_pressure_ne_directed(gm, i)
         constraint_pipe_mass_flow_ne_directed(gm, i)
         constraint_pipe_ne(gm, i)
-        constraint_weymouth_ne_directed(gm, i)
+        constraint_pipe_weymouth_ne_directed(gm, i)
     end
 
     for i in ids(gm, :undirected_short_pipe)

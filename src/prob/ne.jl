@@ -18,6 +18,8 @@ function post_ne(gm::GenericGasModel; kwargs...)
     variable_valve_operation(gm)
     variable_pipe_ne(gm)
     variable_compressor_ne(gm)
+    variable_load_mass_flow(gm)
+    variable_production_mass_flow(gm)
 
     # expansion cost objective
     objective_min_ne_cost(gm; normalization =  obj_normalization)
@@ -29,19 +31,19 @@ function post_ne(gm::GenericGasModel; kwargs...)
     for i in ids(gm,:pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm,:resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
     for i in ids(gm,:ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
-        constraint_weymouth_ne(gm, i)
+        constraint_pipe_weymouth_ne(gm, i)
         constraint_pipe_mass_flow_ne(gm,i)
     end
 
@@ -85,9 +87,6 @@ function post_ne(gm::GenericGasModel; kwargs...)
             exclusive[i][j] = true
         end
     end
-
-#    zp = gm.var[:nw][gm.cnw][:zp]
-#    zc = gm.var[:nw][gm.cnw][:zc]
 end
 
 # Special function for whether or not a connection is added
@@ -98,8 +97,8 @@ end
 
 # Get the direction solutions
 function add_direction_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne)
-    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne)
+    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne_pipe)
+    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne_compressor)
 end
 
 " Add the compressor solutions "
@@ -109,8 +108,8 @@ end
 
 " Add the flow solutions to new lines"
 function add_connection_flow_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "f", :f_ne)
-    add_setpoint(sol, gm, "ne_compressor", "f", :f_ne)
+    add_setpoint(sol, gm, "ne_pipe", "f", :f_ne_pipe)
+    add_setpoint(sol, gm, "ne_compressor", "f", :f_ne_compressor)
 end
 
 # Get all the solution values

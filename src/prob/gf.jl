@@ -1,7 +1,5 @@
 # Definitions for running a feasible gas flow
 
-# Note that this particular formulation assumes the binary variable implementation of flow direction
-# We would need to do some abstraction to support the absolute value formulation
 
 export run_gf
 
@@ -16,7 +14,7 @@ function run_soc_gf(file, solver; kwargs...)
 end
 
 ""
-function run_minl_gf(file, solver; kwargs...)
+function run_minlp_gf(file, solver; kwargs...)
     return run_gf(file, MINLPGasModel, solver; kwargs...)
 end
 
@@ -25,6 +23,8 @@ function post_gf(gm::GenericGasModel)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
+    variable_load_mass_flow(gm)
+    variable_production_mass_flow(gm)
 
     for i in ids(gm, :junction)
         constraint_mass_flow_balance(gm, i)
@@ -33,13 +33,13 @@ function post_gf(gm::GenericGasModel)
     for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_pipe_weymouth(gm,i)
     end
 
     for i in ids(gm, :resistor)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_weymouth(gm,i)
+        constraint_resistor_pressure(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_weymouth(gm,i)
     end
 
 

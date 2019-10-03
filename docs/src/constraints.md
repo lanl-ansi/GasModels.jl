@@ -13,13 +13,11 @@ These templates should be defined over `GenericGasModel` and should not refer to
 
 ### Flow balance constraints
 
-The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are variable or constant injections (variable injections are denoted by `ls` in the name of the function) and if there are network design options (denoted by `\_ne` in the name of the function).
+The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are network design options (denoted by `\_ne` in the name of the function).
 
 ```@docs
 constraint_mass_flow_balance
-constraint_mass_flow_balance_ls
 constraint_mass_flow_balance_ne
-constraint_mass_flow_balance_ne_ls
 ```
 
 ### Direction On/off Constraints
@@ -42,10 +40,10 @@ constraint_conserve_flow_ne
 The primary constraints related to pipes ensure that that pressure drop and flow across a pipe is related through the Weymouth relationships. Here, the naming convention `ne` is used to denote the form of the constraint used for expansion pipes and `directed` is used to denote the form of the constraint used when the direction of flow is constrained.
 
 ```@docs
-constraint_weymouth
-constraint_weymouth_ne
-constraint_weymouth_directed
-constraint_weymouth_ne_directed
+constraint_pipe_weymouth
+constraint_pipe_weymouth_ne
+constraint_pipe_weymouth_directed
+constraint_pipe_weymouth_ne_directed
 ```
 
 ### Mass flow and pressure drop constraints
@@ -63,6 +61,35 @@ These constraints turn on or off the association between pressure and flow for p
 
 ```@docs
 constraint_pipe_ne
+```
+
+### Direction on/off constraints
+
+The disjunctive forms of problems (where directions are controlled by on/off variables) include special (redundant) constraints which tie the direction variables together.  Examples include ensuring that ensuring that parallel pipes have flow in the same direction.
+
+```@docs
+constraint_parallel_flow
+constraint_parallel_flow_ne
+```
+
+## Resistor Constraints
+
+### Weymouth's law constraints
+
+The primary constraints related to resistor ensure that that pressure drop and flow across a resistor is related through the Weymouth relationships. Here, `directed` is used to denote the form of the constraint used when the direction of flow is constrained.
+
+```@docs
+constraint_resistor_weymouth
+constraint_resistor_weymouth_directed
+```
+
+### Mass flow and pressure drop constraints
+
+Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the `directed` naming conventions.
+
+```@docs
+constraint_resistor_mass_flow
+constraint_resistor_pressure
 ```
 
 ### Direction on/off constraints
