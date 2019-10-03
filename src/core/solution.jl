@@ -108,12 +108,12 @@ end
 
 " Get the direction set points"
 function add_direction_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "pipe", "y", :y)
-    add_setpoint(sol, gm, "compressor", "y", :y)
-    add_setpoint(sol, gm, "valve", "y", :y)
-    add_setpoint(sol, gm, "control_valve", "y", :y)
-    add_setpoint(sol, gm, "resistor", "y", :y)
-    add_setpoint(sol, gm, "short_pipe", "y", :y)
+    add_setpoint(sol, gm, "pipe", "y", :y_pipe)
+    add_setpoint(sol, gm, "compressor", "y", :y_compressor)
+    add_setpoint(sol, gm, "valve", "y", :y_valve)
+    add_setpoint(sol, gm, "control_valve", "y", :y_control_valve)
+    add_setpoint(sol, gm, "resistor", "y", :y_resistor)
+    add_setpoint(sol, gm, "short_pipe", "y", :y_short_pipe)
 end
 
 " Get the valve solutions "

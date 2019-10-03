@@ -1,8 +1,5 @@
 # Definitions for running a minimum load shed model
 
-# Note that this particular formulation assumes the binary variable implementation of flow direction
-# We would need to do some abstraction to support the absolute value formulation
-
 export run_ls
 
 " entry point into running the gas flow feasability problem "
@@ -33,7 +30,7 @@ function post_ls(gm::GenericGasModel)
     end
 
     for i in ids(gm, :junction)
-        constraint_mass_flow_balance_ls(gm, i)
+        constraint_mass_flow_balance(gm, i)
     end
 
     for i in ids(gm, :short_pipe)

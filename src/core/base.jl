@@ -188,15 +188,12 @@ system-wide values that need to be computed globally.
 Some of the common keys include:
 
 * `:max_mass_flow` (see `max_mass_flow(data)`),
-* `:connection` -- the set of connections that are active in the network (based on the component status values),
 * `:pipe` -- the set of connections that are pipes (based on the component type values),
 * `:short_pipe` -- the set of connections that are short pipes (based on the component type values),
 * `:compressor` -- the set of connections that are compressors (based on the component type values),
 * `:valve` -- the set of connections that are valves (based on the component type values),
 * `:control_valve` -- the set of connections that are control valves (based on the component type values),
 * `:resistor` -- the set of connections that are resistors (based on the component type values),
-* `:parallel_connections` -- the set of all existing connections between junction pairs (i,j),
-* `:parallel_ne_connections` -- the set of all existing and new connections between junction pairs (i,j),
 * `:junction_consumers` -- the mapping `Dict(i => [consumer["ql_junc"] for (i,consumer) in ref[:consumer]])`.
 * `:junction_producers` -- the mapping `Dict(i => [producer["qg_junc"] for (i,producer) in ref[:producer]])`.
 * `:degree` -- the degree of junction i using existing connections (see `degree_ref!`)),
@@ -240,9 +237,9 @@ function build_ref(data::Dict{String,Any})
         ref[:max_mass_flow] = max_mass_flow
 
         # create references to all connections in the system
-        ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
-        ref[:ne_connection] =  merge(ref[:ne_pipe],ref[:ne_compressor])
-        check_connection_ids(ref::Dict)
+#        ref[:connection] =  merge(ref[:pipe],ref[:short_pipe],ref[:compressor],ref[:valve],ref[:control_valve],ref[:resistor])
+    #    ref[:ne_connection] =  merge(ref[:ne_pipe],ref[:ne_compressor])
+#        check_connection_ids(ref::Dict)
 
         # create references to directed and undirected edges
         ref[:directed_pipe]          = Dict(x for x in ref[:pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
@@ -253,8 +250,8 @@ function build_ref(data::Dict{String,Any})
         ref[:directed_resistor]      = Dict(x for x in ref[:resistor] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "directed") && x.second["directed"] != 0)
         ref[:directed_ne_compressor] = Dict(x for x in ref[:ne_compressor] if haskey(x.second, "directed") && x.second["directed"] != 0)
-        ref[:directed_connection]    =  merge(ref[:directed_pipe],ref[:directed_short_pipe],ref[:directed_compressor],ref[:directed_valve],ref[:directed_control_valve],ref[:directed_resistor])
-        ref[:directed_ne_connection] =  merge(ref[:directed_ne_pipe],ref[:directed_ne_compressor])
+    #    ref[:directed_connection]    =  merge(ref[:directed_pipe],ref[:directed_short_pipe],ref[:directed_compressor],ref[:directed_valve],ref[:directed_control_valve],ref[:directed_resistor])
+        #ref[:directed_ne_connection] =  merge(ref[:directed_ne_pipe],ref[:directed_ne_compressor])
 
         ref[:undirected_pipe]          = Dict(x for x in ref[:pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_short_pipe]    = Dict(x for x in ref[:short_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
@@ -264,21 +261,26 @@ function build_ref(data::Dict{String,Any})
         ref[:undirected_resistor]      = Dict(x for x in ref[:resistor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if !haskey(x.second, "directed") || x.second["directed"] == 0)
         ref[:undirected_ne_compressor] = Dict(x for x in ref[:ne_compressor] if !haskey(x.second, "directed") || x.second["directed"] == 0)
-        ref[:undirected_connection]    =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
-        ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
+
+        ref[:dispatch_consumer]        = Dict(x for x in ref[:consumer] if (x.second["dispatchable"] == 1))
+        ref[:dispatch_producer]        = Dict(x for x in ref[:producer] if (x.second["dispatchable"] == 1))
+
+
+    #    ref[:undirected_connection]    =  merge(ref[:undirected_pipe],ref[:undirected_short_pipe],ref[:undirected_compressor],ref[:undirected_valve],ref[:undirected_control_valve],ref[:undirected_resistor])
+#        ref[:undirected_ne_connection] =  merge(ref[:undirected_ne_pipe],ref[:undirected_ne_compressor])
 
         # collect all the parallel connections and connections of a junction
         # These are split by new connections and existing connections
-        ref[:parallel_connections] = Dict()
-        ref[:parallel_ne_connections] = Dict()
-        for entry in [ref[:connection]; ref[:ne_connection]]
-            for (idx, connection) in entry
-                i = connection["f_junction"]
-                j = connection["t_junction"]
-                ref[:parallel_connections][(min(i,j), max(i,j))] = []
-                ref[:parallel_ne_connections][(min(i,j), max(i,j))] = []
-            end
-        end
+#        ref[:parallel_connections] = Dict()
+#        ref[:parallel_ne_connections] = Dict()
+#        for entry in [ref[:connection]; ref[:ne_connection]]
+#            for (idx, connection) in entry
+#                i = connection["f_junction"]
+#                j = connection["t_junction"]
+#                ref[:parallel_connections][(min(i,j), max(i,j))] = []
+#                ref[:parallel_ne_connections][(min(i,j), max(i,j))] = []
+#            end
+#        end
 
         ref[:parallel_pipes] = Dict()
         for (idx, connection) in ref[:pipe]
@@ -336,10 +338,8 @@ function build_ref(data::Dict{String,Any})
             ref[:parallel_ne_compressors][(min(i,j), max(i,j))] = []
         end
 
-#        ref[:junction_connections]    = Dict(i => [] for (i,junction) in ref[:junction])
-#        ref[:junction_ne_connections] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:t_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:f_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
+#        ref[:t_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
+#        ref[:f_connections]           = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:t_pipes]                 = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:f_pipes]                 = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:t_compressors]           = Dict(i => [] for (i,junction) in ref[:junction])
@@ -353,37 +353,28 @@ function build_ref(data::Dict{String,Any})
         ref[:t_control_valves]        = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:f_control_valves]        = Dict(i => [] for (i,junction) in ref[:junction])
 
-        ref[:t_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:f_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
+    #    ref[:t_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
+#        ref[:f_ne_connections]        = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:t_ne_pipes]              = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:f_ne_pipes]              = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:t_ne_compressors]        = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:f_ne_compressors]        = Dict(i => [] for (i,junction) in ref[:junction])
 
-        for (idx, connection) in ref[:connection]
-            i = connection["f_junction"]
-            j = connection["t_junction"]
-#           push!(ref[:junction_connections][i], idx)
-#            push!(ref[:junction_connections][j], idx)
-            push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
-            push!(ref[:parallel_ne_connections][(min(i,j), max(i,j))], idx)
-            push!(ref[:f_connections][i], idx)
-            push!(ref[:t_connections][j], idx)
-        end
-
-        for (idx,connection) in ref[:ne_connection]
-            i = connection["f_junction"]
-            j = connection["t_junction"]
-        #    push!(ref[:junction_ne_connections][i], idx)
-        #    push!(ref[:junction_ne_connections][j], idx)
-            push!(ref[:parallel_ne_connections][(min(i,j), max(i,j))], idx)
-            push!(ref[:f_ne_connections][i], idx)
-            push!(ref[:t_ne_connections][j], idx)
-        end
-
-#        for (idx,pipe) in ref[:ne_pipe]
+#        for (idx, connection) in ref[:connection]
 #            i = connection["f_junction"]
 #            j = connection["t_junction"]
+#            push!(ref[:parallel_connections][(min(i,j), max(i,j))], idx)
+#            push!(ref[:parallel_ne_connections][(min(i,j), max(i,j))], idx)
+#            push!(ref[:f_connections][i], idx)
+#            push!(ref[:t_connections][j], idx)
+#        end
+
+#        for (idx,connection) in ref[:ne_connection]
+#            i = connection["f_junction"]
+#            j = connection["t_junction"]
+#            push!(ref[:parallel_ne_connections][(min(i,j), max(i,j))], idx)
+#            push!(ref[:f_ne_connections][i], idx)
+#            push!(ref[:t_ne_connections][j], idx)
 #        end
 
         junction_consumers = Dict([(i, []) for (i,junction) in ref[:junction]])
@@ -548,19 +539,19 @@ function build_ref(data::Dict{String,Any})
     return refs
 end
 
-"Utility function for checking if ids of connections are the same"
-function check_connection_ids(ref::Dict)
-    num_connections = length(ref[:pipe]) + length(ref[:short_pipe]) + length(ref[:compressor]) + length(ref[:valve]) + length(ref[:control_valve]) + length(ref[:resistor])
+#"Utility function for checking if ids of connections are the same"
+#function check_connection_ids(ref::Dict)
+#    num_connections = length(ref[:pipe]) + length(ref[:short_pipe]) + length(ref[:compressor]) + length(ref[:valve]) + length(ref[:control_valve]) + length(ref[:resistor])
 
-    if num_connections != length(ref[:connection])
-        Memento.error(LOGGER, "There are connection elements with non-unique ids")
-    end
-
-    num_ne_connections = length(ref[:ne_pipe]) + length(ref[:ne_compressor])
-    if num_connections != length(ref[:connection])
-        Memento.error(LOGGER, "There are new connection elements with non-unique ids")
-    end
-end
+#    if num_connections != length(ref[:connection])
+#        Memento.error(LOGGER, "There are connection elements with non-unique ids")
+#    end
+#
+#    num_ne_connections = length(ref[:ne_pipe]) + length(ref[:ne_compressor])
+#    if num_connections != length(ref[:connection])
+#        Memento.error(LOGGER, "There are new connection elements with non-unique ids")
+#    end
+#end
 
 "Add reference information for the degree of junction"
 function degree_ref!(ref::Dict{Symbol,Any})
@@ -569,11 +560,24 @@ function degree_ref!(ref::Dict{Symbol,Any})
         ref[:degree][i] = 0
     end
 
-    for (i,j) in keys(ref[:parallel_connections])
-        if length(ref[:parallel_connections]) > 0
+#    connections = Set[collect(keys(ref[:parallel_pipes]));collect(keys(ref[:parallel_compressors]));collect(keys(ref[:parallel_valves]));collect(keys(ref[:parallel_control_valves]));collect(keys(ref[:parallel_short_pipes]));collect(keys(ref[:parallel_resistors]))]
+
+    connections = Set()
+    for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_control_valves]) push!(connections, (i,j)) end
+
+#    println(connections)
+
+    #for (i,j) in keys(ref[:parallel_connections])
+    for (i,j) in connections
+#        if length(ref[:parallel_connections]) > 0
             ref[:degree][i] = ref[:degree][i] + 1
             ref[:degree][j] = ref[:degree][j] + 1
-        end
+#        end
     end
 end
 
@@ -584,10 +588,21 @@ function degree_ne_ref!(ref::Dict{Symbol,Any})
         ref[:degree_ne][i] = 0
     end
 
-    for (i,j) in keys(ref[:parallel_ne_connections])
-        if length(ref[:parallel_ne_connections]) > 0
+    connections = Set()
+    for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_control_valves]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_ne_pipes]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_ne_compressors]) push!(connections, (i,j)) end
+
+    for (i,j) in connections
+#    for (i,j) in keys(ref[:parallel_ne_connections])
+#        if length(ref[:parallel_ne_connections]) > 0
             ref[:degree_ne][i] = ref[:degree_ne][i] + 1
             ref[:degree_ne][j] = ref[:degree_ne][j] + 1
-        end
+#        end
     end
 end

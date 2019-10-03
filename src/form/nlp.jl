@@ -145,3 +145,16 @@ function constraint_on_off_control_valve_pressure(gm::GenericGasModel{T}, n::Int
     add_constraint(gm, n, :control_valve_pressure_drop2, k, @constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
     add_constraint(gm, n, :control_valve_pressure_drop3, k, @constraint(gm.model, f * (pi - pj) >= 0))
 end
+
+"Constraint: constrains the ratio to be p_i * ratio = p_j"
+function constraint_compressor_ratio_value(gm::GenericGasModel{T}, n::Int, k, i, j) where T <: AbstractNLPForm
+    pi    = var(gm,n,:p,i)
+    pj    = var(gm,n,:p,j)
+    r = var(gm,n,:r,k)
+    add_constraint(gm, n, :compressor_ratio_value1, k, @constraint(gm.model, r * pi <= pj))
+    add_constraint(gm, n, :compressor_ratio_value2, k, @constraint(gm.model, r * pi >= pj))
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max) where T <: AbstractNLPForm
+end

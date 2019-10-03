@@ -83,7 +83,7 @@ for i in ids(gm,:resistor)
 end
 
 for i in ids(gm, :junction)
-    constraint_mass_flow_balance_ls(gm, i)
+    constraint_mass_flow_balance(gm, i)
 end
 
 for i in ids(gm, :short_pipe)

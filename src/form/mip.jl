@@ -101,3 +101,11 @@ end
 "Constraint: constraints on pressure drop across an expansion pipe"
 function constraint_pipe_pressure_ne(gm::GenericGasModel{T}, n::Int, k, i, j, pd_min, pd_max) where T <: AbstractMIPForm
 end
+
+"Constraint: constrains the ratio to be p_i * ratio = p_j"
+function constraint_compressor_ratio_value(gm::GenericGasModel{T}, n::Int, k, i, j) where T <: AbstractMIPForm
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max) where T <: AbstractMIPForm
+end

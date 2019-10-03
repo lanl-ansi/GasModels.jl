@@ -18,6 +18,8 @@ function post_ne(gm::GenericGasModel; kwargs...)
     variable_valve_operation(gm)
     variable_pipe_ne(gm)
     variable_compressor_ne(gm)
+    variable_load_mass_flow(gm)
+    variable_production_mass_flow(gm)
 
     # expansion cost objective
     objective_min_ne_cost(gm; normalization =  obj_normalization)
@@ -85,9 +87,6 @@ function post_ne(gm::GenericGasModel; kwargs...)
             exclusive[i][j] = true
         end
     end
-
-#    zp = gm.var[:nw][gm.cnw][:zp]
-#    zc = gm.var[:nw][gm.cnw][:zc]
 end
 
 # Special function for whether or not a connection is added
@@ -98,8 +97,8 @@ end
 
 # Get the direction solutions
 function add_direction_ne_setpoint(sol, gm::GenericGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne)
-    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne)
+    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne_pipe)
+    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne_compressor)
 end
 
 " Add the compressor solutions "

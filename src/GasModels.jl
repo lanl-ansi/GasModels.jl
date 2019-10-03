@@ -50,6 +50,8 @@ include("prob/gf.jl")
 include("prob/ne.jl")
 include("prob/ls.jl")
 include("prob/nels.jl")
+include("prob/c.jl")
+
 
 include("io/diagnostics.jl")
 

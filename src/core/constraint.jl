@@ -52,6 +52,7 @@ end
 # Constraints associated with junctions
 #################################################################################################
 
+#=
 " Constraint: standard mass flow balance equation where demand and production are constants "
 function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fg, fl) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
@@ -69,7 +70,9 @@ function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes
                                                                                            sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves)
                                                                      ))
 end
+=#
 
+#=
 " Constraint: standard flow balance equation where demand and production are constants and there are expansion connections"
 function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
@@ -92,9 +95,10 @@ function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_pi
                                                                                               sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
                                                                         ))
 end
+=#
 
 " Constraint: standard flow balance equation where demand and production are variables "
-function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
+function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
@@ -103,7 +107,7 @@ function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_pi
     f_control_valve = var(gm,n,:f_control_valve)
     fg              = var(gm,n,:fg)
     fl              = var(gm,n,:fl)
-    add_constraint(gm, n, :junction_mass_flow_balance_ls, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+    add_constraint(gm, n, :junction_mass_flow_balance, i, @constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
                                                                             sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                             sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
@@ -114,7 +118,7 @@ function constraint_mass_flow_balance_ls(gm::GenericGasModel{T}, n::Int, i, f_pi
 end
 
 " Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne_ls(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
+function constraint_mass_flow_balance_ne(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)

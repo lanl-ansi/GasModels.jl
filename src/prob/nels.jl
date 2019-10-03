@@ -31,7 +31,7 @@ function post_nels(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_mass_flow_balance_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne(gm, i)
     end
 
     for i in ids(gm,:pipe)
@@ -113,7 +113,7 @@ function post_nels_directed(gm::GenericGasModel)
     objective_max_load(gm)
 
     for i in ids(gm, :junction)
-        constraint_mass_flow_balance_ne_ls(gm, i)
+        constraint_mass_flow_balance_ne(gm, i)
     end
 
     for i in ids(gm,:undirected_pipe)

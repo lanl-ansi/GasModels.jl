@@ -13,13 +13,11 @@ These templates should be defined over `GenericGasModel` and should not refer to
 
 ### Flow balance constraints
 
-The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are variable or constant injections (variable injections are denoted by `ls` in the name of the function) and if there are network design options (denoted by `\_ne` in the name of the function).
+The primary constraints related to junctions ensure that mass flow is balanced at these nodes. The specifics of the constraint implementation will change if there are network design options (denoted by `\_ne` in the name of the function).
 
 ```@docs
 constraint_mass_flow_balance
-constraint_mass_flow_balance_ls
 constraint_mass_flow_balance_ne
-constraint_mass_flow_balance_ne_ls
 ```
 
 ### Direction On/off Constraints
