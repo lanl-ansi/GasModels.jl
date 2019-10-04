@@ -10,7 +10,7 @@ import traceback
 from uuid import uuid4
 import geopy.distance
 
-COMPONENT_TYPES = ['junctions', 'pipelines', 'compressors', 'regulators', 'producers', 'consumers', 'generators', 'storage']
+COMPONENT_TYPES = ['junctions', 'pipes', 'compressors', 'regulators', 'producers', 'consumers', 'generators', 'storage']
 
 class Component:
     ''' An abstract MGC component '''
@@ -26,11 +26,13 @@ class Component:
 
     def get_matlab_column_names(self, is_ext_data=False):
         ''' Get the Matlab column names for this component. '''
-        return []
+        column_names = []
+        return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
         ''' Get the Matlab record values for this component. '''
-        return []
+        values = []
+        return values
 
     def get_matlab_header(self, is_ext_data=False):
         ''' Create a Matlab component header string. '''
@@ -124,8 +126,8 @@ def distance(src, dst):
     assert(dst is not None), 'dst is undefined'
     return geopy.distance.distance(src, dst).km*1000
 
-class Pipeline(Edge):
-    ''' a pipeline '''
+class Pipe(Edge):
+    ''' a pipe '''
     friction_factor = 0.01 # friction factor (unitless)
 
     def __init__(self, _id, f_junction, t_junction, diameter, length):
@@ -135,7 +137,7 @@ class Pipeline(Edge):
 
     @staticmethod
     def from_csv_record(row, mgc):
-        ''' create a pipeline from csv '''
+        ''' create a pipe from csv '''
         pid = int(float(row['LINEID']))
         f_junction = int(row['FRNODE'])
         t_junction = int(row['TONODE'])
@@ -143,14 +145,14 @@ class Pipeline(Edge):
         f_node = (float(row['FRNODE_Y']), float(row['FRNODE_X']))
         t_node = (float(row['TONODE_Y']), float(row['TONODE_X']))
         length = distance(f_node, t_node)
-        return Pipeline(pid, f_junction, t_junction, diameter, length)
+        return Pipe(pid, f_junction, t_junction, diameter, length)
 
     def get_matlab_column_names(self, is_ext_data=False):
         ''' Get the Matlab column names for this component. '''
         if is_ext_data:
             column_names = []
         else:
-            column_names = ['pipeline_i', 'f_junction', 't_junction', 'diameter', 'length', 'friction_factor', 'status']
+            column_names = ['pipe_i', 'f_junction', 't_junction', 'diameter', 'length', 'friction_factor', 'status']
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
@@ -181,7 +183,7 @@ class Compressor(Edge):
         # insert compressor logically between near pipe and near node
         pid = int(row['NEARLINEID'])
         nid = int(row['NEARNODEID'])
-        for pipe in mgc.pipelines:
+        for pipe in mgc.pipes:
             if pipe.id == pid:
                 if pipe.f_junction == nid:
                     # compressor is between pipe and its f_junction
@@ -232,7 +234,7 @@ class Regulator(Edge):
         # insert compressor logically between near pipe and near node
         pid = int(row['NEARLINEID'])
         nid = int(row['NEARNODEID'])
-        for pipe in mgc.pipelines:
+        for pipe in mgc.pipes:
             if pipe.id == pid:
                 if pipe.f_junction == nid:
                     # compressor is between pipe and its f_junction
@@ -328,7 +330,7 @@ class Consumer(Dispatchable):
         if is_ext_data:
             column_names = []
         else:
-            column_names = ['consumer_i', 'junction', 'fdmin', 'fdmax', 'fd', 'status', 'dispatchable']
+            column_names = ['consumer_i', 'junction', 'fd', 'status', 'dispatchable']
         return column_names
 
     def get_matlab_record_values(self, is_ext_data=False):
@@ -336,7 +338,7 @@ class Consumer(Dispatchable):
         if is_ext_data:
             keys = []
         else:
-            keys = ['id', 'junction', 'fdmin', 'fdmax', 'fd', 'status', 'dispatchable']
+            keys = ['id', 'junction', 'fd', 'status', 'dispatchable']
         values = [getattr(self, key) for key in keys]
         return values
 
@@ -502,7 +504,7 @@ def csv2mgc(components):
     ''' generate matlab output from csv files '''
     component_files = {
         'Junction': components.junctions,
-        'Pipeline': components.pipelines,
+        'Pipe': components.pipes,
         'Compressor': components.compressors,
         'Regulator': components.regulators,
         'Producer': components.producers,
@@ -517,7 +519,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert ArcGIS CSVs to Matlab mgc format')
     parser.add_argument('-n', '--name', type=str, help='Model name', metavar='MODEL_NAME')
     parser.add_argument('-j', '--junctions', type=str, help='Junction data file', metavar='JUNCTION_FILE')
-    parser.add_argument('-p', '--pipelines', type=str, help='Pipeline data file', metavar='PIPE_FILE')
+    parser.add_argument('-p', '--pipes', type=str, help='Pipe data file', metavar='PIPE_FILE')
     parser.add_argument('-c', '--compressors', type=str, help='Compressor data file', metavar='COMPRESSOR_FILE')
     parser.add_argument('-e', '--regulators', type=str, help='Regulators data file', metavar='REGULATOR_FILE')
     parser.add_argument('-d', '--producers', type=str, help='Producer data file', metavar='PRODUCER_FILE')
