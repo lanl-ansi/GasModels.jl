@@ -26,7 +26,7 @@ abs_minlp_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_op
 
 @testset "GasModels" begin
 
-include("c.jl")
+include("ogf.jl")
 include("matlab.jl")
 include("data.jl")
 include("ls.jl")

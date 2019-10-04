@@ -5,6 +5,10 @@ GasModels.jl Change Log
 - Implement constraints on compressor power
 - Implement a multi-network test
 
+### Staged
+- removed requirement that all edges must have unique ids (breaking)
+- introduced optimal gas flow formulation (ogf)
+
 ### v0.5
 - Renamed various function names for consistency (breaking)
 - Replaced yn and yp variables with a single variable y

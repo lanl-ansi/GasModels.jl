@@ -2,6 +2,7 @@
 
 {
   "temperature": 288.15,
+  "R": 8.314,
   "ne_compressor": {
 
   },

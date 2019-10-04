@@ -23,7 +23,7 @@ using AmplNLWriter
 using JuMP
 
 couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "path/to/couenne")
-GasModels.run_minl_gf("test/data/gaslib-40.m", couenne_solver)
+GasModels.run_minlp_gf("test/data/gaslib-40.m", couenne_solver)
 ```
 ## Getting Results
 
