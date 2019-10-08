@@ -141,6 +141,7 @@ function _make_per_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
     if haskey(data, "compressor")
         for (i, compressor) in data["compressor"]
             apply_func(compressor, "f", rescale_q)
+            apply_func(compressor, "power_max", rescale_q)
         end
     end
 
@@ -228,6 +229,7 @@ function _make_si_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
     if haskey(data, "compressor")
         for (i, compressor) in data["compressor"]
             apply_func(compressor, "f", rescale_q)
+            apply_func(compressor, "power_max", rescale_q)
         end
     end
 

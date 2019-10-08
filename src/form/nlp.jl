@@ -156,8 +156,8 @@ function constraint_compressor_ratio_value(gm::GenericGasModel{T}, n::Int, k, i,
 end
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max, m) where T <: AbstractNLPForm
+function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max, m, work) where T <: AbstractNLPForm
     r = var(gm,n,:r,k)
     f = var(gm,n,:f_compressor, k)
-    add_constraint(gm, n, :compressor_energy, k, @NLconstraint(gm.model, f * (r^m - 1) <= power_max))
+    add_constraint(gm, n, :compressor_energy, k, @NLconstraint(gm.model, f * (r^m - 1) <= power_max/work))
 end

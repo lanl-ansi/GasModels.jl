@@ -526,8 +526,12 @@ function constraint_compressor_energy(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:compressor,k)
     power_max      = compressor["power_max"]
     gamma          = ref(gm,n,:specific_heat_capacity_ratio)
+    magic_num      = 286.76
     m              = ((gamma - 1) / gamma) / 2
-    constraint_compressor_energy(gm, n, k, power_max, m)
+    T              = ref(gm,n,:temperature)
+    G              = ref(gm,n,:gas_specific_gravity)
+    work           = ((magic_num / G) * T * (gamma/(gamma-1)))
+    constraint_compressor_energy(gm, n, k, power_max, m, work)
 end
 constraint_compressor_energy(gm::GenericGasModel, k::Int) = constraint_compressor_energy(gm, gm.cnw, k)
 

@@ -19,9 +19,6 @@ end
 
 " construct the ogf problem "
 function post_ogf(gm::GenericGasModel; kwargs...)
-    kwargs = Dict(kwargs)
-    weighting_factor = haskey(kwargs, :obj_normalization) ? kwargs[:weighting_factor] : 1.0
-
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
@@ -29,7 +26,7 @@ function post_ogf(gm::GenericGasModel; kwargs...)
     variable_production_mass_flow(gm)
     variable_compression_ratio(gm)
 
-   objective_min_economic_costs(gm; weighting_factor=weighting_factor)
+   objective_min_economic_costs(gm)
 
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)

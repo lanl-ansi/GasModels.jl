@@ -46,18 +46,19 @@ function objective_min_economic_costs(gm::GenericGasModel, nws=[gm.cnw]; weighti
     prod_prices = Dict(n => Dict(i => haskey(ref(gm,n,:producer,i),"price") ?  ref(gm,n,:producer,i)["price"] : -1.0 for i in prod_set[n]) for n in nws)
 
 
+    economic_weighting = ref(gm,gm.cnw,:economic_weighting)
 
-#
-
-#    obj = JuMP.@NLobjective(gm.model, Min, sum(
-#                                            sum(ref(gm,n,:producer,i)["price"] *  fg[n][i] for i in prod_set[n]) +
-#                                            weighting_factor * sum(f[n][i] * (r[n][i]^m - 1) for (i,compressor) in ref(gm,n,:compressor))
-#                                         for n in nws))
+    obj = JuMP.@NLobjective(gm.model, Min, sum(economic_weighting*sum(load_prices[n][i] *  fl[n][i] for i in load_set[n]) +
+                                               economic_weighting*sum(prod_prices[n][i] *  fg[n][i] for i in prod_set[n]) +
+                                               (1.0-economic_weighting)*sum(f[n][i] * (r[n][i]^m - 1) for (i,compressor) in ref(gm,n,:compressor))
+                                           for n in nws))
 
 
-                                             obj = JuMP.@NLobjective(gm.model, Min, sum(sum(load_prices[n][i] *  fl[n][i] for i in load_set[n]) +
-                                                                                        sum(prod_prices[n][i] *  fg[n][i] for i in prod_set[n]) +
-                                                                                     weighting_factor * sum(f[n][i] * (r[n][i]^m - 1) for (i,compressor) in ref(gm,n,:compressor))
-                                                                                  for n in nws))
+
+
+#                                             obj = JuMP.@NLobjective(gm.model, Min, sum(0.95*sum(load_prices[n][i] *  fl[n][i] for i in load_set[n]) +
+#                                                                                        0*95*sum(prod_prices[n][i] *  fg[n][i] for i in prod_set[n]) +
+#                                                                                     0.05 *weighting_factor * sum(f[n][i] * (r[n][i]^m - 1) for (i,compressor) in ref(gm,n,:compressor))
+#                                                                                  for n in nws))
 
 end

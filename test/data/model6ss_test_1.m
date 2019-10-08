@@ -1,4 +1,4 @@
-function mgc = model6ss_test_0
+function mgc = model6ss_test_1
 
 mgc.sound_speed = 371.6643;
 mgc.temperature = 288.7060;
@@ -11,7 +11,8 @@ mgc.standard_density = 1;
 mgc.baseP = 3000000;
 mgc.baseF = 8071.8;
 mgc.per_unit= 0;
-mgc.economic_weighting = 1.0;
+mgc.economic_weighting = 0.95;
+
 
 %% junction data
 %  junction_i type pmin pmax status p
@@ -36,8 +37,8 @@ mgc.pipe = [
 %% compressor data
 % compressor_i f_junction t_junction cmin cmax power_max fmin fmax status
 mgc.compressor = [
-1	1	5	1	2	100000000	0	1000    1
-2	2	6	1	2	100000000	0	1000    1
+1	1	5	1	1.4     3000000 	0	1000    1
+2	2	6	1	1.35	2000000 	0	1000    1
 ];
 
 %% producer
