@@ -1,13 +1,17 @@
 using GasModels
-using InfrastructureModels
-using Memento
 
+import InfrastructureModels
+import Memento
 
-using JuMP
+# Suppress warnings during testing.
+const TESTLOG = Memento.getlogger(GasModels)
+Memento.setlevel!(TESTLOG, "error")
 
-using Ipopt
-using Cbc
-using Juniper
+import JuMP
+
+import Ipopt
+import Cbc
+import Juniper
 
 ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, print_level=0, sb="yes")
 cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
@@ -24,13 +28,11 @@ cvx_solver = ipopt_solver
 abs_minlp_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-12, print_level=0, sb="yes"), mip_solver=cbc_solver, log_levels=[])
 
 @testset "GasModels" begin
-
-include("ogf.jl")
-include("matlab.jl")
-include("data.jl")
-include("ls.jl")
-include("nels.jl")
-include("gf.jl")
-include("ne.jl")
-
+    include("ogf.jl")
+    include("matlab.jl")
+    include("data.jl")
+    include("ls.jl")
+    include("nels.jl")
+    include("gf.jl")
+    include("ne.jl")
 end

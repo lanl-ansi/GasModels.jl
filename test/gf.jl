@@ -20,10 +20,10 @@ end
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 misocp gf")
         result = run_gf("../test/data/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
         data = GasModels.parse_file("../test/data/gaslib-40.m")
-        gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
+        gm = GasModels.build_model(data, MINLPGasModel, GasModels.post_gf)
         check_pressure_status(result["solution"], gm)
         check_ratio(result["solution"], gm)
     end
@@ -31,10 +31,10 @@ end
         ## THIS TEST IS TIMING OUT ON LINUX in Travis
 #        println("Testing gaslib 135 misocp gf")
 #        result = run_gf("../test/data/gaslib-135.m", MISOCPGasModel, cvx_minlp_solver)
-#        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+#        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 #        @test isapprox(result["objective"], 0; atol = 1e-6)
 #        data = GasModels.parse_file("../test/data/gaslib-135.m")
-#        gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
+#        gm = GasModels.build_model(data, MINLPGasModel, GasModels.post_gf)
 #        check_pressure_status(result["solution"], gm)
 #        check_ratio(result["solution"], gm)
     # end
@@ -46,45 +46,47 @@ end
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 mip gf")
         result = run_gf("../test/data/gaslib-40.m", MIPGasModel, cvx_minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 mip gf")
         result = run_gf("../test/data/gaslib-135.m", MIPGasModel, cvx_minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
 end
+
 
 #Check the LP model
 @testset "test lp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 lp gf")
         result = run_gf("../test/data/gaslib-40.m", LPGasModel, cvx_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 lp gf")
         result = run_gf("../test/data/gaslib-135.m", LPGasModel, cvx_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
 end
+
 
 #Check the NLP model
 @testset "test nlp gf" begin
     @testset "gaslib 40 case" begin
         println("Testing gaslib 40 nlp gf")
         result = run_gf("../test/data/gaslib-40.m", NLPGasModel, cvx_minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
     @testset "gaslib 135 case" begin
         println("Testing gaslib 135 nlp gf")
         result = run_gf("../test/data/gaslib-135.m", NLPGasModel, cvx_minlp_solver)
-        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
      end
 end
@@ -93,7 +95,7 @@ end
 
 @testset "test minlp gf mathematical program" begin
     data = GasModels.parse_file("../test/data/gaslib-582.json")
-    gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
+    gm = GasModels.build_model(data, MINLPGasModel, GasModels.post_gf)
     @test length(gm.var[:nw][gm.cnw][:p])  == 610
     @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
     @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 10

@@ -15,7 +15,7 @@ Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 
 [compat]
 Cbc = ">= 0.4"
-InfrastructureModels = "~0.2, ~0.3"
+InfrastructureModels = "~0.3.2"
 Ipopt = ">= 0.4"
 JSON = ">= 0.18.0"
 JuMP = "~0.19.1, ~0.20"

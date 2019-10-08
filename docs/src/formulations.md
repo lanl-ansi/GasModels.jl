@@ -4,35 +4,35 @@
 We begin with the top of the hierarchy, where we can distinguish between gas flow models. There are currently five formulations supported in GasModels. Two full non convex formulations and three relaxations.
 
 ```julia
-AbstractNLPForm <: AbstractGasFormulation
-AbstractMINLPForm <: AbstractGasFormulation
-AbstractMISOCPForm <: AbstractGasFormulation
-AbstractMIPForm <: AbstractGasFormulation
-AbstractLPForm <: AbstractGasFormulation
+AbstractNLPModel <: AbstractGasModel
+AbstractMINLPModel <: AbstractGasModel
+AbstractMISOCPModel <: AbstractGasModel
+AbstractMIPModel <: AbstractGasModel
+AbstractLPModel <: AbstractGasModel
 ```
 
 ## Gas Models
 Each of these forms can be used as the type parameter for a GasModel, i.e.:
 
 ```julia
-NLPGasModel = GenericGasModel(StandardNLPForm)
-MINLPGasModel = GenericGasModel(StandardMINLPForm)
-MISOCPGasModel = GenericGasModel(StandardMISOCPForm)
-MIPGasModel = GenericGasModel(StandardMIPForm)
-LPGasModel = GenericGasModel(StandardLPForm)
+NLPGasModel <: AbstractNLPForm
+MINLPGasModel <: AbstractMINLPModel
+MISOCPGasModel <: AbstractMISOCPModel
+MIPGasModel <: AbstractMIPModel
+LPGasModel <: AbstractLPModel
 ```
 
-For details on `GenericGasModel`, see the section on [Gas Model](@ref).
+For details on `AbstractGasModel`, see the section on [Gas Model](@ref).
 
 ## User-Defined Abstractions
 
-The user-defined abstractions begin from a root abstract like the `AbstractGasFormulation` abstract type, i.e.
+The user-defined abstractions begin from a root abstract like the `AbstractGasModel` abstract type, i.e.
 
 ```julia
-AbstractMyFooForm <: AbstractGasFormulation
+AbstractMyFooModel <: AbstractGasModel
 
-StandardMyFooForm <: AbstractFooForm
-FooGasModel = GenericGasModel{StandardFooForm}
+StandardMyFooForm <: AbstractFooModel
+FooGasModel = AbstractGasModel{StandardFooForm}
 ```
 
 ## NLP

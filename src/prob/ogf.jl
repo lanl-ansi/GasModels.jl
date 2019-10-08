@@ -1,16 +1,16 @@
 # Definitions for running an optimal gas flow (ogf)
 
-export run_ogf
-
 " entry point into running the ogf problem "
 function run_ogf(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_ogf; solution_builder=get_ogf_solution, kwargs...)
 end
 
+
 ""
 function run_soc_ogf(file, solver; kwargs...)
     return run_ogf(file, MISOCPGasModel, solver; kwargs...)
 end
+
 
 ""
 function run_minlp_ogf(file, solver; kwargs...)
@@ -18,7 +18,7 @@ function run_minlp_ogf(file, solver; kwargs...)
 end
 
 " construct the ogf problem "
-function post_ogf(gm::GenericGasModel; kwargs...)
+function post_ogf(gm::AbstractGasModel; kwargs...)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)

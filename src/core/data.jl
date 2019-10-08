@@ -11,10 +11,30 @@ function calc_max_volume_flow(data::Dict{String,Any})
     return max_flow
 end
 
+
 "Computes the max mass flow in the Gas Model"
 function calc_max_mass_flow(data::Dict{String,Any})
     return calc_max_volume_flow(data) * data["standard_density"]
 end
+
+
+"Computes the maximum volume of the Gas Model"
+function calc_max_volume_flow(ref::Dict{Symbol,Any})
+    max_flow = 0
+    for (idx, producer) in ref[:producer]
+        if producer["qgmax"] > 0
+          max_flow = max_flow + producer["qgmax"]
+        end
+    end
+    return max_flow
+end
+
+
+"Computes the max mass flow in the Gas Model"
+function calc_max_mass_flow(ref::Dict{Symbol,Any})
+    return calc_max_volume_flow(ref) * ref[:standard_density]
+end
+
 
 "Calculate the bounds on minimum and maximum pressure difference squared"
 function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
@@ -26,6 +46,7 @@ function calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
 
     return pd_min, pd_max
 end
+
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley. Unsteady and transient flow of compressible
 fluids in pipelines–a review of theoretical and some experimental studies.
@@ -46,6 +67,7 @@ function calc_pipe_resistance_thorley(ref::Dict{Symbol,Any}, pipe::Dict{String,A
     resistance = ( (D * A^2) / (lambda * L * a_sqr)) * (ref[:baseP]^2 / ref[:baseQ]^2) # second half is the non-dimensionalization
     return resistance
 end
+
 
 "A very simple model of computing resistance for resistors that is based on the Thorley model.  The are other more realistic models that could
 be used.  See Physical and technical fundamentals of gas networks by Fugenschu et al. for an example"
@@ -83,6 +105,7 @@ function calc_pipe_resistance_smeers(ref::Dict{Symbol,Any},pipe::Dict{String,Any
     return resistance
 end
 
+
 "Transforms network data into per-unit (non-dimensionalized)"
 function make_per_unit!(data::Dict{String,Any})
     if !haskey(data, "per_unit") || data["per_unit"] == false
@@ -98,6 +121,7 @@ function make_per_unit!(data::Dict{String,Any})
         end
     end
 end
+
 
 ""
 function _make_per_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
@@ -171,6 +195,7 @@ function _make_per_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
 
 end
 
+
 "Transforms network data into si-units (inverse of per-unit)--non-dimensionalized"
 function make_si_unit!(data::Dict{String,Any})
     if haskey(data, "per_unit") && data["per_unit"] == true
@@ -186,6 +211,7 @@ function make_si_unit!(data::Dict{String,Any})
         end
     end
 end
+
 
 ""
 function _make_si_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
@@ -258,6 +284,7 @@ function _make_si_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
     end
 end
 
+
 ""
 function apply_func(data::Dict{String,Any}, key::String, func)
     if haskey(data, key)
@@ -265,35 +292,42 @@ function apply_func(data::Dict{String,Any}, key::String, func)
     end
 end
 
+
 "calculates minimum mass flow consumption"
 function calc_flmin(data::Dict{String,Any}, consumer::Dict{String,Any})
     return consumer["qlmin"] * data["standard_density"]
 end
+
 
 "calculates maximum mass flow consumption"
 function calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
     return consumer["qlmax"] * data["standard_density"]
 end
 
+
 "calculates constant mass flow consumption"
 function calc_fl(data::Dict{String,Any}, consumer::Dict{String,Any})
     return consumer["ql"] * data["standard_density"]
 end
+
 
 "calculates minimum mass flow production"
 function calc_fgmin(data::Dict{String,Any}, producer::Dict{String,Any})
     return producer["qgmin"] * data["standard_density"]
 end
 
+
 "calculates maximum mass flow production"
 function calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
     return producer["qgmax"] * data["standard_density"]
 end
 
+
 "calculates constant mass flow production"
 function calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
     return producer["qg"] * data["standard_density"]
 end
+
 
 "calculates the minimum flow on a pipe"
 function calc_pipe_fmin(ref::Dict{Symbol,Any}, k)
@@ -304,6 +338,7 @@ function calc_pipe_fmin(ref::Dict{Symbol,Any}, k)
     return max(-mf, pf_min)
 end
 
+
 "calculates the maximum flow on a pipe"
 function calc_pipe_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
@@ -312,6 +347,7 @@ function calc_pipe_fmax(ref::Dict{Symbol,Any}, k)
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
+
 
 "calculates the minimum flow on a resistor"
 function calc_resistor_fmin(ref::Dict{Symbol,Any}, k)
@@ -322,6 +358,7 @@ function calc_resistor_fmin(ref::Dict{Symbol,Any}, k)
     return max(-mf, pf_min)
 end
 
+
 "calculates the maximum flow on a resistor"
 function calc_resistor_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
@@ -330,6 +367,7 @@ function calc_resistor_fmax(ref::Dict{Symbol,Any}, k)
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
+
 
 "calculates the minimum flow on a pipe"
 function calc_ne_pipe_fmin(ref::Dict{Symbol,Any}, k)
@@ -340,6 +378,7 @@ function calc_ne_pipe_fmin(ref::Dict{Symbol,Any}, k)
     return max(-mf, pf_min)
 end
 
+
 "calculates the maximum flow on a pipe"
 function calc_ne_pipe_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
@@ -349,63 +388,75 @@ function calc_ne_pipe_fmax(ref::Dict{Symbol,Any}, k)
     return min(mf, pf_max)
 end
 
+
 "calculates the minimum flow on a short pipe"
 function calc_short_pipe_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
+
 
 "calculates the maximum flow on a short pipe"
 function calc_short_pipe_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
+
 "calculates the minimum flow on a valve"
 function calc_valve_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
+
 
 "calculates the maximum flow on a valve"
 function calc_valve_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
+
 "calculates the minimum flow on a compressor"
 function calc_compressor_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
+
 
 "calculates the maximum flow on a compressor"
 function calc_compressor_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
+
 "calculates the minimum flow on an expansion compressor"
 function calc_ne_compressor_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
+
 
 "calculates the maximum flow on an expansion compressor"
 function calc_ne_compressor_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
+
 "calculates the minimum flow on a control valve"
 function calc_control_valve_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
+
 
 "calculates the maximum flow on a control valve"
 function calc_control_valve_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
+
 "prints the text summary for a data file or dictionary to stdout"
 function print_summary(obj::Union{String, Dict{String,Any}}; kwargs...)
     summary(stdout, obj; kwargs...)
 end
 
+
 "calculates connections in parallel with one another and their orientation"
-function calc_parallel_ne_connections(gm::GenericGasModel, n::Int, connection::Dict{String,Any})
+function calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
     i = min(connection["f_junction"], connection["t_junction"])
     j = max(connection["f_junction"], connection["t_junction"])
 
@@ -452,8 +503,9 @@ function calc_parallel_ne_connections(gm::GenericGasModel, n::Int, connection::D
            aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors
 end
 
+
 "calculates connections in parallel with one another and their orientation"
-function calc_parallel_connections(gm::GenericGasModel, n::Int, connection::Dict{String,Any})
+function calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
     i = min(connection["f_junction"], connection["t_junction"])
     j = max(connection["f_junction"], connection["t_junction"])
 
@@ -493,7 +545,6 @@ function calc_parallel_connections(gm::GenericGasModel, n::Int, connection::Dict
 end
 
 
-
 "prints the text summary for a data file to IO"
 function summary(io::IO, file::String; kwargs...)
     data = parse_file(file)
@@ -501,11 +552,13 @@ function summary(io::IO, file::String; kwargs...)
     return data
 end
 
-gm_component_types_order = Dict(
+
+const gm_component_types_order = Dict(
     "junction" => 1.0, "connection" => 2.0, "producer" => 3.0, "consumer" => 4.0
 )
 
-gm_component_parameter_order = Dict(
+
+const gm_component_parameter_order = Dict(
     "junction_i" => 1.0, "junction_type" => 2.0,
     "pmin" => 3.0, "pmax" => 4.0, "p_nominal" => 5.0,
 
@@ -524,6 +577,7 @@ gm_component_parameter_order = Dict(
 
     "status" => 500.0,
 )
+
 
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)

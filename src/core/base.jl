@@ -1,56 +1,35 @@
 # stuff that is universal to all gas models
 
-export
-    GenericGasModel,
-    optimize!,
-    run_generic_model, build_generic_model, solve_generic_model
+"root of the gas formulation hierarchy"
+abstract type AbstractGasModel end
 
-""
-abstract type AbstractGasFormulation end
 
-"""
-```
-mutable struct GenericGasModel{T<:AbstractGasFormulation}
-    model::JuMP.Model
-    data::Dict{String,Any}
-    setting::Dict{String,Any}
-    solution::Dict{String,Any}
-    var::Dict{Symbol,Any} # model variable lookup
-    constraint::Dict{Symbol, Dict{Any, ConstraintRef}} # model constraint lookup
-    ref::Dict{Symbol,Any} # reference data
-    ext::Dict{Symbol,Any} # user extensions
+"a macro for adding the base GasModels fields to a type definition"
+InfrastructureModels.@def gm_fields begin
+    model::JuMP.AbstractModel
+
+    data::Dict{String,<:Any}
+    setting::Dict{String,<:Any}
+    solution::Dict{String,<:Any}
+
+    ref::Dict{Symbol,<:Any}
+    var::Dict{Symbol,<:Any}
+    con::Dict{Symbol,<:Any}
+    cnw::Int
+
+    # Extension dictionary
+    # Extensions should define a type to hold information particular to
+    # their functionality, and store an instance of the type in this
+    # dictionary keyed on an extension-specific symbol
+    ext::Dict{Symbol,<:Any}
 end
-```
-where
 
-* `data` is the original data, usually from reading in a `.json` file,
-* `setting` usually looks something like `Dict("output" => Dict("flows" => true))`, and
-* `ref` is a place to store commonly used pre-computed data from of the data dictionary,
-    primarily for converting data-types, filtering out deactivated components, and storing
-    system-wide values that need to be computed globally. See `build_ref(data)` for further details.
-
-Methods on `GenericGasModel` for defining variables and adding constraints should
-
-* work with the `ref` dict, rather than the original `data` dict,
-* add them to `model::JuMP.Model`, and
-* follow the conventions for variable and constraint names.
-"""
-mutable struct GenericGasModel{T<:AbstractGasFormulation}
-    model::JuMP.Model
-    data::Dict{String,Any}
-    setting::Dict{String,Any}
-    solution::Dict{String,Any}
-    ref::Dict{Symbol,Any} # data reference data
-    var::Dict{Symbol,Any} # JuMP variables
-    con::Dict{Symbol,Any} # data reference data
-
-    cnw::Int # current network index value
-    ext::Dict{Symbol,Any}
-end
 
 "default generic constructor"
-function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{String,Any}(), setting = Dict{String,Any}(), jump_model::JuMP.Model=JuMP.Model())
-    ref = build_ref(data) # reference data
+function InitializeGasModel(GasModel::Type, data::Dict{String,<:Any}; ext=Dict{Symbol,Any}(), setting=Dict{String,Any}(), jump_model::JuMP.Model=JuMP.Model(), kwargs...)
+    @assert GasModel <: AbstractGasModel
+
+    ref = InfrastructureModels.ref_initialize(data)  # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
     con = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
@@ -61,7 +40,7 @@ function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{Strin
 
     cnw = minimum([k for k in keys(ref[:nw])])
 
-    gm = GenericGasModel{Typ}(
+    gm = GasModel(
         jump_model, # model
         data, # data
         setting, # setting
@@ -75,110 +54,116 @@ function GenericGasModel(data::Dict{String,Any}, Typ::DataType; ext = Dict{Strin
     return gm
 end
 
+
 ### Helper functions for ignoring multinetwork support
-ids(gm::GenericGasModel, key::Symbol) = ids(gm, gm.cnw, key)
-ids(gm::GenericGasModel, n::Int, key::Symbol) = keys(gm.ref[:nw][n][key])
+ids(gm::AbstractGasModel, key::Symbol) = ids(gm, gm.cnw, key)
+ids(gm::AbstractGasModel, n::Int, key::Symbol) = keys(gm.ref[:nw][n][key])
 
-ref(gm::GenericGasModel, key::Symbol) = ref(gm, gm.cnw, key)
-ref(gm::GenericGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
-ref(gm::GenericGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
-ref(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
+ref(gm::AbstractGasModel, key::Symbol) = ref(gm, gm.cnw, key)
+ref(gm::AbstractGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
+ref(gm::AbstractGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
+ref(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
 
-var(gm::GenericGasModel, key::Symbol) = var(gm, gm.cnw, key)
-var(gm::GenericGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-var(gm::GenericGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-var(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
-
-
-con(gm::GenericGasModel, key::Symbol) = con(gm, gm.cnw, key)
-con(gm::GenericGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
-con(gm::GenericGasModel, n::Int, key::Symbol) = gm.con[:nw][n][key]
-con(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.con[:nw][n][key][idx]
-
-ext(gm::GenericGasModel, key::Symbol) = ext(gm, gm.cnw, key)
-ext(gm::GenericGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
-ext(gm::GenericGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
-ext(gm::GenericGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
+var(gm::AbstractGasModel, key::Symbol) = var(gm, gm.cnw, key)
+var(gm::AbstractGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
+var(gm::AbstractGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
+var(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
 
 
-" Do a solve of the problem "
-function optimize!(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory)
+con(gm::AbstractGasModel, key::Symbol) = con(gm, gm.cnw, key)
+con(gm::AbstractGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
+con(gm::AbstractGasModel, n::Int, key::Symbol) = gm.con[:nw][n][key]
+con(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.con[:nw][n][key][idx]
+
+ext(gm::AbstractGasModel, key::Symbol) = ext(gm, gm.cnw, key)
+ext(gm::AbstractGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
+ext(gm::AbstractGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
+ext(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
+
+
+"Do a solve of the problem"
+function JuMP.optimize!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory)
     if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
         _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
     else
-        @warn "Model already contains optimizer factory, cannot use optimizer specified in `solve_generic_model`"
+        Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
         _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
     end
 
     try
         solve_time = MOI.get(gm.model, MOI.SolveTime())
     catch
-        warn(LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
+        Memento.warn(_LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
     end
 
-    return JuMP.termination_status(gm.model), solve_time
+    return solve_time
 end
 
 
 ""
-function run_generic_model(file::String, model_constructor, optimizer, post_method; kwargs...)
+function run_model(file::String, model_constructor, optimizer, post_method; kwargs...)
     data = GasModels.parse_file(file)
-    return run_generic_model(data, model_constructor, optimizer, post_method; kwargs...)
+    return run_model(data, model_constructor, optimizer, post_method; kwargs...)
 end
 
+
 ""
-function run_generic_model(data::Dict{String,Any}, model_constructor, optimizer, post_method; solution_builder = get_solution, kwargs...)
-    gm = build_generic_model(data, model_constructor, post_method; kwargs...)
-    solution = solve_generic_model(gm, optimizer; solution_builder = solution_builder)
+function run_model(data::Dict{String,<:Any}, model_constructor, optimizer, post_method; ref_extensions=[], solution_builder=get_solution!, kwargs...)
+    gm = build_model(data, model_constructor, post_method; kwargs...)
+    solution = optimize_model!(gm, optimizer; solution_builder = solution_builder)
     return solution
 end
 
+
 ""
-function build_generic_model(file::String,  model_constructor, post_method; kwargs...)
+function build_model(file::String,  model_constructor, post_method; kwargs...)
     data = GasModels.parse_file(file)
-    return build_generic_model(data, model_constructor, post_method; kwargs...)
+    return build_model(data, model_constructor, post_method; kwargs...)
 end
 
 
 ""
-function build_generic_model(data::Dict{String,Any}, model_constructor, post_method; multinetwork=false, kwargs...)
-    gm = model_constructor(data; kwargs...)
+function build_model(data::Dict{String,<:Any}, model_type::Type, post_method; ref_extensions=[], multinetwork=false, kwargs...)
+    gm = InitializeGasModel(model_type, data; kwargs...)
 
     if !multinetwork && data["multinetwork"]
-        warn(LOGGER,"building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
+        Memento.warn(_LOGGER,"building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
+    end
+
+    ref_add_core!(gm)
+    for ref_ext in ref_extensions
+        ref_ext(gm)
     end
 
     post_method(gm; kwargs...)
+
     return gm
 end
 
+
 ""
-function parse_status(termination_status::MOI.TerminationStatusCode, primal_status::MOI.ResultStatusCode)
-    if termination_status == MOI.OPTIMAL
-        return :Optimal
-    elseif termination_status == MOI.LOCALLY_SOLVED
-        return :LocalOptimal
-    elseif termination_status == MOI.TIME_LIMIT
-        return primal_status == MOI.NO_SOLUTION ? :LocalInfeasible : :LocalOptimal
-    elseif termination_status == MOI.INFEASIBLE
-        return :Infeasible
-    elseif termination_status == MOI.LOCALLY_INFEASIBLE
-        return :LocalInfeasible
-    elseif termination_status == MOI.INFEASIBLE_OR_UNBOUNDED
-        return :Infeasible
-    else
-        return :Error
+function optimize_model!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory; solution_builder=get_solution!)
+    solve_time = JuMP.optimize!(gm, optimizer)
+
+    result = build_solution(gm, solve_time; solution_builder=solution_builder)
+
+    gm.solution = result["solution"]
+
+    return result
+end
+
+
+"used for building ref without the need to build a initialize an AbstractPowerModel"
+function build_ref(data::Dict{String,<:Any}; ref_extensions=[])
+    ref = InfrastructureModels.ref_initialize(data)
+    _ref_add_core!(ref[:nw])
+    for ref_ext in ref_extensions
+        ref_ext(gm)
     end
+
+    return ref
 end
 
-""
-function solve_generic_model(gm::GenericGasModel, optimizer::JuMP.OptimizerFactory; solution_builder = get_solution)
-    termination_status, solve_time = optimize!(gm, optimizer)
-    primal_status = MOI.get(gm.model, MOI.PrimalStatus())
-    status = parse_status(termination_status, primal_status)
-
-    return build_solution(gm, status, solve_time; solution_builder = solution_builder)
-end
 
 """
 Returns a dict that stores commonly used pre-computed data from of the data dictionary,
@@ -200,25 +185,13 @@ Some of the common keys include:
 * `degree_ne` -- the degree of junction i using existing and new connections (see `degree_ne_ref!`)),
 * `:pd_min,:pd_max` -- the max and min square pressure difference (see `calc_pd_bounds_sqr`)),
 """
-function build_ref(data::Dict{String,Any})
-    refs = Dict{Symbol,Any}()
-    nws = refs[:nw] = Dict{Int,Any}()
+function ref_add_core!(gm::AbstractGasModel)
+    _ref_add_core!(gm.ref[:nw])
+end
 
-    nws_data = data["multinetwork"] ? data["nw"] : nws_data = Dict{String,Any}("0" => data)
 
-    for (n,nw_data) in nws_data
-        nw_id = parse(Int, n)
-        ref = nws[nw_id] = Dict{Symbol,Any}()
-
-        for (key, item) in nw_data
-            if isa(item, Dict)
-                item_lookup = Dict([(parse(Int, k), v) for (k,v) in item])
-                ref[Symbol(key)] = item_lookup
-            else
-                ref[Symbol(key)] = item
-            end
-        end
-
+function _ref_add_core!(nw_refs::Dict)
+    for (nw,ref) in nw_refs
         # filter turned off stuff
         ref[:junction]      =                               Dict(x for x in ref[:junction]      if  !haskey(x.second,"status") || x.second["status"] == 1)
         ref[:consumer]      =                               Dict(x for x in ref[:consumer]      if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["ql_junc"]    in keys(ref[:junction]))
@@ -233,7 +206,7 @@ function build_ref(data::Dict{String,Any})
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
-        max_mass_flow = calc_max_mass_flow(data)
+        max_mass_flow = calc_max_mass_flow(ref)
         ref[:max_mass_flow] = max_mass_flow
 
         # create references to directed and undirected edges
@@ -491,8 +464,8 @@ function build_ref(data::Dict{String,Any})
             push!(ref[:parallel_control_valves][(min(i,j), max(i,j))], idx)
         end
     end
-    return refs
 end
+
 
 "Add reference information for the degree of junction"
 function degree_ref!(ref::Dict{Symbol,Any})
@@ -515,6 +488,7 @@ function degree_ref!(ref::Dict{Symbol,Any})
 #        end
     end
 end
+
 
 "Add reference information for the degree of junction with expansion edges"
 function degree_ne_ref!(ref::Dict{Symbol,Any})

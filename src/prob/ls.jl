@@ -1,14 +1,13 @@
 # Definitions for running a minimum load shed model
 
-export run_ls
-
-" entry point into running the gas flow feasability problem "
+"entry point into running the gas flow feasability problem"
 function run_ls(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_ls; solution_builder = get_ls_solution, kwargs...)
+    return run_model(file, model_constructor, solver, post_ls; solution_builder = get_ls_solution, kwargs...)
 end
 
-" construct the gas flow feasbility problem "
-function post_ls(gm::GenericGasModel)
+
+"construct the gas flow feasbility problem"
+function post_ls(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
@@ -54,8 +53,9 @@ function post_ls(gm::GenericGasModel)
     end
 end
 
+
 # Get all the load shedding solution values
-function get_ls_solution(gm::GenericGasModel,sol::Dict{String,Any})
+function get_ls_solution(gm::AbstractGasModel,sol::Dict{String,Any})
     add_junction_pressure_setpoint(sol, gm)
     add_connection_flow_setpoint(sol, gm)
     add_direction_setpoint(sol, gm)

@@ -12,7 +12,7 @@
     end
 
 @testset "status = false" begin
-    gm = build_generic_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
+    gm = build_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
 #    @test !haskey(gm.ref[:nw][gm.cnw][:connection], 32)
     @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
@@ -94,7 +94,7 @@ end
     #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
     #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
 
-    #@test result["status"] == :Optimal
+    #@test result["termination_status"] == OPTIMAL
     #@test result["objective"] == 0.0
 end
 

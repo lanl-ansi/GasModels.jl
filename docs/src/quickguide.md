@@ -39,7 +39,7 @@ For example, the algorithm's runtime, final objective value, and status can be a
 ```
 result["solve_time"]
 result["objective"]
-result["status"]
+result["termination_status"]
 ```
 
 The `"solution"` field contains detailed information about the solution produced by the run method.
@@ -86,11 +86,11 @@ For additional details about the network data, see the [GasModels Network Data F
 The following example demonstrates how to break a `run_gf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by GasModels for the gas flow problem,
 
 ```julia
-gm = build_generic_model("test/data/gaslib-40.m", MISOCPGasModel, GasModels.post_gf)
+gm = build_model("test/data/gaslib-40.m", MISOCPGasModel, GasModels.post_gf)
 
 print(gm.model)
 
-solve_generic_model(gm, juniper_solver)
+optimize_model!(gm, juniper_solver)
 ```
 
 ## Solution conversion
