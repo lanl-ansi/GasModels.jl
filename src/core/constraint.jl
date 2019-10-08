@@ -53,6 +53,13 @@ end
 #################################################################################################
 
 " Constraint: standard flow balance equation where demand and production are variables "
+function constraint_pressure(gm::GenericGasModel, n::Int, i, p_nom)
+    p  = var(gm,n,:p,i)
+    set_lower_bound(p, p_nom)
+    set_upper_bound(p, p_nom)
+end
+
+" Constraint: standard flow balance equation where demand and production are variables "
 function constraint_mass_flow_balance(gm::GenericGasModel{T}, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax) where T <: AbstractGasFormulation
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)

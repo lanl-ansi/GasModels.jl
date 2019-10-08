@@ -155,10 +155,10 @@ function constraint_compressor_ratio_value(gm::GenericGasModel{T}, n::Int, k, i,
     pi    = var(gm,n,:p,i)
     pj    = var(gm,n,:p,j)
     r = var(gm,n,:r,k)
-    add_constraint(gm, n, :compressor_ratio_value1, k, @constraint(gm.model, r * pi <= pj))
-    add_constraint(gm, n, :compressor_ratio_value2, k, @constraint(gm.model, r * pi >= pj))
+    add_constraint(gm, n, :compressor_ratio_value1, k, @constraint(gm.model, r^2 * pi <= pj))
+    add_constraint(gm, n, :compressor_ratio_value2, k, @constraint(gm.model, r^2 * pi >= pj))
 end
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max) where T <: AbstractMINLPForm
+function constraint_compressor_energy(gm::GenericGasModel{T}, n::Int, k, power_max, work) where T <: AbstractMINLPForm
 end

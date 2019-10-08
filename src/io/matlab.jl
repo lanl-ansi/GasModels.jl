@@ -27,7 +27,7 @@ mlab_junction_columns = [
     ("junction_type", Int),
     ("pmin", Float64), ("pmax", Float64),
     ("status", Int),
-    ("p_nominal", Float64)
+    ("p", Float64)
 ]
 
 mlab_junction_name_columns = [

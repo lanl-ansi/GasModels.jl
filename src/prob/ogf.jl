@@ -1,25 +1,24 @@
-# Definitions for running a compressor optimization
+# Definitions for running an optimal gas flow (ogf)
 
+export run_ogf
 
-export run_c
-
-" entry point into running the compressor optimization problem "
-function run_c(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_c; kwargs...)
+" entry point into running the ogf problem "
+function run_ogf(file, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_ogf; solution_builder=get_ogf_solution, kwargs...)
 end
 
 ""
-function run_soc_c(file, solver; kwargs...)
-    return run_c(file, MISOCPGasModel, solver; kwargs...)
+function run_soc_ogf(file, solver; kwargs...)
+    return run_ogf(file, MISOCPGasModel, solver; kwargs...)
 end
 
 ""
-function run_minlp_c(file, solver; kwargs...)
-    return run_c(file, MINLPGasModel, solver; kwargs...)
+function run_minlp_ogf(file, solver; kwargs...)
+    return run_ogf(file, MINLPGasModel, solver; kwargs...)
 end
 
-" construct the compressor optimization problem "
-function post_c(gm::GenericGasModel)
+" construct the ogf problem "
+function post_ogf(gm::GenericGasModel; kwargs...)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
@@ -27,10 +26,13 @@ function post_c(gm::GenericGasModel)
     variable_production_mass_flow(gm)
     variable_compression_ratio(gm)
 
-    objective_min_compressor_energy(gm)
+   objective_min_economic_costs(gm)
 
-    for i in ids(gm, :junction)
+    for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
+       if (junction["junction_type"] == 1)
+           constraint_pressure(gm,i)
+    end
     end
 
     for i in ids(gm, :pipe)
@@ -67,4 +69,16 @@ function post_c(gm::GenericGasModel)
         constraint_on_off_control_valve_mass_flow(gm, i)
         constraint_on_off_control_valve_pressure(gm, i)
     end
+end
+
+# Get all the load shedding solution values
+function get_ogf_solution(gm::GenericGasModel,sol::Dict{String,Any})
+    add_junction_pressure_setpoint(sol, gm)
+    add_connection_flow_setpoint(sol, gm)
+    add_direction_setpoint(sol, gm)
+    add_load_volume_setpoint(sol, gm)
+    add_load_mass_flow_setpoint(sol, gm)
+    add_production_volume_setpoint(sol, gm)
+    add_production_mass_flow_setpoint(sol, gm)
+    add_compressor_ratio_setpoint(sol, gm)
 end

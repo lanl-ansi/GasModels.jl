@@ -232,7 +232,6 @@ function constraint_pipe_weymouth_ne_directed(gm::GenericGasModel,  n::Int, k)
     pipe           = gm.ref[:nw][n][:ne_pipe][k]
     i              = pipe["f_junction"]
     j              = pipe["t_junction"]
-#    mf             = gm.ref[:nw][n][:max_mass_flow]
     w              = ref(gm,n,:ne_pipe_ref,k)[:w]
     direction      = pipe["directed"]
     pd_max         = ref(gm,n,:ne_pipe_ref,k)[:pd_max]
@@ -247,63 +246,13 @@ constraint_pipe_weymouth_ne_directed(gm::GenericGasModel, k::Int) = constraint_p
 # Templates for constraints associated with junctions
 #################################################################################################
 
-#=" Template: Constraints for mass flow balance equation where demand and production are constants"
-function constraint_mass_flow_balance(gm::GenericGasModel, n::Int, i)
-    junction         = ref(gm,n,:junction,i)
-    consumer         = ref(gm,n,:consumer)
-    producer         = ref(gm,n,:producer)
-    consumers        = ref(gm,n,:junction_consumers,i)
-    producers        = ref(gm,n,:junction_producers,i)
-    f_pipes          = ref(gm,n,:f_pipes,i)
-    t_pipes          = ref(gm,n,:t_pipes,i)
-    f_compressors    = ref(gm,n,:f_compressors,i)
-    t_compressors    = ref(gm,n,:t_compressors,i)
-    f_resistors      = ref(gm,n,:f_resistors,i)
-    t_resistors      = ref(gm,n,:t_resistors,i)
-    f_short_pipes    = ref(gm,n,:f_short_pipes,i)
-    t_short_pipes    = ref(gm,n,:t_short_pipes,i)
-    f_valves         = ref(gm,n,:f_valves,i)
-    t_valves         = ref(gm,n,:t_valves,i)
-    f_control_valves = ref(gm,n,:f_control_valves,i)
-    t_control_valves = ref(gm,n,:t_control_valves,i)
-    fg               = length(producers) > 0 ? sum(calc_fg(gm.data,producer[j]) for j in producers) : 0
-    fl               = length(consumers) > 0 ? sum(calc_fl(gm.data,consumer[j]) for j in consumers) : 0
-    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fg, fl)
+"Template: Constraints for fixing pressure at a node"
+function constraint_pressure(gm::GenericGasModel,  n::Int, i)
+    junction       = gm.ref[:nw][n][:junction][i]
+    p              = junction["p"]^2
+    constraint_pressure(gm, n, i, p)
 end
-constraint_mass_flow_balance(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance(gm, gm.cnw, i)=#
-
-#=
-" Template: Constraints for mass flow balance equation where demand and production are constants and there are expansion connections "
-function constraint_mass_flow_balance_ne(gm::GenericGasModel, n::Int, i)
-    junction         = ref(gm,n,:junction,i)
-    consumer         = ref(gm,n,:consumer)
-    producer         = ref(gm,n,:producer)
-    consumers        = ref(gm,n,:junction_consumers,i)
-    producers        = ref(gm,n,:junction_producers,i)
-    f_pipes          = ref(gm,n,:f_pipes,i)
-    t_pipes          = ref(gm,n,:t_pipes,i)
-    f_compressors    = ref(gm,n,:f_compressors,i)
-    t_compressors    = ref(gm,n,:t_compressors,i)
-    f_resistors      = ref(gm,n,:f_resistors,i)
-    t_resistors      = ref(gm,n,:t_resistors,i)
-    f_short_pipes    = ref(gm,n,:f_short_pipes,i)
-    t_short_pipes    = ref(gm,n,:t_short_pipes,i)
-    f_valves         = ref(gm,n,:f_valves,i)
-    t_valves         = ref(gm,n,:t_valves,i)
-    f_control_valves = ref(gm,n,:f_control_valves,i)
-    t_control_valves = ref(gm,n,:t_control_valves,i)
-    f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
-    t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
-    f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
-    t_ne_compressors = ref(gm,n,:t_ne_compressors,i)
-
-    fg               = length(producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in producers) : 0
-    fl               = length(consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in consumers) : 0
-
-    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fg, fl)
-end
-constraint_mass_flow_balance_ne(gm::GenericGasModel, i::Int) = constraint_mass_flow_balance_ne(gm, gm.cnw, i)
-=#
+constraint_pressure(gm::GenericGasModel, i::Int) = constraint_pressure(gm, gm.cnw, i)
 
 " Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
 function constraint_mass_flow_balance(gm::GenericGasModel, n::Int, i)
@@ -576,7 +525,13 @@ constraint_compressor_ratio_value(gm::GenericGasModel, k::Int) = constraint_comp
 function constraint_compressor_energy(gm::GenericGasModel, n::Int, k)
     compressor     = ref(gm,n,:compressor,k)
     power_max      = compressor["power_max"]
-    constraint_compressor_energy(gm, n, k, power_max)
+    gamma          = ref(gm,n,:specific_heat_capacity_ratio)
+    magic_num      = 286.76
+    m              = ((gamma - 1) / gamma) / 2
+    T              = ref(gm,n,:temperature)
+    G              = ref(gm,n,:gas_specific_gravity)
+    work           = ((magic_num / G) * T * (gamma/(gamma-1)))
+    constraint_compressor_energy(gm, n, k, power_max, m, work)
 end
 constraint_compressor_energy(gm::GenericGasModel, k::Int) = constraint_compressor_energy(gm, gm.cnw, k)
 

@@ -2,6 +2,8 @@
 
 {
   "temperature": 288.15,
+  "R": 8.314,
+  "specific_heat_capacity_ratio": 1.4,
   "name": "gaslib 582",
   "ne_compressor": {
 

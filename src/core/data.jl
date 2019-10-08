@@ -33,7 +33,7 @@ International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
 This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
 function calc_pipe_resistance_thorley(ref::Dict{Symbol,Any}, pipe::Dict{String,Any})
-    R          = 8.314 # universal gas constant
+    R          = ref[:R] #8.314 # universal gas constant
     z          = ref[:compressibility_factor]
     T          = ref[:temperature]
     m          = ref[:gas_molar_mass]
@@ -50,7 +50,7 @@ end
 "A very simple model of computing resistance for resistors that is based on the Thorley model.  The are other more realistic models that could
 be used.  See Physical and technical fundamentals of gas networks by Fugenschu et al. for an example"
 function calc_resistor_resistance_simple(ref::Dict{Symbol,Any}, pipe::Dict{String,Any})
-    R          = 8.314 # universal gas constant
+    R          = ref[:R] #8.314 # universal gas constant
     z          = ref[:compressibility_factor]
     T          = ref[:temperature]
     m          = ref[:gas_molar_mass]
@@ -141,6 +141,7 @@ function _make_per_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
     if haskey(data, "compressor")
         for (i, compressor) in data["compressor"]
             apply_func(compressor, "f", rescale_q)
+            apply_func(compressor, "power_max", rescale_q)
         end
     end
 
@@ -228,6 +229,7 @@ function _make_si_unit!(data::Dict{String,Any}, p_base::Real, q_base::Real)
     if haskey(data, "compressor")
         for (i, compressor) in data["compressor"]
             apply_func(compressor, "f", rescale_q)
+            apply_func(compressor, "power_max", rescale_q)
         end
     end
 
