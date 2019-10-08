@@ -38,9 +38,9 @@ function build_solution(gm::AbstractGasModel, solve_time; objective=NaN, solutio
         "termination_status" => JuMP.termination_status(gm.model),
         "primal_status" => JuMP.primal_status(gm.model),
         "dual_status" => JuMP.dual_status(gm.model),
-        "objective" => objective,
-        "objective_lb" => guard_getobjbound(gm.model),
-        "objective_gap" => abs((objective - guard_getobjbound(gm.model)) / objective) * 100,
+        "objective" => _guard_objective_value(gm.model),
+        "objective_lb" => _guard_objective_bound(gm.model),
+        "objective_gap" => abs((_guard_objective_value(gm.model) - _guard_objective_bound(gm.model)) / _guard_objective_value(gm.model)) * 100,
         "solve_time" => solve_time,
         "solution" => sol,
         "machine" => Dict(
@@ -172,10 +172,26 @@ end
 
 
 ""
-function guard_getobjbound(model)
+function _guard_objective_value(model)
+    obj_val = NaN
+
     try
-        JuMP.objective_bound(model)
+        obj_val = JuMP.objective_value(model)
     catch
-        -Inf
     end
+
+    return obj_val
+end
+
+
+""
+function _guard_objective_bound(model)
+    obj_lb = -Inf
+
+    try
+        obj_lb = JuMP.objective_bound(model)
+    catch
+    end
+
+    return obj_lb
 end
