@@ -2,13 +2,13 @@
 
 "entry point into running the gas flow expansion planning with load shedding"
 function run_nels(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_nels; solution_builder = get_nels_solution, kwargs...)
+    return run_model(file, model_type, optimizer, post_nels; solution_builder = solution_nels!, kwargs...)
 end
 
 
 "entry point into running the gas flow expansion planning with load shedding and a directed pipe model"
 function run_nels_directed(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_nels_directed; solution_builder = get_nels_solution, kwargs...)
+    return run_model(file, model_type, optimizer, post_nels_directed; solution_builder = solution_nels!, kwargs...)
 end
 
 
@@ -224,7 +224,7 @@ end
 
 
 "Get all the solution values"
-function get_nels_solution(gm::AbstractGasModel, sol::Dict{String,Any})
+function solution_nels!(gm::AbstractGasModel, sol::Dict{String,Any})
     add_junction_pressure_setpoint!(sol, gm)
     add_connection_flow_setpoint!(sol, gm)
     add_connection_ne(sol, gm)

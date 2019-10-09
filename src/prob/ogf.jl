@@ -2,7 +2,7 @@
 
 "entry point into running the ogf problem"
 function run_ogf(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ogf; solution_builder=get_ogf_solution, kwargs...)
+    return run_model(file, model_type, optimizer, post_ogf; solution_builder=solution_ogf!, kwargs...)
 end
 
 
@@ -74,7 +74,7 @@ end
 
 
 "Get all the load shedding solution values"
-function get_ogf_solution(gm::AbstractGasModel,sol::Dict{String,Any})
+function solution_ogf!(gm::AbstractGasModel,sol::Dict{String,Any})
     add_junction_pressure_setpoint!(sol, gm)
     add_connection_flow_setpoint!(sol, gm)
     add_direction_setpoint!(sol, gm)
