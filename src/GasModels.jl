@@ -5,8 +5,6 @@ module GasModels
     import JuMP
     import Memento
 
-    import Compat
-
     # Create our module level logger (this will get precompiled)
     const _LOGGER = Memento.getlogger(@__MODULE__)
 
@@ -36,16 +34,16 @@ module GasModels
     include("core/variable.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")
+    include("core/constraint_mi.jl")
+    include("core/constraint_template_mi.jl")
     include("core/objective.jl")
     include("core/solution.jl")
 
     include("form/mip.jl")
     include("form/lp.jl")
     include("form/nlp.jl")
-    include("form/mi/minlp.jl")
-    include("form/mi/misocp.jl")
-    include("form/mi/constraint.jl")
-    include("form/mi/constraint_template.jl")
+    include("form/minlp.jl")
+    include("form/misocp.jl")
 
     include("prob/gf.jl")
     include("prob/ne.jl")

@@ -127,7 +127,7 @@
         obj_normalization = 1000000.0
         result = run_ne("../test/data/gaslib-135-100.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        # This one has some slight numerical instabilities, depending on the version of the misocp solver
+        # This one has some slight numerical instabilities, depending on the version of the misocp optimizer
         @test isapprox(result["objective"]*obj_normalization, 1234234179; atol = 1e3) || isapprox(result["objective"]*obj_normalization, 1245093590; atol = 1e3)
     end
 

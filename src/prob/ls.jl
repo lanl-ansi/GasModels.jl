@@ -1,8 +1,8 @@
 # Definitions for running a minimum load shed model
 
 "entry point into running the gas flow feasability problem"
-function run_ls(file, model_constructor, solver; kwargs...)
-    return run_model(file, model_constructor, solver, post_ls; solution_builder = get_ls_solution, kwargs...)
+function run_ls(file, model_type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_ls; solution_builder = get_ls_solution, kwargs...)
 end
 
 

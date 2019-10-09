@@ -15,7 +15,7 @@ juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=ipopt_solver, 
 GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 ```
 
-Similarly, a full non-convex Gas Flow can be executed with an MINLP solver like
+Similarly, a full non-convex Gas Flow can be executed with an MINLP optimizer like
 
 ```julia
 using GasModels

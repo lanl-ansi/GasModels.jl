@@ -57,10 +57,10 @@ end
 #################################################################################################
 
 " Constraint: standard flow balance equation where demand and production are variables "
-function constraint_pressure(gm::GenericGasModel, i, p_nom; n::Int=gm.cnw)
+function constraint_pressure(gm::AbstractGasModel, n::Int, i, p_nom)
     p  = var(gm,n,:p,i)
-    set_lower_bound(p, p_nom)
-    set_upper_bound(p, p_nom)
+    JuMP.set_lower_bound(p, p_nom)
+    JuMP.set_upper_bound(p, p_nom)
 end
 
 

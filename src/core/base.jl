@@ -101,24 +101,24 @@ end
 
 
 ""
-function run_model(file::String, model_constructor, optimizer, post_method; kwargs...)
+function run_model(file::String, model_type, optimizer, post_method; kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(data, model_constructor, optimizer, post_method; kwargs...)
+    return run_model(data, model_type, optimizer, post_method; kwargs...)
 end
 
 
 ""
-function run_model(data::Dict{String,<:Any}, model_constructor, optimizer, post_method; ref_extensions=[], solution_builder=get_solution!, kwargs...)
-    gm = build_model(data, model_constructor, post_method; kwargs...)
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, post_method; ref_extensions=[], solution_builder=get_solution!, kwargs...)
+    gm = build_model(data, model_type, post_method; kwargs...)
     solution = optimize_model!(gm, optimizer; solution_builder = solution_builder)
     return solution
 end
 
 
 ""
-function build_model(file::String,  model_constructor, post_method; kwargs...)
+function build_model(file::String,  model_type, post_method; kwargs...)
     data = GasModels.parse_file(file)
-    return build_model(data, model_constructor, post_method; kwargs...)
+    return build_model(data, model_type, post_method; kwargs...)
 end
 
 

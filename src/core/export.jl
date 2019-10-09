@@ -23,7 +23,7 @@ end
 # the follow items are also exported for user-friendlyness when calling
 # `using GasModels`
 
-# so that users do not need to import JuMP to use a solver with GasModels
+# so that users do not need to import JuMP to use a optimizer with GasModels
 import JuMP: with_optimizer
 export with_optimizer
 
