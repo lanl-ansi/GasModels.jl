@@ -108,7 +108,7 @@ end
 
 
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, post_method; ref_extensions=[], solution_builder=get_solution!, kwargs...)
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, post_method; ref_extensions=[], solution_builder=solution_gf!, kwargs...)
     gm = build_model(data, model_type, post_method; kwargs...)
     solution = optimize_model!(gm, optimizer; solution_builder = solution_builder)
     return solution
@@ -142,7 +142,7 @@ end
 
 
 ""
-function optimize_model!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory; solution_builder=get_solution!)
+function optimize_model!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory; solution_builder=solution_gf!)
     solve_time = JuMP.optimize!(gm, optimizer)
 
     result = build_solution(gm, solve_time; solution_builder=solution_builder)
@@ -181,9 +181,9 @@ Some of the common keys include:
 * `:resistor` -- the set of connections that are resistors (based on the component type values),
 * `:junction_consumers` -- the mapping `Dict(i => [consumer["ql_junc"] for (i,consumer) in ref[:consumer]])`.
 * `:junction_producers` -- the mapping `Dict(i => [producer["qg_junc"] for (i,producer) in ref[:producer]])`.
-* `:degree` -- the degree of junction i using existing connections (see `degree_ref!`)),
-* `degree_ne` -- the degree of junction i using existing and new connections (see `degree_ne_ref!`)),
-* `:pd_min,:pd_max` -- the max and min square pressure difference (see `calc_pd_bounds_sqr`)),
+* `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
+* `degree_ne` -- the degree of junction i using existing and new connections (see `ref_degree_ne!`)),
+* `:pd_min,:pd_max` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
 """
 function ref_add_core!(gm::AbstractGasModel)
     _ref_add_core!(gm.ref[:nw])
@@ -206,7 +206,7 @@ function _ref_add_core!(nw_refs::Dict)
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if (!haskey(x.second,"status") || x.second["status"] == 1) && x.second["f_junction"] in keys(ref[:junction]) && x.second["t_junction"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
-        max_mass_flow = calc_max_mass_flow(ref)
+        max_mass_flow = _calc_max_mass_flow(ref)
         ref[:max_mass_flow] = max_mass_flow
 
         # create references to directed and undirected edges
@@ -335,8 +335,8 @@ function _ref_add_core!(nw_refs::Dict)
         ref[:junction_dispatchable_producers] = junction_dispatchable_producers
         ref[:junction_nondispatchable_producers] = junction_nondispatchable_producers
 
-        degree_ref!(ref)
-        degree_ne_ref!(ref)
+        ref_degree!(ref)
+        ref_degree_ne!(ref)
 
         ref[:pipe_ref]           = Dict()
         ref[:ne_pipe_ref]        = Dict()
@@ -352,12 +352,12 @@ function _ref_add_core!(nw_refs::Dict)
             i = pipe["f_junction"]
             j = pipe["t_junction"]
             ref[:pipe_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
             ref[:pipe_ref][idx][:pd_min] = pd_min
             ref[:pipe_ref][idx][:pd_max] = pd_max
-            ref[:pipe_ref][idx][:w] = calc_pipe_resistance_thorley(ref, pipe)
-            ref[:pipe_ref][idx][:f_min] = calc_pipe_fmin(ref, idx)
-            ref[:pipe_ref][idx][:f_max] = calc_pipe_fmax(ref, idx)
+            ref[:pipe_ref][idx][:w] = _calc_pipe_resistance_thorley(ref, pipe)
+            ref[:pipe_ref][idx][:f_min] = _calc_pipe_fmin(ref, idx)
+            ref[:pipe_ref][idx][:f_max] = _calc_pipe_fmax(ref, idx)
 
             push!(ref[:f_pipes][i], idx)
             push!(ref[:t_pipes][j], idx)
@@ -368,12 +368,12 @@ function _ref_add_core!(nw_refs::Dict)
             i = pipe["f_junction"]
             j = pipe["t_junction"]
             ref[:ne_pipe_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
             ref[:ne_pipe_ref][idx][:pd_min] = pd_min
             ref[:ne_pipe_ref][idx][:pd_max] = pd_max
-            ref[:ne_pipe_ref][idx][:w] = calc_pipe_resistance_thorley(ref, pipe)
-            ref[:ne_pipe_ref][idx][:f_min] = calc_ne_pipe_fmin(ref, idx)
-            ref[:ne_pipe_ref][idx][:f_max] = calc_ne_pipe_fmax(ref, idx)
+            ref[:ne_pipe_ref][idx][:w] = _calc_pipe_resistance_thorley(ref, pipe)
+            ref[:ne_pipe_ref][idx][:f_min] = _calc_ne_pipe_fmin(ref, idx)
+            ref[:ne_pipe_ref][idx][:f_max] = _calc_ne_pipe_fmax(ref, idx)
             push!(ref[:f_ne_pipes][i], idx)
             push!(ref[:t_ne_pipes][j], idx)
             push!(ref[:parallel_ne_pipes][(min(i,j), max(i,j))], idx)
@@ -383,11 +383,11 @@ function _ref_add_core!(nw_refs::Dict)
             i = compressor["f_junction"]
             j = compressor["t_junction"]
             ref[:compressor_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, compressor["f_junction"], compressor["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, compressor["f_junction"], compressor["t_junction"])
             ref[:compressor_ref][idx][:pd_min] = pd_min
             ref[:compressor_ref][idx][:pd_max] = pd_max
-            ref[:compressor_ref][idx][:f_min] = calc_compressor_fmin(ref, idx)
-            ref[:compressor_ref][idx][:f_max] = calc_compressor_fmax(ref, idx)
+            ref[:compressor_ref][idx][:f_min] = _calc_compressor_fmin(ref, idx)
+            ref[:compressor_ref][idx][:f_max] = _calc_compressor_fmax(ref, idx)
             push!(ref[:f_compressors][i], idx)
             push!(ref[:t_compressors][j], idx)
             push!(ref[:parallel_compressors][(min(i,j), max(i,j))], idx)
@@ -397,11 +397,11 @@ function _ref_add_core!(nw_refs::Dict)
             i = compressor["f_junction"]
             j = compressor["t_junction"]
             ref[:ne_compressor_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, compressor["f_junction"], compressor["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, compressor["f_junction"], compressor["t_junction"])
             ref[:ne_compressor_ref][idx][:pd_min] = pd_min
             ref[:ne_compressor_ref][idx][:pd_max] = pd_max
-            ref[:ne_compressor_ref][idx][:f_min] = calc_ne_compressor_fmin(ref, idx)
-            ref[:ne_compressor_ref][idx][:f_max] = calc_ne_compressor_fmax(ref, idx)
+            ref[:ne_compressor_ref][idx][:f_min] = _calc_ne_compressor_fmin(ref, idx)
+            ref[:ne_compressor_ref][idx][:f_max] = _calc_ne_compressor_fmax(ref, idx)
             push!(ref[:f_ne_compressors][i], idx)
             push!(ref[:t_ne_compressors][j], idx)
             push!(ref[:parallel_ne_compressors][(min(i,j), max(i,j))], idx)
@@ -411,11 +411,11 @@ function _ref_add_core!(nw_refs::Dict)
             i = pipe["f_junction"]
             j = pipe["t_junction"]
             ref[:short_pipe_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, pipe["f_junction"], pipe["t_junction"])
             ref[:short_pipe_ref][idx][:pd_min] = pd_min
             ref[:short_pipe_ref][idx][:pd_max] = pd_max
-            ref[:short_pipe_ref][idx][:f_min] = calc_short_pipe_fmin(ref, idx)
-            ref[:short_pipe_ref][idx][:f_max] = calc_short_pipe_fmax(ref, idx)
+            ref[:short_pipe_ref][idx][:f_min] = _calc_short_pipe_fmin(ref, idx)
+            ref[:short_pipe_ref][idx][:f_max] = _calc_short_pipe_fmax(ref, idx)
             push!(ref[:f_short_pipes][i], idx)
             push!(ref[:t_short_pipes][j], idx)
             push!(ref[:parallel_short_pipes][(min(i,j), max(i,j))], idx)
@@ -425,12 +425,12 @@ function _ref_add_core!(nw_refs::Dict)
             i = resistor["f_junction"]
             j = resistor["t_junction"]
             ref[:resistor_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, resistor["f_junction"], resistor["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, resistor["f_junction"], resistor["t_junction"])
             ref[:resistor_ref][idx][:pd_min] = pd_min
             ref[:resistor_ref][idx][:pd_max] = pd_max
-            ref[:resistor_ref][idx][:w] = calc_resistor_resistance_simple(ref, resistor)
-            ref[:resistor_ref][idx][:f_min] = calc_resistor_fmin(ref, idx)
-            ref[:resistor_ref][idx][:f_max] = calc_resistor_fmax(ref, idx)
+            ref[:resistor_ref][idx][:w] = _calc_resistor_resistance_simple(ref, resistor)
+            ref[:resistor_ref][idx][:f_min] = _calc_resistor_fmin(ref, idx)
+            ref[:resistor_ref][idx][:f_max] = _calc_resistor_fmax(ref, idx)
             push!(ref[:f_resistors][i], idx)
             push!(ref[:t_resistors][j], idx)
             push!(ref[:parallel_resistors][(min(i,j), max(i,j))], idx)
@@ -440,11 +440,11 @@ function _ref_add_core!(nw_refs::Dict)
             i = valve["f_junction"]
             j = valve["t_junction"]
             ref[:valve_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, valve["f_junction"], valve["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, valve["f_junction"], valve["t_junction"])
             ref[:valve_ref][idx][:pd_min] = pd_min
             ref[:valve_ref][idx][:pd_max] = pd_max
-            ref[:valve_ref][idx][:f_min] = calc_valve_fmin(ref, idx)
-            ref[:valve_ref][idx][:f_max] = calc_valve_fmax(ref, idx)
+            ref[:valve_ref][idx][:f_min] = _calc_valve_fmin(ref, idx)
+            ref[:valve_ref][idx][:f_max] = _calc_valve_fmax(ref, idx)
             push!(ref[:f_valves][i], idx)
             push!(ref[:t_valves][j], idx)
             push!(ref[:parallel_valves][(min(i,j), max(i,j))], idx)
@@ -454,11 +454,11 @@ function _ref_add_core!(nw_refs::Dict)
             i = valve["f_junction"]
             j = valve["t_junction"]
             ref[:control_valve_ref][idx] = Dict()
-            pd_min, pd_max = calc_pd_bounds_sqr(ref, valve["f_junction"], valve["t_junction"])
+            pd_min, pd_max = _calc_pd_bounds_sqr(ref, valve["f_junction"], valve["t_junction"])
             ref[:control_valve_ref][idx][:pd_min] = pd_min
             ref[:control_valve_ref][idx][:pd_max] = pd_max
-            ref[:control_valve_ref][idx][:f_min] = calc_control_valve_fmin(ref, idx)
-            ref[:control_valve_ref][idx][:f_max] = calc_control_valve_fmax(ref, idx)
+            ref[:control_valve_ref][idx][:f_min] = _calc_control_valve_fmin(ref, idx)
+            ref[:control_valve_ref][idx][:f_max] = _calc_control_valve_fmax(ref, idx)
             push!(ref[:f_control_valves][i], idx)
             push!(ref[:t_control_valves][j], idx)
             push!(ref[:parallel_control_valves][(min(i,j), max(i,j))], idx)
@@ -468,7 +468,7 @@ end
 
 
 "Add reference information for the degree of junction"
-function degree_ref!(ref::Dict{Symbol,Any})
+function ref_degree!(ref::Dict{Symbol,Any})
     ref[:degree] = Dict()
     for (i,junction) in ref[:junction]
         ref[:degree][i] = 0
@@ -491,7 +491,7 @@ end
 
 
 "Add reference information for the degree of junction with expansion edges"
-function degree_ne_ref!(ref::Dict{Symbol,Any})
+function ref_degree_ne!(ref::Dict{Symbol,Any})
     ref[:degree_ne] = Dict()
     for (i,junction) in ref[:junction]
         ref[:degree_ne][i] = 0

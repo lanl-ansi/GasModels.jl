@@ -7,7 +7,7 @@
 "Parses the matlab gas data from either a filename or an IO object"
 function parse_matlab(file::Union{IO, String})
     mlab_data = parse_m_file(file)
-    gm_data = matlab_to_gasmodels(mlab_data)
+    gm_data = _matlab_to_gasmodels(mlab_data)
     return gm_data
 end
 
@@ -298,7 +298,7 @@ end
 """
 Converts a Matlab dict into a PowerModels dict
 """
-function matlab_to_gasmodels(mlab_data::Dict{String,Any})
+function _matlab_to_gasmodels(mlab_data::Dict{String,Any})
     gm_data = deepcopy(mlab_data)
 
     if !haskey(gm_data, "connection")
@@ -309,15 +309,15 @@ function matlab_to_gasmodels(mlab_data::Dict{String,Any})
     end
 
     # translate component models
-    mlab2gm_baseQ(gm_data)
-    mlab2gm_producer(gm_data)
-    mlab2gm_consumer(gm_data)
-    mlab2gm_conmpressor(gm_data)
-    mlab2gm_ne_compressor(gm_data)
+    _mlab2gm_baseQ!(gm_data)
+    _mlab2gm_producer!(gm_data)
+    _mlab2gm_consumer!(gm_data)
+    _mlab2gm_conmpressor!(gm_data)
+    _mlab2gm_ne_compressor!(gm_data)
 
     # merge data tables
-    merge_junction_name_data(gm_data)
-    merge_generic_data(gm_data)
+    _merge_junction_name_data!(gm_data)
+    _merge_generic_data!(gm_data)
 
     # use once available
     InfrastructureModels.arrays_to_dicts!(gm_data)
@@ -326,13 +326,13 @@ function matlab_to_gasmodels(mlab_data::Dict{String,Any})
 end
 
 "adds baseQ to the gas models data"
-function mlab2gm_baseQ(data::Dict{String,Any})
+function _mlab2gm_baseQ!(data::Dict{String,Any})
     data["baseQ"] = data["baseF"] / data["standard_density"]
     delete!(data, "baseF")
 end
 
 "adds the volumetric firm and flexible flows for the producers"
-function mlab2gm_producer(data::Dict{String,Any})
+function _mlab2gm_producer!(data::Dict{String,Any})
     producers = [producer for producer in data["producer"]]
     for producer in producers
         producer["qg_junc"] = producer["junction"]
@@ -346,7 +346,7 @@ function mlab2gm_producer(data::Dict{String,Any})
 end
 
 "adds the volumetric firm and flexible flows for the consumers"
-function mlab2gm_consumer(data::Dict{String,Any})
+function _mlab2gm_consumer!(data::Dict{String,Any})
     consumers = [consumer for consumer in data["consumer"]]
     for consumer in consumers
         consumer["ql_junc"] = consumer["junction"]
@@ -360,7 +360,7 @@ function mlab2gm_consumer(data::Dict{String,Any})
 end
 
 "converts compressor q values to f"
-function mlab2gm_conmpressor(data::Dict{String,Any})
+function _mlab2gm_conmpressor!(data::Dict{String,Any})
     compressors = [compressor for compressor in data["compressor"]]
     for compressor in compressors
         compressor["qmin"] = compressor["fmin"] * data["standard_density"]
@@ -371,7 +371,7 @@ function mlab2gm_conmpressor(data::Dict{String,Any})
 end
 
 "converts ne_compressor q values to f"
-function mlab2gm_ne_compressor(data::Dict{String,Any})
+function _mlab2gm_ne_compressor!(data::Dict{String,Any})
     if (haskey(data, "ne_compressor"))
         compressors = [compressor for compressor in data["ne_compressor"]]
         for compressor in compressors
@@ -384,7 +384,7 @@ function mlab2gm_ne_compressor(data::Dict{String,Any})
 end
 
 "merges junction name data into junctions, if names exist"
-function merge_junction_name_data(data::Dict{String,Any})
+function _merge_junction_name_data!(data::Dict{String,Any})
     if haskey(data, "junction_name")
         # can assume same length is same as junction
         # this is validated during .m file parsing
@@ -401,7 +401,7 @@ end
 
 
 "merges Matlab tables based on the table extension syntax"
-function merge_generic_data(data::Dict{String,Any})
+function _merge_generic_data!(data::Dict{String,Any})
     mlab_matrix_names = [name[5:length(name)] for name in mlab_data_names]
 
     key_to_delete = []
@@ -443,7 +443,7 @@ end
 
 
 "Get a default value for dict entry"
-function get_default(dict, key, default=0.0)
+function _get_default(dict, key, default=0.0)
     if haskey(dict, key) && dict[key] != NaN
         return dict[key]
     end

@@ -2,6 +2,7 @@ GasModels.jl Change Log
 =======================
 
 ### Pending
+- Refactor to make code style / conventions consistent with Infrastructure Models ecosystem (#136) (breaking)
 - Implement constraints on compressor power
 - Implement a multi-network test
 

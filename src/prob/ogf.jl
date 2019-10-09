@@ -1,6 +1,6 @@
 # Definitions for running an optimal gas flow (ogf)
 
-" entry point into running the ogf problem "
+"entry point into running the ogf problem"
 function run_ogf(file, model_type, optimizer; kwargs...)
     return run_model(file, model_type, optimizer, post_ogf; solution_builder=get_ogf_solution, kwargs...)
 end
@@ -17,7 +17,8 @@ function run_minlp_ogf(file, optimizer; kwargs...)
     return run_ogf(file, MINLPGasModel, optimizer; kwargs...)
 end
 
-" construct the ogf problem "
+
+"construct the ogf problem"
 function post_ogf(gm::AbstractGasModel; kwargs...)
     variable_pressure_sqr(gm)
     variable_flow(gm)
@@ -71,14 +72,15 @@ function post_ogf(gm::AbstractGasModel; kwargs...)
     end
 end
 
-# Get all the load shedding solution values
+
+"Get all the load shedding solution values"
 function get_ogf_solution(gm::AbstractGasModel,sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
-    add_connection_flow_setpoint(sol, gm)
-    add_direction_setpoint(sol, gm)
-    add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)
-    add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
+    add_junction_pressure_setpoint!(sol, gm)
+    add_connection_flow_setpoint!(sol, gm)
+    add_direction_setpoint!(sol, gm)
+    add_load_volume_setpoint!(sol, gm)
+    add_load_mass_flow_setpoint!(sol, gm)
+    add_production_volume_setpoint!(sol, gm)
+    add_production_mass_flow_setpoint!(sol, gm)
+    add_compressor_ratio_setpoint!(sol, gm)
 end

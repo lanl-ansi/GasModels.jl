@@ -3,7 +3,7 @@
 ##########################################################################################################
 
 "Utility function for adding constraints to a gm.model"
-function add_constraint(gm::AbstractGasModel, n::Int, key, k, constraint)
+function _add_constraint!(gm::AbstractGasModel, n::Int, key, k, constraint)
     if !haskey(gm.con[:nw][n], key)
         gm.con[:nw][n][key] = Dict{Any,JuMP.ConstraintRef}()
     end
@@ -18,8 +18,8 @@ end
 function constraint_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
-    add_constraint(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
 
 
@@ -27,8 +27,8 @@ end
 function constraint_resistor_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
-    add_constraint(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
 end
 
 
@@ -74,7 +74,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
     f_control_valve = var(gm,n,:f_control_valve)
     fg              = var(gm,n,:fg)
     fl              = var(gm,n,:fl)
-    add_constraint(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
                                                                             sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                             sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
@@ -97,7 +97,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipe
     f_ne_compressor = var(gm,n,:f_ne_compressor)
     fg              = var(gm,n,:fg)
     fl              = var(gm,n,:fl)
-    add_constraint(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
                                                                                       sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                                       sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                                       sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
@@ -118,7 +118,7 @@ end
 function constraint_short_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :short_pipe_pressure_drop, k, JuMP.@constraint(gm.model,  pi == pj))
+    _add_constraint!(gm, n, :short_pipe_pressure_drop, k, JuMP.@constraint(gm.model,  pi == pj))
 end
 
 
@@ -151,8 +151,8 @@ function constraint_on_off_valve_pressure(gm::AbstractGasModel, n::Int, k, i, j,
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     v  = var(gm,n,:v_valve,k)
-    add_constraint(gm, n, :valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - ((1-v)*j_pmax^2) <= pi))
-    add_constraint(gm, n, :valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi <= pj + ((1-v)*i_pmax^2)))
+    _add_constraint!(gm, n, :valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - ((1-v)*j_pmax^2) <= pi))
+    _add_constraint!(gm, n, :valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi <= pj + ((1-v)*i_pmax^2)))
 end
 
 
@@ -160,8 +160,8 @@ end
 function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_valve,k)
     v = var(gm,n,:v_valve,k)
-    add_constraint(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
-    add_constraint(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
+    _add_constraint!(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
+    _add_constraint!(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
@@ -169,8 +169,8 @@ end
 function constraint_on_off_valve_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_valve,k)
     v = var(gm,n,:v_valve,k)
-    add_constraint(gm, n,:valve_flow_direction1, k, JuMP.@constraint(gm.model, f_min*v <= f))
-    add_constraint(gm, n,:valve_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max*v))
+    _add_constraint!(gm, n,:valve_flow_direction1, k, JuMP.@constraint(gm.model, f_min*v <= f))
+    _add_constraint!(gm, n,:valve_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
@@ -182,8 +182,8 @@ end
 function constraint_pipe_ne(gm::AbstractGasModel, n::Int, k, w, f_min, f_max)
     zp = var(gm,n,:zp,k)
     f  = var(gm,n,:f_ne_pipe,k)
-    add_constraint(gm, n, :pipe_ne1, k, JuMP.@constraint(gm.model, f <= zp*f_max))
-    add_constraint(gm, n, :pipe_ne2, k, JuMP.@constraint(gm.model, f >= zp*f_min))
+    _add_constraint!(gm, n, :pipe_ne1, k, JuMP.@constraint(gm.model, f <= zp*f_max))
+    _add_constraint!(gm, n, :pipe_ne2, k, JuMP.@constraint(gm.model, f >= zp*f_min))
 end
 
 
@@ -191,8 +191,8 @@ end
 function constraint_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
-    add_constraint(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
 
 
@@ -200,8 +200,8 @@ end
 function constraint_pipe_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
-    add_constraint(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
 end
 
 
@@ -209,8 +209,8 @@ end
 function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    add_constraint(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, pd_min  <= pi - pj))
-    add_constraint(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, pd_min  <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
 
 
@@ -251,9 +251,9 @@ function constraint_pipe_pressure_ne_directed(gm::AbstractGasModel, n::Int, k, i
     z  = var(gm,n,:zp,k)
 
     if direction == 1
-        add_constraint(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj >= (1-z)*pd_max))
+        _add_constraint!(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj >= (1-z)*pd_max))
     else
-        add_constraint(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj <= (1-z)*pd_min))
+        _add_constraint!(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj <= (1-z)*pd_min))
     end
 end
 
@@ -261,8 +261,8 @@ end
 "Constraint: Flow across an expansion pipe when direction is constrained"
 function constraint_pipe_mass_flow_ne_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f  = var(gm,n,:f_ne_pipe,k)
-    add_constraint(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f >= f_min))
-    add_constraint(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f <= f_max))
+    _add_constraint!(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f >= f_min))
+    _add_constraint!(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f <= f_max))
 end
 
 #################################################################################################
@@ -273,8 +273,8 @@ end
 function constraint_compressor_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     zc = var(gm,n,:zc,k)
     f  =  var(gm,n,:f_ne_compressor,k)
-    add_constraint(gm, n, :compressor_flow_ne1, k, JuMP.@constraint(gm.model, f_min*zc <= f))
-    add_constraint(gm, n, :compressor_flow_ne2, k, JuMP.@constraint(gm.model, f <= f_max*zc))
+    _add_constraint!(gm, n, :compressor_flow_ne1, k, JuMP.@constraint(gm.model, f_min*zc <= f))
+    _add_constraint!(gm, n, :compressor_flow_ne2, k, JuMP.@constraint(gm.model, f <= f_max*zc))
 end
 
 
@@ -314,10 +314,10 @@ function constraint_compressor_ratios_directed(gm::AbstractGasModel, n::Int, k, 
     pj = var(gm,n,:p,j)
 
     if direction == 1
-        add_constraint(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
-        add_constraint(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
     else
-        add_constraint(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj == pi))
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj == pi))
     end
 end
 
@@ -339,10 +339,10 @@ function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, n::Int, 
     zc = var(gm,n,:zc,k)
 
     if direction == 1
-        add_constraint(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
-        add_constraint(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
     else
-        add_constraint(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
     end
 end
 
@@ -355,8 +355,8 @@ end
 function constraint_on_off_control_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_control_valve,k)
     v = var(gm,n,:v_control_valve,k)
-    add_constraint(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
-    add_constraint(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
+    _add_constraint!(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
+    _add_constraint!(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
@@ -365,8 +365,8 @@ function constraint_on_off_control_valve_mass_flow_directed(gm::AbstractGasModel
     f = var(gm,n,:f_control_valve,k)
     v = var(gm,n,:v_control_valve,k)
 
-    add_constraint(gm, n,:control_valve_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max*v))
-    add_constraint(gm, n,:control_valve_flow_direction3, k, JuMP.@constraint(gm.model, f_min*v <= f))
+    _add_constraint!(gm, n,:control_valve_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max*v))
+    _add_constraint!(gm, n,:control_valve_flow_direction3, k, JuMP.@constraint(gm.model, f_min*v <= f))
 end
 
 
@@ -377,11 +377,11 @@ function constraint_on_off_control_valve_pressure_directed(gm::AbstractGasModel,
     v  = var(gm,n,:v_control_valve,k)
 
     if direction == 1
-        add_constraint(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
-        add_constraint(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
+        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
     else
-        add_constraint(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - pi <= (1-v)*j_pmax^2))
-        add_constraint(gm, n, :control_valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi - pj <= (1-v)*i_pmax^2))
+        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :control_valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi - pj <= (1-v)*i_pmax^2))
     end
 end
 
@@ -393,5 +393,5 @@ end
 "Constraint: This function ensures at most one pipe in parallel is selected"
 function constraint_exclusive_new_pipes(gm::AbstractGasModel,  n::Int, i, j, parallel)
     zp = var(gm,n,:zp)
-    add_constraint(gm, n, :exclusive_new_pipes, (i,j), JuMP.@constraint(gm.model, sum(zp[i] for i in parallel) <= 1))
+    _add_constraint!(gm, n, :exclusive_new_pipes, (i,j), JuMP.@constraint(gm.model, sum(zp[i] for i in parallel) <= 1))
 end

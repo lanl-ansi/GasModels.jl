@@ -137,7 +137,7 @@ function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.c
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
-           calc_parallel_ne_connections(gm, n, pipe)
+           _calc_parallel_ne_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -155,7 +155,7 @@ function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, idx; n::In
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
-           calc_parallel_ne_connections(gm, n, compressor)
+           _calc_parallel_ne_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
@@ -173,7 +173,7 @@ function constraint_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, pipe)
+           _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -191,7 +191,7 @@ function constraint_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=g
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, compressor)
+           _calc_parallel_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
@@ -209,7 +209,7 @@ function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=g
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, pipe)
+           _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -227,7 +227,7 @@ function constraint_resistor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, resistor)
+           _calc_parallel_connections(gm, n, resistor)
 
     if num_connections <= 1
         return nothing
@@ -245,7 +245,7 @@ function constraint_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, valve)
+           _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing
@@ -263,7 +263,7 @@ function constraint_control_valve_parallel_flow(gm::AbstractMIModels, idx; n::In
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, valve)
+           _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing

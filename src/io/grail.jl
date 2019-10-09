@@ -1,7 +1,7 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail_file(network_file, time_series_file; time_point = 1, slack_producers = false)
+function parse_grail(network_file, time_series_file; time_point = 1, slack_producers = false)
     network_data = GasModels.parse_json(network_file)
 
     profile_data = GasModels.parse_json(time_series_file)

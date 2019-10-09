@@ -6,8 +6,8 @@
 
 "continous relaxation of variables associated with operating valves"
 function variable_valve_operation(gm::AbstractLPModel, n::Int=gm.cnw)
-    gm.var[:nw][n][:v_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_valve", start = _get_start(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
-    gm.var[:nw][n][:v_control_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_control_valve", start = _get_start(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_valve", start=comp_start_value(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_control_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_control_valve", start=comp_start_value(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
 end
 
 

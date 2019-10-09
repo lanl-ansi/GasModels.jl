@@ -2,7 +2,7 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ne(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ne; solution_builder = get_ne_solution, kwargs...)
+    return run_model(file, model_type, optimizer, post_ne; solution_builder = solution_ne!, kwargs...)
 end
 
 
@@ -89,41 +89,41 @@ function post_ne(gm::AbstractGasModel; kwargs...)
 end
 
 
-# Special function for whether or not a connection is added
+"Special function for whether or not a connection is added"
 function add_connection_ne(sol, gm::AbstractGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "built", :zp; default_value = (item) -> NaN)
-    add_setpoint(sol, gm, "ne_compressor", "built", :zc; default_value = (item) -> NaN)
+    add_setpoint!(sol, gm, "ne_pipe", "built", :zp; default_value = (item) -> NaN)
+    add_setpoint!(sol, gm, "ne_compressor", "built", :zc; default_value = (item) -> NaN)
 end
 
 
-# Get the direction solutions
-function add_direction_ne_setpoint(sol, gm::AbstractGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "y", :y_ne_pipe)
-    add_setpoint(sol, gm, "ne_compressor", "y", :y_ne_compressor)
+"Get the direction solutions"
+function add_direction_ne_setpoint!(sol, gm::AbstractGasModel)
+    add_setpoint!(sol, gm, "ne_pipe", "y", :y_ne_pipe)
+    add_setpoint!(sol, gm, "ne_compressor", "y", :y_ne_compressor)
 end
 
 
 "Add the compressor solutions"
-function add_compressor_ratio_ne_setpoint(sol, gm::AbstractGasModel)
-    add_setpoint(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
+function add_compressor_ratio_ne_setpoint!(sol, gm::AbstractGasModel)
+    add_setpoint!(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
 end
 
 
 "Add the flow solutions to new lines"
-function add_connection_flow_ne_setpoint(sol, gm::AbstractGasModel)
-    add_setpoint(sol, gm, "ne_pipe", "f", :f_ne_pipe)
-    add_setpoint(sol, gm, "ne_compressor", "f", :f_ne_compressor)
+function add_connection_flow_ne_setpoint!(sol, gm::AbstractGasModel)
+    add_setpoint!(sol, gm, "ne_pipe", "f", :f_ne_pipe)
+    add_setpoint!(sol, gm, "ne_compressor", "f", :f_ne_compressor)
 end
 
 
-# Get all the solution values
-function get_ne_solution(gm::AbstractGasModel, sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
-    add_connection_flow_setpoint(sol, gm)
-    add_connection_flow_ne_setpoint(sol, gm)
-    add_direction_setpoint(sol, gm)
-    add_direction_ne_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
-    add_compressor_ratio_ne_setpoint(sol, gm)
+"Get all the solution values"
+function solution_ne!(gm::AbstractGasModel, sol::Dict{String,Any})
+    add_junction_pressure_setpoint!(sol, gm)
+    add_connection_flow_setpoint!(sol, gm)
+    add_connection_flow_ne_setpoint!(sol, gm)
+    add_direction_setpoint!(sol, gm)
+    add_direction_ne_setpoint!(sol, gm)
+    add_compressor_ratio_setpoint!(sol, gm)
+    add_compressor_ratio_ne_setpoint!(sol, gm)
     add_connection_ne(sol, gm)
 end

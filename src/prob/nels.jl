@@ -223,18 +223,18 @@ function post_nels_directed(gm::AbstractGasModel)
 end
 
 
-# Get all the solution values
+"Get all the solution values"
 function get_nels_solution(gm::AbstractGasModel, sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
-    add_connection_flow_setpoint(sol, gm)
+    add_junction_pressure_setpoint!(sol, gm)
+    add_connection_flow_setpoint!(sol, gm)
     add_connection_ne(sol, gm)
-    add_direction_setpoint(sol, gm)
-    add_direction_ne_setpoint(sol, gm)
-    add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)
-    add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
-    add_connection_flow_ne_setpoint(sol, gm)
-    add_compressor_ratio_ne_setpoint(sol, gm)
+    add_direction_setpoint!(sol, gm)
+    add_direction_ne_setpoint!(sol, gm)
+    add_load_volume_setpoint!(sol, gm)
+    add_load_mass_flow_setpoint!(sol, gm)
+    add_production_volume_setpoint!(sol, gm)
+    add_production_mass_flow_setpoint!(sol, gm)
+    add_compressor_ratio_setpoint!(sol, gm)
+    add_connection_flow_ne_setpoint!(sol, gm)
+    add_compressor_ratio_ne_setpoint!(sol, gm)
 end

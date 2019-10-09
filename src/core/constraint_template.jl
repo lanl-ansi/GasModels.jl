@@ -277,12 +277,12 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int=gm.cnw)
     nondispatch_producers   = ref(gm,n,:junction_nondispatchable_producers,i)
     dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
     nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
-    fg                      = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl                      = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
-    fgmax                   = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j]) for j in dispatch_producers) : 0
-    flmax                   = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j]) for j in dispatch_consumers) : 0
-    fgmin                   = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j]) for j in dispatch_producers) : 0
-    flmin                   = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j]) for j in dispatch_consumers) : 0
+    fg                      = length(nondispatch_producers) > 0 ? sum(_calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl                      = length(nondispatch_consumers) > 0 ? sum(_calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax                   = length(dispatch_producers) > 0 ? sum(_calc_fgmax(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmax                   = length(dispatch_consumers) > 0 ? sum(_calc_flmax(gm.data, consumer[j]) for j in dispatch_consumers) : 0
+    fgmin                   = length(dispatch_producers) > 0 ? sum(_calc_fgmin(gm.data, producer[j]) for j in dispatch_producers) : 0
+    flmin                   = length(dispatch_consumers) > 0 ? sum(_calc_flmin(gm.data, consumer[j]) for j in dispatch_consumers) : 0
 
     constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
 end
@@ -318,12 +318,12 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int=gm.cnw)
     dispatch_consumers      = ref(gm,n,:junction_dispatchable_consumers,i)
     nondispatch_consumers   = ref(gm,n,:junction_nondispatchable_consumers,i)
 
-    fg        = length(nondispatch_producers) > 0 ? sum(calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
-    fl        = length(nondispatch_consumers) > 0 ? sum(calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
-    fgmax     = length(dispatch_producers) > 0 ? sum(calc_fgmax(gm.data, producer[j])  for  j in dispatch_producers)  : 0
-    flmax     = length(dispatch_consumers) > 0 ? sum(calc_flmax(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
-    fgmin     = length(dispatch_producers) > 0 ? sum(calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers)  : 0
-    flmin     = length(dispatch_consumers) > 0 ? sum(calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
+    fg        = length(nondispatch_producers) > 0 ? sum(_calc_fg(gm.data, producer[j]) for j in nondispatch_producers) : 0
+    fl        = length(nondispatch_consumers) > 0 ? sum(_calc_fl(gm.data, consumer[j]) for j in nondispatch_consumers) : 0
+    fgmax     = length(dispatch_producers) > 0 ? sum(_calc_fgmax(gm.data, producer[j])  for  j in dispatch_producers)  : 0
+    flmax     = length(dispatch_consumers) > 0 ? sum(_calc_flmax(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
+    fgmin     = length(dispatch_producers) > 0 ? sum(_calc_fgmin(gm.data, producer[j])  for  j in dispatch_producers)  : 0
+    flmin     = length(dispatch_consumers) > 0 ? sum(_calc_flmin(gm.data, consumer[j])  for  j in dispatch_consumers)  : 0
 
     constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl, fg, dispatch_consumers, dispatch_producers, flmin, flmax, fgmin, fgmax)
 end
