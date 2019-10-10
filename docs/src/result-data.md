@@ -10,7 +10,7 @@ At the top level the results data dictionary is structured as follows:
 ```json
 {
 "optimizer":<string>,    # name of the Julia class used to solve the model
-"status":<julia symbol>, # solver status at termination
+"termination_status":<type>, # optimizer status at termination
 "solve_time":<float>,    # reported solve time (seconds)
 "objective":<float>,     # the final evaluation of the objective function
 "objective_lb":<float>,  # the final lower bound of the objective function (if available)
@@ -91,7 +91,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
 "junction":{
     "1":{
       "p": <float>,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals
-      "psqr": <float>,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2      
+      "psqr": <float>,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2
        ...
     },
     "2":{...},
@@ -150,7 +150,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "f": <float>,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
-      "v": <int>,                   # 1 if valve is open. 0 otherwise      
+      "v": <int>,                   # 1 if valve is open. 0 otherwise
       "ratio": <float>,             # multiplicative decompression ratio
         ...
     },
@@ -162,7 +162,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "f": <float>,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
-      "v": <int>,                   # 1 if valve is open. 0 otherwise      
+      "v": <int>,                   # 1 if valve is open. 0 otherwise
         ...
     },
     "2":{...},
@@ -173,7 +173,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "f": <float>,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
-      "v": <int>,                   # 1 if valve is open. 0 otherwise      
+      "v": <int>,                   # 1 if valve is open. 0 otherwise
         ...
     },
     "2":{...},
@@ -196,7 +196,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
       "ratio": <float>,             # multiplicative compression ratio
-      "built": <float>,          # 1 if compressor was built. 0 otherwise.      
+      "built": <float>,          # 1 if compressor was built. 0 otherwise.
         ...
     },
     "2":{...},

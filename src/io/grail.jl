@@ -1,7 +1,7 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail_file(network_file, time_series_file; time_point = 1, slack_producers = false)
+function parse_grail(network_file, time_series_file; time_point = 1, slack_producers = false)
     network_data = GasModels.parse_json(network_file)
 
     profile_data = GasModels.parse_json(time_series_file)
@@ -110,7 +110,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         end
 
         if node["isslack"] != 0 && slack_producers
-            warn(LOGGER,"adding producer at junction $(junction_id) to model slack capacity")
+            Memento.warn(_LOGGER,"adding producer at junction $(junction_id) to model slack capacity")
 
             gm_producer = Dict{String,Any}(
                 "index" => producer_count,
@@ -193,7 +193,7 @@ function parse_grail_file(network_file, time_series_file; time_point = 1, slack_
         fr_junction = gm_junctions["$(compressor["node"])"]
         to_junction_index = junction_id_offset + fr_junction["index"]
 
-        warn(LOGGER,"adding junction $(to_junction_index) to capture both sides of a compressor")
+        Memento.warn(_LOGGER,"adding junction $(to_junction_index) to capture both sides of a compressor")
 
         gm_junction = Dict{String,Any}(
             "index" => to_junction_index,

@@ -1,24 +1,25 @@
 # Definitions for running an optimal gas flow (ogf)
 
-export run_ogf
-
-" entry point into running the ogf problem "
-function run_ogf(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_ogf; solution_builder=get_ogf_solution, kwargs...)
+"entry point into running the ogf problem"
+function run_ogf(file, model_type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_ogf; solution_builder=solution_ogf!, kwargs...)
 end
+
 
 ""
-function run_soc_ogf(file, solver; kwargs...)
-    return run_ogf(file, MISOCPGasModel, solver; kwargs...)
+function run_soc_ogf(file, optimizer; kwargs...)
+    return run_ogf(file, MISOCPGasModel, optimizer; kwargs...)
 end
+
 
 ""
-function run_minlp_ogf(file, solver; kwargs...)
-    return run_ogf(file, MINLPGasModel, solver; kwargs...)
+function run_minlp_ogf(file, optimizer; kwargs...)
+    return run_ogf(file, MINLPGasModel, optimizer; kwargs...)
 end
 
-" construct the ogf problem "
-function post_ogf(gm::GenericGasModel; kwargs...)
+
+"construct the ogf problem"
+function post_ogf(gm::AbstractGasModel; kwargs...)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
@@ -71,14 +72,15 @@ function post_ogf(gm::GenericGasModel; kwargs...)
     end
 end
 
-# Get all the load shedding solution values
-function get_ogf_solution(gm::GenericGasModel,sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
-    add_connection_flow_setpoint(sol, gm)
-    add_direction_setpoint(sol, gm)
-    add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)
-    add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
+
+"Get all the load shedding solution values"
+function solution_ogf!(gm::AbstractGasModel,sol::Dict{String,Any})
+    add_junction_pressure_setpoint!(sol, gm)
+    add_connection_flow_setpoint!(sol, gm)
+    add_direction_setpoint!(sol, gm)
+    add_load_volume_setpoint!(sol, gm)
+    add_load_mass_flow_setpoint!(sol, gm)
+    add_production_volume_setpoint!(sol, gm)
+    add_production_mass_flow_setpoint!(sol, gm)
+    add_compressor_ratio_setpoint!(sol, gm)
 end

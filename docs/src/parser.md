@@ -16,7 +16,7 @@ parse_json
 
 ## Matlab Data Files
 
-The following method is the main exported methods for parsing Matlab data files:
+The following method is the main methods for parsing Matlab data files:
 
 ```@docs
 parse_matpower

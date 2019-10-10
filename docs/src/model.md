@@ -7,7 +7,7 @@ CurrentModule = GasModels
 All methods for constructing gasmodels should be defined on the following type:
 
 ```@docs
-GenericGasModel
+AbstractGasModel
 ```
 
 which utilizes the following (internal) functions:

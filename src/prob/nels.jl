@@ -1,20 +1,19 @@
 # Definitions for running a pipe expansion problem to maximize load
 
-export run_nels
-export run_nels_directed
-
-" entry point into running the gas flow expansion planning with load shedding "
-function run_nels(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_nels; solution_builder = get_nels_solution, kwargs...)
+"entry point into running the gas flow expansion planning with load shedding"
+function run_nels(file, model_type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_nels; solution_builder = solution_nels!, kwargs...)
 end
 
-" entry point into running the gas flow expansion planning with load shedding and a directed pipe model "
-function run_nels_directed(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_nels_directed; solution_builder = get_nels_solution, kwargs...)
+
+"entry point into running the gas flow expansion planning with load shedding and a directed pipe model"
+function run_nels_directed(file, model_type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_nels_directed; solution_builder = solution_nels!, kwargs...)
 end
 
-" construct the gas flow expansion problem to maximize load "
-function post_nels(gm::GenericGasModel)
+
+"construct the gas flow expansion problem to maximize load"
+function post_nels(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
@@ -95,8 +94,9 @@ function post_nels(gm::GenericGasModel)
     end
 end
 
-" construct the gas flow expansion problem to maximize load where some of the pipes are directed"
-function post_nels_directed(gm::GenericGasModel)
+
+"construct the gas flow expansion problem to maximize load where some of the pipes are directed"
+function post_nels_directed(gm::AbstractGasModel)
     variable_flow_directed(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
@@ -222,18 +222,19 @@ function post_nels_directed(gm::GenericGasModel)
     end
 end
 
-# Get all the solution values
-function get_nels_solution(gm::GenericGasModel, sol::Dict{String,Any})
-    add_junction_pressure_setpoint(sol, gm)
-    add_connection_flow_setpoint(sol, gm)
+
+"Get all the solution values"
+function solution_nels!(gm::AbstractGasModel, sol::Dict{String,Any})
+    add_junction_pressure_setpoint!(sol, gm)
+    add_connection_flow_setpoint!(sol, gm)
     add_connection_ne(sol, gm)
-    add_direction_setpoint(sol, gm)
-    add_direction_ne_setpoint(sol, gm)
-    add_load_volume_setpoint(sol, gm)
-    add_load_mass_flow_setpoint(sol, gm)
-    add_production_volume_setpoint(sol, gm)
-    add_production_mass_flow_setpoint(sol, gm)
-    add_compressor_ratio_setpoint(sol, gm)
-    add_connection_flow_ne_setpoint(sol, gm)
-    add_compressor_ratio_ne_setpoint(sol, gm)
+    add_direction_setpoint!(sol, gm)
+    add_direction_ne_setpoint!(sol, gm)
+    add_load_volume_setpoint!(sol, gm)
+    add_load_mass_flow_setpoint!(sol, gm)
+    add_production_volume_setpoint!(sol, gm)
+    add_production_mass_flow_setpoint!(sol, gm)
+    add_compressor_ratio_setpoint!(sol, gm)
+    add_connection_flow_ne_setpoint!(sol, gm)
+    add_compressor_ratio_ne_setpoint!(sol, gm)
 end

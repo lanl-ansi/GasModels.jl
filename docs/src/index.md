@@ -24,7 +24,7 @@ For the current development version, "checkout" this package with
 checkout GasModels
 ```
 
-At least one solver is required for running GasModels.  The open-source solver Juniper is recommended and can be used to solve a wide variety of the problems and network formulations provided in GasModels.  The Juniper solver can be installed via the package manager with
+At least one optimizer is required for running GasModels.  The open-source optimizer Juniper is recommended and can be used to solve a wide variety of the problems and network formulations provided in GasModels.  The Juniper optimizer can be installed via the package manager with
 
 ```julia
 add Juniper

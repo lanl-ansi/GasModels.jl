@@ -2,8 +2,8 @@
 # Constraints associated witn cutting planes on the direction variables
 ######################################################################################
 
-" Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+"Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on source nodes)"
+function constraint_source_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_pipes          = ref(gm,n,:f_pipes,i)
     t_pipes          = ref(gm,n,:t_pipes,i)
     f_compressors    = ref(gm,n,:f_compressors,i)
@@ -19,10 +19,10 @@ function constraint_source_flow(gm::GenericGasModel{T}, n::Int, i) where T <: Ab
 
     constraint_source_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves)
 end
-constraint_source_flow(gm::GenericGasModel, i::Int) = constraint_source_flow(gm, gm.cnw, i)
 
-" Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on source nodes) "
-function constraint_source_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+
+"Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on source nodes)"
+function constraint_source_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_pipes          = ref(gm,n,:f_pipes,i)
     t_pipes          = ref(gm,n,:t_pipes,i)
     f_compressors    = ref(gm,n,:f_compressors,i)
@@ -42,10 +42,10 @@ function constraint_source_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <:
 
     constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
 end
-constraint_source_flow_ne(gm::GenericGasModel, i::Int) = constraint_source_flow_ne(gm, gm.cnw, i)
 
-" Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on sink nodes) "
-function constraint_sink_flow(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+
+"Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on sink nodes)"
+function constraint_sink_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_pipes          = ref(gm,n,:f_pipes,i)
     t_pipes          = ref(gm,n,:t_pipes,i)
     f_compressors    = ref(gm,n,:f_compressors,i)
@@ -61,10 +61,10 @@ function constraint_sink_flow(gm::GenericGasModel{T}, n::Int, i) where T <: Abst
 
     constraint_sink_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves)
 end
-constraint_sink_flow(gm::GenericGasModel, i::Int) = constraint_sink_flow(gm, gm.cnw, i)
 
-" Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on sink nodes) "
-function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: AbstractMIForms
+
+"Template: Constraints for ensuring that at least one direction is set to take flow away from a junction (typically used on sink nodes)"
+function constraint_sink_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_pipes          = ref(gm,n,:f_pipes,i)
     t_pipes          = ref(gm,n,:t_pipes,i)
     f_compressors    = ref(gm,n,:f_compressors,i)
@@ -84,10 +84,10 @@ function constraint_sink_flow_ne(gm::GenericGasModel{T}, n::Int, i) where T <: A
 
     constraint_sink_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
 end
-constraint_sink_flow_ne(gm::GenericGasModel, i::Int) = constraint_sink_flow_ne(gm, gm.cnw, i)
+
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+function constraint_conserve_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     f_pipes          = Dict(i => ref(gm,n,:pipe,i)["t_junction"] for i in ref(gm,n,:f_pipes,idx))
     t_pipes          = Dict(i => ref(gm,n,:pipe,i)["f_junction"] for i in ref(gm,n,:t_pipes,idx))
     f_compressors    = Dict(i => ref(gm,n,:compressor,i)["t_junction"] for i in ref(gm,n,:f_compressors,idx))
@@ -103,10 +103,10 @@ function constraint_conserve_flow(gm::GenericGasModel{T}, n::Int, idx) where T <
 
     constraint_conserve_flow(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves)
 end
-constraint_conserve_flow(gm::GenericGasModel, i::Int) = constraint_conserve_flow(gm, gm.cnw, i)
 
-" Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
-function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption"
+function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     f_pipes          = Dict(i => ref(gm,n,:pipe,i)["t_junction"] for i in ref(gm,n,:f_pipes,idx))
     t_pipes          = Dict(i => ref(gm,n,:pipe,i)["f_junction"] for i in ref(gm,n,:t_pipes,idx))
     f_compressors    = Dict(i => ref(gm,n,:compressor,i)["t_junction"] for i in ref(gm,n,:f_compressors,idx))
@@ -129,15 +129,15 @@ function constraint_conserve_flow_ne(gm::GenericGasModel{T}, n::Int, idx) where 
                                     t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
 
 end
-constraint_conserve_flow_ne(gm::GenericGasModel, i::Int) = constraint_conserve_flow_ne(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_pipe"
-function constraint_ne_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_pipe"
+function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
-           calc_parallel_ne_connections(gm, n, pipe)
+           _calc_parallel_ne_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -147,15 +147,15 @@ function constraint_ne_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) w
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
 end
-constraint_ne_pipe_parallel_flow(gm::GenericGasModel, i::Int) = constraint_ne_pipe_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_compressor"
-function constraint_ne_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_compressor"
+function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     compressor = ref(gm,n,:ne_compressor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
-           calc_parallel_ne_connections(gm, n, compressor)
+           _calc_parallel_ne_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
@@ -165,15 +165,15 @@ function constraint_ne_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, 
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
 end
-constraint_ne_compressor_parallel_flow(gm::GenericGasModel, i::Int) = constraint_ne_compressor_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for pipe"
-function constraint_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for pipe"
+function constraint_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, pipe)
+           _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -183,15 +183,15 @@ function constraint_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) wher
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_pipe_parallel_flow(gm::GenericGasModel, i::Int) = constraint_pipe_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for compressor"
-function constraint_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for compressor"
+function constraint_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     compressor = ref(gm,n,:compressor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, compressor)
+           _calc_parallel_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
@@ -201,15 +201,15 @@ function constraint_compressor_parallel_flow(gm::GenericGasModel{T}, n::Int, idx
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_compressor_parallel_flow(gm::GenericGasModel, i::Int) = constraint_compressor_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for short pipe"
-function constraint_short_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for short pipe"
+function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:short_pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, pipe)
+           _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
@@ -219,15 +219,15 @@ function constraint_short_pipe_parallel_flow(gm::GenericGasModel{T}, n::Int, idx
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_short_pipe_parallel_flow(gm::GenericGasModel, i::Int) = constraint_short_pipe_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for resistor"
-function constraint_resistor_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for resistor"
+function constraint_resistor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     resistor = ref(gm,n,:resistor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, resistor)
+           _calc_parallel_connections(gm, n, resistor)
 
     if num_connections <= 1
         return nothing
@@ -237,15 +237,15 @@ function constraint_resistor_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) 
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_resistor_parallel_flow(gm::GenericGasModel, i::Int) = constraint_resistor_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for valve"
-function constraint_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for valve"
+function constraint_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     valve = ref(gm,n,:valve, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, valve)
+           _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing
@@ -255,15 +255,15 @@ function constraint_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) whe
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_valve_parallel_flow(gm::GenericGasModel, i::Int) = constraint_valve_parallel_flow(gm, gm.cnw, i)
 
-" Template: Constraints which ensure that parallel lines have flow in the same direction - customized for control valve"
-function constraint_control_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, idx) where T <: AbstractMIForms
+
+"Template: Constraints which ensure that parallel lines have flow in the same direction - customized for control valve"
+function constraint_control_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     valve = ref(gm,n,:control_valve, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_control_valves, opposite_control_valves =
-           calc_parallel_connections(gm, n, valve)
+           _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing
@@ -273,4 +273,3 @@ function constraint_control_valve_parallel_flow(gm::GenericGasModel{T}, n::Int, 
                                      aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_control_valves, opposite_control_valves)
 end
-constraint_control_valve_parallel_flow(gm::GenericGasModel, i::Int) = constraint_control_valve_parallel_flow(gm, gm.cnw, i)
