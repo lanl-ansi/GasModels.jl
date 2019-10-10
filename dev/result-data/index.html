@@ -8,7 +8,7 @@ ga('create', 'UA-367975-10', 'auto');
 ga('send', 'pageview');
 </script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.svg" alt="GasModels logo"/></a><h1>GasModels</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="../quickguide/">Getting Started</a></li><li><a class="toctext" href="../network-data/">Network Data Format</a></li><li class="current"><a class="toctext" href>Result Data Format</a><ul class="internal"><li><a class="toctext" href="#The-Result-Data-Dictionary-1">The Result Data Dictionary</a></li></ul></li><li><a class="toctext" href="../math-model/">Mathematical Model</a></li></ul></li><li><span class="toctext">Library</span><ul><li><a class="toctext" href="../formulations/">Network Formulations</a></li><li><a class="toctext" href="../specifications/">Problem Specifications</a></li><li><span class="toctext">Modeling Components</span><ul><li><a class="toctext" href="../model/">GasModel</a></li><li><a class="toctext" href="../objective/">Objective</a></li><li><a class="toctext" href="../variables/">Variables</a></li><li><a class="toctext" href="../constraints/">Constraints</a></li></ul></li><li><a class="toctext" href="../parser/">File IO</a></li></ul></li><li><a class="toctext" href="../developer/">Developer</a></li></ul></nav><article id="docs"><header><nav><ul><li>Manual</li><li><a href>Result Data Format</a></li></ul><a class="edit-page" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/result-data.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Result Data Format</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="GasModels-Result-Data-Format-1" href="#GasModels-Result-Data-Format-1">GasModels Result Data Format</a></h1><h2><a class="nav-anchor" id="The-Result-Data-Dictionary-1" href="#The-Result-Data-Dictionary-1">The Result Data Dictionary</a></h2><p>GasModels utilizes a dictionary to organize the results of a run command. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The data dictionary organization is designed to be consistent with the GasModels <a href="../network-data/#The-Network-Data-Dictionary-1">The Network Data Dictionary</a>.</p><p>At the top level the results data dictionary is structured as follows:</p><pre><code class="language-json">{
 &quot;optimizer&quot;:&lt;string&gt;,    # name of the Julia class used to solve the model
-&quot;status&quot;:&lt;julia symbol&gt;, # solver status at termination
+&quot;termination_status&quot;:&lt;type&gt;, # optimizer status at termination
 &quot;solve_time&quot;:&lt;float&gt;,    # reported solve time (seconds)
 &quot;objective&quot;:&lt;float&gt;,     # the final evaluation of the objective function
 &quot;objective_lb&quot;:&lt;float&gt;,  # the final lower bound of the objective function (if available)
@@ -37,7 +37,7 @@ ga('send', 'pageview');
 &quot;junction&quot;:{
     &quot;1&quot;:{
       &quot;p&quot;: &lt;float&gt;,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals
-      &quot;psqr&quot;: &lt;float&gt;,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2      
+      &quot;psqr&quot;: &lt;float&gt;,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2
        ...
     },
     &quot;2&quot;:{...},
@@ -96,7 +96,7 @@ ga('send', 'pageview');
       &quot;f&quot;: &lt;float&gt;,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
-      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise      
+      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise
       &quot;ratio&quot;: &lt;float&gt;,             # multiplicative decompression ratio
         ...
     },
@@ -108,7 +108,7 @@ ga('send', 'pageview');
       &quot;f&quot;: &lt;float&gt;,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
-      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise      
+      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise
         ...
     },
     &quot;2&quot;:{...},
@@ -119,7 +119,7 @@ ga('send', 'pageview');
       &quot;f&quot;: &lt;float&gt;,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
-      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise      
+      &quot;v&quot;: &lt;int&gt;,                   # 1 if valve is open. 0 otherwise
         ...
     },
     &quot;2&quot;:{...},
@@ -142,7 +142,7 @@ ga('send', 'pageview');
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
       &quot;ratio&quot;: &lt;float&gt;,             # multiplicative compression ratio
-      &quot;built&quot;: &lt;float&gt;,          # 1 if compressor was built. 0 otherwise.      
+      &quot;built&quot;: &lt;float&gt;,          # 1 if compressor was built. 0 otherwise.
         ...
     },
     &quot;2&quot;:{...},
