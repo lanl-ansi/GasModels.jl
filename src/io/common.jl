@@ -30,4 +30,10 @@ end
 ""
 function correct_network_data!(data::Dict{String,Any})
     make_per_unit!(data)
+
+    check_connectivity(data)
+    check_status(data)
+    check_edge_loops(data)
+
+    check_global_parameters(data)
 end

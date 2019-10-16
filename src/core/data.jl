@@ -578,6 +578,15 @@ const _gm_component_parameter_order = Dict(
     "status" => 500.0,
 )
 
+const _gm_component_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
+                             "resistor", "ne_pipe", "ne_compressor", "junction", "consumer",
+                             "producer"]
+
+const _gm_junction_keys = ["f_junction", "t_junction", "junction"]
+
+const _gm_edge_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
+                        "resistor", "ne_pipe", "ne_compressor"]
+
 
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)
@@ -601,4 +610,174 @@ end
 "extracts the start value"
 function comp_start_value(set, item_key, value_key, default = 0.0)
     return get(get(set, item_key, Dict()), value_key, default)
+end
+
+
+"checks that all buses are unique and other components link to valid buses"
+function check_connectivity(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        for (n, nw_data) in data["nw"]
+            _check_connectivity(nw_data)
+        end
+    else
+        _check_connectivity(data)
+    end
+end
+
+
+"checks that all buses are unique and other components link to valid buses"
+function _check_connectivity(data::Dict{String,<:Any})
+    junc_ids = Set(junc["junction_i"] for (i,junc) in data["junction"])
+    @assert(length(junc_ids) == length(data["junction"])) # if this is not true something very bad is going on
+
+    for comp_type in _gm_component_types
+        for (i, comp) in get(data, comp_type, Dict())
+            for junc_key in _gm_junction_keys
+                if haskey(comp, junc_key)
+                    if !(comp[junc_key] in junc_ids)
+                        Memento.warn(_LOGGER, "$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+"checks that active components are not connected to inactive buses, otherwise prints warnings"
+function check_status(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
+    end
+
+    active_junction_ids = Set(junction["junction_i"] for (i,junction) in data["junction"] if get(junction, "status", 1) != 0)
+
+    for comp_type in _gm_component_types
+        for (i, comp) in get(data, comp_type, Dict())
+            for junc_key in _gm_junction_keys
+                if haskey(comp, junc_key)
+                    if get(comp, "status", 1) != 0 && !(comp[junc_key] in active_junction_ids)
+                        Memento.warn(_LOGGER, "active $comp_type $i is connected to inactive junction $(comp[junc_key])")
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+"checks validity of global-level parameters"
+function check_global_parameters(data::Dict{String,<:Any})
+    if get(data, "temperature", 273.15) < 173.15 || get(data, "temperature", 273.15) > 350.0  # TODO check values
+        Memento.error(_LOGGER, "temperature of $(get(data, "temperature", 273.15)) K is unrealistic")
+    end
+
+    if get(data, "specific_heat_capacity_ratio", 1.0) <= 0.0  # TODO realistic value
+        Memento.error(_LOGGER, "specific heat capacity ratio of $(get(data, "specific_heat_capacity_ratio", 1.0)) is unrealistic")
+    end
+
+    if get(data, "gas_molar_mass", 0.01) <= 0.0  # TODO realistic value
+        Memento.error(_LOGGER, "gas molar mass of $(get(data, "gas_molar_mass", 0.01)) is unrealistic")  # TODO add units
+    end
+
+    if get(data, "standard_density", 1.0) <= 0.0  # TODO realistic value
+        Memento.error(_LOGGER, "standard density of $(get(data, "standard_density", 1.0)) is unrealistic")  # TODO add units
+    end
+
+    if get(data, "R", 8.0) <= 0.0  # TODO realistic value
+        Memento.error(_LOGGER, "R of $(get(data, "R", 8.0)) is unrealistic")  # TODO add units
+    end
+
+
+end
+
+
+"""
+computes the connected components of the network graph
+returns a set of sets of juntion ids, each set is a connected component
+"""
+function calc_connected_components(data::Dict{String,<:Any}; edges=_gm_edge_types)
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
+    end
+
+    active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
+    active_junction_ids = Set{Int64}([junction["junction_i"] for (i,junction) in active_junction])
+
+    neighbors = Dict(i => [] for i in active_junction_ids)
+    for edge_type in edges
+        for edge in values(get(data, edge_type, Dict()))
+            if get(edge, "status", 1) != 0 && edge["f_junction"] in active_junction_ids && edge["t_junction"] in active_junction_ids
+                push!(neighbors[edge["f_junction"]], edge["t_junction"])
+                push!(neighbors[edge["t_junction"]], edge["f_junction"])
+            end
+        end
+    end
+
+    component_lookup = Dict(i => Set{Int64}([i]) for i in active_junction_ids)
+    touched = Set{Int64}()
+
+    for i in active_junction_ids
+        if !(i in touched)
+            _dfs(i, neighbors, component_lookup, touched)
+        end
+    end
+
+    ccs = (Set(values(component_lookup)))
+
+    return ccs
+end
+
+
+"perModels DFS on a graph"
+function _dfs(i, neighbors, component_lookup, touched)
+    push!(touched, i)
+    for j in neighbors[i]
+        if !(j in touched)
+            new_comp = union(component_lookup[i], component_lookup[j])
+            for k in new_comp
+                component_lookup[k] = new_comp
+            end
+            _dfs(j, neighbors, component_lookup, touched)
+        end
+    end
+end
+
+
+"checks that all edges connect two distinct junctions"
+function check_edge_loops(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
+    end
+
+    for edge_type in _gm_edge_types
+        if haskey(data, edge_type)
+            for edge in values(data[edge_type])
+                if edge["f_junction"] == edge["t_junction"]
+                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["junction_fr"])")
+                end
+            end
+        end
+    end
+end
+
+
+"helper function to propagate disabled status of junctions to connected components"
+function propagate_topology_status!(data::Dict{String,<:Any})
+    disabled_junctions = Set([junc["junction_i"] for junc in values(data["junction"]) if junc["status"] == 0])
+
+    for comp_type in _gm_component_types
+        if haskey(data, comp_type) && comp_type != "junction"
+            @warn comp_type
+            for comp in values(data[comp_type])
+                for junc_key in _gm_junction_keys
+                    if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
+                        comp["status"] = 0
+                        Memento.info(_LOGGER, "Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
+                        break
+                    end
+                end
+            end
+        end
+    end
 end
