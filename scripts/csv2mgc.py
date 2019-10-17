@@ -180,8 +180,8 @@ class Consumer(Dispatchable):
         if row['RECDEL'] == 'D':
             _id = int(float(row['RDPTID']))
             ql_junc = int(row['NEAR_FID'])
-            qlmax = float(row['MAXCAP'])/((10**3)*35.3147*86400) # kf^3/d to m^3/s
-            ql = float(row['SCHEDCAP'])/((10**3)*35.3147*86400) # kf^3/d to m^3/s
+            qlmax = float(row['MAXCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
+            ql = float(row['SCHEDCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
             dispatchable = 0 if ql == 0 else 1
             return Consumer({'_id': _id,
                              'ql_junc': ql_junc,
@@ -229,11 +229,11 @@ class Producer(Dispatchable):
         ''' create producer from csv '''
         if row['RECDEL'] == 'R':
             _id = int(float(row['RDPTID']))
-            junction = int(row['NEAR_FID'])
-            qgmax = float(row['MAXCAP'])/((10**3)*35.3147*86400) # kf^3/d to m^3/s
-            qg = float(row['SCHEDCAP'])/((10**3)*35.3147*86400) # kf^3/d to m^3/s
+            qg_junc = int(row['NEAR_FID'])
+            qgmax = float(row['MAXCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
+            qg = float(row['SCHEDCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
             dispatchable = 0 if qg == 0 else 1
-            return Producer({'_id': _id, 'junction': junction, 'qgmax': qgmax, 'qg': qg, 'dispatchable': dispatchable})
+            return Producer({'_id': _id, 'qg_junc': qg_junc, 'qgmax': qgmax, 'qg': qg, 'dispatchable': dispatchable})
         return None
 
     def get_matlab_column_names(self, is_ext_data=False):
@@ -325,18 +325,25 @@ class Compressor(Edge):
         # insert compressor logically between near pipe and near node
         pid = int(row['NEARLINEID'])
         nid = int(row['NEARNODEID'])
+        # create new compressor junction
+        for junction in mgc.junctions:
+            if junction._id == nid:
+                nearnode = junction
+                break
+        new_id = max([junction._id for junction in mgc.junctions]) + len(mgc.compressors)
+        compressor_junction = Junction({'_id': new_id, 'location': nearnode.location}) # use same location as nid
+        mgc.junctions.append(compressor_junction)
         for pipe in mgc.pipes:
             if pipe._id == pid:
                 if pipe.f_junction == nid:
                     # compressor is between pipe and its f_junction
                     f_junction = nid
-                    t_junction = pid
-                    pipe.f_junction = _id
+                    t_junction = compressor_junction._id
+                    pipe.f_junction = compressor_junction._id # new compressor node
                 elif pipe.t_junction == nid:
-                    # compressor is between pipe and its t_junction
                     t_junction = nid
-                    f_junction = pid
-                    pipe.t_junction = _id
+                    f_junction = compressor_junction._id
+                    pipe.t_junction = compressor_junction._id # new compressor node
                 break
         return Compressor({'_id': _id,
                            'f_junction': f_junction,
@@ -408,7 +415,7 @@ class Generator(Consumer):
     @staticmethod
     def from_csv_record(row, mgc):
         # HACK: generate ids higher than consumers
-        _id = max([consumer._id for consumer in mgc.consumers]) + len(mgc.generators)
+        _id = max([consumer._id for consumer in mgc.consumers]) + 1 + len(mgc.generators)
         ql_junc = int(row['NEAR_FID'])
         qlmax = float(row['W_CAP_MW'])*94.28/3600 # MWh to m^3/s
         ql = float(row['S_CAP_MW'])*94.28/3600 # MWh to m^3/s
@@ -434,7 +441,7 @@ class Generator(Consumer):
         if is_ext_data:
             keys = ['eiaid']
         else:
-            keys = ['_id', 'junction', 'ql', 'status', 'dispatchable']
+            keys = ['_id', 'ql_junc', 'ql', 'status', 'dispatchable']
         values = [getattr(self, key, 0) for key in keys]
         return values
 
@@ -449,8 +456,8 @@ class Storage(Consumer):
     def from_csv_record(row, mgc):
         _id = int(float(row['STFCID']))
         junction = int(row['NEAR_FID'])
-        qlmax = float(row['TOTALCAP'])/((10**3)*35.3147) # kf^3 to m^3
-        ql = float(row['WORKCAP'])/((10**3)*35.3147) # kf^3 to m^3
+        qlmax = float(row['TOTALCAP'])*(10**3)/(35.3147) # kf^3 to m^3
+        ql = float(row['WORKCAP'])*(10**3)/(35.3147) # kf^3 to m^3
         dispatchable = 0 if ql == 0 else 1
         return Storage({'_id': _id,
                         'junction': junction,
@@ -538,7 +545,7 @@ class MGC:
                     # process csv file
                     csv_reader = csv.DictReader(csv_file)
                     # skip header row
-                    next(csv_reader)
+                    #next(csv_reader)
                     for row in csv_reader:
                         # increment record count
                         count += 1
@@ -562,7 +569,7 @@ class MGC:
         logging.info('Validating dataset')
         try:
             ''' For each pipeline, check endpoints exist and are active '''
-            endpoints = {junction._id: junction.status for junction in self.junctions+self.pipes+self.compressors+self.resistors}
+            endpoints = {junction._id: junction.status for junction in self.junctions}
             for edge in self.pipes+self.compressors+self.resistors:
                 f_junction = edge.f_junction
                 t_junction = edge.t_junction
