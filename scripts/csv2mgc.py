@@ -15,9 +15,11 @@ COMPONENT_NAMES = ['Junction', 'Pipe', 'Compressor', 'Resistor', 'Producer', 'Co
 junction_ids = []
 
 def get_class_by_name(name):
+    ''' Get class by name '''
     return getattr(sys.modules[__name__], name)
 
 def get_collection_key(name):
+    ''' Get collection key associated with a class name '''
     return get_class_by_name(name).collection_key
 
 def distance(src, dst):
@@ -330,7 +332,7 @@ class Compressor(Edge):
             if junction._id == nid:
                 nearnode = junction
                 break
-        new_id = max([junction._id for junction in mgc.junctions]) + len(mgc.compressors)
+        new_id = max([junction._id for junction in mgc.junctions]) + 1 + len(mgc.compressors)
         compressor_junction = Junction({'_id': new_id, 'location': nearnode.location}) # use same location as nid
         mgc.junctions.append(compressor_junction)
         for pipe in mgc.pipes:
@@ -566,17 +568,28 @@ class MGC:
         return mgc
 
     def validate(self):
+        ''' Validate MGC properties '''
         logging.info('Validating dataset')
         try:
-            ''' For each pipeline, check endpoints exist and are active '''
-            endpoints = {junction._id: junction.status for junction in self.junctions}
-            for edge in self.pipes+self.compressors+self.resistors:
-                f_junction = edge.f_junction
-                t_junction = edge.t_junction
-                assert(f_junction in endpoints), f'{type(edge).__name__} {edge._id} f_junction {f_junction} nonexistent'
-                assert(endpoints.get(f_junction) == 1), f'edge {edge._id} f_junction {f_junction} inactive'
-                assert(t_junction in endpoints), f'edge {edge._id} t_junction {t_junction} nonexistent'
-                assert(endpoints.get(t_junction) == 1), f'edge {edge._id} t_junction {t_junction} inactive'
+            for component_name in COMPONENT_NAMES:
+                collection_key = get_collection_key(component_name)
+                ''' Check component IDs are unique '''
+                ids = [component._id for component in getattr(self, collection_key)]
+                seen = set()
+                for _id in ids:
+                    assert(_id not in seen), f'{component_name} {_id} is duplicate'
+                    seen.add(_id)
+                if collection_key == "pipelines":
+                    ''' For each pipeline, check endpoints exist and are active '''
+                    endpoints = {junction._id: junction.status for junction in self.junctions}
+                    for edge in self.pipes+self.compressors+self.resistors:
+                        f_junction = edge.f_junction
+                        t_junction = edge.t_junction
+                        assert(f_junction in endpoints), f'{type(edge).__name__} {edge._id} f_junction {f_junction} nonexistent'
+                        assert(endpoints.get(f_junction) == 1), f'edge {edge._id} f_junction {f_junction} inactive'
+                        assert(t_junction in endpoints), f'edge {edge._id} t_junction {t_junction} nonexistent'
+                        assert(endpoints.get(t_junction) == 1), f'edge {edge._id} t_junction {t_junction} inactive'
+
         except Exception as e:
             logging.debug(traceback.print_exc())
             logging.info(f'MGC invalid: {e}')
