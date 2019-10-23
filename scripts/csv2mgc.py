@@ -184,7 +184,7 @@ class Consumer(Dispatchable):
             ql_junc = int(row['NEAR_FID'])
             qlmax = float(row['MAXCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
             ql = float(row['SCHEDCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
-            dispatchable = 0 if ql == 0 else 1
+            dispatchable = 0 if qlmax == 0 else 1
             return Consumer({'_id': _id,
                              'ql_junc': ql_junc,
                              'qlmax': qlmax,
@@ -234,7 +234,7 @@ class Producer(Dispatchable):
             qg_junc = int(row['NEAR_FID'])
             qgmax = float(row['MAXCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
             qg = float(row['SCHEDCAP'])*(10**3)/(35.3147*86400) # kf^3/d to m^3/s
-            dispatchable = 0 if qg == 0 else 1
+            dispatchable = 0 if qgmax == 0 else 1
             return Producer({'_id': _id, 'qg_junc': qg_junc, 'qgmax': qgmax, 'qg': qg, 'dispatchable': dispatchable})
         return None
 
@@ -421,7 +421,7 @@ class Generator(Consumer):
         ql_junc = int(row['NEAR_FID'])
         qlmax = float(row['W_CAP_MW'])*94.28/3600 # MWh to m^3/s
         ql = float(row['S_CAP_MW'])*94.28/3600 # MWh to m^3/s
-        dispatchable = 0 if ql == 0 else 1
+        dispatchable = 0 if qlmax == 0 else 1
         eiaid = row['EIACODE'] or 0
         return Generator({'_id': _id,
                           'ql_junc': ql_junc,
@@ -460,7 +460,7 @@ class Storage(Consumer):
         junction = int(row['NEAR_FID'])
         qlmax = float(row['TOTALCAP'])*(10**3)/(35.3147) # kf^3 to m^3
         ql = float(row['WORKCAP'])*(10**3)/(35.3147) # kf^3 to m^3
-        dispatchable = 0 if ql == 0 else 1
+        dispatchable = 0 if qlmax == 0 else 1
         return Storage({'_id': _id,
                         'junction': junction,
                         'qlmax': qlmax,
