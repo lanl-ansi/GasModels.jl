@@ -668,37 +668,44 @@ end
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String,<:Any})
-    if get(data, "temperature", 273.15) < 173.15 || get(data, "temperature", 273.15) > 350.0  # TODO check values
-        Memento.error(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
+    if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
+        Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
     end
 
-    if get(data, "specific_heat_capacity_ratio", 1.0) <= 0.0  # TODO realistic value
-        Memento.error(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
+        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
-    if get(data, "gas_molar_mass", 0.01) <= 0.0  # TODO realistic value
-        Memento.error(_LOGGER, "gas molar mass of $(data["gas_molar_mass"]) is unrealistic")  # TODO add units
+    if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
+        if data["gas_specific_gravity"] < 0
+            Memento.error(_LOGGER, "gas specific gravity is < 0")
+        else
+            Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+        end
     end
 
-    if get(data, "standard_density", 1.0) <= 0.0  # TODO realistic value
-        Memento.error(_LOGGER, "standard density of $(data["standard_density"]) is unrealistic")  # TODO add units
+    if get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) < 400 || get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) > 500
+        Memento.warn(_LOGGER, "R / molar mass of $(data["R"] / data["gas_molar_mass"]) is unrealistic")
     end
 
-    if get(data, "R", 8.0) <= 0.0  # TODO realistic value
-        Memento.error(_LOGGER, "R of $(data["R"]) is unrealistic")  # TODO add units
+    if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
+        Memento.warn(_LOGGER), "sound speed of $(data["sound_speed"]) m/s is unrealistic"
     end
 
-    if get(data, "sound_speed", 300.0) <= 0.0  # TODO realistic value
-        Memento.error(_LOGGER), "sound speed of $(data["sound_speed"]) is unrealistic" # TODO add units
+    if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
+        if data["compressibility_factor"] < 0
+            Memento.error(_LOGGER, "compressibility_factor < 0")
+        else
+            Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+        end
     end
-
 end
 
 
 "checks pressure min/max on junctions"
-function check_pressure_limits(data::Dict{String,<:Any}) # TODO check baseP multiplier
+function check_pressure_limits(data::Dict{String,<:Any})
     for (i, junction) in get(data, "junction", Dict())
-        if junction["pmin"] * data["baseP"] < 0 || junction["pmax"] * data["baseP"] < 0  # TODO <= or <
+        if junction["pmin"] * data["baseP"] < 0 || junction["pmax"] * data["baseP"] < 0
             Memento.error(_LOGGER, "pmin or pmax at junction $i is < 0")
         end
 
@@ -716,12 +723,20 @@ end
 "checks pipe diameters and friction factors"
 function check_pipe_parameters(data::Dict{String,<:Any})
     for (i, pipe) in get(data, "pipe", Dict())
-        if get(pipe, "diameter", 1.0) <= 0.0 || get(pipe, "diameter", 1.0) >= 10.0  # TODO realistic values
-            Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
+        if pipe["diameter"] < 0.1 || pipe["diameter"] > 1.6
+            if pipe["diameter"] < 0.0
+                Memento.error(_LOGGER, "diameter of pipe $i is < 0 m")
+            else
+                Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
+            end
         end
 
-        if get(pipe, "friction_factor", 0.007) <= 0.0 || get(pipe, "friction_factor", 0.007) > 0.1  # TODO realistic values
-            Memento.warn(_LOGGER, "friction factor $(pipe["friction_factor"]) of pipe $i is unrealistic")  # TODO units
+        if pipe["friction_factor"] < 0.0005 || pipe["friction_factor"] > 0.1
+            if pipe["friction_factor"] < 0
+                Memento.error(_LOGGER, "friction factor of pipe $i is < 0")
+            else
+                Memento.warn(_LOGGER, "friction factor $(pipe["friction_factor"]) of pipe $i is unrealistic")
+            end
         end
     end
 end
@@ -730,31 +745,33 @@ end
 "check compressor ratios, powers, and mass flows"
 function check_compressor_parameters(data::Dict{String,<:Any})
     for (i, compressor) in get(data, "compressor", Dict())
-        if get(compressor, "power_max", 5000) <= 0
-            Memento.error(_LOGGER, "max power <= 0 on compressor $i")
+        if compressor["power_max"] < 0
+            Memento.error(_LOGGER, "max power < 0 on compressor $i")
+        elseif compressor["power_max"] / 1e6 > 20  # assumes J/s to MW conversion
+            Memento.warn(_LOGGER, "max power > 20MW on compressor $i")
         end
 
-        if get(compressor, "c_ratio_max", 5.0) <= 0 || get(compressor, "c_ratio_max", 5.0) >= 100.0 # TODO realistic values
-            Memento.warn(_LOGGER, "max c-ratio $(compressor["c_ratio_max"]) on compressor $i is unrealistic")
+        if compressor["c_ratio_max"] < 1 || compressor["c_ratio_max"] > 2
+            if compressor["c_ratio_max"] < 0
+                Memento.error(_LOGGER, "")
+            else
+                Memento.warn(_LOGGER, "max c-ratio $(compressor["c_ratio_max"]) on compressor $i is unrealistic")
+            end
         end
 
-        if get(compressor, "c_ratio_max", 5.0) < get(compressor, "c_ratio_min", 1.0)
+        if compressor["c_ratio_max"] < compressor["c_ratio_min"]
             Memento.error(_LOGGER, "c_ratio_min > c_ratio_max on compressor $i")
         end
 
-        if get(compressor, "c_ratio_min", 1.0) <= 0 || get(compressor, "c_ratio_min", 1.0) >= 100.0 # TODO realistic values
-            Memento.warn(_LOGGER, "min c-ratio $(compressor["c_ratio_min"]) on compressor $i is unrealistic")
+        if compressor["c_ratio_min"] < 1 || compressor["c_ratio_min"] > 2
+            if compressor["c_ratio_min"] < 0
+                Memento.error(_LOGGER, "")
+            else
+                Memento.warn(_LOGGER, "min c-ratio $(compressor["c_ratio_min"]) on compressor $i is unrealistic")
+            end
         end
 
-        if get(compressor, "qmin", 1e9) <= 0 || get(compressor, "qmin", 1e9) >= 1e12 # TODO realistic values
-            Memento.warn(_LOGGER, "min flow $(compressor["qmin"]) on compressor $i is unrealistic")
-        end
-
-        if get(compressor, "qmax", 1e9) <= 0 || get(compressor, "qmax", 1e9) >= 1e12 # TODO realistic values
-            Memento.warn(_LOGGER, "max flow $(compressor["qmax"]) on compressor $i is unrealistic")
-        end
-
-        if get(compressor, "qmin", 1e9) > get(compressor, "qmax", 1e9)
+        if haskey(compressor, "qmin") && haskey(compressor, "qmax") && compressor["qmin"] > compressor["qmax"]
             Memento.error(_LOGGER, "qmin > qmax on compressor $i")
         end
     end
@@ -763,11 +780,15 @@ end
 
 "calculates baseP"
 function calc_base_pressure(data::Dict{String,<:Any})
+    pmins = filter(x->x>0, [junction["pmin"] for junction in values(data["junction"])])
+
+    return isempty(pmins) ? 1.0 : minimum(pmins)
 end
 
 
 "calculates baseF"
 function calc_base_mass_flow(data::Dict{String,<:Any})
+    return calc_base_pressure(data) / data["sound_speed"]
 end
 
 
