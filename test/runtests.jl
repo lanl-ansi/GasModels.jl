@@ -30,11 +30,11 @@ abs_minlp_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_op
 include("common.jl")
 
 @testset "GasModels" begin
-    include("ogf.jl")
+    include("data.jl")
 
     include("matlab.jl")
 
-    include("data.jl")
+    include("ogf.jl")
 
     include("ls.jl")
 

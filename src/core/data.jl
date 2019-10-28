@@ -110,8 +110,21 @@ end
 function make_per_unit!(data::Dict{String,Any})
     if !haskey(data, "per_unit") || data["per_unit"] == false
         data["per_unit"] = true
-        p_base = data["baseP"]
-        q_base = data["baseQ"]
+
+        p_base_calc = calc_base_pressure(data)
+        q_base_calc = calc_base_mass_flow(data)
+
+        p_base = get(data, "baseP", p_base_calc)
+        q_base = get(data, "baseQ", q_base_calc)
+
+        if p_base != p_base_calc
+            Memento.warn(_LOGGER, "baseP $p_base is different than calculated baseP = $p_base_calc")
+        end
+
+        if q_base != q_base_calc
+            Memento.warn(_LOGGER, "baseQ $q_base is different than calculated baseQ = $q_base_calc")
+        end
+
         if InfrastructureModels.ismultinetwork(data)
             for (i,nw_data) in data["nw"]
                 _make_per_unit!(nw_data, p_base, q_base)
@@ -689,7 +702,7 @@ function check_global_parameters(data::Dict{String,<:Any})
     end
 
     if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        Memento.warn(_LOGGER), "sound speed of $(data["sound_speed"]) m/s is unrealistic"
+        Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
     end
 
     if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
@@ -704,17 +717,23 @@ end
 
 "checks pressure min/max on junctions"
 function check_pressure_limits(data::Dict{String,<:Any})
+    if get(data, "per_unit", false)
+        baseP = get(data, "baseP", calc_base_pressure(data))
+    else
+        baseP = 1.0
+    end
+
     for (i, junction) in get(data, "junction", Dict())
-        if junction["pmin"] * data["baseP"] < 0 || junction["pmax"] * data["baseP"] < 0
+        if junction["pmin"] * baseP < 0 || junction["pmax"] * baseP < 0
             Memento.error(_LOGGER, "pmin or pmax at junction $i is < 0")
         end
 
-        if junction["pmin"] * data["baseP"] < 2.068e6
-            Memento.warn(_LOGGER, "pmin $(junction["pmin"] * data["baseP"]) at junction $i is < 2.068e6 Pa (300 PSI)")
+        if junction["pmin"] * baseP < 2.068e6
+            Memento.warn(_LOGGER, "pmin $(junction["pmin"] * baseP) at junction $i is < 2.068e6 Pa (300 PSI)")
         end
 
-        if junction["pmax"] * data["baseP"] > 5.861e6
-            Memento.warn(_LOGGER, "pmax $(junction["pmax"] * data["baseP"]) at junction $i is > 5.861e6 Pa (850 PSI)")
+        if junction["pmax"] * baseP > 5.861e6
+            Memento.warn(_LOGGER, "pmax $(junction["pmax"] * baseP) at junction $i is > 5.861e6 Pa (850 PSI)")
         end
     end
 end
@@ -744,11 +763,18 @@ end
 
 "check compressor ratios, powers, and mass flows"
 function check_compressor_parameters(data::Dict{String,<:Any})
+    if get(data, "per_unit", false)
+        baseQ = get(data, "baseQ", calc_base_mass_flow(data))
+    else
+        baseQ = 1.0
+    end
+
     for (i, compressor) in get(data, "compressor", Dict())
+
         if compressor["power_max"] < 0
             Memento.error(_LOGGER, "max power < 0 on compressor $i")
-        elseif compressor["power_max"] / 1e6 > 20  # assumes J/s to MW conversion
-            Memento.warn(_LOGGER, "max power > 20MW on compressor $i")
+        elseif compressor["power_max"] / 1e6 * baseQ > 20  # assumes J/s to MW conversion
+            Memento.warn(_LOGGER, "max power $(compressor["power_max"] / 1e6 * baseQ) MW > 20MW on compressor $i")
         end
 
         if compressor["c_ratio_max"] < 1 || compressor["c_ratio_max"] > 2
@@ -765,7 +791,7 @@ function check_compressor_parameters(data::Dict{String,<:Any})
 
         if compressor["c_ratio_min"] < 1 || compressor["c_ratio_min"] > 2
             if compressor["c_ratio_min"] < 0
-                Memento.error(_LOGGER, "")
+                Memento.error(_LOGGER, "c_ratio_min > 0 on compressor $i")
             else
                 Memento.warn(_LOGGER, "min c-ratio $(compressor["c_ratio_min"]) on compressor $i is unrealistic")
             end
@@ -788,7 +814,7 @@ end
 
 "calculates baseF"
 function calc_base_mass_flow(data::Dict{String,<:Any})
-    return calc_base_pressure(data) / data["sound_speed"]
+    return calc_base_pressure(data) / get(data, "sound_speed", 355.0)
 end
 
 
@@ -868,7 +894,6 @@ function propagate_topology_status!(data::Dict{String,<:Any})
 
     for comp_type in _gm_component_types
         if haskey(data, comp_type) && comp_type != "junction"
-            @warn comp_type
             for comp in values(data[comp_type])
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
