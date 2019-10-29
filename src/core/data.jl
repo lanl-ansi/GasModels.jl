@@ -110,8 +110,21 @@ end
 function make_per_unit!(data::Dict{String,Any})
     if !haskey(data, "per_unit") || data["per_unit"] == false
         data["per_unit"] = true
-        p_base = data["baseP"]
-        q_base = data["baseQ"]
+
+        p_base_calc = calc_base_pressure(data)
+        q_base_calc = calc_base_mass_flow(data)
+
+        p_base = get(data, "baseP", p_base_calc)
+        q_base = get(data, "baseQ", q_base_calc)
+
+        if p_base != p_base_calc
+            Memento.warn(_LOGGER, "baseP $p_base is different than calculated baseP = $p_base_calc")
+        end
+
+        if q_base != q_base_calc
+            Memento.warn(_LOGGER, "baseQ $q_base is different than calculated baseQ = $q_base_calc")
+        end
+
         if InfrastructureModels.ismultinetwork(data)
             for (i,nw_data) in data["nw"]
                 _make_per_unit!(nw_data, p_base, q_base)
@@ -578,6 +591,15 @@ const _gm_component_parameter_order = Dict(
     "status" => 500.0,
 )
 
+const _gm_component_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
+                             "resistor", "ne_pipe", "ne_compressor", "junction", "consumer",
+                             "producer"]
+
+const _gm_junction_keys = ["f_junction", "t_junction", "junction"]
+
+const _gm_edge_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
+                        "resistor", "ne_pipe", "ne_compressor"]
+
 
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)
@@ -601,4 +623,286 @@ end
 "extracts the start value"
 function comp_start_value(set, item_key, value_key, default = 0.0)
     return get(get(set, item_key, Dict()), value_key, default)
+end
+
+
+"checks that all buses are unique and other components link to valid buses"
+function check_connectivity(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        for (n, nw_data) in data["nw"]
+            _check_connectivity(nw_data)
+        end
+    else
+        _check_connectivity(data)
+    end
+end
+
+
+"checks that all buses are unique and other components link to valid buses"
+function _check_connectivity(data::Dict{String,<:Any})
+    junc_ids = Set(junc["junction_i"] for (i,junc) in data["junction"])
+    @assert(length(junc_ids) == length(data["junction"])) # if this is not true something very bad is going on
+
+    for comp_type in _gm_component_types
+        for (i, comp) in get(data, comp_type, Dict())
+            for junc_key in _gm_junction_keys
+                if haskey(comp, junc_key)
+                    if !(comp[junc_key] in junc_ids)
+                        Memento.warn(_LOGGER, "$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+"checks that active components are not connected to inactive buses, otherwise prints warnings"
+function check_status(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
+    end
+
+    active_junction_ids = Set(junction["junction_i"] for (i,junction) in data["junction"] if get(junction, "status", 1) != 0)
+
+    for comp_type in _gm_component_types
+        for (i, comp) in get(data, comp_type, Dict())
+            for junc_key in _gm_junction_keys
+                if haskey(comp, junc_key)
+                    if get(comp, "status", 1) != 0 && !(comp[junc_key] in active_junction_ids)
+                        Memento.warn(_LOGGER, "active $comp_type $i is connected to inactive junction $(comp[junc_key])")
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+"checks validity of global-level parameters"
+function check_global_parameters(data::Dict{String,<:Any})
+    if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
+        Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
+    end
+
+    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
+        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+    end
+
+    if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
+        if data["gas_specific_gravity"] < 0
+            Memento.error(_LOGGER, "gas specific gravity is < 0")
+        else
+            Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+        end
+    end
+
+    if get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) < 400 || get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) > 500
+        Memento.warn(_LOGGER, "R / molar mass of $(data["R"] / data["gas_molar_mass"]) is unrealistic")
+    end
+
+    if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
+        Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
+    end
+
+    if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
+        if data["compressibility_factor"] < 0
+            Memento.error(_LOGGER, "compressibility_factor < 0")
+        else
+            Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+        end
+    end
+end
+
+
+"checks pressure min/max on junctions"
+function check_pressure_limits(data::Dict{String,<:Any})
+    if get(data, "per_unit", false)
+        baseP = get(data, "baseP", calc_base_pressure(data))
+    else
+        baseP = 1.0
+    end
+
+    for (i, junction) in get(data, "junction", Dict())
+        if junction["pmin"] * baseP < 0 || junction["pmax"] * baseP < 0
+            Memento.error(_LOGGER, "pmin or pmax at junction $i is < 0")
+        end
+
+        if junction["pmin"] * baseP < 2.068e6
+            Memento.warn(_LOGGER, "pmin $(junction["pmin"] * baseP) at junction $i is < 2.068e6 Pa (300 PSI)")
+        end
+
+        if junction["pmax"] * baseP > 5.861e6
+            Memento.warn(_LOGGER, "pmax $(junction["pmax"] * baseP) at junction $i is > 5.861e6 Pa (850 PSI)")
+        end
+    end
+end
+
+
+"checks pipe diameters and friction factors"
+function check_pipe_parameters(data::Dict{String,<:Any})
+    for (i, pipe) in get(data, "pipe", Dict())
+        if pipe["diameter"] < 0.1 || pipe["diameter"] > 1.6
+            if pipe["diameter"] < 0.0
+                Memento.error(_LOGGER, "diameter of pipe $i is < 0 m")
+            else
+                Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
+            end
+        end
+
+        if pipe["friction_factor"] < 0.0005 || pipe["friction_factor"] > 0.1
+            if pipe["friction_factor"] < 0
+                Memento.error(_LOGGER, "friction factor of pipe $i is < 0")
+            else
+                Memento.warn(_LOGGER, "friction factor $(pipe["friction_factor"]) of pipe $i is unrealistic")
+            end
+        end
+    end
+end
+
+
+"check compressor ratios, powers, and mass flows"
+function check_compressor_parameters(data::Dict{String,<:Any})
+    if get(data, "per_unit", false)
+        baseQ = get(data, "baseQ", calc_base_mass_flow(data))
+    else
+        baseQ = 1.0
+    end
+
+    for (i, compressor) in get(data, "compressor", Dict())
+
+        if compressor["power_max"] < 0
+            Memento.error(_LOGGER, "max power < 0 on compressor $i")
+        elseif compressor["power_max"] / 1e6 * baseQ > 20  # assumes J/s to MW conversion
+            Memento.warn(_LOGGER, "max power $(compressor["power_max"] / 1e6 * baseQ) MW > 20MW on compressor $i")
+        end
+
+        if compressor["c_ratio_max"] < 1 || compressor["c_ratio_max"] > 2
+            if compressor["c_ratio_max"] < 0
+                Memento.error(_LOGGER, "")
+            else
+                Memento.warn(_LOGGER, "max c-ratio $(compressor["c_ratio_max"]) on compressor $i is unrealistic")
+            end
+        end
+
+        if compressor["c_ratio_max"] < compressor["c_ratio_min"]
+            Memento.error(_LOGGER, "c_ratio_min > c_ratio_max on compressor $i")
+        end
+
+        if compressor["c_ratio_min"] < 1 || compressor["c_ratio_min"] > 2
+            if compressor["c_ratio_min"] < 0
+                Memento.error(_LOGGER, "c_ratio_min > 0 on compressor $i")
+            else
+                Memento.warn(_LOGGER, "min c-ratio $(compressor["c_ratio_min"]) on compressor $i is unrealistic")
+            end
+        end
+
+        if haskey(compressor, "qmin") && haskey(compressor, "qmax") && compressor["qmin"] > compressor["qmax"]
+            Memento.error(_LOGGER, "qmin > qmax on compressor $i")
+        end
+    end
+end
+
+
+"calculates baseP"
+function calc_base_pressure(data::Dict{String,<:Any})
+    pmins = filter(x->x>0, [junction["pmin"] for junction in values(data["junction"])])
+
+    return isempty(pmins) ? 1.0 : minimum(pmins)
+end
+
+
+"calculates baseF"
+function calc_base_mass_flow(data::Dict{String,<:Any})
+    return calc_base_pressure(data) / get(data, "sound_speed", 355.0)
+end
+
+
+"""
+computes the connected components of the network graph
+returns a set of sets of juntion ids, each set is a connected component
+"""
+function calc_connected_components(data::Dict{String,<:Any}; edges=_gm_edge_types)
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
+    end
+
+    active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
+    active_junction_ids = Set{Int64}([junction["junction_i"] for (i,junction) in active_junction])
+
+    neighbors = Dict(i => [] for i in active_junction_ids)
+    for edge_type in edges
+        for edge in values(get(data, edge_type, Dict()))
+            if get(edge, "status", 1) != 0 && edge["f_junction"] in active_junction_ids && edge["t_junction"] in active_junction_ids
+                push!(neighbors[edge["f_junction"]], edge["t_junction"])
+                push!(neighbors[edge["t_junction"]], edge["f_junction"])
+            end
+        end
+    end
+
+    component_lookup = Dict(i => Set{Int64}([i]) for i in active_junction_ids)
+    touched = Set{Int64}()
+
+    for i in active_junction_ids
+        if !(i in touched)
+            _dfs(i, neighbors, component_lookup, touched)
+        end
+    end
+
+    ccs = (Set(values(component_lookup)))
+
+    return ccs
+end
+
+
+"perModels DFS on a graph"
+function _dfs(i, neighbors, component_lookup, touched)
+    push!(touched, i)
+    for j in neighbors[i]
+        if !(j in touched)
+            new_comp = union(component_lookup[i], component_lookup[j])
+            for k in new_comp
+                component_lookup[k] = new_comp
+            end
+            _dfs(j, neighbors, component_lookup, touched)
+        end
+    end
+end
+
+
+"checks that all edges connect two distinct junctions"
+function check_edge_loops(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
+    end
+
+    for edge_type in _gm_edge_types
+        if haskey(data, edge_type)
+            for edge in values(data[edge_type])
+                if edge["f_junction"] == edge["t_junction"]
+                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["junction_fr"])")
+                end
+            end
+        end
+    end
+end
+
+
+"helper function to propagate disabled status of junctions to connected components"
+function propagate_topology_status!(data::Dict{String,<:Any})
+    disabled_junctions = Set([junc["junction_i"] for junc in values(data["junction"]) if junc["status"] == 0])
+
+    for comp_type in _gm_component_types
+        if haskey(data, comp_type) && comp_type != "junction"
+            for comp in values(data[comp_type])
+                for junc_key in _gm_junction_keys
+                    if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
+                        comp["status"] = 0
+                        Memento.info(_LOGGER, "Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
+                        break
+                    end
+                end
+            end
+        end
+    end
 end

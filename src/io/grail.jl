@@ -1,10 +1,15 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail(network_file, time_series_file; time_point = 1, slack_producers = false)
-    network_data = GasModels.parse_json(network_file)
+function parse_grail(network_file::AbstractString, time_series_file::AbstractString; time_point = 1, slack_producers = false)
+    network_data = open(network_file, "r") do io
+        JSON.parse(io)
+    end
 
-    profile_data = GasModels.parse_json(time_series_file)
+    profile_data = open(time_series_file, "r") do io
+        JSON.parse(io)
+    end
+
     @assert length(profile_data["time_points"]) >= time_point
 
     g_nodes = Dict([(node["index"], node) for node in network_data["node"]])

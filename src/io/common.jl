@@ -29,5 +29,15 @@ end
 
 ""
 function correct_network_data!(data::Dict{String,Any})
+    check_pressure_limits(data)
+    check_pipe_parameters(data)
+    check_compressor_parameters(data)
+
     make_per_unit!(data)
+
+    check_connectivity(data)
+    check_status(data)
+    check_edge_loops(data)
+
+    check_global_parameters(data)
 end
