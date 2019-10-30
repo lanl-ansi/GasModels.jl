@@ -560,10 +560,10 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
     push!(lines, "%% required global data")
-    for header_field in _matlab_header_order_required
-        line = "mgc.$(header_field) = $(data[header_field]);"
-        if haskey(_units[units], header_field)
-            line = "$line  % $(_units[units][header_field])"
+    for param in _matlab_global_params_order_required
+        line = "mgc.$(param) = $(data[param]);"
+        if haskey(_units[units], param)
+            line = "$line  % $(_units[units][param])"
         end
 
         push!(lines, line)
@@ -571,21 +571,22 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "mgc.units = \"$units\";")
     push!(lines, "")
 
-    if any(haskey(data, header_field) for header_field in _matlab_header_order_optional)
+    if any(haskey(data, param) for param in _matlab_global_params_order_optional)
         push!(lines, "%% optional global data")
-        for header_field in _matlab_header_order_optional
-            if haskey(data, header_field)
-                if !get(data, "per_unit", false) && header_field in ["base_pressure", "base_flow", "per_unit"]
+        for param in _matlab_global_params_order_optional
+            if haskey(data, param)
+                if !get(data, "per_unit", false) && param in ["base_pressure", "base_flow", "per_unit"]
                     continue
                 else
-                    line = "mgc.$(header_field) = $(data[header_field]);"
+                    line = "mgc.$(param) = $(data[param]);"
 
-                    if haskey(_units[units], header_field)
-                        line = "$line  % $(_units[units][header_field])"
+                    if haskey(_units[units], param)
+                        line = "$line  % $(_units[units][param])"
                     end
+
+                    push!(lines, line)
                 end
             end
-            push!(lines, line)
         end
 
         push!(lines, "")
