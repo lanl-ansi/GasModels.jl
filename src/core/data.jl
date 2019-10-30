@@ -1070,3 +1070,29 @@ function _convert_old_gm!(data::Dict{String,Any})
         end
     end
 end
+
+
+"helper function to quickly convert old json files"
+function _convert_old_json!(path)
+    files = filter(x -> endswith(x, ".json") && !startswith(x, "grail"), readdir(path))
+    for file in files
+        @info file
+        data = GasModels.parse_file("$path/$file")
+        GasModels._convert_old_gm!(data)
+        data["name"] = get(data, "name", file[1:end-5])
+        GasModels.write_matlab!(data, "$path/new_matlab/$(file[1:end-5]).m")
+    end
+end
+
+
+"helper function to quickly convert old matlab files"
+function _convert_old_matlab!(path)
+    files = filter(x -> endswith(x, ".m"), readdir(path))
+    for file in files
+        @info file
+        data = GasModels.parse_file("$path/$file"; skip_correct=true)
+        GasModels._convert_old_gm!(data)
+        data["name"] = get(data, "name", file[1:end-2])
+        GasModels.write_matlab!(data, "$path/new_matlab/$file")
+    end
+end
