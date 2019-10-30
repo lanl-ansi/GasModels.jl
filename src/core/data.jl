@@ -906,3 +906,85 @@ function propagate_topology_status!(data::Dict{String,<:Any})
         end
     end
 end
+
+
+"for converting data types from old gasmodels to new matlab format"
+const _old_gm_matlab_data_map = Dict{String,String}(
+    "junction" => "junction",
+    "compressor" => "compressor",
+    "pipe" => "pipe",
+    "short_pipe" => "short_pipe",
+    "resistor" => "resistor",
+    "control_valve" => "regulator",
+    "valve" => "valve",
+    "consumer" => "receipt",
+    "producer" => "delivery"
+)
+
+
+"for converting data fields from old gasmodels to new matlab format"
+const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
+    "junction"  => Dict(
+        "junction_i" => "id",
+        "pmin" => "pressure_lb",
+        "pmax" => "pressure_ub",
+        "p" => "pressure",
+    ),
+    "compressor" => Dict(
+        "compressor_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction",
+        "c_ratio_min" => "compression_ratio_lb",
+        "c_ratio_max" => "compression_ratio_ub",
+        "power_max" => "power_ub",
+        "qmin" => "flow_lb",
+        "qmax" => "flow_ub",
+    ),
+    "pipe" => Dict(
+        "pipe_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction"
+    ),
+    "short_pipe" => Dict(
+        "short_pipe_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction"
+    ),
+    "resistor" => Dict(
+        "resistor_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction"
+    ),
+    "control_valve" => Dict(
+        "control_valve_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction",
+        "c_ratio_min" => "reduction_factor_lb",
+        "c_ratio_max" => "reduction_factor_ub",
+        "qmin" => "flow_lb",
+        "qmax" => "flow_ub"
+    ),
+    "valve" => Dict(
+        "valve_i" => "id",
+        "f_junction" => "fr_junction",
+        "t_junction" => "to_junction"
+    ),
+    "consumer" => Dict(
+        "consumer_i" => "id",
+        "qlmin" => "flow_lb",
+        "qlmax" => "flow_ub",
+        "ql" => "flow"
+    ),
+    "producer" => Dict(
+        "producer_i" => "id",
+        "qgmin" => "flow_lb",
+        "qgmax" => "flow_ub",
+        "qg" => "flow"
+    )
+)
+
+
+"converts old gasmodels format to new"
+function _convert_old_gm!(data::Dict{String,Any})
+
+end
