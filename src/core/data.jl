@@ -910,15 +910,14 @@ end
 
 "for converting data types from old gasmodels to new matlab format"
 const _old_gm_matlab_data_map = Dict{String,String}(
-    "junction" => "junction",
-    "compressor" => "compressor",
-    "pipe" => "pipe",
-    "short_pipe" => "short_pipe",
-    "resistor" => "resistor",
     "control_valve" => "regulator",
-    "valve" => "valve",
     "consumer" => "receipt",
-    "producer" => "delivery"
+    "producer" => "delivery",
+    "gas_specific_gravity" => "specific_gravity",
+    "gas_molar_mass" => "molar_mass",
+    "baseP" => "base_pressure",
+    "baseF" => "base_flow",
+    "baseQ" => "base_flow"
 )
 
 
@@ -973,13 +972,17 @@ const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
         "consumer_i" => "id",
         "qlmin" => "flow_lb",
         "qlmax" => "flow_ub",
-        "ql" => "flow"
+        "ql" => "flow",
+        "qlfirm" => "flow",
+        "ql_junc" => "junction"
     ),
     "producer" => Dict(
         "producer_i" => "id",
         "qgmin" => "flow_lb",
         "qgmax" => "flow_ub",
-        "qg" => "flow"
+        "qg" => "flow",
+        "qgfirm" => "flow",
+        "qg_junc" => "junction"
     )
 )
 
@@ -987,4 +990,83 @@ const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
 "converts old gasmodels format to new"
 function _convert_old_gm!(data::Dict{String,Any})
 
+    for (comp_type, fields) in _old_gm_matlab_field_map
+        if haskey(data, comp_type)
+            for (i, comp) in data[comp_type]
+                for (old_field, new_field) in fields
+                    # @warn comp_type old_field new_field i comp
+                    if old_field == "$(comp_type)_i" && !haskey(comp, old_field)
+                        comp[new_field] = parse(Int, i)
+                    elseif haskey(comp, old_field)
+                        comp[new_field] = deepcopy(comp[old_field])
+                        delete!(comp, old_field)
+                    end
+                end
+            end
+        end
+    end
+
+    for (old_item, new_item) in _old_gm_matlab_data_map
+        if haskey(data, old_item)
+            # @warn old_item new_item
+            data[new_item] = deepcopy(data[old_item])
+            delete!(data, old_item)
+        end
+    end
+
+    for comp_type in _matlab_data_order
+        if haskey(data, comp_type)
+            for (i, comp) in data[comp_type]
+                comp["index"] = get(comp, "index", parse(Int, i))
+                comp["status"] = get(comp, "status", 1)
+
+                if comp_type == "junction"
+                    comp["type"] = get(comp, "type", 0)
+                    comp["pressure"] = get(comp, "pressure", 0.0)
+                end
+
+                if comp_type in ["delivery", "receipt"]
+                    comp["dispatchable"] = get(comp, "dispatchable", 0)
+                    comp["flow"] = get(comp, "flow", 0.0)
+                end
+
+                if comp_type == "compressor"
+                    comp["flow_lb"] = get(comp, "flow_lb", 0.0)
+                    comp["flow_ub"] = get(comp, "flow_ub", 1.0)  # TODO needs correct value
+                    comp["power_ub"] = get(comp, "power_ub", 1e6)
+                end
+
+                if comp_type == "regulator"
+                    comp["flow_lb"] = get(comp, "flow_lb", 0.0)
+                    comp["flow_ub"] = get(comp, "flow_ub", 1.0)  # TODO needs correct value
+                end
+            end
+        end
+    end
+
+    data["specific_gravity"] = get(data, "specific_gravity", 0.6)
+    data["specific_heat_capacity_ratio"] = get(data, "specific_heat_capacity_ratio", 1.4)
+    data["temperature"] = get(data, "temperature", 273.15)
+    data["compressibility_factor"] = get(data, "compressibility_factor", 0.8)
+    data["R"] = get(data, "R", 8.314)
+    data["sound_speed"] = get(data, "sound_speed", 312.805)
+    data["molar_mass"] = get(data, "molar_mass", 0.0185674)
+
+    for param in _matlab_global_params_order_required
+        if !haskey(data, param)
+            @warn "missing $param"
+        end
+    end
+
+    for (comp_type, fields) in _matlab_field_order
+        if haskey(data, comp_type)
+            for (i, comp) in data[comp_type]
+                for field in fields
+                    if !haskey(comp, field)
+                        @warn "$comp_type $i does not have required field for matlab output $field"
+                    end
+                end
+            end
+        end
+    end
 end
