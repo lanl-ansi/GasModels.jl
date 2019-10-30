@@ -603,13 +603,13 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
                 push!(fields_header, field)
             end
 
-            push!(lines, "% $(join(fields_header, "\t"))")
+            push!(lines, "% $(join(fields_header, "\t\t"))")
 
             push!(lines, "mgc.$data_type = [")
-            idxs = collect(keys(data[data_type]))
+            idxs = [parse(Int, i) for i in keys(data[data_type])]
             if !isempty(idxs)
                 for i in sort(idxs)
-                    push!(lines, "\t$(join([data[data_type][i][field] for field in _matlab_field_order[data_type]], "\t"))")
+                    push!(lines, "\t$(join([data[data_type]["$i"][field] for field in _matlab_field_order[data_type]], "\t\t"))")
                 end
             end
             push!(lines, "];\n")
@@ -626,8 +626,8 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
                 if !isempty(common_ext_cols)
                     push!(lines, "%column_names% $(join(common_ext_cols, "\t"))")
                     push!(lines, "mgc.$(data_type)_data = [")
-                    for i in sort(collect(keys(data[data_type])))
-                        push!(lines, "\t$(join([data[data_type][i][col] for col in sort(common_ext_cols)], "\t"))")
+                    for i in sort([parse(Int, i) for i in keys(data[data_type])])
+                        push!(lines, "\t$(join([data[data_type]["$i"][col] for col in sort(common_ext_cols)], "\t"))")
                     end
                     push!(lines, "];\n")
                 end
