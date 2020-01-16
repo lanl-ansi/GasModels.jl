@@ -14,7 +14,7 @@ end
 
 ### Data and functions specific to the gas Matlab format ###
 
-mlab_data_names = [
+_mlab_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
     "mgc.temperature", "mgc.sound_speed", "mgc.R", 
     "mgc.gas_molar_mass", "mgc.compressibility_factor", 
@@ -25,7 +25,7 @@ mlab_data_names = [
     "mgc.regulator", "mgc.valve", "mgc.storage", "mgc.per_unit"
 ]
 
-mlab_junction_columns = [
+_mlab_junction_columns = [
     ("id", Int),
     ("p_min", Float64), ("p_max", Float64), ("p_nominal", Float64), 
     ("junction_type", Int), 
@@ -36,7 +36,7 @@ mlab_junction_columns = [
     ("lon", Float64)
 ]
 
-mlab_pipe_columns = [
+_mlab_pipe_columns = [
     ("id", Int),
     ("f_junction", Int),
     ("t_junction", Int),
@@ -50,7 +50,7 @@ mlab_pipe_columns = [
     ("num_spatial_discretization_points", Int)
 ]
 
-mlab_compressor_columns = [
+_mlab_compressor_columns = [
     ("id", Int),
     ("f_junction", Int),
     ("t_junction", Int),
@@ -76,7 +76,7 @@ mlab_compressor_columns = [
     ("peak_year", Int)
 ]
 
-mlab_short_pipe_columns = [
+_mlab_short_pipe_columns = [
     ("id", Int), 
     ("f_junction", Int), 
     ("t_junction", Int), 
@@ -85,7 +85,7 @@ mlab_short_pipe_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-mlab_resistor_columns = [
+_mlab_resistor_columns = [
     ("id", Int), 
     ("f_junction", Int), 
     ("t_junction", Int), 
@@ -95,12 +95,12 @@ mlab_resistor_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-mlab_transfer_columns = [
+_mlab_transfer_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
     ("withdrawal_nominal", Float64), 
-    ("dispatchable", Int), 
+    ("is_dispatchable", Int), 
     ("status", Int), 
     ("bid_price", Float64), ("offer_price", Float64), 
     ("exchange_point_name", Union{String, SubString{String}}), 
@@ -111,15 +111,15 @@ mlab_transfer_columns = [
     ("daily_scheduled_flow", Float64)
 ]
 
-mlab_receipt_columns = [
+_mlab_receipt_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("injection_min", Float64), ("injection_max", Float64), 
     ("injection_nominal", Float64), 
-    ("dispatchable", Int), 
+    ("is_dispatchable", Int), 
     ("status", Int), 
     ("offer_price", Float64), 
-    ("receipt_point_name", Union{String, SubString{String}}), 
+    ("name", Union{String, SubString{String}}), 
     ("company_name", Union{String, SubString{String}}), 
     ("daily_scheduled_flow", Float64), 
     ("design_capacity", Float64), 
@@ -128,15 +128,15 @@ mlab_receipt_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-mlab_delivery_columns = [
+_mlab_delivery_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
     ("withdrawal_nominal", Float64), 
-    ("dispatchable", Int), 
+    ("is_dispatchable", Int), 
     ("status", Int), 
     ("bid_price", Float64), 
-    ("delivery_point_name", Union{String, SubString{String}}), 
+    ("name", Union{String, SubString{String}}), 
     ("company_name", Union{String, SubString{String}}), 
     ("daily_scheduled_flow", Float64), 
     ("design_capacity", Float64), 
@@ -145,7 +145,7 @@ mlab_delivery_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-mlab_regulator_columns = [
+_mlab_regulator_columns = [
     ("id", Int), 
     ("f_junction", Int), 
     ("t_junction", Int), 
@@ -159,7 +159,7 @@ mlab_regulator_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-mlab_valve_columns = [
+_mlab_valve_columns = [
     ("id", Int), 
     ("f_junction", Int), 
     ("t_junction", Int), 
@@ -168,7 +168,7 @@ mlab_valve_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-mlab_storage_columns = [
+_mlab_storage_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("pressure_nominal", Float64), 
@@ -176,7 +176,7 @@ mlab_storage_columns = [
     ("flow_withdrawal_rate_min", Float64), ("flow_withdrawal_rate_max", Float64), 
     ("capacity", Float64), 
     ("status", Int), 
-    ("storage_field_name", Union{String, SubString{String}}),
+    ("name", Union{String, SubString{String}}),
     ("owner_name", Union{String, SubString{String}}), 
     ("storage_type", Union{String, SubString{String}}), 
     ("daily_withdrawal_max", Float64), 
@@ -185,31 +185,6 @@ mlab_storage_columns = [
     ("working_gas_capacity", Float64), 
     ("total_field_capacity", Float64), 
     ("edi_id", Union{Int, String, SubString{String}})
-]
-
-# this will be removed later
-mlab_ne_pipe_columns = [
-    ("pipline_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
-    ("diameter", Float64),
-    ("length", Float64),
-    ("friction_factor", Float64),
-    ("status", Int),
-    ("construction_cost", Float64)
-]
-
-# this will be removed later
-mlab_ne_compressor_columns = [
-    ("compressor_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
-    ("c_ratio_min", Float64), ("c_ratio_max", Float64),
-    ("power_max", Float64),
-    ("fmin", Float64),
-    ("fmax", Float64),
-    ("status", Int),
-    ("construction_cost", Float64)
 ]
 
 ""
