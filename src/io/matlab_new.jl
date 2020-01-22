@@ -18,11 +18,14 @@ _mlab_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
     "mgc.temperature", "mgc.sound_speed", "mgc.R", 
     "mgc.gas_molar_mass", "mgc.compressibility_factor", 
-    "mgc.base_pressure", "mgc.base_length", "mgc.base_time", 
-    "mgc.units", "mgc.junction", "mgc.pipe", "mgc.ne_pipe", 
-    "mgc.compressor", "mgc.ne_compressor", "mgc.receipt", 
-    "mgc.delivery", "mgc.transfer", "mgc.short_pipe", "mgc.resistor", 
-    "mgc.regulator", "mgc.valve", "mgc.storage", "mgc.per_unit"
+    "mgc.base_pressure", "mgc.base_length", 
+    "mgc.units", "mgc.is_per_unit", 
+    "mgc.junction", "mgc.pipe", 
+    "mgc.compressor", "mgc.receipt", 
+    "mgc.delivery", "mgc.transfer", 
+    "mgc.short_pipe", "mgc.resistor", 
+    "mgc.regulator", "mgc.valve", 
+    "mgc.storage"
 ]
 
 _mlab_junction_columns = [
