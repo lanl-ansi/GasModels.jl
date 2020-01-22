@@ -248,14 +248,14 @@ function parse_m_string(data_string::String)
         case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
         Memento.warn(_LOGGER, string("no base_pressure found in .m file.
-            This value will be auto assigned based on the pressure limits"))
+            This value will be auto-assigned based on the pressure limits provided in the data"))
     end
 
     if haskey(matlab_data, "mgc.base_length")
         case["base_length"] = matlab_data["mgc.base_length"]
     else
         Memento.warn(_LOGGER, string("no base_length found in .m file.
-            This value will be auto assigned based on the other pipeline data"))
+            This value will be auto-assigned based on the pipe data"))
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
@@ -266,7 +266,13 @@ function parse_m_string(data_string::String)
     end
 
     if haskey(matlab_data, "mgc.units")
-        case["units"] = matlab_data["mgc.units"]
+        if matlab_data["mgc.units"] == 1
+            case["is_si_units"] = true
+            case["is_english_units"] = false
+        else 
+            case["is_english_units"] = true
+            case["is_si_units"] = false
+        end
     else
         Memento.error(_LOGGER, string("no units field found in .m file.
         The file seems to be missing \"mgc.units = ...;\" \n
