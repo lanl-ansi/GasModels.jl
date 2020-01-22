@@ -192,11 +192,11 @@ _mlab_storage_columns = [
 
 ""
 function parse_m_file(file_string::String)
-    mp_data = open(file_string) do io
+    mg_data = open(file_string) do io
         parse_m_file(io)
     end
 
-    return mp_data
+    return mg_data
 end
 
 
@@ -229,10 +229,9 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
-    data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
-    "mgc.compressibility_factor", "mgc.gas_molar_mass",
-    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
-    "mgc.standard_density"]
+    data_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
+        "mgc.temperature", "mgc.sound_speed", "mgc.R", 
+        "mgc.gas_molar_mass", "mgc.compressibility_factor"]
 
     for data_name in data_names
         if haskey(matlab_data, data_name)
@@ -242,26 +241,36 @@ function parse_m_string(data_string::String)
         end
     end
 
-    if haskey(matlab_data, "mgc.baseP")
-        case["baseP"] = matlab_data["mgc.baseP"]
+    "mgc.base_pressure", "mgc.base_length", 
+        "mgc.units", "mgc.is_per_unit"
+
+    if haskey(matlab_data, "mgc.base_pressure")
+        case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
-        Memento.error(_LOGGER, string("no baseP found in .m file.
-            The file seems to be missing \"mgc.baseP = ...\" \n
-            Typical value is a pmin in any of the junction"))
+        Memento.warn(_LOGGER, string("no base_pressure found in .m file.
+            This value will be auto assigned based on the pressure limits"))
     end
 
-    if haskey(matlab_data, "mgc.baseF")
-        case["baseF"] = matlab_data["mgc.baseF"]
+    if haskey(matlab_data, "mgc.base_length")
+        case["base_length"] = matlab_data["mgc.base_length"]
     else
-        Memento.error(_LOGGER, string("no baseF found in .m file.
-            The file seems to be missing \"mgc.baseF = ...\" "))
+        Memento.warn(_LOGGER, string("no base_length found in .m file.
+            This value will be auto assigned based on the other pipeline data"))
     end
 
-    if haskey(matlab_data, "mgc.per_unit")
-        case["per_unit"] = matlab_data["mgc.per_unit"] == 1 ? true : false
+    if haskey(matlab_data, "mgc.is_per_unit")
+        case["is_per_unit"] = matlab_data["mgc.per_unit"] == 1 ? true : false
     else
-        Memento.error(_LOGGER, string("no per_unit found in .m file.
-            The file seems to be missing \"mgc.per_unit = ...\" "))
+        Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
+            Auto assigning a value of 0 (false) for the is_per_unit field"))
+    end
+
+    if haskey(matlab_data, "mgc.units")
+        case["units"] = matlab_data["mgc.units"]
+    else
+        Memento.error(_LOGGER, string("no units field found in .m file.
+        The file seems to be missing \"mgc.units = ...;\" \n
+        Possible values are 1 (SI) or 2 (English units)"))
     end
 
     if haskey(matlab_data, "mgc.junction")
