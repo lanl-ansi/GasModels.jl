@@ -10,7 +10,7 @@ mgc.compressibility_factor = 1;
 mgc.base_pressure = 3000000; % all base values are in same units as specified by units field
 mgc.base_length = 5000; % all base values are in same units as specified by units field
 mgc.units = 1;
-mgc.per_unit = 0;
+mgc.is_per_unit = 0;
 mgc.economic_weighting = 0.95;
 
 
