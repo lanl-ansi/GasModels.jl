@@ -4,17 +4,17 @@
 #                                                                   #
 #####################################################################
 
-"Parses the matlab gas data from either a filename or an IO object"
-function parse_matlab(file::Union{IO, String})
-    mlab_data = parse_m_file(file)
-    gm_data = _matlab_to_gasmodels(mlab_data)
+"Parses the matgas data from either a filename or an IO object"
+function parse_matgas(file::Union{IO, String})
+    mg_data = parse_m_file(file)
+    gm_data = _matgas_to_gasmodels(mg_data)
     return gm_data
 end
 
 
-### Data and functions specific to the gas Matlab format ###
+### Data and functions specific to the matgas format ###
 
-_mlab_data_names = [
+_mg_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
     "mgc.temperature", "mgc.sound_speed", "mgc.R", 
     "mgc.gas_molar_mass", "mgc.compressibility_factor", 
@@ -28,7 +28,7 @@ _mlab_data_names = [
     "mgc.storage"
 ]
 
-_mlab_junction_columns = [
+_mg_junction_columns = [
     ("id", Int),
     ("p_min", Float64), ("p_max", Float64), ("p_nominal", Float64), 
     ("junction_type", Int), 
@@ -39,10 +39,10 @@ _mlab_junction_columns = [
     ("lon", Float64)
 ]
 
-_mlab_pipe_columns = [
+_mg_pipe_columns = [
     ("id", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("diameter", Float64),
     ("length", Float64),
     ("friction_factor", Float64),
@@ -53,10 +53,10 @@ _mlab_pipe_columns = [
     ("num_spatial_discretization_points", Int)
 ]
 
-_mlab_compressor_columns = [
+_mg_compressor_columns = [
     ("id", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("c_ratio_min", Float64), ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("flow_min", Float64), ("flow_max", Float64),
@@ -79,26 +79,26 @@ _mlab_compressor_columns = [
     ("peak_year", Int)
 ]
 
-_mlab_short_pipe_columns = [
+_mg_short_pipe_columns = [
     ("id", Int), 
-    ("f_junction", Int), 
-    ("t_junction", Int), 
+    ("fr_junction", Int), 
+    ("to_junction", Int), 
     ("status", Int), 
     ("is_bidirectional", Int), 
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mlab_resistor_columns = [
+_mg_resistor_columns = [
     ("id", Int), 
-    ("f_junction", Int), 
-    ("t_junction", Int), 
+    ("fr_junction", Int), 
+    ("to_junction", Int), 
     ("drag", Float64), 
     ("status", Int), 
     ("is_bidirectional", Int), 
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mlab_transfer_columns = [
+_mg_transfer_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
@@ -114,7 +114,7 @@ _mlab_transfer_columns = [
     ("daily_scheduled_flow", Float64)
 ]
 
-_mlab_receipt_columns = [
+_mg_receipt_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("injection_min", Float64), ("injection_max", Float64), 
@@ -131,7 +131,7 @@ _mlab_receipt_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-_mlab_delivery_columns = [
+_mg_delivery_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
@@ -148,10 +148,10 @@ _mlab_delivery_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-_mlab_regulator_columns = [
+_mg_regulator_columns = [
     ("id", Int), 
-    ("f_junction", Int), 
-    ("t_junction", Int), 
+    ("fr_junction", Int), 
+    ("to_junction", Int), 
     ("reduction_factor_min", Float64), ("reduction_factor_max", Float64),
     ("flow_min", Float64), ("flow_max", Float64), 
     ("status", Int), 
@@ -162,16 +162,16 @@ _mlab_regulator_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mlab_valve_columns = [
+_mg_valve_columns = [
     ("id", Int), 
-    ("f_junction", Int), 
-    ("t_junction", Int), 
+    ("fr_junction", Int), 
+    ("to_junction", Int), 
     ("status", Int), 
     ("flow_coefficient", Float64), 
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mlab_storage_columns = [
+_mg_storage_columns = [
     ("id", Int), 
     ("junction_id", Int), 
     ("pressure_nominal", Float64), 
@@ -241,9 +241,6 @@ function parse_m_string(data_string::String)
         end
     end
 
-    "mgc.base_pressure", "mgc.base_length", 
-        "mgc.units", "mgc.is_per_unit"
-
     if haskey(matlab_data, "mgc.base_pressure")
         case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
@@ -282,7 +279,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction")
         junctions = []
         for junction_row in matlab_data["mgc.junction"]
-            junction_data = InfrastructureModels.row_to_typed_dict(junction_row, mlab_junction_columns)
+            junction_data = InfrastructureModels.row_to_typed_dict(junction_row, _mg_junction_columns)
             junction_data["index"] = InfrastructureModels.check_type(Int, junction_row[1])
             push!(junctions, junction_data)
         end
@@ -295,7 +292,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.pipe")
         pipes = []
         for pipe_row in matlab_data["mgc.pipe"]
-            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, mlab_pipe_columns)
+            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, _mg_pipe_columns)
             pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
             push!(pipes, pipe_data)
         end
@@ -305,20 +302,10 @@ function parse_m_string(data_string::String)
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
-    if haskey(matlab_data, "mgc.ne_pipe")
-        ne_pipes = []
-        for pipe_row in matlab_data["mgc.ne_pipe"]
-            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, mlab_ne_pipe_columns)
-            pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
-            push!(ne_pipes, pipe_data)
-        end
-        case["ne_pipe"] = ne_pipes
-    end
-
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_compressor_columns)
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, _mg_compressor_columns)
             compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(compressors, compressor_data)
         end
@@ -328,55 +315,89 @@ function parse_m_string(data_string::String)
             The file seems to be missing \"mgc.compressor = [...];\""))
     end
 
-    if haskey(matlab_data, "mgc.ne_compressor")
-        ne_compressors = []
-        for compressor_row in matlab_data["mgc.ne_compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_ne_compressor_columns)
-            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
-            push!(ne_compressors, compressor_data)
+    if haskey(matlab_data, "mgc.short_pipe")
+        short_pipes = []
+        for short_pipe_row in matlab_data["mgc.short_pipe"]
+            short_pipe_data = InfrastructureModels.row_to_typed_dict(short_pipe_row, _mg_short_pipe_columns)
+            short_pipe_data["index"] = InfrastructureModels.check_type(Int, short_pipe_row[1])
+            push!(short_pipes, short_pipe_data)
         end
-        case["ne_compressor"] = ne_compressors
+        case["short_pipe"] = short_pipes
     end
 
-    if haskey(matlab_data, "mgc.producer")
-        producers = []
-        for producer_row in matlab_data["mgc.producer"]
-            producer_data = InfrastructureModels.row_to_typed_dict(producer_row, mlab_producer_columns)
-            producer_data["index"] = InfrastructureModels.check_type(Int, producer_row[1])
-            push!(producers, producer_data)
+    if haskey(matlab_data, "mgc.resistor")
+        resistors = []
+        for resistor_row in matlab_data["mgc.resistor"]
+            resistor_data = InfrastructureModels.row_to_typed_dict(resistor_row, _mg_resistor_columns)
+            resistor_data["index"] = InfrastructureModels.check_type(Int, resistor_row[1])
+            push!(resistors, resistor_data)
         end
-        case["producer"] = producers
+        case["resistor"] = resistors
     end
 
-    if haskey(matlab_data, "mgc.consumer")
-        consumers = []
-        for consumer_row in matlab_data["mgc.consumer"]
-            consumer_data = InfrastructureModels.row_to_typed_dict(consumer_row, mlab_consumer_columns)
-            consumer_data["index"] = InfrastructureModels.check_type(Int, consumer_row[1])
-            push!(consumers, consumer_data)
+    if haskey(matlab_data, "mgc.transfer")
+        transfers = []
+        for transfer_row in matlab_data["mgc.transfer"]
+            transfer_data = InfrastructureModels.row_to_typed_dict(transfer_row, _mg_transfer_columns)
+            transfer_data["index"] = InfrastructureModels.check_type(Int, transfer_row[1])
+            push!(transfers, transfer_data)
         end
-        case["consumer"] = consumers
+        case["transfer"] = transfers
     end
 
-    if haskey(matlab_data, "mgc.junction_name")
-        junction_names = []
-        for (i, junction_name_row) in enumerate(matlab_data["mgc.junction_name"])
-            junction_name_data = InfrastructureModels.row_to_typed_dict(junction_name_row, mlab_junction_name_columns)
-            junction_name_data["index"] = i
-            push!(junction_names, junction_name_data)
+    if haskey(matlab_data, "mgc.receipt")
+        receipts = []
+        for receipt_row in matlab_data["mgc.receipt"]
+            receipt_data = InfrastructureModels.row_to_typed_dict(receipt_row, _mg_receipt_columns)
+            receipt_data["index"] = InfrastructureModels.check_type(Int, receipt_row[1])
+            push!(receipts, receipt_data)
         end
-        case["junction_name"] = junction_names
+        case["receipt"] = receipts
+    end
 
-        if length(case["junction_name"]) != length(case["junction"])
-            Memento.error(_LOGGER, "incorrect .m file, the number of junction names
-                ($(length(case["junction_name"]))) is inconsistent with
-                the number of junctions ($(length(case["junction"]))).\n")
+    if haskey(matlab_data, "mgc.delivery")
+        deliveries = []
+        for delivery_row in matlab_data["mgc.delivery"]
+            delivery_data = InfrastructureModels.row_to_typed_dict(delivery_row, _mg_delivery_columns)
+            delivery_data["index"] = InfrastructureModels.check_type(Int, delivery_row[1])
+            push!(deliveries, delivery_data)
         end
+        case["delivery"] = deliveries
+    end
+
+    if haskey(matlab_data, "mgc.regulator")
+        regulators = []
+        for regulator_row in matlab_data["mgc.regulator"]
+            regulator_data = InfrastructureModels.row_to_typed_dict(regulator_row, _mg_regulator_columns)
+            regulator_data["index"] = InfrastructureModels.check_type(Int, regulator_row[1])
+            push!(regulators, regulator_data)
+        end
+        case["regulator"] = regulators
+    end
+
+    if haskey(matlab_data, "mgc.valve")
+        valves = []
+        for valve_row in matlab_data["mgc.valve"]
+            valve_data = InfrastructureModels.row_to_typed_dict(valve_row, _mg_valve_columns)
+            valve_data["index"] = InfrastructureModels.check_type(Int, valve_row[1])
+            push!(regulators, valve_data)
+        end
+        case["valve"] = valves
+    end
+
+    if haskey(matlab_data, "mgc.storage")
+        storages = []
+        for storage_row in matlab_data["mgc.storage"]
+            storage_data = InfrastructureModels.row_to_typed_dict(storage_row, _mg_storage_columns)
+            storage_data["index"] = InfrastructureModels.check_type(Int, storage_row[1])
+            push!(regulators, storage_data)
+        end
+        case["storage"] = storages
     end
 
 
     for k in keys(matlab_data)
-        if !in(k, mlab_data_names) && startswith(k, "mgc.")
+        if !in(k, mg_data_names) && startswith(k, "mgc.")
             case_name = k[5:length(k)]
             value = matlab_data[k]
             if isa(value, Array)
@@ -405,10 +426,10 @@ end
 ### Data and functions specific to GasModel format ###
 
 """
-Converts a Matlab dict into a PowerModels dict
+Converts a matgas dict into a PowerModels dict
 """
-function _matlab_to_gasmodels(mlab_data::Dict{String,Any})
-    gm_data = deepcopy(mlab_data)
+function _matgas_to_gasmodels(mg_data::Dict{String,Any})
+    gm_data = deepcopy(mg_data)
 
     if !haskey(gm_data, "connection")
         gm_data["connection"] = []
@@ -418,11 +439,11 @@ function _matlab_to_gasmodels(mlab_data::Dict{String,Any})
     end
 
     # translate component models
-    _mlab2gm_baseQ!(gm_data)
-    _mlab2gm_producer!(gm_data)
-    _mlab2gm_consumer!(gm_data)
-    _mlab2gm_conmpressor!(gm_data)
-    _mlab2gm_ne_compressor!(gm_data)
+    _mg2gm_baseQ!(gm_data)
+    _mg2gm_producer!(gm_data)
+    _mg2gm_consumer!(gm_data)
+    _mg2gm_conmpressor!(gm_data)
+    _mg2gm_ne_compressor!(gm_data)
 
     # merge data tables
     _merge_junction_name_data!(gm_data)
@@ -435,13 +456,13 @@ function _matlab_to_gasmodels(mlab_data::Dict{String,Any})
 end
 
 "adds baseQ to the gas models data"
-function _mlab2gm_baseQ!(data::Dict{String,Any})
+function _mg2gm_baseQ!(data::Dict{String,Any})
     data["baseQ"] = data["baseF"] / data["standard_density"]
     delete!(data, "baseF")
 end
 
 "adds the volumetric firm and flexible flows for the producers"
-function _mlab2gm_producer!(data::Dict{String,Any})
+function _mg2gm_producer!(data::Dict{String,Any})
     producers = [producer for producer in data["producer"]]
     for producer in producers
         producer["qg_junc"] = producer["junction"]
@@ -455,7 +476,7 @@ function _mlab2gm_producer!(data::Dict{String,Any})
 end
 
 "adds the volumetric firm and flexible flows for the consumers"
-function _mlab2gm_consumer!(data::Dict{String,Any})
+function _mg2gm_consumer!(data::Dict{String,Any})
     consumers = [consumer for consumer in data["consumer"]]
     for consumer in consumers
         consumer["ql_junc"] = consumer["junction"]
@@ -469,7 +490,7 @@ function _mlab2gm_consumer!(data::Dict{String,Any})
 end
 
 "converts compressor q values to f"
-function _mlab2gm_conmpressor!(data::Dict{String,Any})
+function _mg2gm_conmpressor!(data::Dict{String,Any})
     compressors = [compressor for compressor in data["compressor"]]
     for compressor in compressors
         compressor["qmin"] = compressor["fmin"] * data["standard_density"]
@@ -480,7 +501,7 @@ function _mlab2gm_conmpressor!(data::Dict{String,Any})
 end
 
 "converts ne_compressor q values to f"
-function _mlab2gm_ne_compressor!(data::Dict{String,Any})
+function _mg2gm_ne_compressor!(data::Dict{String,Any})
     if (haskey(data, "ne_compressor"))
         compressors = [compressor for compressor in data["ne_compressor"]]
         for compressor in compressors
@@ -511,34 +532,34 @@ end
 
 "merges Matlab tables based on the table extension syntax"
 function _merge_generic_data!(data::Dict{String,Any})
-    mlab_matrix_names = [name[5:length(name)] for name in mlab_data_names]
+    mg_matrix_names = [name[5:length(name)] for name in mg_data_names]
 
     key_to_delete = []
     for (k,v) in data
         if isa(v, Array)
-            for mlab_name in mlab_matrix_names
-                if startswith(k, "$(mlab_name)_")
-                    mlab_matrix = data[mlab_name]
+            for mg_name in mg_matrix_names
+                if startswith(k, "$(mg_name)_")
+                    mg_matrix = data[mg_name]
                     push!(key_to_delete, k)
 
-                    if length(mlab_matrix) != length(v)
-                        Memento.error(_LOGGER,"failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mlab_matrix)) and $(length(v)) respectively.")
+                    if length(mg_matrix) != length(v)
+                        Memento.error(_LOGGER,"failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
                     end
 
-                    Memento.info(_LOGGER,"extending matlab format by appending matrix \"$(k)\" in to \"$(mlab_name)\"")
+                    Memento.info(_LOGGER,"extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
 
-                    for (i, row) in enumerate(mlab_matrix)
+                    for (i, row) in enumerate(mg_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end
                     end
 
-                    break # out of mlab_matrix_names loop
+                    break # out of mg_matrix_names loop
                 end
             end
 
