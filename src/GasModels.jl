@@ -27,6 +27,7 @@ module GasModels
     include("io/common.jl")
     include("io/grail.jl")
     include("io/matlab.jl")
+    include("io/matlab_new.jl")
 
     include("core/base.jl")
     include("core/types.jl")

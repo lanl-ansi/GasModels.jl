@@ -59,7 +59,7 @@ mgc.receipt = [
 
 %% delivery
 % id junction_id withdrawal_min withdrawal_max withdrawal_nominal is_dispatchable status bid_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
-mgc.consumer = [
+mgc.delivery = [
 1    2    0 1.0  0  0  1  0
 2    3    0 2.0  0  0  1  0
 3    4    0 1.5  0  0  1  0

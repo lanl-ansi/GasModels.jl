@@ -256,7 +256,7 @@ function parse_m_string(data_string::String)
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
-        case["is_per_unit"] = matlab_data["mgc.per_unit"] == 1 ? true : false
+        case["is_per_unit"] = matlab_data["mgc.is_per_unit"] == 1 ? true : false
     else
         Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the is_per_unit field"))
@@ -397,7 +397,7 @@ function parse_m_string(data_string::String)
 
 
     for k in keys(matlab_data)
-        if !in(k, mg_data_names) && startswith(k, "mgc.")
+        if !in(k, _mg_data_names) && startswith(k, "mgc.")
             case_name = k[5:length(k)]
             value = matlab_data[k]
             if isa(value, Array)
@@ -431,22 +431,11 @@ Converts a matgas dict into a PowerModels dict
 function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     gm_data = deepcopy(mg_data)
 
-    if !haskey(gm_data, "connection")
-        gm_data["connection"] = []
-    end
     if !haskey(gm_data, "multinetwork")
         gm_data["multinetwork"] = false
     end
 
     # translate component models
-    _mg2gm_baseQ!(gm_data)
-    _mg2gm_producer!(gm_data)
-    _mg2gm_consumer!(gm_data)
-    _mg2gm_conmpressor!(gm_data)
-    _mg2gm_ne_compressor!(gm_data)
-
-    # merge data tables
-    _merge_junction_name_data!(gm_data)
     _merge_generic_data!(gm_data)
 
     # use once available
@@ -455,84 +444,9 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     return gm_data
 end
 
-"adds baseQ to the gas models data"
-function _mg2gm_baseQ!(data::Dict{String,Any})
-    data["baseQ"] = data["baseF"] / data["standard_density"]
-    delete!(data, "baseF")
-end
-
-"adds the volumetric firm and flexible flows for the producers"
-function _mg2gm_producer!(data::Dict{String,Any})
-    producers = [producer for producer in data["producer"]]
-    for producer in producers
-        producer["qg_junc"] = producer["junction"]
-        producer["qgmin"]  = producer["fg_min"] / data["standard_density"]
-        producer["qgmax"]  = producer["fg_max"] / data["standard_density"]
-        producer["qg"]     = producer["fg"] / data["standard_density"]
-        delete!(producer, "fg")
-        delete!(producer, "fg_min")
-        delete!(producer, "fg_max")
-    end
-end
-
-"adds the volumetric firm and flexible flows for the consumers"
-function _mg2gm_consumer!(data::Dict{String,Any})
-    consumers = [consumer for consumer in data["consumer"]]
-    for consumer in consumers
-        consumer["ql_junc"] = consumer["junction"]
-
-        consumer["qlmin"] = 0
-        consumer["qlmax"] = consumer["fd"] / data["standard_density"]
-        consumer["ql"] = consumer["fd"] / data["standard_density"]
-
-        delete!(consumer, "fd")
-    end
-end
-
-"converts compressor q values to f"
-function _mg2gm_conmpressor!(data::Dict{String,Any})
-    compressors = [compressor for compressor in data["compressor"]]
-    for compressor in compressors
-        compressor["qmin"] = compressor["fmin"] * data["standard_density"]
-        compressor["qmax"] = compressor["fmax"] * data["standard_density"]
-        delete!(compressor, "fmin")
-        delete!(compressor, "fmax")
-    end
-end
-
-"converts ne_compressor q values to f"
-function _mg2gm_ne_compressor!(data::Dict{String,Any})
-    if (haskey(data, "ne_compressor"))
-        compressors = [compressor for compressor in data["ne_compressor"]]
-        for compressor in compressors
-            compressor["qmin"] = compressor["fmin"] * data["standard_density"]
-            compressor["qmax"] = compressor["fmax"] * data["standard_density"]
-            delete!(compressor, "fmin")
-            delete!(compressor, "fmax")
-        end
-    end
-end
-
-"merges junction name data into junctions, if names exist"
-function _merge_junction_name_data!(data::Dict{String,Any})
-    if haskey(data, "junction_name")
-        # can assume same length is same as junction
-        # this is validated during .m file parsing
-        for (i, junction_name) in enumerate(data["junction_name"])
-            junction = data["junction"][i]
-            delete!(junction_name, "index")
-
-            check_keys(junction, keys(junction_name))
-            merge!(junction, junction_name)
-        end
-        delete!(data, "junction_name")
-    end
-end
-
-
 "merges Matlab tables based on the table extension syntax"
 function _merge_generic_data!(data::Dict{String,Any})
-    mg_matrix_names = [name[5:length(name)] for name in mg_data_names]
+    mg_matrix_names = [name[5:length(name)] for name in _mg_data_names]
 
     key_to_delete = []
     for (k,v) in data
@@ -587,17 +501,17 @@ const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "res
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
-    "junction"      => ["id", "type", "pressure_lb", "pressure_ub", "pressure", "status"],
-    "pipe"          => ["id", "fr_junction", "to_junction", "diameter", "length", "friction_factor", "status"],
-    "compressor"    => ["id", "fr_junction", "to_junction", "compression_ratio_lb", "compression_ratio_ub", "power_ub", "flow_lb", "flow_ub", "status"],
-    "short_pipe"    => ["id", "fr_junction", "to_junction", "status"],
-    "resistor"      => ["id", "fr_junction", "to_junction", "drag", "status"],
-    "regulator"     => ["id", "fr_junction", "to_junction", "reduction_factor_lb", "reduction_factor_ub", "flow_lb", "flow_ub", "status"],
-    "valve"         => ["id", "fr_junction", "to_junction", "status"],
-    "receipt"       => ["id", "junction", "flow_lb", "flow_ub", "flow", "dispatchable", "status"],
-    "delivery"      => ["id", "junction", "flow_lb", "flow_ub", "flow", "dispatchable", "status"],
-    "transfer"      => ["id", "junction", "flow_lb", "flow_ub", "flow", "dispatchable", "status"],
-    "storage"       => ["id", "junction", "pressure", "compression_ratio_ub", "power_ub", "flow_injection_lb", "flow_injection_ub", "flow_withdrawl_lb", "flow_withdrawl_ub", "capacity", "status"]
+    "junction"      => [entry[1] for entry in _mg_junction_columns],
+    "pipe"          => [entry[1] for entry in _mg_pipe_columns],
+    "compressor"    => [entry[1] for entry in _mg_compressor_columns],
+    "short_pipe"    => [entry[1] for entry in _mg_short_pipe_columns],
+    "resistor"      => [entry[1] for entry in _mg_resistor_columns],
+    "regulator"     => [entry[1] for entry in _mg_regulator_columns],
+    "valve"         => [entry[1] for entry in _mg_valve_columns],
+    "receipt"       => [entry[1] for entry in _mg_receipt_columns],
+    "delivery"      => [entry[1] for entry in _mg_delivery_columns],
+    "transfer"      => [entry[1] for entry in _mg_transfer_columns],
+    "storage"       => [entry[1] for entry in _mg_storage_columns]
 )
 
 
