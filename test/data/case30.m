@@ -1,4 +1,4 @@
-function mgc = model6_new_format
+function mgc = model30_new_format
 
 mgc.gas_specific_gravity = 0.6;
 mgc.specific_heat_capacity_ratio = 1.4;
@@ -17,21 +17,65 @@ mgc.economic_weighting = 0.95;
 %% junction data
 % id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon 
 mgc.junction = [
-1	3000000	6000000 4000000 1  1    'synthetic6'  1  -0.6550  0
-2	3000000	6000000 3000000	0  1    'synthetic6'  2  -0.0421  0
-3	3000000	6000000 3000000	0  1	'synthetic6'  3  0.6400   0.5
-4	3000000	6000000 3000000	0  1	'synthetic6'  4  0.9600   -0.5
-5	3000000	6000000 3000000	0  1	'synthetic6'  5  -0.6050  0  
-6	3000000	6000000 3000000	0  1	'synthetic6'  6  -0.0021  -0.04
+1   3447378.645 5515805.832 3447378.645 1  1    'synthetic30'  1    0.8714  -0.755
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
 ];
 
 %% pipeline data
 % id f_junction t_junction diameter length friction_factor p_min p_max status is_bidirectional pipeline_name num_spatial_discretization_points
 mgc.pipe = [
-1	5	2	0.6	50000	0.01	3000000	6000000	1  1  'synthetic6'  1
-2	2	3	0.6	80000	0.01	3000000	6000000	1  1  'synthetic6'  1
-3	6	4	0.6	80000	0.01	3000000	6000000	1  1  'synthetic6'  1
-4	3	4	0.3	80000	0.01	3000000	6000000	1  1  'synthetic6'  1
+1   26  2	0.9144	100000	0.01    3447378.645 5515805.832	1  1  'synthetic30'  1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
 ];
 
 %% compressor data
