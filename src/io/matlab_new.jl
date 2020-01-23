@@ -229,6 +229,7 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
+    # split to mandatory and non-mandatory
     data_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
         "mgc.temperature", "mgc.sound_speed", "mgc.R", 
         "mgc.gas_molar_mass", "mgc.compressibility_factor"]
@@ -696,8 +697,8 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
 
         push!(lines, line)
     end
-    push!(lines, "mgc.units = \"$units\";")
-    push!(lines, "")
+    # push!(lines, "mgc.units = \"$units\";")
+    # push!(lines, "")
 
     if any(haskey(data, param) for param in _matlab_global_params_order_optional)
         push!(lines, "%% optional global data")
