@@ -26,7 +26,7 @@ mgc.junction = [
 ];
 
 %% pipeline data
-% id f_junction t_junction diameter length friction_factor p_min p_max status is_bidirectional pipeline_name num_spatial_discretization_points
+% id fr_junction t_junction diameter length friction_factor p_min p_max status is_bidirectional pipeline_name num_spatial_discretization_points
 mgc.pipe = [
 1	5	2	0.6	50000	0.01	3000000	6000000	1  1  'synthetic6'  1
 2	2	3	0.6	80000	0.01	3000000	6000000	1  1  'synthetic6'  1
@@ -35,7 +35,7 @@ mgc.pipe = [
 ];
 
 %% compressor data
-% id f_junction t_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name total_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volume design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
+% id fr_junction t_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name total_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volume design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
 mgc.compressor = [
 1	1	5	1	1.40    3000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
 2	2	6	1	1.35	2000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
