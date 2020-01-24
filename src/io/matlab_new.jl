@@ -16,8 +16,7 @@ end
 
 _mg_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
-    "mgc.temperature", "mgc.sound_speed", "mgc.R", 
-    "mgc.gas_molar_mass", "mgc.compressibility_factor", 
+    "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R", 
     "mgc.base_pressure", "mgc.base_length", 
     "mgc.units", "mgc.is_per_unit", 
     "mgc.junction", "mgc.pipe", 
@@ -229,12 +228,12 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
-    # split to mandatory and non-mandatory
-    data_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
-        "mgc.temperature", "mgc.sound_speed", "mgc.R", 
-        "mgc.gas_molar_mass", "mgc.compressibility_factor"]
+    required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
+    
+    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit"]
 
-    for data_name in data_names
+    for data_name in required_metadata_names
+        (data_name == "mgc.units") && (continue)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
@@ -242,6 +241,22 @@ function parse_m_string(data_string::String)
         end
     end
 
+    if haskey(matlab_data, "mgc.units") 
+        case["units"] = matlab_data["mgc.units"]
+        if matlab_data["mgc.units"] == "si"
+            case["is_si_units"] = 1
+            case["is_english_units"] = 0
+        else 
+            case["is_english_units"] = 1
+            case["is_si_units"] = 0
+        end
+    else
+        Memento.error(_LOGGER, string("no units field found in .m file.
+        The file seems to be missing \"mgc.units = ...;\" \n
+        Possible values are 1 (SI) or 2 (English units)"))
+    end
+
+    # handling optional meta data names
     if haskey(matlab_data, "mgc.base_pressure")
         case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
@@ -257,24 +272,28 @@ function parse_m_string(data_string::String)
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
-        case["is_per_unit"] = matlab_data["mgc.is_per_unit"] == 1 ? true : false
+        case["is_per_unit"] = matlab_data["mgc.is_per_unit"]
     else
         Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the is_per_unit field"))
+        case["is_per_unit"] = 0
     end
 
-    if haskey(matlab_data, "mgc.units")
-        if matlab_data["mgc.units"] == 1
-            case["is_si_units"] = true
-            case["is_english_units"] = false
-        else 
-            case["is_english_units"] = true
-            case["is_si_units"] = false
-        end
+    if haskey(matlab_data, "mgc.R")
+        case["R"] = matlab_data["mgc.R"]
+    else 
+        case["R"] = 8.314
+    end
+
+    if haskey(matlab_data, "mgc.sound_speed")
+        case["sound_speed"] = matlab_data["mgc.sound_speed"]
     else
-        Memento.error(_LOGGER, string("no units field found in .m file.
-        The file seems to be missing \"mgc.units = ...;\" \n
-        Possible values are 1 (SI) or 2 (English units)"))
+        # v = sqrt(gamma * R * T / M) 
+        molecular_mass_of_air = 0.02896 # kg/mol
+        gamma = case["specific_heat_capacity_ratio"] 
+        T = case["temperature"] # K
+        R = case["R"] # J/mol/K
+        case["sound_speed"] = round(sqrt(gamma * R * T / molecular_mass_of_air), digits=3) # m/s 
     end
 
     if haskey(matlab_data, "mgc.junction")
@@ -517,18 +536,13 @@ const _matlab_field_order = Dict{String,Array}(
 
 
 "order of required global parameters"
-const _matlab_global_params_order_required = ["specific_gravity", "specific_heat_capacity_ratio", "temperature", "compressibility_factor", "R", "sound_speed", "molar_mass"]
+const _matlab_global_params_order_required = ["gas_specific_gravity", "specific_heat_capacity_ratio", "temperature", "compressibility_factor"]
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["standard_density", "base_pressure", "base_flow", "per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
 
-
-"fields that are unitless when per_unit == true"
-const _per_unit_fields = ["pressure", "pressure_lb", "pressure_ub", "flow_lb", "flow_ub", "flow", "flow_injection_lb", "flow_injection_ub", "flow_withdrawl_lb", "flow_withdrawl_ub"]
-
-
-"list of units of data fields for si and english"
+"list of units of meta data fields"
 const _units = Dict{String,Dict{String,String}}(
     "si" => Dict{String,String}(
         "specific_gravity" => "unitless",
@@ -537,69 +551,24 @@ const _units = Dict{String,Dict{String,String}}(
         "compressibility_factor" => "unitless",
         "R" => "J/(mol K)",
         "sound_speed" => "m/s",
-        "molar_mass" => "kg/mol",
-        "standard_density" => "kg/m^3",
         "base_pressure" => "Pa",
-        "base_flow" => "kg/s",
-        "pressure_lb" => "Pa",
-        "pressure_ub" => "Pa",
-        "pressure" => "Pa",
-        "diameter" => "m",
-        "length" => "m",
-        "friction_factor" => "unitless",
-        "compression_ratio_lb" => "unitless",
-        "compression_ratio_ub" => "unitless",
-        "power_ub" => "W",
-        "flow_lb" => "kg/s",
-        "flow_ub" => "kg/s",
-        "flow_injection_lb" => "kg/s",
-        "flow_injection_ub" => "kg/s",
-        "flow_withdrawl_lb" => "kg/s",
-        "flow_withdrawl_ub" => "kg/s",
-        "flow" => "kg/s",
-        "drag" => "unitless",
-        "reduction_factor_lb" => "unitless",
-        "reduction_factor_ub" => "unitless",
-        "capacity" => "m^3"
+        "base_length" => "m",
     ),
     "english" => Dict{String,String}(
         "specific_gravity" => "unitless",
         "specific_heat_capacity_ratio" => "unitless",
-        "temperature" => "deg. C",
+        "temperature" => "K",
         "compressibility_factor" => "unitless",
-        "R" => "?",
-        "sound_speed" => "mph",
-        "molar_mass" => "kg/mol",
-        "standard_density" => "kg/m^3",
+        "R" => "J/(mol K)",
+        "sound_speed" => "m/s",
         "base_pressure" => "psi",
-        "base_flow" => "mmscfd",
-        "units" => "english",
-        "pressure_lb" => "psi",
-        "pressure_ub" => "psi",
-        "pressure" => "psi",
-        "diameter" => "inches",
-        "length" => "miles",
-        "friction_factor" => "unitless",
-        "compression_ratio_lb" => "unitless",
-        "compression_ratio_ub" => "unitless",
-        "power_ub" => "hp",
-        "flow_lb" => "mmscfd",
-        "flow_ub" => "mmscfd",
-        "flow_injection_lb" => "mmscfd",
-        "flow_injection_ub" => "mmscfd",
-        "flow_withdrawl_lb" => "mmscfd",
-        "flow_withdrawl_ub" => "mmscfd",
-        "flow" => "mmscfd",
-        "drag" => "unitless",
-        "reduction_factor_lb" => "unitless",
-        "reduction_factor_ub" => "unitless",
-        "capacity" => "mmscf"
+        "base_length" => "miles",
     )
 )
 
-
 "write to matlab"
 function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
+    (data["is_english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
     push!(lines, "%% required global data")
@@ -611,48 +580,50 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
 
         push!(lines, line)
     end
-    # push!(lines, "mgc.units = \"$units\";")
-    # push!(lines, "")
+    push!(lines, "mgc.units = \'$units\';")
+    push!(lines, "")
 
-    if any(haskey(data, param) for param in _matlab_global_params_order_optional)
-        push!(lines, "%% optional global data")
-        for param in _matlab_global_params_order_optional
-            if haskey(data, param)
-                if !get(data, "per_unit", false) && param in ["base_pressure", "base_flow", "per_unit"]
-                    continue
-                else
-                    line = "mgc.$(param) = $(data[param]);"
-
-                    if haskey(_units[units], param)
-                        line = "$line  % $(_units[units][param])"
-                    end
-
-                    push!(lines, line)
-                end
-            end
+    push!(lines, "%% optional global data (that was either provided or computed based on required global data)")
+    for param in _matlab_global_params_order_optional
+        line = "mgc.$(param) = $(data[param]);"
+        if haskey(_units[units], param)
+            line = "$line  % $(_units[units][param])"
         end
 
-        push!(lines, "")
+        push!(lines, line)
     end
-
+    push!(lines, "")
+    
     for data_type in _matlab_data_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
             fields_header = []
             for field in _matlab_field_order[data_type]
-                if haskey(_units[units], field)
-                    field = "$field ($(get(data, "per_unit", false) && field in _per_unit_fields ? "unitless" : _units[units][field]))"
+                idxs = [parse(Int, i) for i in keys(data[data_type])]
+                if !isempty(idxs)
+                    check_id = idxs[1]
+                    if haskey(data[data_type]["$check_id"], field)
+                        push!(fields_header, field) 
+                    end
                 end
-                push!(fields_header, field)
             end
-
-            push!(lines, "% $(join(fields_header, "\t\t"))")
+            push!(lines, "% $(join(fields_header, "\t"))")
 
             push!(lines, "mgc.$data_type = [")
             idxs = [parse(Int, i) for i in keys(data[data_type])]
             if !isempty(idxs)
                 for i in sort(idxs)
-                    push!(lines, "\t$(join([data[data_type]["$i"][field] for field in _matlab_field_order[data_type]], "\t\t"))")
+                    entries = []
+                    for field in fields_header
+                        if haskey(data[data_type]["$i"], field)
+                            if isa(data[data_type]["$i"][field], Union{String, SubString{String}})
+                                push!(entries, "\'$(data[data_type]["$i"][field])\'")
+                            else 
+                                push!(entries, "$(data[data_type]["$i"][field])")
+                            end
+                        end 
+                    end 
+                    push!(lines, "$(join(entries, "\t"))")
                 end
             end
             push!(lines, "];\n")
@@ -677,7 +648,7 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
             end
         end
     end
-
+    
     push!(lines, "end\n")
 
     return join(lines, "\n")

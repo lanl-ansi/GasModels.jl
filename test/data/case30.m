@@ -3,13 +3,10 @@ function mgc = model30_new_format
 mgc.gas_specific_gravity = 0.6;
 mgc.specific_heat_capacity_ratio = 1.4;
 mgc.temperature = 288.7060;
-mgc.sound_speed = 371.6643;
-mgc.R = 8.314;
-mgc.gas_molar_mass = 0.01737756;
 mgc.compressibility_factor = 1;
 mgc.base_pressure = 3447378.645; % all base values are in same units as specified by units field
 mgc.base_length = 5000; % all base values are in same units as specified by units field
-mgc.units = 1;
+mgc.units = 'si';
 mgc.is_per_unit = 0;
 mgc.economic_weighting = 0.95;
 
