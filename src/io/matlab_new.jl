@@ -566,14 +566,18 @@ const _units = Dict{String,Dict{String,String}}(
     )
 )
 
-"write to matlab"
-function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
+"write to matgas"
+function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
     (data["is_english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
-        line = "mgc.$(param) = $(data[param]);"
+        if isa(data[param], Float64)
+            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+        else
+            line = "mgc.$(param) = $(data[param]);"
+        end
         if haskey(_units[units], param)
             line = "$line  % $(_units[units][param])"
         end
@@ -585,7 +589,11 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
 
     push!(lines, "%% optional global data (that was either provided or computed based on required global data)")
     for param in _matlab_global_params_order_optional
-        line = "mgc.$(param) = $(data[param]);"
+        if isa(data[param], Float64)
+            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+        else
+            line = "mgc.$(param) = $(data[param]);"
+        end
         if haskey(_units[units], param)
             line = "$line  % $(_units[units][param])"
         end
@@ -618,6 +626,8 @@ function _gasmodels_to_matlab_string(data::Dict{String,Any}; units::String="si",
                         if haskey(data[data_type]["$i"], field)
                             if isa(data[data_type]["$i"][field], Union{String, SubString{String}})
                                 push!(entries, "\'$(data[data_type]["$i"][field])\'")
+                            elseif isa(data[data_type]["$i"][field], Float64)
+                                push!(entries, Printf.@sprintf "%.4f" data[data_type]["$i"][field])
                             else 
                                 push!(entries, "$(data[data_type]["$i"][field])")
                             end
@@ -656,8 +666,8 @@ end
 
 
 "writes data structure to matlab format"
-function write_matlab!(data::Dict{String,Any}, fileout::String; units::String="si", include_extended::Bool=false)
+function write_matgas!(data::Dict{String,Any}, fileout::String; units::String="si", include_extended::Bool=false)
     open(fileout, "w") do f
-        write(f, _gasmodels_to_matlab_string(data; units=units, include_extended=include_extended))
+        write(f, _gasmodels_to_matgas_string(data; units=units, include_extended=include_extended))
     end
 end

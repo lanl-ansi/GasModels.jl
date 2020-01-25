@@ -4,6 +4,7 @@ module GasModels
     import JSON
     import JuMP
     import Memento
+    import Printf
 
     # Create our module level logger (this will get precompiled)
     const _LOGGER = Memento.getlogger(@__MODULE__)
