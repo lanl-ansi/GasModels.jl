@@ -527,7 +527,6 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     return gm_data
 end
 
-
 "merges Matlab tables based on the table extension syntax"
 function _merge_generic_data!(data::Dict{String,Any})
     mg_matrix_names = [name[5:length(name)] for name in _mg_data_names]
@@ -608,7 +607,6 @@ const _matlab_global_params_order_required = ["gas_specific_gravity", "specific_
 "order of optional global parameters"
 const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
 
-
 "list of units of meta data fields"
 const _units = Dict{String,Dict{String,String}}(
     "si" => Dict{String,String}(
@@ -687,7 +685,6 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
         push!(lines, line)
     end
     push!(lines, "")
-
     for data_type in _matlab_data_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
@@ -744,7 +741,6 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
             end
         end
     end
-
     push!(lines, "end\n")
 
     return join(lines, "\n")

@@ -870,7 +870,7 @@ function _calc_resistor_resistance(resistor::Dict{String,Any})
     D          = resistor["diameter"]
     A          = (pi*D^2) / 4
 
-    resistance = lambda / (2*A^2)
+    resistance = lambda / A / A / 2
     return resistance
 end
 
