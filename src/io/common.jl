@@ -44,6 +44,7 @@ function correct_network_data!(data::Dict{String,Any})
     make_si_units!(data)
     add_base_values!(data)
     make_per_unit!(data)
+    add_base_values!(data)
 
     check_connectivity(data)
     check_status(data)
