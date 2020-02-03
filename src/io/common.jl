@@ -5,7 +5,7 @@ Parses the IOStream of a file into a GasModels data structure.
 """
 function parse_file(io::IO; filetype::AbstractString="m", skip_correct::Bool=false)
     if filetype == "m"
-        pmd_data = GasModels.parse_matlab(io)
+        pmd_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
         pmd_data = GasModels.parse_json(io)
     else
@@ -29,13 +29,20 @@ function parse_file(file::String; skip_correct::Bool=false)
 end
 
 
-""
+"""
+    correct_network_data!(data::Dict{String,Any})
+
+Data integrity checks 
+"""
 function correct_network_data!(data::Dict{String,Any})
+    # compress all data integrity checks into one function and a look up table 
+    # check_data_integrity(data)
     check_pressure_limits(data)
     check_pipe_parameters(data)
     check_compressor_parameters(data)
 
     make_per_unit!(data)
+    add_base_values!(data)
 
     check_connectivity(data)
     check_status(data)

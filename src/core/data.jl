@@ -106,6 +106,46 @@ function _calc_pipe_resistance_smeers(ref::Dict{Symbol,Any},pipe::Dict{String,An
 end
 
 
+"Transforms network data into si units"
+function make_si_units!(data::Dict{String,<:Any})
+    if get(data, "is_si_units", false) == true 
+        return 
+    end 
+    if get(data, "is_per_unit", false) == true 
+        return
+    end
+    if get(data, "is_english_units", false) == true 
+        return
+    end 
+end 
+
+"Transforms network data into english units"
+function make_english_units!(data::Dict{String,<:Any})
+    if get(data, "is_english_units", false) == true 
+        return 
+    end 
+    if get(data, "is_per_unit", false) == true 
+        return 
+    end 
+    if get(data, "is_si_units", false) == true
+        return 
+    end 
+end
+
+"Transforms network data into per unit"
+function make_per_unit!(data::Dict{String,<:Any})
+    if get(data, "is_per_unit", false) == true
+        return 
+    end 
+    if get(data, "is_si_units", false) == true 
+        return
+    end 
+    if get(data, "is_english_units", false) == true 
+        return 
+    end
+end 
+
+
 "Transforms network data into per-unit (non-dimensionalized)"
 function make_per_unit!(data::Dict{String,Any})
     if !haskey(data, "per_unit") || data["per_unit"] == false
@@ -717,24 +757,37 @@ end
 
 "checks pressure min/max on junctions"
 function check_pressure_limits(data::Dict{String,<:Any})
-    if get(data, "per_unit", false)
-        baseP = get(data, "baseP", calc_base_pressure(data))
+    if get(data, "is_per_unit", false) == true
+        base_pressure = get(data, "base_pressure", calc_base_pressure(data))
     else
-        baseP = 1.0
+        base_pressure = 1.0
     end
 
     for (i, junction) in get(data, "junction", Dict())
-        if junction["pmin"] * baseP < 0 || junction["pmax"] * baseP < 0
-            Memento.error(_LOGGER, "pmin or pmax at junction $i is < 0")
+        if junction["p_min"] * base_pressure < 0.0 || junction["p_max"] * base_pressure < 0.0
+            Memento.error(_LOGGER, "p_min or p_max at junction $i is < 0")
         end
 
-        if junction["pmin"] * baseP < 2.068e6
-            Memento.warn(_LOGGER, "pmin $(junction["pmin"] * baseP) at junction $i is < 2.068e6 Pa (300 PSI)")
-        end
+        if get(data, "is_english_units", false) == true 
+            if junction["p_min"] * base_pressure < 300.0
+                Memento.warn(_LOGGER, "p_min $(junction["p_min"] * base_pressure) at junction $i is < 300 PSI")
+            end
 
-        if junction["pmax"] * baseP > 5.861e6
-            Memento.warn(_LOGGER, "pmax $(junction["pmax"] * baseP) at junction $i is > 5.861e6 Pa (850 PSI)")
-        end
+            if junction["p_max"] * base_pressure > 850.0
+                Memento.warn(_LOGGER, "p_max $(junction["p_max"] * base_pressure) at junction $i is > 850 PSI")
+            end
+        end 
+
+        if get(data, "is_si_units", false) == true 
+            if junction["p_min"] * base_pressure < 2.068e6
+                Memento.warn(_LOGGER, "p_min $(junction["p_min"] * base_pressure) at junction $i is < 2.068e6 Pa (300 PSI)")
+            end
+    
+            if junction["p_max"] * base_pressure > 5.861e6
+                Memento.warn(_LOGGER, "p_max $(junction["p_max"] * base_pressure) at junction $i is > 5.861e6 Pa (850 PSI)")
+            end
+        end 
+
     end
 end
 
@@ -742,13 +795,25 @@ end
 "checks pipe diameters and friction factors"
 function check_pipe_parameters(data::Dict{String,<:Any})
     for (i, pipe) in get(data, "pipe", Dict())
-        if pipe["diameter"] < 0.1 || pipe["diameter"] > 1.6
-            if pipe["diameter"] < 0.0
-                Memento.error(_LOGGER, "diameter of pipe $i is < 0 m")
-            else
-                Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
+        if get(data, "is_si_units", false) == true
+            if pipe["diameter"] < 0.1 || pipe["diameter"] > 1.6
+                if pipe["diameter"] < 0.0
+                    Memento.error(_LOGGER, "diameter of pipe $i is < 0 m")
+                else
+                    Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
+                end
             end
-        end
+        end 
+
+        if get(data, "is_english_units", false) == true 
+            if inches_to_m(pipe["diameter"]) < 0.1 || inches_to_m(pipe["diameter"]) > 1.6
+                if inches_to_m(pipe["diameter"]) < 0.0
+                    Memento.error(_LOGGER, "diameter of pipe $i is < 0.0 m")
+                else
+                    Memento.warn(_LOGGER, "diameter $(inches_to_m(pipe["diameter"])) m of pipe $i is unrealistic")
+                end
+            end
+        end 
 
         if pipe["friction_factor"] < 0.0005 || pipe["friction_factor"] > 0.1
             if pipe["friction_factor"] < 0
@@ -763,59 +828,17 @@ end
 
 "check compressor ratios, powers, and mass flows"
 function check_compressor_parameters(data::Dict{String,<:Any})
-    if get(data, "per_unit", false)
-        baseQ = get(data, "baseQ", calc_base_mass_flow(data))
-    else
-        baseQ = 1.0
-    end
-
-    for (i, compressor) in get(data, "compressor", Dict())
-
-        if compressor["power_max"] < 0
-            Memento.error(_LOGGER, "max power < 0 on compressor $i")
-        elseif compressor["power_max"] / 1e6 * baseQ > 20  # assumes J/s to MW conversion
-            Memento.warn(_LOGGER, "max power $(compressor["power_max"] / 1e6 * baseQ) MW > 20MW on compressor $i")
-        end
-
-        if compressor["c_ratio_max"] < 1 || compressor["c_ratio_max"] > 2
-            if compressor["c_ratio_max"] < 0
-                Memento.error(_LOGGER, "")
-            else
-                Memento.warn(_LOGGER, "max c-ratio $(compressor["c_ratio_max"]) on compressor $i is unrealistic")
-            end
-        end
-
-        if compressor["c_ratio_max"] < compressor["c_ratio_min"]
-            Memento.error(_LOGGER, "c_ratio_min > c_ratio_max on compressor $i")
-        end
-
-        if compressor["c_ratio_min"] < 1 || compressor["c_ratio_min"] > 2
-            if compressor["c_ratio_min"] < 0
-                Memento.error(_LOGGER, "c_ratio_min > 0 on compressor $i")
-            else
-                Memento.warn(_LOGGER, "min c-ratio $(compressor["c_ratio_min"]) on compressor $i is unrealistic")
-            end
-        end
-
-        if haskey(compressor, "qmin") && haskey(compressor, "qmax") && compressor["qmin"] > compressor["qmax"]
-            Memento.error(_LOGGER, "qmin > qmax on compressor $i")
-        end
-    end
+    # need to add some data integrity checks here
 end
 
 
-"calculates baseP"
+"calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    pmins = filter(x->x>0, [junction["pmin"] for junction in values(data["junction"])])
+    p_mins = filter(x->x>0, [junction["p_min"] for junction in values(data["junction"])])
 
-    return isempty(pmins) ? 1.0 : minimum(pmins)
+    return isempty(p_mins) ? 1.0 : minimum(p_mins)
 end
 
-
-"calculates baseF"
-function calc_base_mass_flow(data::Dict{String,<:Any})
-    return calc_base_pressure(data) / get(data, "sound_speed", 355.0)
-end
 
 
 """
@@ -1095,4 +1118,16 @@ function _convert_old_matlab!(path)
         data["name"] = get(data, "name", file[1:end-2])
         GasModels.write_matlab!(data, "$path/new_matlab/$file")
     end
+end
+
+"adding non-dimensional constants for other variables (time and flow)"
+function add_base_values!(data::Dict{String, Any})
+    if get(data, "base_pressure", false) == false 
+        data["base_pressure"] = calc_base_pressure(data)
+    end 
+    if get(data, "base_length", false) == false 
+        data["base_length"] = 5000.0
+    end
+    data["base_time"] = data["base_length"] / get_sound_speed(data)
+    data["base_flow"] = data["base_pressure"] / get_sound_speed(data)
 end

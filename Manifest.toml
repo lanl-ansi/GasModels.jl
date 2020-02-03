@@ -25,6 +25,12 @@ git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
+[[CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "0becdab7e6fbbcb7b88d8de5b72e5bb2f28239f3"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "0.5.8"
+
 [[CommonSubexpressions]]
 deps = ["Test"]
 git-tree-sha1 = "efdaf19ab11c7889334ca247ff4c9f7c322817b0"
@@ -57,11 +63,19 @@ version = "1.0.0"
 deps = ["LinearAlgebra", "Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
+[[ExprTools]]
+git-tree-sha1 = "08c1f74d9ad03acf0ee84c12c9e665ab1a9a6e33"
+uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
+version = "0.1.0"
+
 [[EzXML]]
 deps = ["BinaryProvider", "Libdl", "Printf"]
 git-tree-sha1 = "ed53ce1ddb862193b2bd3851dfa108513aab2d5c"
 uuid = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 version = "1.0.0"
+
+[[FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "NaNMath", "Random", "SpecialFunctions", "StaticArrays"]
@@ -91,6 +105,12 @@ git-tree-sha1 = "a970a86abc924f2c126cdb4978a5e8923d0e7b22"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
 version = "0.20.0"
 
+[[JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "a4f675340a109713f74c47a2b499df06f800c8d0"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.7.8"
+
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
@@ -103,6 +123,12 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "b416a30717e9109fffd4d9869f2f962b5dca3162"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "0.4.2"
 
 [[Markdown]]
 deps = ["Base64"]
@@ -124,9 +150,10 @@ version = "0.12.1"
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Mocking]]
-git-tree-sha1 = "bd2623f8b728af988d2afec53d611acb621f3bc4"
+deps = ["ExprTools"]
+git-tree-sha1 = "916b850daad0d46b8c71f65f719c49957e9513ed"
 uuid = "78c3b35d-d492-501b-9361-3d52fe80e533"
-version = "0.7.0"
+version = "0.7.1"
 
 [[NaNMath]]
 git-tree-sha1 = "928b8ca9b2791081dc71a51c55347c27c618760f"
@@ -141,9 +168,9 @@ version = "1.1.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "0139ba59ce9bc680e2925aec5b7db79065d60556"
+git-tree-sha1 = "d112c19ccca00924d5d3a38b11ae2b4b268dda39"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "0.3.10"
+version = "0.3.11"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -160,6 +187,12 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 [[Random]]
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
+[[Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "UUIDs", "Unicode"]
+git-tree-sha1 = "2ecbd19f31a934b035bfc38036d5f7ac575d0878"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "2.5.0"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -202,9 +235,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TimeZones]]
 deps = ["Dates", "EzXML", "Mocking", "Printf", "Serialization", "Unicode"]
-git-tree-sha1 = "649a6ded860273aa6c808b0627bd88b5fb385211"
+git-tree-sha1 = "fec20d06d8139c686e6e3ad026bc9cf60bf0c795"
 uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
-version = "0.11.0"
+version = "1.0.0"
 
 [[URIParser]]
 deps = ["Test", "Unicode"]

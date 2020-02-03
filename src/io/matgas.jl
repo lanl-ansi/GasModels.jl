@@ -246,8 +246,11 @@ function parse_m_string(data_string::String)
         if matlab_data["mgc.units"] == "si"
             case["is_si_units"] = 1
             case["is_english_units"] = 0
-        else 
+        elseif matlab_data["mgc.units"] == "english"
             case["is_english_units"] = 1
+            case["is_si_units"] = 0
+        else 
+            case["is_english_units"] = 0
             case["is_si_units"] = 0
         end
     else

@@ -26,11 +26,11 @@ module GasModels
     include("io/json.jl")
     include("io/common.jl")
     include("io/grail.jl")
-    include("io/matlab.jl")
-    include("io/matlab_new.jl")
+    include("io/matgas.jl")
 
     include("core/base.jl")
     include("core/types.jl")
+    include("core/unit_converters.jl")
     include("core/data.jl")
     include("core/variable.jl")
     include("core/constraint.jl")
