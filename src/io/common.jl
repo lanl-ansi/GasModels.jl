@@ -36,14 +36,12 @@ Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     # compress all data integrity checks into one function and a look up table 
-    check_metadata(data)
-    # check_data_integrity(data)
-    check_pressure_limits(data)
-    check_pipe_parameters(data)
-    check_compressor_parameters(data)
-
-    make_per_unit!(data)
+    check_non_negativity(data)
+    
+    make_si_units!(data)
     add_base_values!(data)
+    make_per_unit!(data)
+    
 
     check_connectivity(data)
     check_status(data)

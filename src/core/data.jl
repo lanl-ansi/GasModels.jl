@@ -112,7 +112,11 @@ function make_si_units!(data::Dict{String,<:Any})
         return 
     end 
     if get(data, "is_per_unit", false) == true 
-        return
+        rescale_flow      = x -> x * get_base_flow(data)
+        rescale_pressure  = x -> x * get_base_pressure(data)
+        rescale_length    = x -> x * get_base_length(data)
+        rescale_time      = x -> x * get_base_time(data)
+        for (i, junction) in data["junction"]
     end
     if get(data, "is_english_units", false) == true 
         return
@@ -718,6 +722,24 @@ function check_status(data::Dict{String,<:Any})
     end
 end
 
+"checks for non-negativity of certain fields in the data"
+function check_non_negativity(data::Dict{String,<:Any})
+    for field in non_negative_metadata
+        if get(data, field, 0.0) < 0.0 
+            Memento.error(_LOGGER, "metadata $field is < 0")
+        end 
+    end 
+
+    for field in keys(non_negative_data)
+        for (i, table) in data[field]
+            for column_name in get(non_negative_data, field, [])
+                if get(table, column_name, 0.0) < 0.0 
+                    Memento.error(_LOGGER, "$field[$i][$column_name] is < 0")
+                end
+            end
+        end 
+    end 
+end
 
 "checks validity of metadata"
 function check_metadata(data::Dict{String,<:Any})
@@ -1108,14 +1130,10 @@ function _convert_old_matlab!(path)
     end
 end
 
-"adding non-dimensional constants for other variables (time and flow)"
-function add_base_values!(data::Dict{String, Any})
-    if get(data, "base_pressure", false) == false 
-        data["base_pressure"] = calc_base_pressure(data)
-    end 
-    if get(data, "base_length", false) == false 
-        data["base_length"] = 5000.0
-    end
-    data["base_time"] = data["base_length"] / get_sound_speed(data)
-    data["base_flow"] = data["base_pressure"] / get_sound_speed(data)
-end
+
+
+"data getters"
+@inline get_base_pressure(data::Dict{String, Any}) = data["base_pressure"]
+@inline get_base_length(data::Dict{String, Any}) = data["base_length"]
+@inline get_base_flow(data::Dict{String, Any}) = data["base_flow"]
+@inline get_base_time(data::Dict{String, Any}) = data["base_time"]
