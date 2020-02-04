@@ -46,6 +46,7 @@ module GasModels
     include("core/base.jl")
     include("core/types.jl")
     include("core/unit_converters.jl")
+    include("core/data_new.jl")
     include("core/data.jl")
     include("core/variable.jl")
     include("core/constraint.jl")
