@@ -719,40 +719,28 @@ function check_status(data::Dict{String,<:Any})
 end
 
 
-"checks validity of global-level parameters"
-function check_global_parameters(data::Dict{String,<:Any})
-    if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
-        Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
-    end
-
-    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
-    end
-
-    if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
-        if data["gas_specific_gravity"] < 0
-            Memento.error(_LOGGER, "gas specific gravity is < 0")
-        else
-            Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
-        end
-    end
-
-    if get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) < 400 || get(data, "R", 8.0) / get(data, "gas_molar_mass", 0.01) > 500
-        Memento.warn(_LOGGER, "R / molar mass of $(data["R"] / data["gas_molar_mass"]) is unrealistic")
-    end
-
-    if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
-    end
-
-    if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
-        if data["compressibility_factor"] < 0
-            Memento.error(_LOGGER, "compressibility_factor < 0")
-        else
-            Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
-        end
-    end
-end
+"checks validity of metadata"
+function check_metadata(data::Dict{String,<:Any})
+    for (field, validator) in metadata_checks
+        if haskey(data, field)
+            value = data[field]
+            if is_non_negative(field) && value < 0.0 
+                Memento.error(_LOGGER, "$field is < 0")
+            end 
+            if value < get_lb(validator) || value > get_ub(validator)
+                if get_logger_status(validator) == :error 
+                    Memento.error(_LOGGER, "$field value unrealistic")
+                else 
+                    Memento.warn(_LOGGER, "$field value unrealistic")
+                    if !isnan(get_new_value(validator)) 
+                        data[field] = get_new_value(validator)
+                        Memento.warn(_LOGGER, "changing $field value to $(get_new_value(validator))")
+                    end 
+                end 
+            end 
+        end 
+    end 
+end 
 
 
 "checks pressure min/max on junctions"

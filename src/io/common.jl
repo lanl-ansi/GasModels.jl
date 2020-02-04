@@ -36,6 +36,7 @@ Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     # compress all data integrity checks into one function and a look up table 
+    check_metadata(data)
     # check_data_integrity(data)
     check_pressure_limits(data)
     check_pipe_parameters(data)
