@@ -35,13 +35,14 @@ end
 Data integrity checks 
 """
 function correct_network_data!(data::Dict{String,Any})
-    # compress all data integrity checks into one function and a look up table 
     check_non_negativity(data)
-    
+    # change zero min pressure bounds to reasonable values
+    correct_p_mins!(data)
+
+    per_unit_data_field_check!(data)
     make_si_units!(data)
     add_base_values!(data)
     make_per_unit!(data)
-    
 
     check_connectivity(data)
     check_status(data)

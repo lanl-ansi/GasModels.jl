@@ -569,20 +569,6 @@ const _units = Dict{String,Dict{String,String}}(
     )
 )
 
-struct DataValidator 
-    lb::Number 
-    ub::Number 
-    is_non_negative::Bool 
-    log_interval_status::Symbol
-    new_value::Number
-end
-
-get_lb(validator::DataValidator)::Number = validator.lb 
-get_ub(validator::DataValidator)::Number = validator.ub 
-is_non_negative(validator::DataValidator)::Bool = validator.is_non_negative
-get_logger_status(validator::DataValidator)::Symbol = validator.log_interval_status
-get_new_value(validator::DataValidator)::Number = validator.new_value
-
 const non_negative_metadata = [
     "gas_specific_gravity", "specific_heat_capacity_ratio", 
     "temperature", "sound_speed", "compressibility_factor"
@@ -599,45 +585,7 @@ const non_negative_data = Dict{String,Vector{String}}(
     "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"], 
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
-
 )
-    
-const metadata_checks = Dict{String,DataValidator}(
-    "mgc.gas_specific_gravity" => DataValidator(0.5, 0.7, true, :warn, 0.5),
-    "mgc.specific_heat_capacity_ratio" => DataValidator(1.2, 1.6, true, :warn, 1.4),
-    "mgc.temperature" => DataValidator(260, 320, true, :warn, NaN),
-    "mgc.sound_speed" => DataValidator(300.0, 410.0, true, :warn, NaN),
-    "mgc.compressibility_factor" => DataValidator(0.7, 1.0, true, :warn, NaN)
-)
-
-const junction_checks = Dict{String,Dict{String,DataValidator}}(
-    "p_min" => Dict{String,DataValidator}(
-        "si" => DataValidator(2.068e6, 5.861e6, true, :warn, 2.068e6), 
-        "english" => DataValidator(300.0, 850.0, true, :warn, 300.0)
-    ),
-    "p_max" => Dict{String,DataValidator}(
-        "si" => DataValidator(2.068e6, 5.861e6, true, :warn, 5.861e6), 
-        "english" => DataValidator(3, 850.0, true, :warn, 850.0)
-    )
-)
-
-const pipe_checks = Dict{String,Dict{String,DataValidator}}(
-    "p_min" => junction_checks["p_min"], 
-    "p_max" => junction_checks["p_max"], 
-    "diameter" => Dict{String,DataValidator}(
-        "si" => DataValidator(0.1, 1.6, true, :warn, NaN),
-        "english" => DataValidator(3.94, 63.0, true, :warn, NaN)
-    ),
-    "length" => Dict{String,DataValidator}(
-        "si" => DataValidator(0, Inf, true, :warn, NaN),
-        "english" => DataValidator(0, Inf, true, :warn, NaN)
-    ),
-    "friction_factor" => Dict{String,DataValidator}(
-        "si" => DataValidator(0.0005, 0.1, true, :warn, NaN),
-        "english" => DataValidator(0.0005, 0.1, true, :warn, NaN)
-    )
-)
-
 
 "write to matgas"
 function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
