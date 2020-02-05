@@ -40,6 +40,8 @@ function correct_network_data!(data::Dict{String,Any})
     correct_p_mins!(data)
 
     per_unit_data_field_check!(data)
+    add_compressor_fields!(data)
+    
     make_si_units!(data)
     add_base_values!(data)
     make_per_unit!(data)
