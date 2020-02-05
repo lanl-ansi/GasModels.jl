@@ -649,7 +649,6 @@ const non_negative_data = Dict{String,Vector{String}}(
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
 
-
 "write to matgas"
 function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
     (data["is_english_units"] == true) && (units = "usc")
