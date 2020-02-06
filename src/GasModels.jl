@@ -5,6 +5,10 @@ module GasModels
     import JuMP
     import Memento
     import Printf
+    import MathOptInterface
+    
+    const MOI = MathOptInterface
+    const MOIU = MathOptInterface.Utilities
 
     # Create our module level logger (this will get precompiled)
     const _LOGGER = Memento.getlogger(@__MODULE__)
@@ -20,9 +24,15 @@ module GasModels
         Memento.setlevel!(Memento.getlogger(GasModels), "error")
     end
 
-    import MathOptInterface
-    const MOI = MathOptInterface
-    const MOIU = MathOptInterface.Utilities
+    "alows the user to set the logging level without the need to add Memento"
+    function logger_config!(level)
+        Memento.config!(Memento.getlogger("GasModels"), level)
+    end
+
+    const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio", 
+        "temperature", "sound_speed", "compressibility_factor", "R", 
+        "base_pressure", "base_length", "base_flow", "base_time", 
+        "units", "is_per_unit", "is_english_units", "is_si_units", "time_discretization_points"])
 
     include("io/json.jl")
     include("io/common.jl")

@@ -26,10 +26,10 @@ end
 
 
 "default generic constructor"
-function InitializeGasModel(GasModel::Type, data::Dict{String,<:Any}; ext=Dict{Symbol,Any}(), setting=Dict{String,Any}(), jump_model::JuMP.Model=JuMP.Model(), kwargs...)
+function InitializeGasModel(GasModel::Type, data::Dict{String,<:Any}; ext=Dict{Symbol,Any}(), setting=Dict{String,Any}(), jump_model::JuMP.AbstractModel=JuMP.Model(), kwargs...)
     @assert GasModel <: AbstractGasModel
 
-    ref = InfrastructureModels.ref_initialize(data)  # reference data
+    ref = InfrastructureModels.ref_initialize(data, _gm_global_keys)  # reference data
 
     var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
     con = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
@@ -54,6 +54,10 @@ function InitializeGasModel(GasModel::Type, data::Dict{String,<:Any}; ext=Dict{S
     return gm
 end
 
+### Helper functions for working with multinetworks and multiconductors
+ismultinetwork(gm::AbstractGasModel) = (length(gm.ref[:nw]) > 1)
+nw_ids(gm::AbstractGasModel) = keys(gm.ref[:nw])
+nws(gm::AbstractGasModel) = gm.ref[:nw]
 
 ### Helper functions for ignoring multinetwork support
 ids(gm::AbstractGasModel, key::Symbol) = ids(gm, gm.cnw, key)
@@ -80,50 +84,28 @@ ext(gm::AbstractGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
 ext(gm::AbstractGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
 ext(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
 
-
-"Do a solve of the problem"
-function JuMP.optimize!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory)
-    if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
-    else
-        Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
-        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
-    end
-
-    try
-        solve_time = MOI.get(gm.model, MOI.SolveTime())
-    catch
-        Memento.warn(_LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
-    end
-
-    return solve_time
-end
-
-
 ""
-function run_model(file::String, model_type, optimizer, post_method; kwargs...)
+function run_model(file::String, model_type, optimizer, build_method; kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(data, model_type, optimizer, post_method; kwargs...)
+    return run_model(data, model_type, optimizer, build_method; kwargs...)
 end
 
-
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, post_method; ref_extensions=[], solution_builder=solution_gf!, kwargs...)
-    gm = build_model(data, model_type, post_method; kwargs...)
-    solution = optimize_model!(gm, optimizer; solution_builder = solution_builder)
-    return solution
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_builder=solution_gf!, kwargs...)
+    gm = instantiate_model(data, model_type, build_method; ref_extensions=ref_extensions, kwargs...)
+    # gm = build_model(data, model_type, build_method; kwargs...)
+    result = optimize_model!(gm, optimizer=optimizer; solution_builder = solution_builder)
+    return result
 end
 
-
 ""
-function build_model(file::String,  model_type, post_method; kwargs...)
+function instantiate_model(file::String,  model_type, build_method; kwargs...)
     data = GasModels.parse_file(file)
-    return build_model(data, model_type, post_method; kwargs...)
+    return instantiate_model(data, model_type, build_method; kwargs...)
 end
 
-
 ""
-function build_model(data::Dict{String,<:Any}, model_type::Type, post_method; ref_extensions=[], multinetwork=false, kwargs...)
+function instantiate_model(data::Dict{String,<:Any}, model_type, build_method; ref_extensions=[], multinetwork=false, kwargs...)
     gm = InitializeGasModel(model_type, data; kwargs...)
 
     if !multinetwork && data["multinetwork"]
@@ -135,27 +117,43 @@ function build_model(data::Dict{String,<:Any}, model_type::Type, post_method; re
         ref_ext(gm)
     end
 
-    post_method(gm; kwargs...)
+    build_method(gm; kwargs...)
 
     return gm
-end
-
+end 
 
 ""
-function optimize_model!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory; solution_builder=solution_gf!)
-    solve_time = JuMP.optimize!(gm, optimizer)
+function optimize_model!(gm::AbstractGasModel, optimizer::Union{JuMP.OptimizerFactory,Nothing}=nothing; solution_builder=solution_gf!)
+    if isa(optimizer, Nothing)
+        if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
+            Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")
+        else 
+            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
+        end 
+    else 
+        if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
+            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
+        else 
+            Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
+            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
+        end 
+    end
+
+    try
+        solve_time = MOI.get(gm.model, MOI.SolveTime())
+    catch
+        Memento.warn(_LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
+    end
 
     result = build_solution(gm, solve_time; solution_builder=solution_builder)
-
     gm.solution = result["solution"]
-
     return result
 end
 
 
-"used for building ref without the need to build a initialize an AbstractPowerModel"
+"used for building ref without the need to build a initialize an AbstractGasModel"
 function build_ref(data::Dict{String,<:Any}; ref_extensions=[])
-    ref = InfrastructureModels.ref_initialize(data)
+    ref = InfrastructureModels.ref_initialize(data, _gm_global_keys)
     _ref_add_core!(ref[:nw])
     for ref_ext in ref_extensions
         ref_ext(gm)

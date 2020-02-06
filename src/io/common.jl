@@ -36,12 +36,11 @@ Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)
-    # change zero min pressure bounds to reasonable values
     correct_p_mins!(data)
 
     per_unit_data_field_check!(data)
     add_compressor_fields!(data)
-    
+
     make_si_units!(data)
     add_base_values!(data)
     make_per_unit!(data)

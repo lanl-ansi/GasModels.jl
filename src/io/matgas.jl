@@ -517,10 +517,8 @@ function _get_default(dict, key, default=0.0)
     return default
 end
 
-
 "order data types should appear in matlab format"
 const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "resistor", "regulator", "valve", "receipt", "delivery", "transfer", "storage"]
-
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
