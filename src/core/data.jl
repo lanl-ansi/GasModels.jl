@@ -18,34 +18,8 @@ function _calc_max_mass_flow(data::Dict{String,Any})
 end
 
 
-"Computes the maximum volume of the Gas Model"
-function _calc_max_volume_flow(ref::Dict{Symbol,Any})
-    max_flow = 0
-    for (idx, producer) in ref[:producer]
-        if producer["qgmax"] > 0
-          max_flow = max_flow + producer["qgmax"]
-        end
-    end
-    return max_flow
-end
 
 
-"Computes the max mass flow in the Gas Model"
-function _calc_max_mass_flow(ref::Dict{Symbol,Any})
-    return _calc_max_volume_flow(ref) * ref[:standard_density]
-end
-
-
-"Calculate the bounds on minimum and maximum pressure difference squared"
-function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
-    i = ref[:junction][i_idx]
-    j = ref[:junction][j_idx]
-
-    pd_max = i["pmax"]^2 - j["pmin"]^2
-    pd_min = i["pmin"]^2 - j["pmax"]^2
-
-    return pd_min, pd_max
-end
 
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley. Unsteady and transient flow of compressible

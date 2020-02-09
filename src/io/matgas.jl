@@ -92,6 +92,7 @@ _mg_resistor_columns = [
     ("fr_junction", Int), 
     ("to_junction", Int), 
     ("drag", Float64), 
+    ("diameter", Float64),
     ("status", Int), 
     ("is_bidirectional", Int), 
     ("pipeline_name", Union{String, SubString{String}})
@@ -154,6 +155,7 @@ _mg_regulator_columns = [
     ("reduction_factor_min", Float64), ("reduction_factor_max", Float64),
     ("flow_min", Float64), ("flow_max", Float64), 
     ("status", Int), 
+    ("directionality", Int),
     ("discharge_coefficient", Float64), 
     ("design_flow_rate", Float64), 
     ("design_inlet_pressure", Float64), 
