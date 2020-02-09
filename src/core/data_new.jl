@@ -14,6 +14,7 @@ function calc_base_pressure(data::Dict{String,<:Any})
     return isempty(p_mins) ? 1.0 : minimum(p_mins)
 end
 
+
 "apply a function on a dict entry"
 function _apply_func!(data::Dict{String,Any}, key::String, func)
     if haskey(data, key)
@@ -67,6 +68,7 @@ function make_si_units!(data::Dict{String,<:Any})
         end 
 
         for (i, compressor) in get(data, "compressor", [])
+            _apply_func!(compressor, "length", rescale_length)
             _apply_func!(compressor, "flow_min", rescale_flow)
             _apply_func!(compressor, "flow_max", rescale_flow)
             _apply_func!(compressor, "inlet_p_min", rescale_pressure)
@@ -131,6 +133,8 @@ function make_si_units!(data::Dict{String,<:Any})
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", hp_to_watts)
+            _apply_func!(compressor, "diameter", inches_to_m)
+            _apply_func!(compressor, "length", miles_to_m)
             _apply_func!(compressor, "flow_min", mmscfd_to_kgps)
             _apply_func!(compressor, "flow_max", mmscfd_to_kgps)
             _apply_func!(compressor, "inlet_p_min", psi_to_pascal)
@@ -212,6 +216,8 @@ function make_english_units!(data::Dict{String,<:Any})
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", watts_to_hp)
+            _apply_func!(compressor, "diameter", m_to_inches)
+            _apply_func!(compressor, "length", m_to_miles)
             _apply_func!(compressor, "flow_min", kgps_to_mmscfd)
             _apply_func!(compressor, "flow_max", kgps_to_mmscfd)
             _apply_func!(compressor, "inlet_p_min", pascal_to_psi)
@@ -293,6 +299,7 @@ function make_per_unit!(data::Dict{String,<:Any})
         end 
 
         for (i, compressor) in get(data, "compressor", [])
+            _apply_func!(compressor, "length", rescale_length)
             _apply_func!(compressor, "flow_min", rescale_flow)
             _apply_func!(compressor, "flow_max", rescale_flow)
             _apply_func!(compressor, "inlet_p_min", rescale_pressure)
@@ -528,3 +535,117 @@ function propagate_topology_status!(data::Dict{String,<:Any})
         end
     end
 end
+
+"Calculates max mass flow network wide using ref"
+function _calc_max_mass_flow(ref::Dict{Symbol,Any})
+    max_flow = 0
+    for (idx, receipt) in ref[:receipt]
+        if receipt["injection_max"] > 0
+            max_flow = max_flow + receipt["injection_max"]
+        end
+    end
+    for (idx, storage) in ref[:storage]
+        if storage["flow_injection_rate_max"] > 0
+            max_flow = max_flow + storage["flow_injection_rate_max"]
+        end 
+    end 
+    for (idx, transfer) in ref[:transfer]
+        if transfer["withdrawal_min"] < 0
+            max_flow = max_flow - transfer["withdrawal_min"]
+        end 
+    end
+    return max_flow
+end
+
+"Calculate the bounds on minimum and maximum pressure difference squared"
+function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
+    i = ref[:junction][i_idx]
+    j = ref[:junction][j_idx]
+
+    pd_max = i["p_max"]^2 - j["p_min"]^2
+    pd_min = i["p_min"]^2 - j["p_max"]^2
+
+    return pd_min, pd_max
+end
+
+"Calculates pipeline resistance from this paper Thorley and CH Tiley. 
+Unsteady and transient flow of compressible
+fluids in pipelines–a review of theoretical and some experimental studies.
+International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
+This is used in many of Zlotnik's papers
+This calculation expresses resistance in terms of mass flow equations"
+function _calc_pipe_resistance(pipe::Dict{String,Any}; base_length=5000.0)
+    lambda      = pipe["friction_factor"]
+    D           = pipe["diameter"]
+    L           = pipe["length"]
+
+    resistance = lambda * L * base_length / D;
+    return resistance
+end
+
+"calculates the minimum flow on a pipe"
+function _calc_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
+    mf             = ref[:max_mass_flow]
+    pd_min         = pipe["pd_min"]
+    w              = pipe["resistance"]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+
+"calculates the maximum flow on a pipe"
+function _calc_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
+    mf             = ref[:max_mass_flow]
+    pd_max         = pipe["pd_max"]
+    w              = pipe["resistance"]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
+"A very simple model of computing resistance for resistors that is based on the Thorley model.  
+Eq (2.30) in Evaluating Gas Network Capacities"
+function _calc_resistor_resistance(resistor::Dict{String,Any})
+    lambda     = resistor["drag"]
+    D          = resistor["diameter"]
+    A          = (pi*D^2) / 4 
+
+    resistance = lambda / A / A / 2
+    return resistance
+end
+
+"calculates the minimum flow on a resistor"
+function _calc_resistor_flow_min(ref::Dict{Symbol,Any}, resistor)
+    mf             = ref[:max_mass_flow]
+    pd_min         = resistor["pd_min"]
+    w              = resistor["resistance"]
+    pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
+    return max(-mf, pf_min)
+end
+
+
+"calculates the maximum flow on a resistor"
+function _calc_resistor_flow_max(ref::Dict{Symbol,Any}, resistor)
+    mf             = ref[:max_mass_flow]
+    pd_max         = resistor["pd_max"]
+    w              = resistor["resistance"]
+    pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+    return min(mf, pf_max)
+end
+
+"calculates the minimum flow on a short pipe"
+_calc_short_pipe_flow_min(ref::Dict{Symbol,Any}, short_pipe) = -ref[:max_mass_flow]
+
+"calculates the maximum flow on a short pipe"
+_calc_short_pipe_flow_max(ref::Dict{Symbol,Any}, short_pipe) = ref[:max_mass_flow]
+
+"calculates the minimum flow on a valve"
+_calc_valve_flow_min(ref::Dict{Symbol,Any}, valve) = -ref[:max_mass_flow]
+
+"calculates the maximum flow on a valve"
+_calc_valve_flow_max(ref::Dict{Symbol,Any}, valve) = ref[:max_mass_flow]
+
+"calculates the minimum flow on a regulator"
+_calc_regulator_flow_min(ref::Dict{Symbol,Any}, regulator) = -ref[:max_mass_flow]
+
+"calculates the maximum flow on a regulator"
+_calc_regulator_flow_max(ref::Dict{Symbol,Any}, resistor) = ref[:max_mass_flow]
