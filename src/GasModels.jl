@@ -46,7 +46,7 @@ module GasModels
     include("core/types.jl")
     include("core/unit_converters.jl")
     include("core/data_new.jl")
-    include("core/data.jl")
+    # include("core/data.jl")  # disable to find still needed functions
     include("core/variable.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")
