@@ -248,7 +248,7 @@ function _add_parallel_edges!(parallel_ref::Dict, collection::Dict)
             push!(parallel_ref[(fr, to)], idx)
         end
     end
-end 
+end
 
 function _add_edges_to_junction_map!(fr_ref::Dict, to_ref::Dict, collection::Dict)
     for (idx, connection) in collection
