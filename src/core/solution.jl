@@ -56,7 +56,7 @@ end
 
 ""
 function _init_solution(gm::AbstractGasModel)
-    data_keys = ["per_unit", "baseP", "baseQ", "multinetwork"]
+    data_keys = ["is_per_unit", "base_pressure", "multinetwork"]
     return Dict{String,Any}(key => gm.data[key] for key in data_keys)
 end
 
@@ -71,7 +71,7 @@ end
 
 "Get the pressure solutions"
 function add_junction_pressure_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(JuMP.value(x)))
+    add_setpoint!(sol, gm, "junction", "p_nominal", :p; scale = (x,item) -> sqrt(JuMP.value(x)))
 end
 
 

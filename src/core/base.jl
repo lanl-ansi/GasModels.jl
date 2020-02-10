@@ -119,23 +119,23 @@ function instantiate_model(data::Dict{String,<:Any}, model_type, build_method; r
     build_method(gm; kwargs...)
 
     return gm
-end 
+end
 
 ""
-function optimize_model!(gm::AbstractGasModel, optimizer::Union{JuMP.OptimizerFactory,Nothing}=nothing; solution_builder=solution_gf!)
-    if isa(optimizer, Nothing)
+function optimize_model!(gm::AbstractGasModel; optimizer::Union{JuMP.OptimizerFactory,Nothing}=nothing, solution_builder=solution_gf!)
+    if optimizer === nothing
         if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
             Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")
-        else 
+        else
             _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
-        end 
-    else 
+        end
+    else
         if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
             _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
-        else 
+        else
             Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
             _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
-        end 
+        end
     end
 
     try
@@ -190,7 +190,7 @@ end
 
 function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
     for (nw, ref) in nw_refs
-        ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict() 
+        ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:compressor] = haskey(ref, :compressor) ? Dict(x for x in ref[:compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -205,7 +205,7 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
         # compute the maximum flow
         ref[:max_mass_flow] = _calc_max_mass_flow(ref)
 
-        # create references to directed and undirected edges 
+        # create references to directed and undirected edges
         ref[:directed_pipe] = Dict(x for x in ref[:pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
         ref[:directed_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
         ref[:directed_resistor] = Dict(x for x in ref[:resistor] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
@@ -221,9 +221,9 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
         ref[:default_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 2)
         ref[:bidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 0)
         ref[:unidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 1)
-       
 
-        # dispatchable tranfers, receipts, and deliveries 
+
+        # dispatchable tranfers, receipts, and deliveries
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
         ref[:dispatchable_receipt] = Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 1)
         ref[:dispatchable_delivery] = Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 1)
@@ -231,7 +231,7 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
         ref[:nondispatchable_receipt] = Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 0)
         ref[:nondispatchable_delivery] = Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 0)
 
-        # transfers, receipts, deliveries and storages in junction 
+        # transfers, receipts, deliveries and storages in junction
         ref[:dispatchable_transfers_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
         ref[:dispatchable_receipts_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
         ref[:dispatchable_deliveries_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
@@ -252,7 +252,7 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
         ref[:parallel_compressors] = Dict()
         ref[:parallel_short_pipes] = Dict()
         ref[:parallel_resistors] = Dict()
-        ref[:parallel_regulators] = Dict() 
+        ref[:parallel_regulators] = Dict()
         ref[:parallel_valves] = Dict()
         _add_parallel_edges!(ref[:parallel_pipes], ref[:pipe])
         _add_parallel_edges!(ref[:parallel_compressors], ref[:compressor])
@@ -286,7 +286,7 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            pipe["pd_min"] = pd_min 
+            pipe["pd_min"] = pd_min
             pipe["pd_max"] = pd_max
             pipe["resistance"] = _calc_pipe_resistance(pipe, base_length=base_length)
             pipe["flow_min"] = _calc_pipe_flow_min(ref, pipe)
@@ -297,7 +297,7 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            compressor["pd_min"] = pd_min 
+            compressor["pd_min"] = pd_min
             compressor["pd_max"] = pd_max
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length=base_length)
             compressor["flow_min"] = _calc_pipe_flow_min(ref, compressor)
@@ -344,16 +344,16 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
             regulator["flow_min"] = _calc_regulator_flow_min(ref, regulator)
             regulator["flow_max"] = _calc_regulator_flow_max(ref, regulator)
         end
-    end 
+    end
 
-end 
+end
 
 function _add_junction_map!(junction_map::Dict, collection::Dict)
-    for (i, component) in collection 
+    for (i, component) in collection
         junction_id = component["junction_id"]
         push!(junction_map[junction_id], i)
-    end 
-end 
+    end
+end
 
 function _add_parallel_edges!(parallel_ref::Dict, collection::Dict)
     for (idx, connection) in collection
@@ -363,12 +363,12 @@ function _add_parallel_edges!(parallel_ref::Dict, collection::Dict)
         to = max(i, j)
         if get(parallel_ref, (fr, to), false) == 1
             push!(parallel_ref[(fr, to)], idx)
-        else 
+        else
             parallel_ref[(fr, to)] = []
             push!(parallel_ref[(fr, to)], idx)
-        end 
+        end
     end
-end 
+end
 
 function _add_edges_to_junction_map!(fr_ref::Dict, to_ref::Dict, collection::Dict)
     for (idx, connection) in collection
@@ -377,7 +377,7 @@ function _add_edges_to_junction_map!(fr_ref::Dict, to_ref::Dict, collection::Dic
         push!(fr_ref[i], idx)
         push!(to_ref[j], idx)
     end
-end 
+end
 
 "Add reference information for the degree of junction"
 function ref_degree!(ref::Dict{Symbol,Any})

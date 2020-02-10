@@ -290,47 +290,6 @@ function _calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection:
 end
 
 
-"calculates connections in parallel with one another and their orientation"
-function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
-    i = min(connection["fr_junction"], connection["to_junction"])
-    j = max(connection["fr_junction"], connection["to_junction"])
-
-    parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
-    parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
-    parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
-    parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
-    parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
-    parallel_regulators = haskey(ref(gm,n,:parallel_regulators), (i,j)) ? ref(gm,n,:parallel_regulators, (i,j)) : []
-
-    num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
-                      length(parallel_valves) + length(parallel_regulators)
-
-    pipes = ref(gm,n,:pipe)
-    compressors = ref(gm,n,:compressor)
-    resistors = ref(gm,n,:resistor)
-    short_pipes = ref(gm,n,:short_pipe)
-    valves = ref(gm,n,:valve)
-    regulators = ref(gm,n,:regulator)
-
-    aligned_pipes           = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
-    opposite_pipes          = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
-    aligned_compressors     = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
-    opposite_compressors    = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
-    aligned_resistors       = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
-    opposite_resistors      = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
-    aligned_short_pipes     = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
-    opposite_short_pipes    = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
-    aligned_valves          = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
-    opposite_valves         = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
-    aligned_regulators  = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
-    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
-
-    return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
-           aligned_regulators, opposite_regulators
-end
-
-
 "prints the text summary for a data file to IO"
 function summary(io::IO, file::String; kwargs...)
     data = parse_file(file)
@@ -364,15 +323,6 @@ const _gm_component_parameter_order = Dict(
     "status" => 500.0,
 )
 
-const _gm_component_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
-                             "resistor", "ne_pipe", "ne_compressor", "junction", "delivery",
-                             "receipt"]
-
-const _gm_junction_keys = ["fr_junction", "to_junction", "junction"]
-
-const _gm_edge_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
-                        "resistor", "ne_pipe", "ne_compressor"]
-
 
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)
@@ -381,24 +331,6 @@ function summary(io::IO, data::Dict{String,Any}; kwargs...)
         component_parameter_order = _gm_component_parameter_order,
         kwargs...)
 end
-
-
-"Helper function for determining if direction cuts can be applied"
-function _apply_mass_flow_cuts(yp, branches)
-    is_disjunction = true
-    for k in branches
-        is_disjunction &= isassigned(yp,k)
-    end
-    return is_disjunction
-end
-
-
-"extracts the start value"
-function comp_start_value(set, item_key, value_key, default = 0.0)
-    return get(get(set, item_key, Dict()), value_key, default)
-end
-
-
 
 
 
@@ -415,7 +347,7 @@ function check_pressure_limits(data::Dict{String,<:Any})
             Memento.error(_LOGGER, "p_min or p_max at junction $i is < 0")
         end
 
-        if get(data, "is_english_units", false) == true 
+        if get(data, "is_english_units", false) == true
             if junction["p_min"] * base_pressure < 300.0
                 Memento.warn(_LOGGER, "p_min $(junction["p_min"] * base_pressure) at junction $i is < 300 PSI")
             end
@@ -423,17 +355,17 @@ function check_pressure_limits(data::Dict{String,<:Any})
             if junction["p_max"] * base_pressure > 850.0
                 Memento.warn(_LOGGER, "p_max $(junction["p_max"] * base_pressure) at junction $i is > 850 PSI")
             end
-        end 
+        end
 
-        if get(data, "is_si_units", false) == true 
+        if get(data, "is_si_units", false) == true
             if junction["p_min"] * base_pressure < 2.068e6
                 Memento.warn(_LOGGER, "p_min $(junction["p_min"] * base_pressure) at junction $i is < 2.068e6 Pa (300 PSI)")
             end
-    
+
             if junction["p_max"] * base_pressure > 5.861e6
                 Memento.warn(_LOGGER, "p_max $(junction["p_max"] * base_pressure) at junction $i is > 5.861e6 Pa (850 PSI)")
             end
-        end 
+        end
 
     end
 end
@@ -450,9 +382,9 @@ function check_pipe_parameters(data::Dict{String,<:Any})
                     Memento.warn(_LOGGER, "diameter $(pipe["diameter"]) m of pipe $i is unrealistic")
                 end
             end
-        end 
+        end
 
-        if get(data, "is_english_units", false) == true 
+        if get(data, "is_english_units", false) == true
             if inches_to_m(pipe["diameter"]) < 0.1 || inches_to_m(pipe["diameter"]) > 1.6
                 if inches_to_m(pipe["diameter"]) < 0.0
                     Memento.error(_LOGGER, "diameter of pipe $i is < 0.0 m")
@@ -460,7 +392,7 @@ function check_pipe_parameters(data::Dict{String,<:Any})
                     Memento.warn(_LOGGER, "diameter $(inches_to_m(pipe["diameter"])) m of pipe $i is unrealistic")
                 end
             end
-        end 
+        end
 
         if pipe["friction_factor"] < 0.0005 || pipe["friction_factor"] > 0.1
             if pipe["friction_factor"] < 0
@@ -657,7 +589,7 @@ function _convert_old_gm!(data::Dict{String,Any})
                 end
 
                 if comp_type in ["delivery", "receipt"]
-                    comp["dispatchable"] = get(comp, "dispatchable", 0)
+                    comp["is_dispatchable"] = get(comp, "dispatchable", 0)
                     comp["flow"] = get(comp, "flow", 0.0)
                 end
 

@@ -6,7 +6,7 @@ module GasModels
     import Memento
     import Printf
     import MathOptInterface
-    
+
     const MOI = MathOptInterface
     const MOIU = MathOptInterface.Utilities
 
@@ -29,9 +29,9 @@ module GasModels
         Memento.config!(Memento.getlogger("GasModels"), level)
     end
 
-    const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio", 
-        "temperature", "sound_speed", "compressibility_factor", "R", 
-        "base_pressure", "base_length", "base_flow", "base_time", 
+    const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
+        "temperature", "sound_speed", "compressibility_factor", "R",
+        "base_pressure", "base_length", "base_flow", "base_time",
         "units", "is_per_unit", "is_english_units", "is_si_units", "time_discretization_points"])
 
     include("io/json.jl")
@@ -43,7 +43,7 @@ module GasModels
     include("core/types.jl")
     include("core/unit_converters.jl")
     include("core/data_new.jl")
-    include("core/data.jl")
+    # include("core/data.jl")  # disable to find still needed functions
     include("core/variable.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")

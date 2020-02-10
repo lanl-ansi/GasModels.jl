@@ -63,14 +63,14 @@ function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_mi
     l  = var(gm, n, :l_pipe, k)
     f  = var(gm, n, :f_pipe, k)
 
-   _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
-   _add_constraint!(gm, n, "resistance"eymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
-   _add_constraint!(gm, n, "resistance"eymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
-   _add_constraint!(gm, n, "resistance"eymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-   _add_constraint!(gm, n, "resistance"eymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
+   _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
+   _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
+   _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
+   _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
+   _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
 
-   _add_constraint!(gm, n, "resistance"eymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
-   _add_constraint!(gm, n, "resistance"eymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
+   _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
+   _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
 end
 
 
@@ -82,14 +82,14 @@ function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, 
     l  = var(gm, n, :l_resistor, k)
     f  = var(gm, n, :f_resistor, k)
 
-   _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
-   _add_constraint!(gm, n, "resistance"eymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
-   _add_constraint!(gm, n, "resistance"eymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
-   _add_constraint!(gm, n, "resistance"eymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-   _add_constraint!(gm, n, "resistance"eymouth5, k, JuMP.@constraint(gm.model, l >= f^2/w))
+   _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
+   _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
+   _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
+   _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
+   _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, l >= f^2/w))
 
-   _add_constraint!(gm, n, "resistance"eymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
-   _add_constraint!(gm, n, "resistance"eymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
+   _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
+   _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
 end
 
 
@@ -100,12 +100,12 @@ function constraint_pipe_weymouth_directed(gm::AbstractMISOCPModel, n::Int, k, i
     l  = var(gm, n, :l_pipe, k)
     f  = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
-    _add_constraint!(gm, n, "resistance"eymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
+    _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
     if (direction == 1)
-        _add_constraint!(gm, n, "resistance"eymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f))
+        _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f))
     else
-        _add_constraint!(gm, n, "resistance"eymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f))
+        _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f))
     end
 end
 
@@ -117,12 +117,12 @@ function constraint_resistor_weymouth_directed(gm::AbstractMISOCPModel, n::Int, 
     l  = var(gm, n, :l_resistor, k)
     f  = var(gm, n, :f_resistor, k)
 
-    _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
-    _add_constraint!(gm, n, "resistance"eymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
+    _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
     if (direction == 1)
-        _add_constraint!(gm, n, "resistance"eymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f))
+        _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f))
     else
-        _add_constraint!(gm, n, "resistance"eymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f))
+        _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f))
     end
 end
 
@@ -136,14 +136,14 @@ function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w
     l  = var(gm, n, :l_ne_pipe, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
-    _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
+    _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
+    _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
+    _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
+    _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
 
-    _add_constraint!(gm, n, "resistance"eymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2) + (1-zp) * (abs(f_min*f_max) + f_min^2)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2) + (1-zp) * (abs(f_min*f_max) + f_max^2)))
+    _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2) + (1-zp) * (abs(f_min*f_max) + f_min^2)))
+    _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2) + (1-zp) * (abs(f_min*f_max) + f_max^2)))
 end
 
 
@@ -155,12 +155,12 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractMISOCPModel, n::Int, k
     l  = var(gm, n, :l_ne_pipe, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
-    _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
-    _add_constraint!(gm, n, "resistance"eymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
+    _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
     if (direction == 1)
-        _add_constraint!(gm, n, "resistance"eymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-zp) * (abs(f_min*f_max) + f_min^2)))
+        _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-zp) * (abs(f_min*f_max) + f_min^2)))
     else
-        _add_constraint!(gm, n, "resistance"eymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + (1-zp) * (abs(f_min*f_max) + f_max^2)))
+        _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + (1-zp) * (abs(f_min*f_max) + f_max^2)))
     end
 end
 

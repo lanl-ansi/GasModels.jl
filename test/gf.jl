@@ -306,7 +306,7 @@
         # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0) <= 0"
         # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0) <= 0"
         # "3.390221630328586 * (p[129] - p[498]) - (f[222] ^ 2.0 - (1.0 - yn[222]) * 2.0) >= 0"
-        ref = gm.con[:nw][gm.cnw]["resistance"eymouth1][222]
+        ref = gm.con[:nw][gm.cnw][:weymouth1][222]
         constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
         constraint = JuMP.constraint_object(constraint_ref)
         func = constraint.func
@@ -320,7 +320,7 @@
         # @test isapprox(c.lb, 0.0; atol = 1e-4)
         # @test length(c.terms.nd) == 17
 
-        ref = gm.con[:nw][gm.cnw]["resistance"eymouth2][222]
+        ref = gm.con[:nw][gm.cnw][:weymouth2][222]
         constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
         constraint = JuMP.constraint_object(constraint_ref)
         func = constraint.func
@@ -335,7 +335,7 @@
         # @test isapprox(c.ub, 0.0; atol = 1e-4)
         # @test length(c.terms.nd) == 17
 
-        ref = gm.con[:nw][gm.cnw]["resistance"eymouth4][222]
+        ref = gm.con[:nw][gm.cnw][:weymouth4][222]
         constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
         constraint = JuMP.constraint_object(constraint_ref)
         func = constraint.func
@@ -349,7 +349,7 @@
         # @test isapprox(c.ub, 0.0; atol = 1e-4)
         # @test length(c.terms.nd) == 17
 
-        ref = gm.con[:nw][gm.cnw]["resistance"eymouth3][222]
+        ref = gm.con[:nw][gm.cnw][:weymouth3][222]
         constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
         constraint = JuMP.constraint_object(constraint_ref)
         func = constraint.func

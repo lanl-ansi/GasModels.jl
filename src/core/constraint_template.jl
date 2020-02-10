@@ -249,7 +249,7 @@ end
 "Template: Constraints for fixing pressure at a node"
 function constraint_pressure(gm::AbstractGasModel, i; n::Int=gm.cnw)
     junction       = gm.ref[:nw][n][:junction][i]
-    p              = junction["p"]^2
+    p              = junction["p_nominal"]^2
     constraint_pressure(gm, n, i, p)
 end
 
@@ -272,15 +272,15 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int=gm.cnw)
     delivery                = ref(gm,n,:delivery)
     receipt                 = ref(gm,n,:receipt)
     dispatch_receipts       = ref(gm,n,:dispatchable_receipts_in_junction,i)
-    nondispatch_receipts    = ref(gm,n,:nondispatchable_receipts_in_junction,i) 
+    nondispatch_receipts    = ref(gm,n,:nondispatchable_receipts_in_junction,i)
     dispatch_deliveries     = ref(gm,n,:dispatchable_deliveries_in_junction,i)
     nondispatch_deliveries  = ref(gm,n,:nondispatchable_deliveries_in_junction,i)
-    fg                      = length(nondispatch_receipts) > 0 ? sum(_calc_fg(gm.data, receipt[j]) for j in nondispatch_receipts) : 0
-    fl                      = length(nondispatch_deliveries) > 0 ? sum(_calc_fl(gm.data, delivery[j]) for j in nondispatch_deliveries) : 0
-    fgmax                   = length(dispatch_receipts) > 0 ? sum(_calc_fgmax(gm.data, receipt[j]) for j in dispatch_receipts) : 0
-    flmax                   = length(dispatch_deliveries) > 0 ? sum(_calc_flmax(gm.data, delivery[j]) for j in dispatch_deliveries) : 0
-    fgmin                   = length(dispatch_receipts) > 0 ? sum(_calc_fgmin(gm.data, receipt[j]) for j in dispatch_receipts) : 0
-    flmin                   = length(dispatch_deliveries) > 0 ? sum(_calc_flmin(gm.data, delivery[j]) for j in dispatch_deliveries) : 0
+    fg                      = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
+    fl                      = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
+    fgmax                   = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
+    flmax                   = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
+    fgmin                   = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
+    flmin                   = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
 
     constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, flmin, flmax, fgmin, fgmax)
 end
@@ -316,12 +316,12 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int=gm.cnw)
     dispatch_deliveries      = ref(gm,n,:junction_dispatchable_deliveries,i)
     nondispatch_deliveries   = ref(gm,n,:junction_nondispatchable_deliveries,i)
 
-    fg        = length(nondispatch_receipts) > 0 ? sum(_calc_fg(gm.data, receipt[j]) for j in nondispatch_receipts) : 0
-    fl        = length(nondispatch_deliveries) > 0 ? sum(_calc_fl(gm.data, delivery[j]) for j in nondispatch_deliveries) : 0
-    fgmax     = length(dispatch_receipts) > 0 ? sum(_calc_fgmax(gm.data, receipt[j])  for  j in dispatch_receipts)  : 0
-    flmax     = length(dispatch_deliveries) > 0 ? sum(_calc_flmax(gm.data, delivery[j])  for  j in dispatch_deliveries)  : 0
-    fgmin     = length(dispatch_receipts) > 0 ? sum(_calc_fgmin(gm.data, receipt[j])  for  j in dispatch_receipts)  : 0
-    flmin     = length(dispatch_deliveries) > 0 ? sum(_calc_flmin(gm.data, delivery[j])  for  j in dispatch_deliveries)  : 0
+    fg        = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
+    fl        = length(nondispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
+    fgmax     = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"]  for  j in dispatch_receipts)  : 0
+    flmax     = length(dispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_max"]  for  j in dispatch_deliveries)  : 0
+    fgmin     = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"]  for  j in dispatch_receipts)  : 0
+    flmin     = length(dispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_min"]  for  j in dispatch_deliveries)  : 0
 
     constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl, fg, dispatch_deliveries, dispatch_receipts, flmin, flmax, fgmin, fgmax)
 end
@@ -523,11 +523,11 @@ end
 function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int=gm.cnw)
     compressor     = ref(gm,n,:compressor,k)
     power_max      = compressor["power_max"]
-    gamma          = ref(gm,n,:specific_heat_capacity_ratio)
+    gamma          = gm.data["specific_heat_capacity_ratio"]
     magic_num      = 286.76
     m              = ((gamma - 1) / gamma) / 2
-    T              = ref(gm,n,:temperature)
-    G              = ref(gm,n,:gas_specific_gravity)
+    T              = gm.data["temperature"]
+    G              = gm.data["gas_specific_gravity"]
     work           = ((magic_num / G) * T * (gamma/(gamma-1)))
     constraint_compressor_energy(gm, n, k, power_max, m, work)
 end
