@@ -8,8 +8,8 @@
         @test occursin("name: gaslib40", output)
         @test occursin("Table: junction", output)
         @test occursin("Table: pipe", output)
-        @test occursin("Table: producer", output)
-        @test occursin("Table: consumer", output)
+        @test occursin("Table: receipt", output)
+        @test occursin("Table: delivery", output)
     end
 
     @testset "check status=false components" begin
@@ -55,9 +55,9 @@
         @test line_count >= 180 && line_count <= 220
         @test occursin("name: gaslib-40", output)
         @test occursin("pipe: 39", output)
-        @test occursin("consumer: 29", output)
+        @test occursin("delivery: 29", output)
         @test occursin("junction: 46", output)
-        @test occursin("producer: 3", output)
+        @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
         @test occursin("qg: 201.389", output)
     end
@@ -86,8 +86,8 @@
 
         @test length(gas_data["connection"]) == 4
         @test length(gas_data["junction"]) == 4
-        @test length(gas_data["producer"]) == 0
-        @test length(gas_data["consumer"]) == 2
+        @test length(gas_data["receipt"]) == 0
+        @test length(gas_data["delivery"]) == 2
 
         #TODO see if we can get one of these test working
         #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
@@ -144,13 +144,13 @@
 
         data = GasModels.parse_file(gas_file)
 
-        data["junction"]["1"]["pmin"] = -1
+        data["junction"]["1"]["p_min"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
-        data["junction"]["1"]["pmin"] = 3.0
+        data["junction"]["1"]["p_min"] = 3.0
 
-        data["junction"]["1"]["pmax"] = -1
+        data["junction"]["1"]["p_max"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
-        data["junction"]["1"]["pmax"] = 6.0
+        data["junction"]["1"]["p_max"] = 6.0
 
         data["pipe"]["1"]["diameter"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
@@ -197,7 +197,7 @@
 
         @test gas_data["pipe"]["2"]["status"] == 0
         @test gas_data["pipe"]["4"]["status"] == 0
-        @test gas_data["consumer"]["2"]["status"] == 0
-        @test gas_data["consumer"]["4"]["status"] == 0
+        @test gas_data["delivery"]["2"]["status"] == 0
+        @test gas_data["delivery"]["4"]["status"] == 0
     end
 end

@@ -9,8 +9,8 @@ function constraint_pipe_weymouth(gm::AbstractNLPModel, n::Int, k, i, j, f_min, 
     pi = var(gm, n, :p, i)
     pj = var(gm, n, :p, j)
     f  = var(gm, n, :f_pipe, k)
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
+    _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
+    _add_constraint!(gm, n, "resistance"eymouth2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
 end
 
 
@@ -19,8 +19,8 @@ function constraint_resistor_weymouth(gm::AbstractNLPModel, n::Int, k, i, j, f_m
     pi = var(gm, n, :p, i)
     pj = var(gm, n, :p, j)
     f  = var(gm, n, :f_resistor, k)
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
+    _add_constraint!(gm, n, "resistance"eymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
+    _add_constraint!(gm, n, "resistance"eymouth2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
 end
 
 
@@ -31,11 +31,11 @@ function constraint_pipe_weymouth_directed(gm::AbstractNLPModel, n::Int, k, i, j
     f  = var(gm, n, :f_pipe, k)
 
     if directed == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
     else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
     end
 end
 
@@ -47,11 +47,11 @@ function constraint_resistor_weymouth_directed(gm::AbstractNLPModel, n::Int, k, 
     f  = var(gm, n, :f_resistor, k)
 
     if directed == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
     else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
+        _add_constraint!(gm, n, "resistance"eymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
     end
 end
 
@@ -69,11 +69,11 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractNLPModel,  n::Int, k, 
 
     # The big M needs to be the min and max pressure difference in either direction multiplied by w (referenced by i to j or j to i)
     if direction == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp) * w * pd_max))
+        _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
+        _add_constraint!(gm, n, "resistance"eymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp) * w * pd_max))
     else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp) * w * pd_max))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp) * w * pd_min))
+        _add_constraint!(gm, n, "resistance"eymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp) * w * pd_max))
+        _add_constraint!(gm, n, "resistance"eymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp) * w * pd_min))
     end
 end
 
@@ -85,8 +85,8 @@ function constraint_pipe_weymouth_ne(gm::AbstractNLPModel,  n::Int, k, i, j, w, 
     zp = var(gm, n, :zp, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
-    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) + (1-zp) * w * pd_min))
-    _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp) * w * pd_max))
+    _add_constraint!(gm, n, "resistance"eymouth_ne1, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) + (1-zp) * w * pd_min))
+    _add_constraint!(gm, n, "resistance"eymouth_ne2, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp) * w * pd_max))
 end
 
 
@@ -127,17 +127,17 @@ end
 ##########################################################################################################
 
 "constraints on pressure drop across control valves that are undirected"
-function constraint_on_off_control_valve_pressure(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
+function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
     pi = var(gm, n, :p, i)
     pj = var(gm, n, :p, j)
-    v  = var(gm, n, :v_control_valve, k)
-    f  = var(gm, n, :f_control_valve, k)
+    v  = var(gm, n, :v_regulator, k)
+    f  = var(gm, n, :f_regulator, k)
 
     M = abs(max(i_pmax, j_pmax)) - abs(min(i_pmin, j_pmin))
     #TODO this constraint is only valid if max_ratio = 1
-    _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
-    _add_constraint!(gm, n, :control_valve_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
-    _add_constraint!(gm, n, :control_valve_pressure_drop3, k, JuMP.@constraint(gm.model, f * (pi - pj) >= 0))
+    _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
+    _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model, f * (pi - pj) >= 0))
 end
 
 

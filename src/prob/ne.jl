@@ -67,15 +67,15 @@ function post_ne(gm::AbstractGasModel; kwargs...)
         constraint_on_off_valve_pressure(gm, i)
     end
 
-    for i in ids(gm, :control_valve)
-        constraint_on_off_control_valve_mass_flow(gm, i)
-        constraint_on_off_control_valve_pressure(gm, i)
+    for i in ids(gm, :regulator)
+        constraint_on_off_regulator_mass_flow(gm, i)
+        constraint_on_off_regulator_pressure(gm, i)
     end
 
     exclusive = Dict()
     for (idx, pipe) in gm.ref[:nw][gm.cnw][:ne_pipe]
-        i = min(pipe["f_junction"],pipe["t_junction"])
-        j = max(pipe["f_junction"],pipe["t_junction"])
+        i = min(pipe["fr_junction"],pipe["to_junction"])
+        j = max(pipe["fr_junction"],pipe["to_junction"])
 
         if haskey(exclusive, i) == false
             exclusive[i] = Dict()
@@ -105,7 +105,7 @@ end
 
 "Add the compressor solutions"
 function add_compressor_ratio_ne_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
+    add_setpoint!(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
 end
 
 

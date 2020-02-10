@@ -47,9 +47,9 @@ function post_ls(gm::AbstractGasModel)
         constraint_on_off_valve_pressure(gm, i)
     end
 
-    for i in ids(gm, :control_valve)
-        constraint_on_off_control_valve_mass_flow(gm, i)
-        constraint_on_off_control_valve_pressure(gm, i)
+    for i in ids(gm, :regulator)
+        constraint_on_off_regulator_mass_flow(gm, i)
+        constraint_on_off_regulator_pressure(gm, i)
     end
 end
 

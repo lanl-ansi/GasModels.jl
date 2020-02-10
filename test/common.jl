@@ -1,8 +1,8 @@
 ""
 function check_pressure_status(sol, gm)
     for (idx,val) in sol["junction"]
-        @test val["p"] <= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["pmax"]
-        @test val["p"] >= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["pmin"]
+        @test val["p"] <= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["p_max"]
+        @test val["p"] >= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["p_min"]
     end
 end
 
@@ -10,8 +10,8 @@ end
 ""
 function check_pressure_status(sol, gm)
     for (idx,val) in sol["junction"]
-        @test val["p"] <= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["pmax"]
-        @test val["p"] >= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["pmin"]
+        @test val["p"] <= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["p_max"]
+        @test val["p"] >= gm.ref[:nw][gm.cnw][:junction][parse(Int64,idx)]["p_min"]
     end
 end
 

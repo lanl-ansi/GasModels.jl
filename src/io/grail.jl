@@ -1,7 +1,7 @@
 """
 Loads a Grail json document and converts it into the GasModels data structure
 """
-function parse_grail(network_file::AbstractString, time_series_file::AbstractString; time_point = 1, slack_producers = false)
+function parse_grail(network_file::AbstractString, time_series_file::AbstractString; time_point = 1, slack_receipts = false)
     network_data = open(network_file, "r") do io
         JSON.parse(io)
     end
@@ -33,11 +33,11 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
     end
 
     gm_junctions = Dict{String,Any}()
-    gm_producers = Dict{String,Any}()
-    gm_consumers = Dict{String,Any}()
+    gm_receipts = Dict{String,Any}()
+    gm_deliveries = Dict{String,Any}()
 
-    producer_count = 1
-    consumer_count = 1
+    receipt_count = 1
+    delivery_count = 1
 
     node_id_to_junction_id = Dict{Int,Int}()
     for (i, node) in g_nodes
@@ -47,8 +47,8 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
 
         gm_junction = Dict{String,Any}(
             "index" => junction_id,
-            "pmax" => node["pmax"],
-            "pmin" =>  node["pmin"],
+            "p_max" => node["p_max"],
+            "p_min" =>  node["p_min"],
             "latitude" => node["lat"],
             "longitude" => node["lon"],
             # other stuff from grail data format
@@ -65,8 +65,8 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
             for withdrawal in g_node_withdrawal[node["index"]]
                 if withdrawal > 0
                     #=
-                    gm_consumer = Dict{String,Any}(
-                        "index" => consumer_count,
+                    gm_delivery = Dict{String,Any}(
+                        "index" => delivery_count,
                         "ql_junc" => junction_id,
                         "qlmax" => 0.0,
                         "qlmin" => 0.0,
@@ -74,8 +74,8 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
                     )
                     =#
 
-                    gm_consumer = Dict{String,Any}(
-                        "index" => consumer_count,
+                    gm_delivery = Dict{String,Any}(
+                        "index" => delivery_count,
                         "ql_junc" => junction_id,
                         "qlmax" => withdrawal,
                         "qlmin" => 0.0,
@@ -83,14 +83,14 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
                     )
 
 
-                    consumer_index = "$(gm_consumer["index"])"
-                    @assert !haskey(gm_consumers, consumer_index)
-                    gm_consumers[consumer_index] = gm_consumer
-                    consumer_count += 1
+                    delivery_index = "$(gm_delivery["index"])"
+                    @assert !haskey(gm_deliveries, delivery_index)
+                    gm_deliveries[delivery_index] = gm_delivery
+                    delivery_count += 1
                 else
                     #=
-                    gm_producer = Dict{String,Any}(
-                        "index" => producer_count,
+                    gm_receipt = Dict{String,Any}(
+                        "index" => receipt_count,
                         "qg_junc" => junction_id,
                         "qgmax" => 0.0,
                         "qgmin" => 0.0,
@@ -98,44 +98,44 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
                     )
                     =#
 
-                    gm_producer = Dict{String,Any}(
-                        "index" => producer_count,
+                    gm_receipt = Dict{String,Any}(
+                        "index" => receipt_count,
                         "qg_junc" => junction_id,
                         "qgmax" => -withdrawal,
                         "qgmin" => 0.0,
                         "qg" => 0.0
                     )
 
-                    producer_index = "$(gm_producer["index"])"
-                    @assert !haskey(gm_producers, producer_index)
-                    gm_producers[producer_index] = gm_producer
-                    producer_count += 1
+                    receipt_index = "$(gm_receipt["index"])"
+                    @assert !haskey(gm_receipts, receipt_index)
+                    gm_receipts[receipt_index] = gm_receipt
+                    receipt_count += 1
                 end
             end
         end
 
-        if node["isslack"] != 0 && slack_producers
-            Memento.warn(_LOGGER,"adding producer at junction $(junction_id) to model slack capacity")
+        if node["isslack"] != 0 && slack_receipts
+            Memento.warn(_LOGGER,"adding receipt at junction $(junction_id) to model slack capacity")
 
-            gm_producer = Dict{String,Any}(
-                "index" => producer_count,
+            gm_receipt = Dict{String,Any}(
+                "index" => receipt_count,
                 "qg_junc" => junction_id,
                 "qgmax" => node["qmax"],
                 "qgmin" => node["qmin"],
                 "qg" => 0.0
             )
 
-            producer_index = "$(gm_producer["index"])"
-            @assert !haskey(gm_producers, producer_index)
-            gm_producers[producer_index] = gm_producer
-            producer_count += 1
+            receipt_index = "$(gm_receipt["index"])"
+            @assert !haskey(gm_receipts, receipt_index)
+            gm_receipts[receipt_index] = gm_receipt
+            receipt_count += 1
         end
 
     end
 
     #println(length(gm_junctions))
-    #println(length(gm_producers))
-    #println(length(gm_consumers))
+    #println(length(gm_receipts))
+    #println(length(gm_deliveries))
 
     gm_connections = Dict{String,Any}()
     for (i, edge) in g_edges
@@ -163,8 +163,8 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
 
         gm_connection = Dict{String,Any}(
             "index" => edge["index"],
-            "f_junction" => edge["fr_node"],
-            "t_junction" =>  edge["to_node"],
+            "fr_junction" => edge["fr_node"],
+            "to_junction" =>  edge["to_node"],
             "length" => L,
             "diameter" => D,
             "friction_factor" => edge["friction_factor"],
@@ -202,8 +202,8 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
 
         gm_junction = Dict{String,Any}(
             "index" => to_junction_index,
-            "pmax" => fr_junction["pmax"],
-            "pmin" =>  fr_junction["pmin"],
+            "p_max" => fr_junction["p_max"],
+            "p_min" =>  fr_junction["p_min"],
             "latitude" => fr_junction["latitude"],
             "longitude" => fr_junction["longitude"],
         )
@@ -215,20 +215,20 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
         # update pipe to point to new junction
         pipe = gm_connections["$(compressor["edge_id"])"]
         @assert pipe["type"] == "pipe"
-        @assert pipe["t_junction"] == compressor["node"] || pipe["f_junction"] == compressor["node"]
+        @assert pipe["to_junction"] == compressor["node"] || pipe["fr_junction"] == compressor["node"]
 
         # FOLLOW UP: this could be an indication of a compressor orientation issue
-        if pipe["f_junction"] == compressor["node"]
-            pipe["f_junction"] = to_junction_index
+        if pipe["fr_junction"] == compressor["node"]
+            pipe["fr_junction"] = to_junction_index
         else
-            pipe["t_junction"] = to_junction_index
+            pipe["to_junction"] = to_junction_index
         end
 
         compressor_index = compressor_offset + compressor_count
         gm_connection = Dict{String,Any}(
             "index" => compressor_index,
-            "f_junction" => compressor["node"],
-            "t_junction" => to_junction_index,
+            "fr_junction" => compressor["node"],
+            "to_junction" => to_junction_index,
             "c_ratio_max" => compressor["cmax"],
             "c_ratio_min" => compressor["cmin"],
             "type" => "compressor",
@@ -249,13 +249,13 @@ function parse_grail(network_file::AbstractString, time_series_file::AbstractStr
         "name" => split(network_file,'.')[1],
         "multinetwork" => false,
         "junction" => gm_junctions,
-        "producer" => gm_producers,
-        "consumer" => gm_consumers,
+        "receipt" => gm_receipts,
+        "delivery" => gm_deliveries,
         "connection" => gm_connections
     )
 
-    #println("total production = $(sum([producer["qg"] for (i,producer) in gm_producers]))")
-    #println("total consumption = $(sum([consumer["qlfirm"] for (i,consumer) in gm_consumers]))")
+    #println("total production = $(sum([receipt["qg"] for (i,receipt) in gm_receipts]))")
+    #println("total consumption = $(sum([delivery["qlfirm"] for (i,delivery) in gm_deliveries]))")
 
     return gm_network
 end

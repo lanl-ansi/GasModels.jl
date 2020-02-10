@@ -7,7 +7,7 @@
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -15.377535238085375; atol = 1e-6)
             GasModels.make_si_unit!(result["solution"])
-            @test isapprox(result["solution"]["producer"]["6"]["fg"], 123.68517579504999; atol = 1e-6)
+            @test isapprox(result["solution"]["receipt"]["6"]["fg"], 123.68517579504999; atol = 1e-6)
         end
 
         @testset "gaslib 40 nlp ogf binding energy constraint" begin
@@ -17,7 +17,7 @@
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -11.56408051038651; atol = 1e-6)
             GasModels.make_si_unit!(result["solution"])
-            @test isapprox(result["solution"]["producer"]["6"]["fg"], 97.88470742690157; atol = 1e-6)
+            @test isapprox(result["solution"]["receipt"]["6"]["fg"], 97.88470742690157; atol = 1e-6)
         end
     end
 end

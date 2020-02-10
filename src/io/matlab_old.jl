@@ -19,7 +19,7 @@ mlab_data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
     "mgc.standard_density", "mgc.baseP", "mgc.baseF", "mgc.junction",
     "mgc.pipe", "mgc.ne_pipe", "mgc.compressor", "mgc.ne_compressor",
-    "mgc.producer", "mgc.consumer","mgc.junction_name", "mgc.per_unit"
+    "mgc.receipt", "mgc.delivery","mgc.junction_name", "mgc.per_unit"
 ]
 
 mlab_junction_columns = [
@@ -36,8 +36,8 @@ mlab_junction_name_columns = [
 
 mlab_pipe_columns = [
     ("pipline_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("diameter", Float64),
     ("length", Float64),
     ("friction_factor", Float64),
@@ -46,8 +46,8 @@ mlab_pipe_columns = [
 
 mlab_ne_pipe_columns = [
     ("pipline_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("diameter", Float64),
     ("length", Float64),
     ("friction_factor", Float64),
@@ -57,8 +57,8 @@ mlab_ne_pipe_columns = [
 
 mlab_compressor_columns = [
     ("compressor_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("c_ratio_min", Float64), ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("fmin", Float64),
@@ -68,8 +68,8 @@ mlab_compressor_columns = [
 
 mlab_ne_compressor_columns = [
     ("compressor_i", Int),
-    ("f_junction", Int),
-    ("t_junction", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("c_ratio_min", Float64), ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("fmin", Float64),
@@ -78,8 +78,8 @@ mlab_ne_compressor_columns = [
     ("construction_cost", Float64)
 ]
 
-mlab_producer_columns = [
-    ("producer_i", Int),
+mlab_receipt_columns = [
+    ("receipt_i", Int),
     ("junction", Int),
     ("fg_min", Float64), ("fg_max", Float64),
     ("fg", Float64),
@@ -87,8 +87,8 @@ mlab_producer_columns = [
     ("dispatchable", Int)
 ]
 
-mlab_consumer_columns = [
-    ("consumer_i", Int),
+mlab_delivery_columns = [
+    ("delivery_i", Int),
     ("junction", Int),
     ("fd", Float64),
     ("status", Float64),
@@ -229,24 +229,24 @@ function parse_m_string(data_string::String)
         case["ne_compressor"] = ne_compressors
     end
 
-    if haskey(matlab_data, "mgc.producer")
-        producers = []
-        for producer_row in matlab_data["mgc.producer"]
-            producer_data = InfrastructureModels.row_to_typed_dict(producer_row, mlab_producer_columns)
-            producer_data["index"] = InfrastructureModels.check_type(Int, producer_row[1])
-            push!(producers, producer_data)
+    if haskey(matlab_data, "mgc.receipt")
+        receipts = []
+        for receipt_row in matlab_data["mgc.receipt"]
+            receipt_data = InfrastructureModels.row_to_typed_dict(receipt_row, mlab_receipt_columns)
+            receipt_data["index"] = InfrastructureModels.check_type(Int, receipt_row[1])
+            push!(receipts, receipt_data)
         end
-        case["producer"] = producers
+        case["receipt"] = receipts
     end
 
-    if haskey(matlab_data, "mgc.consumer")
-        consumers = []
-        for consumer_row in matlab_data["mgc.consumer"]
-            consumer_data = InfrastructureModels.row_to_typed_dict(consumer_row, mlab_consumer_columns)
-            consumer_data["index"] = InfrastructureModels.check_type(Int, consumer_row[1])
-            push!(consumers, consumer_data)
+    if haskey(matlab_data, "mgc.delivery")
+        deliveries = []
+        for delivery_row in matlab_data["mgc.delivery"]
+            delivery_data = InfrastructureModels.row_to_typed_dict(delivery_row, mlab_delivery_columns)
+            delivery_data["index"] = InfrastructureModels.check_type(Int, delivery_row[1])
+            push!(deliveries, delivery_data)
         end
-        case["consumer"] = consumers
+        case["delivery"] = deliveries
     end
 
     if haskey(matlab_data, "mgc.junction_name")
@@ -310,8 +310,8 @@ function _matlab_to_gasmodels(mlab_data::Dict{String,Any})
 
     # translate component models
     _mlab2gm_baseQ!(gm_data)
-    _mlab2gm_producer!(gm_data)
-    _mlab2gm_consumer!(gm_data)
+    _mlab2gm_receipt!(gm_data)
+    _mlab2gm_delivery!(gm_data)
     _mlab2gm_conmpressor!(gm_data)
     _mlab2gm_ne_compressor!(gm_data)
 
@@ -331,31 +331,31 @@ function _mlab2gm_baseQ!(data::Dict{String,Any})
     delete!(data, "baseF")
 end
 
-"adds the volumetric firm and flexible flows for the producers"
-function _mlab2gm_producer!(data::Dict{String,Any})
-    producers = [producer for producer in data["producer"]]
-    for producer in producers
-        producer["qg_junc"] = producer["junction"]
-        producer["qgmin"]  = producer["fg_min"] / data["standard_density"]
-        producer["qgmax"]  = producer["fg_max"] / data["standard_density"]
-        producer["qg"]     = producer["fg"] / data["standard_density"]
-        delete!(producer, "fg")
-        delete!(producer, "fg_min")
-        delete!(producer, "fg_max")
+"adds the volumetric firm and flexible flows for the receipts"
+function _mlab2gm_receipt!(data::Dict{String,Any})
+    receipts = [receipt for receipt in data["receipt"]]
+    for receipt in receipts
+        receipt["qg_junc"] = receipt["junction"]
+        receipt["qgmin"]  = receipt["fg_min"] / data["standard_density"]
+        receipt["qgmax"]  = receipt["fg_max"] / data["standard_density"]
+        receipt["qg"]     = receipt["fg"] / data["standard_density"]
+        delete!(receipt, "fg")
+        delete!(receipt, "fg_min")
+        delete!(receipt, "fg_max")
     end
 end
 
-"adds the volumetric firm and flexible flows for the consumers"
-function _mlab2gm_consumer!(data::Dict{String,Any})
-    consumers = [consumer for consumer in data["consumer"]]
-    for consumer in consumers
-        consumer["ql_junc"] = consumer["junction"]
+"adds the volumetric firm and flexible flows for the deliveries"
+function _mlab2gm_delivery!(data::Dict{String,Any})
+    deliveries = [delivery for delivery in data["delivery"]]
+    for delivery in deliveries
+        delivery["ql_junc"] = delivery["junction"]
 
-        consumer["qlmin"] = 0
-        consumer["qlmax"] = consumer["fd"] / data["standard_density"]
-        consumer["ql"] = consumer["fd"] / data["standard_density"]
+        delivery["qlmin"] = 0
+        delivery["qlmax"] = delivery["fd"] / data["standard_density"]
+        delivery["ql"] = delivery["fd"] / data["standard_density"]
 
-        delete!(consumer, "fd")
+        delete!(delivery, "fd")
     end
 end
 

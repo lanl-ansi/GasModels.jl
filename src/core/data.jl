@@ -3,9 +3,9 @@
 "Computes the maximum volume of the Gas Model"
 function _calc_max_volume_flow(data::Dict{String,Any})
     max_flow = 0
-    for (idx, producer) in data["producer"]
-        if producer["qgmax"] > 0
-          max_flow = max_flow + producer["qgmax"]
+    for (idx, receipt) in data["receipt"]
+        if receipt["qgmax"] > 0
+          max_flow = max_flow + receipt["qgmax"]
         end
     end
     return max_flow
@@ -80,46 +80,46 @@ function _calc_pipe_resistance_smeers(ref::Dict{Symbol,Any},pipe::Dict{String,An
 end
 
 "calculates minimum mass flow consumption"
-function _calc_flmin(data::Dict{String,Any}, consumer::Dict{String,Any})
-    return consumer["qlmin"] * data["standard_density"]
+function _calc_flmin(data::Dict{String,Any}, delivery::Dict{String,Any})
+    return delivery["qlmin"] * data["standard_density"]
 end
 
 
 "calculates maximum mass flow consumption"
-function _calc_flmax(data::Dict{String,Any}, consumer::Dict{String,Any})
-    return consumer["qlmax"] * data["standard_density"]
+function _calc_flmax(data::Dict{String,Any}, delivery::Dict{String,Any})
+    return delivery["qlmax"] * data["standard_density"]
 end
 
 
 "calculates constant mass flow consumption"
-function _calc_fl(data::Dict{String,Any}, consumer::Dict{String,Any})
-    return consumer["ql"] * data["standard_density"]
+function _calc_fl(data::Dict{String,Any}, delivery::Dict{String,Any})
+    return delivery["ql"] * data["standard_density"]
 end
 
 
 "calculates minimum mass flow production"
-function _calc_fgmin(data::Dict{String,Any}, producer::Dict{String,Any})
-    return producer["qgmin"] * data["standard_density"]
+function _calc_fgmin(data::Dict{String,Any}, receipt::Dict{String,Any})
+    return receipt["qgmin"] * data["standard_density"]
 end
 
 
 "calculates maximum mass flow production"
-function _calc_fgmax(data::Dict{String,Any}, producer::Dict{String,Any})
-    return producer["qgmax"] * data["standard_density"]
+function _calc_fgmax(data::Dict{String,Any}, receipt::Dict{String,Any})
+    return receipt["qgmax"] * data["standard_density"]
 end
 
 
 "calculates constant mass flow production"
-function _calc_fg(data::Dict{String,Any}, producer::Dict{String,Any})
-    return producer["qg"] * data["standard_density"]
+function _calc_fg(data::Dict{String,Any}, receipt::Dict{String,Any})
+    return receipt["qg"] * data["standard_density"]
 end
 
 
 "calculates the minimum flow on a pipe"
 function _calc_pipe_fmin(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_min         = ref[:pipe_ref][k][:pd_min]
-    w              = ref[:pipe_ref][k][:w]
+    pd_min         = ref[:pipe][k]["pd_min"]
+    w              = ref[:pipe][k]["resistance"]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
@@ -128,8 +128,8 @@ end
 "calculates the maximum flow on a pipe"
 function _calc_pipe_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_max         = ref[:pipe_ref][k][:pd_max]
-    w              = ref[:pipe_ref][k][:w]
+    pd_max         = ref[:pipe][k]["pd_max"]
+    w              = ref[:pipe][k]["resistance"]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
@@ -138,8 +138,8 @@ end
 "calculates the minimum flow on a resistor"
 function _calc_resistor_fmin(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_min         = ref[:resistor_ref][k][:pd_min]
-    w              = ref[:resistor_ref][k][:w]
+    pd_min         = ref[:resistor][k]["pd_min"]
+    w              = ref[:resistor][k]["resistance"]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
@@ -148,8 +148,8 @@ end
 "calculates the maximum flow on a resistor"
 function _calc_resistor_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_max         = ref[:resistor_ref][k][:pd_max]
-    w              = ref[:resistor_ref][k][:w]
+    pd_max         = ref[:resistor][k]["pd_max"]
+    w              = ref[:resistor][k]["resistance"]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
@@ -158,8 +158,8 @@ end
 "calculates the minimum flow on a pipe"
 function _calc_ne_pipe_fmin(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_min         = ref[:ne_pipe_ref][k][:pd_min]
-    w              = ref[:ne_pipe_ref][k][:w]
+    pd_min         = ref[:ne_pipe_ref][k]["pd_min"]
+    w              = ref[:ne_pipe_ref][k]["resistance"]
     pf_min         = pd_min < 0 ? -sqrt(w*abs(pd_min)) : sqrt(w*abs(pd_min))
     return max(-mf, pf_min)
 end
@@ -168,8 +168,8 @@ end
 "calculates the maximum flow on a pipe"
 function _calc_ne_pipe_fmax(ref::Dict{Symbol,Any}, k)
     mf             = ref[:max_mass_flow]
-    pd_max         = ref[:ne_pipe_ref][k][:pd_max]
-    w              = ref[:ne_pipe_ref][k][:w]
+    pd_max         = ref[:ne_pipe_ref][k]["pd_max"]
+    w              = ref[:ne_pipe_ref][k]["resistance"]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
     return min(mf, pf_max)
 end
@@ -224,13 +224,13 @@ end
 
 
 "calculates the minimum flow on a control valve"
-function _calc_control_valve_fmin(ref::Dict{Symbol,Any}, k)
+function _calc_regulator_fmin(ref::Dict{Symbol,Any}, k)
     return -ref[:max_mass_flow]
 end
 
 
 "calculates the maximum flow on a control valve"
-function _calc_control_valve_fmax(ref::Dict{Symbol,Any}, k)
+function _calc_regulator_fmax(ref::Dict{Symbol,Any}, k)
     return ref[:max_mass_flow]
 end
 
@@ -243,91 +243,91 @@ end
 
 "calculates connections in parallel with one another and their orientation"
 function _calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
-    i = min(connection["f_junction"], connection["t_junction"])
-    j = max(connection["f_junction"], connection["t_junction"])
+    i = min(connection["fr_junction"], connection["to_junction"])
+    j = max(connection["fr_junction"], connection["to_junction"])
 
     parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
     parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
     parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
     parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
     parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
-    parallel_control_valves = haskey(ref(gm,n,:parallel_control_valves), (i,j)) ? ref(gm,n,:parallel_control_valves, (i,j)) : []
+    parallel_regulators = haskey(ref(gm,n,:parallel_regulators), (i,j)) ? ref(gm,n,:parallel_regulators, (i,j)) : []
     parallel_ne_pipes       = haskey(ref(gm,n,:parallel_ne_pipes), (i,j)) ? ref(gm,n,:parallel_ne_pipes, (i,j)) : []
     parallel_ne_compressors = haskey(ref(gm,n,:parallel_ne_compressors), (i,j)) ? ref(gm,n,:parallel_ne_compressors, (i,j)) : []
 
     num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
-                      length(parallel_valves) + length(parallel_control_valves) + length(parallel_ne_pipes) + length(parallel_ne_compressors)
+                      length(parallel_valves) + length(parallel_regulators) + length(parallel_ne_pipes) + length(parallel_ne_compressors)
 
     pipes = ref(gm,n,:pipe)
     compressors = ref(gm,n,:compressor)
     resistors = ref(gm,n,:resistor)
     short_pipes = ref(gm,n,:short_pipe)
     valves = ref(gm,n,:valve)
-    control_valves = ref(gm,n,:control_valve)
+    regulators = ref(gm,n,:regulator)
     ne_pipes = ref(gm,n,:ne_pipe)
     ne_compressors = ref(gm,n,:ne_compressor)
 
-    aligned_pipes           = filter(i -> pipes[i]["f_junction"] == connection["f_junction"], parallel_pipes)
-    opposite_pipes          = filter(i -> pipes[i]["f_junction"] != connection["f_junction"], parallel_pipes)
-    aligned_compressors     = filter(i -> compressors[i]["f_junction"] == connection["f_junction"], parallel_compressors)
-    opposite_compressors    = filter(i -> compressors[i]["f_junction"] != connection["f_junction"], parallel_compressors)
-    aligned_resistors       = filter(i -> resistors[i]["f_junction"] == connection["f_junction"], parallel_resistors)
-    opposite_resistors      = filter(i -> resistors[i]["f_junction"] != connection["f_junction"], parallel_resistors)
-    aligned_short_pipes     = filter(i -> short_pipes[i]["f_junction"] == connection["f_junction"], parallel_short_pipes)
-    opposite_short_pipes    = filter(i -> short_pipes[i]["f_junction"] != connection["f_junction"], parallel_short_pipes)
-    aligned_valves          = filter(i -> valves[i]["f_junction"] == connection["f_junction"], parallel_valves)
-    opposite_valves         = filter(i -> valves[i]["f_junction"] != connection["f_junction"], parallel_valves)
-    aligned_control_valves  = filter(i -> control_valves[i]["f_junction"] == connection["f_junction"], parallel_control_valves)
-    opposite_control_valves = filter(i -> control_valves[i]["f_junction"] != connection["f_junction"], parallel_control_valves)
-    aligned_ne_pipes        = filter(i -> ne_pipes[i]["f_junction"] == connection["f_junction"], parallel_ne_pipes)
-    opposite_ne_pipes       = filter(i -> ne_pipes[i]["f_junction"] != connection["f_junction"], parallel_ne_pipes)
-    aligned_ne_compressors  = filter(i -> ne_compressors[i]["f_junction"] == connection["f_junction"], parallel_ne_compressors)
-    opposite_ne_compressors = filter(i -> ne_compressors[i]["f_junction"] != connection["f_junction"], parallel_ne_compressors)
+    aligned_pipes           = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
+    opposite_pipes          = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
+    aligned_compressors     = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
+    opposite_compressors    = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
+    aligned_resistors       = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
+    opposite_resistors      = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
+    aligned_short_pipes     = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
+    opposite_short_pipes    = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
+    aligned_valves          = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
+    opposite_valves         = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
+    aligned_regulators  = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
+    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
+    aligned_ne_pipes        = filter(i -> ne_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_ne_pipes)
+    opposite_ne_pipes       = filter(i -> ne_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_ne_pipes)
+    aligned_ne_compressors  = filter(i -> ne_compressors[i]["fr_junction"] == connection["fr_junction"], parallel_ne_compressors)
+    opposite_ne_compressors = filter(i -> ne_compressors[i]["fr_junction"] != connection["fr_junction"], parallel_ne_compressors)
 
     return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
-           aligned_control_valves, opposite_control_valves, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors
+           aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors
 end
 
 
 "calculates connections in parallel with one another and their orientation"
 function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
-    i = min(connection["f_junction"], connection["t_junction"])
-    j = max(connection["f_junction"], connection["t_junction"])
+    i = min(connection["fr_junction"], connection["to_junction"])
+    j = max(connection["fr_junction"], connection["to_junction"])
 
     parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
     parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
     parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
     parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
     parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
-    parallel_control_valves = haskey(ref(gm,n,:parallel_control_valves), (i,j)) ? ref(gm,n,:parallel_control_valves, (i,j)) : []
+    parallel_regulators = haskey(ref(gm,n,:parallel_regulators), (i,j)) ? ref(gm,n,:parallel_regulators, (i,j)) : []
 
     num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
-                      length(parallel_valves) + length(parallel_control_valves)
+                      length(parallel_valves) + length(parallel_regulators)
 
     pipes = ref(gm,n,:pipe)
     compressors = ref(gm,n,:compressor)
     resistors = ref(gm,n,:resistor)
     short_pipes = ref(gm,n,:short_pipe)
     valves = ref(gm,n,:valve)
-    control_valves = ref(gm,n,:control_valve)
+    regulators = ref(gm,n,:regulator)
 
-    aligned_pipes           = filter(i -> pipes[i]["f_junction"] == connection["f_junction"], parallel_pipes)
-    opposite_pipes          = filter(i -> pipes[i]["f_junction"] != connection["f_junction"], parallel_pipes)
-    aligned_compressors     = filter(i -> compressors[i]["f_junction"] == connection["f_junction"], parallel_compressors)
-    opposite_compressors    = filter(i -> compressors[i]["f_junction"] != connection["f_junction"], parallel_compressors)
-    aligned_resistors       = filter(i -> resistors[i]["f_junction"] == connection["f_junction"], parallel_resistors)
-    opposite_resistors      = filter(i -> resistors[i]["f_junction"] != connection["f_junction"], parallel_resistors)
-    aligned_short_pipes     = filter(i -> short_pipes[i]["f_junction"] == connection["f_junction"], parallel_short_pipes)
-    opposite_short_pipes    = filter(i -> short_pipes[i]["f_junction"] != connection["f_junction"], parallel_short_pipes)
-    aligned_valves          = filter(i -> valves[i]["f_junction"] == connection["f_junction"], parallel_valves)
-    opposite_valves         = filter(i -> valves[i]["f_junction"] != connection["f_junction"], parallel_valves)
-    aligned_control_valves  = filter(i -> control_valves[i]["f_junction"] == connection["f_junction"], parallel_control_valves)
-    opposite_control_valves = filter(i -> control_valves[i]["f_junction"] != connection["f_junction"], parallel_control_valves)
+    aligned_pipes           = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
+    opposite_pipes          = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
+    aligned_compressors     = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
+    opposite_compressors    = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
+    aligned_resistors       = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
+    opposite_resistors      = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
+    aligned_short_pipes     = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
+    opposite_short_pipes    = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
+    aligned_valves          = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
+    opposite_valves         = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
+    aligned_regulators  = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
+    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
 
     return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
-           aligned_control_valves, opposite_control_valves
+           aligned_regulators, opposite_regulators
 end
 
 
@@ -340,37 +340,37 @@ end
 
 
 const _gm_component_types_order = Dict(
-    "junction" => 1.0, "connection" => 2.0, "producer" => 3.0, "consumer" => 4.0
+    "junction" => 1.0, "connection" => 2.0, "receipt" => 3.0, "delivery" => 4.0
 )
 
 
 const _gm_component_parameter_order = Dict(
     "junction_i" => 1.0, "junction_type" => 2.0,
-    "pmin" => 3.0, "pmax" => 4.0, "p_nominal" => 5.0,
+    "p_min" => 3.0, "p_max" => 4.0, "p_nominal" => 5.0,
 
     "type" => 10.0,
-    "f_junction" => 11.0, "t_junction" => 12.0,
+    "fr_junction" => 11.0, "to_junction" => 12.0,
     "length" => 13.0, "diameter" => 14.0, "friction_factor" => 15.0,
     "qmin" => 16.0, "qmax" => 17.0,
     "c_ratio_min" => 18.0, "c_ratio_max" => 19.0,
     "power_max" => 20.0,
 
-    "producer_i" => 50.0, "junction" => 51.0,
+    "receipt_i" => 50.0, "junction" => 51.0,
     "qg" => 52.0, "qgmin" => 53.0, "qgmax" => 54.0,
 
-    "consumer_i" => 70.0, "junction" => 71.0,
+    "delivery_i" => 70.0, "junction" => 71.0,
     "ql" => 72.0, "qlmin" => 73.0, "qlmax" => 74.0,
 
     "status" => 500.0,
 )
 
-const _gm_component_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
-                             "resistor", "ne_pipe", "ne_compressor", "junction", "consumer",
-                             "producer"]
+const _gm_component_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
+                             "resistor", "ne_pipe", "ne_compressor", "junction", "delivery",
+                             "receipt"]
 
-const _gm_junction_keys = ["f_junction", "t_junction", "junction"]
+const _gm_junction_keys = ["fr_junction", "to_junction", "junction"]
 
-const _gm_edge_types = ["pipe", "compressor", "valve", "control_valve", "short_pipe",
+const _gm_edge_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
                         "resistor", "ne_pipe", "ne_compressor"]
 
 
@@ -496,9 +496,9 @@ function calc_connected_components(data::Dict{String,<:Any}; edges=_gm_edge_type
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
         for edge in values(get(data, edge_type, Dict()))
-            if get(edge, "status", 1) != 0 && edge["f_junction"] in active_junction_ids && edge["t_junction"] in active_junction_ids
-                push!(neighbors[edge["f_junction"]], edge["t_junction"])
-                push!(neighbors[edge["t_junction"]], edge["f_junction"])
+            if get(edge, "status", 1) != 0 && edge["fr_junction"] in active_junction_ids && edge["to_junction"] in active_junction_ids
+                push!(neighbors[edge["fr_junction"]], edge["to_junction"])
+                push!(neighbors[edge["to_junction"]], edge["fr_junction"])
             end
         end
     end
@@ -541,9 +541,9 @@ end
 
 "for converting data types from old gasmodels to new matlab format"
 const _old_gm_matlab_data_map = Dict{String,String}(
-    "control_valve" => "regulator",
-    "consumer" => "receipt",
-    "producer" => "delivery",
+    "regulator" => "regulator",
+    "delivery" => "receipt",
+    "receipt" => "delivery",
     "gas_specific_gravity" => "specific_gravity",
     "gas_molar_mass" => "molar_mass",
     "baseP" => "base_pressure",
@@ -556,14 +556,14 @@ const _old_gm_matlab_data_map = Dict{String,String}(
 const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
     "junction"  => Dict(
         "junction_i" => "id",
-        "pmin" => "pressure_lb",
-        "pmax" => "pressure_ub",
+        "p_min" => "pressure_lb",
+        "p_max" => "pressure_ub",
         "p" => "pressure",
     ),
     "compressor" => Dict(
         "compressor_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction",
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction",
         "c_ratio_min" => "compression_ratio_lb",
         "c_ratio_max" => "compression_ratio_ub",
         "power_max" => "power_ub",
@@ -572,23 +572,23 @@ const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
     ),
     "pipe" => Dict(
         "pipe_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction"
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction"
     ),
     "short_pipe" => Dict(
         "short_pipe_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction"
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction"
     ),
     "resistor" => Dict(
         "resistor_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction"
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction"
     ),
-    "control_valve" => Dict(
-        "control_valve_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction",
+    "regulator" => Dict(
+        "regulator_i" => "id",
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction",
         "c_ratio_min" => "reduction_factor_lb",
         "c_ratio_max" => "reduction_factor_ub",
         "qmin" => "flow_lb",
@@ -596,19 +596,19 @@ const _old_gm_matlab_field_map = Dict{String,Dict{String,String}}(
     ),
     "valve" => Dict(
         "valve_i" => "id",
-        "f_junction" => "fr_junction",
-        "t_junction" => "to_junction"
+        "fr_junction" => "fr_junction",
+        "to_junction" => "to_junction"
     ),
-    "consumer" => Dict(
-        "consumer_i" => "id",
+    "delivery" => Dict(
+        "delivery_i" => "id",
         "qlmin" => "flow_lb",
         "qlmax" => "flow_ub",
         "ql" => "flow",
         "qlfirm" => "flow",
         "ql_junc" => "junction"
     ),
-    "producer" => Dict(
-        "producer_i" => "id",
+    "receipt" => Dict(
+        "receipt_i" => "id",
         "qgmin" => "flow_lb",
         "qgmax" => "flow_ub",
         "qg" => "flow",

@@ -7,7 +7,7 @@
 "continous relaxation of variables associated with operating valves"
 function variable_valve_operation(gm::AbstractLPModel, n::Int=gm.cnw)
     gm.var[:nw][n][:v_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_valve", start=comp_start_value(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
-    gm.var[:nw][n][:v_control_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_control_valve", start=comp_start_value(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_regulator] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:regulator])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_regulator", start=comp_start_value(gm.ref[:nw][n][:regulator], l, "v_start", 1.0))
 end
 
 
@@ -70,12 +70,12 @@ end
 
 
 "constraints on pressure drop across control valves that are undirected--not applicable for LP models"
-function constraint_on_off_control_valve_pressure(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
+function constraint_on_off_regulator_pressure(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
 end
 
 
 "Constraint: Pressure drop across a control valves when directions is constrained--not applicable for LP models"
-function constraint_on_off_control_valve_pressure_directed(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+function constraint_on_off_regulator_pressure_directed(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
 end
 
 

@@ -182,7 +182,7 @@ Some of the common keys include:
 * `:valve` -- the set of valves in the system,
 * `:storage` -- the set of storages in the system,
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
-* `:pd_min,:pd_max` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
+* `"pd_min","pd_max"` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
 """
 function ref_add_core!(gm::AbstractGasModel)
     _ref_add_core!(gm.ref[:nw], base_length=gm.ref[:base_length])
@@ -209,21 +209,19 @@ function _ref_add_core!(nw_refs::Dict; base_length=5000.0)
         ref[:directed_pipe] = Dict(x for x in ref[:pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
         ref[:directed_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
         ref[:directed_resistor] = Dict(x for x in ref[:resistor] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
+        ref[:directed_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
 
         ref[:undirected_pipe] = Dict(x for x in ref[:pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
         ref[:undirected_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
         ref[:undirected_resistor] = Dict(x for x in ref[:resistor] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
+        ref[:undirected_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
 
-        # compressor and regulator types
-        # default allows compression/pressure-reduction with uncompressed/no-pressure reduction flow reversals
+        # compressor types
+        # default allows compression with uncompressed flow reversals
         ref[:default_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 2)
-        ref[:default_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "directionality") && x.second["directionality"] == 2)
-        
         ref[:bidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 0)
-        ref[:bidirectional_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "directionality") && x.second["directionality"] == 0)
-
         ref[:unidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 1)
-        ref[:unidirectional_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "directionality") && x.second["directionality"] == 1)
+       
 
         # dispatchable tranfers, receipts, and deliveries 
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)

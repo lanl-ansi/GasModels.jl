@@ -16,8 +16,8 @@ end
 
 "function for maximizing load"
 function objective_max_load(gm::AbstractGasModel, nws=[gm.cnw])
-    load_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:consumer) if x.second["dispatchable"] == 1)) for n in nws)
-    priorities = Dict(n => Dict(i => haskey(ref(gm,n,:consumer,i),"priority") ?  ref(gm,n,:consumer,i)["priority"] : 1.0 for i in load_set[n]) for n in nws)
+    load_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:delivery) if x.second["dispatchable"] == 1)) for n in nws)
+    priorities = Dict(n => Dict(i => haskey(ref(gm,n,:delivery,i),"priority") ?  ref(gm,n,:delivery,i)["priority"] : 1.0 for i in load_set[n]) for n in nws)
     fl         =  Dict(n => var(gm,n,:fl) for n in nws)
     obj = JuMP.@objective(gm.model, Max, sum(sum(priorities[n][i] *  fl[n][i] for i in load_set[n]) for n in nws))
  end
@@ -42,10 +42,10 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws=[gm.cnw]; weight
     fg         = Dict(n => var(gm,n,:fg) for n in nws)
     gamma      = ref(gm,gm.cnw,:specific_heat_capacity_ratio)
     m          = ((gamma - 1) / gamma) / 2
-    load_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:consumer) if x.second["dispatchable"] == 1)) for n in nws)
-    prod_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:producer) if x.second["dispatchable"] == 1)) for n in nws)
-    load_prices = Dict(n => Dict(i => haskey(ref(gm,n,:consumer,i),"price") ?  ref(gm,n,:consumer,i)["price"] : -1.0 for i in load_set[n]) for n in nws)
-    prod_prices = Dict(n => Dict(i => haskey(ref(gm,n,:producer,i),"price") ?  ref(gm,n,:producer,i)["price"] : -1.0 for i in prod_set[n]) for n in nws)
+    load_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:delivery) if x.second["dispatchable"] == 1)) for n in nws)
+    prod_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:receipt) if x.second["dispatchable"] == 1)) for n in nws)
+    load_prices = Dict(n => Dict(i => haskey(ref(gm,n,:delivery,i),"price") ?  ref(gm,n,:delivery,i)["price"] : -1.0 for i in load_set[n]) for n in nws)
+    prod_prices = Dict(n => Dict(i => haskey(ref(gm,n,:receipt,i),"price") ?  ref(gm,n,:receipt,i)["price"] : -1.0 for i in prod_set[n]) for n in nws)
 
 
     economic_weighting = ref(gm,gm.cnw,:economic_weighting)
