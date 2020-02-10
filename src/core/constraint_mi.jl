@@ -297,7 +297,6 @@ end
 
 "Constraint: Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes)"
 function constraint_source_flow(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
-
     y_pipe          = var(gm,n,:y_pipe)
     y_compressor    = var(gm,n,:y_compressor)
     y_resistor      = var(gm,n,:y_resistor)
