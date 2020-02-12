@@ -16,10 +16,19 @@ end
 
 "function for maximizing load"
 function objective_max_load(gm::AbstractGasModel, nws=[gm.cnw])
-    load_set   = Dict(n => keys(Dict(x for x in ref(gm,n,:delivery) if x.second["is_dispatchable"] == 1)) for n in nws)
+    load_set   = Dict(n => collect(keys(Dict(x for x in ref(gm,n,:delivery) if x.second["is_dispatchable"] == 1))) for n in nws)
     priorities = Dict(n => Dict(i => haskey(ref(gm,n,:delivery,i),"priority") ?  ref(gm,n,:delivery,i)["priority"] : 1.0 for i in load_set[n]) for n in nws)
     fl         =  Dict(n => var(gm,n,:fl) for n in nws)
-    obj = JuMP.@objective(gm.model, Max, sum(sum(priorities[n][i] *  fl[n][i] for i in load_set[n]) for n in nws))
+    for n in nws 
+        if length(load_set[n]) == 0
+            delete!(load_set, n)
+        end 
+    end 
+    if length(load_set) == 0
+        obj = 0 
+    else 
+        obj = JuMP.@objective(gm.model, Max, sum(sum(priorities[n][i] *  fl[n][i] for i in load_set[n]) for n in nws))
+    end
  end
 
 

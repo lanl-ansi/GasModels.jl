@@ -150,8 +150,8 @@ function constraint_compressor_ratio_value(gm::AbstractMINLPModel, n::Int, k, i,
     pi    = var(gm, n, :p, i)
     pj    = var(gm, n, :p, j)
     r = var(gm, n, :r, k)
-    _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r^2 * pi <= pj))
-    _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r^2 * pi >= pj))
+    _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@NLconstraint(gm.model, r^2 * pi <= pj))
+    _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@NLconstraint(gm.model, r^2 * pi >= pj))
 end
 
 
