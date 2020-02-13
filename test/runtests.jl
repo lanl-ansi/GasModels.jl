@@ -32,15 +32,15 @@ include("common.jl")
 @testset "GasModels" begin
     include("data.jl")
 
-    include("matlab.jl")
+    # include("matlab.jl")
 
-    include("ogf.jl")
+    # include("ogf.jl")
 
-    include("ls.jl")
+    # include("ls.jl")
 
-    include("nels.jl")
+    # include("nels.jl")
 
-    include("gf.jl")
+    # include("gf.jl")
 
-    include("ne.jl")
+    # include("ne.jl")
 end

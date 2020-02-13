@@ -1,11 +1,11 @@
 @testset "test data handling and parsing" begin
     @testset "gaslib40 summary from dict" begin
-        data = GasModels.parse_file("../test/data/matlab/gaslib40.m")
+        data = GasModels.parse_file("../test/data/matgas/gaslib-40.m")
         output = sprint(GasModels.summary, data)
 
         line_count = count(c -> c == '\n', output)
         @test line_count >= 150 && line_count <= 250
-        @test occursin("name: gaslib40", output)
+        @test occursin("name: gaslib-40", output)
         @test occursin("Table: junction", output)
         @test occursin("Table: pipe", output)
         @test occursin("Table: receipt", output)
@@ -44,7 +44,7 @@
     end
 
     @testset "check data summary" begin
-        gas_file = "../test/data/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
         GasModels.make_si_unit!(gas_data)
 
@@ -63,9 +63,9 @@
     end
 
     @testset "check solution summary" begin
-        gas_file = "../test/data/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf("../test/data/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/matgas/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
 
         output = sprint(GasModels.summary, result["solution"])
 
@@ -77,25 +77,6 @@
         @test occursin("Table: junction", output)
     end
 
-
-    @testset "check grail data parsing" begin
-        grail_network_file = "../test/data/grail-3.json"
-        grail_demand_file = "../test/data/grail-3-profile.json"
-
-        gas_data = GasModels.parse_grail(grail_network_file, grail_demand_file)
-
-        @test length(gas_data["connection"]) == 4
-        @test length(gas_data["junction"]) == 4
-        @test length(gas_data["receipt"]) == 0
-        @test length(gas_data["delivery"]) == 2
-
-        #TODO see if we can get one of these test working
-        #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
-        #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
-
-        #@test result["termination_status"] == OPTIMAL
-        #@test result["objective"] == 0.0
-    end
 
     @testset "check resistance calculations" begin
         @testset "calc pipe resistance smeers" begin
@@ -122,7 +103,7 @@
             @test  isapprox(GasModels._calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["base_pressure"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
         end
     end
-
+    #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"
 
@@ -200,4 +181,5 @@
         @test gas_data["delivery"]["2"]["status"] == 0
         @test gas_data["delivery"]["4"]["status"] == 0
     end
+    =#
 end

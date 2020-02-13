@@ -111,6 +111,10 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(storage, "flow_withdrawal_rate_max", rescale_flow)
             _apply_func!(storage, "capacity", rescale_mass)
         end
+
+        data["is_per_unit"] = 0
+        data["is_si_units"] = 1
+        data["is_english_units"] = 0
     end
 
     if get(data, "is_english_units", false) == true
@@ -130,6 +134,10 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_min", psi_to_pascal)
             _apply_func!(pipe, "p_max", psi_to_pascal)
         end
+
+        for (i, resistor) in get(data, "resistor", [])
+            _apply_func!(resistor, "diameter", inches_to_m)
+        end 
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", hp_to_watts)
@@ -181,10 +189,11 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(storage, "flow_withdrawal_rate_max", mmscfd_to_kgps)
             _apply_func!(storage, "capacity", mmscf_to_kg)
         end
+
+        data["is_per_unit"] = 0
+        data["is_si_units"] = 1
+        data["is_english_units"] = 0
     end
-    data["is_per_unit"] = 0
-    data["is_si_units"] = 1
-    data["is_english_units"] = 0
     return
 end
 
@@ -213,6 +222,10 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_min", pascal_to_psi)
             _apply_func!(pipe, "p_max", pascal_to_psi)
         end
+
+        for (i, resistor) in get(data, "resistor", [])
+            _apply_func!(resistor, "diameter", m_to_inches)
+        end 
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", watts_to_hp)
@@ -264,10 +277,11 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(storage, "flow_withdrawal_rate_max", kgps_to_mmscfd)
             _apply_func!(storage, "capacity", kg_to_mmscf)
         end
+
+        data["is_per_unit"] = 0
+        data["is_si_units"] = 0
+        data["is_english_units"] = 1
     end
-    data["is_per_unit"] = 0
-    data["is_si_units"] = 0
-    data["is_english_units"] = 1
     return
 end
 
@@ -342,10 +356,11 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(storage, "flow_withdrawal_rate_max", rescale_flow)
             _apply_func!(storage, "capacity", rescale_mass)
         end
+
+        data["is_per_unit"] = 1
+        data["is_si_units"] = 0
+        data["is_english_units"] = 0
     end
-    data["is_per_unit"] = 1
-    data["is_si_units"] = 0
-    data["is_english_units"] = 0
     return
 end
 
@@ -463,13 +478,11 @@ end
 
 
 const _gm_component_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
-                             "resistor", "ne_pipe", "ne_compressor", "junction", "delivery",
-                             "receipt"]
+    "resistor", "ne_pipe", "ne_compressor", "junction", "delivery", "receipt"]
 
 const _gm_junction_keys = ["fr_junction", "to_junction", "junction"]
 
-const _gm_edge_types = ["pipe", "compressor", "valve", "regulator", "short_pipe",
-                        "resistor", "ne_pipe", "ne_compressor"]
+const _gm_edge_types = ["pipe", "compressor", "valve", "regulator", "short_pipe", "resistor", "ne_pipe", "ne_compressor"]
 
 
 "checks that all buses are unique and other components link to valid buses"
@@ -521,7 +534,7 @@ function check_edge_loops(data::Dict{String,<:Any})
         if haskey(data, edge_type)
             for edge in values(data[edge_type])
                 if edge["fr_junction"] == edge["to_junction"]
-                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["junction_fr"])")
+                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
                 end
             end
         end
@@ -715,4 +728,45 @@ function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Di
     return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
            aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators
+end
+
+"prints the text summary for a data file to IO"
+function summary(io::IO, file::String; kwargs...)
+    data = parse_file(file)
+    summary(io, data; kwargs...)
+    return data
+end
+
+
+const _gm_component_types_order = Dict(
+    "junction" => 1.0, "pipe" => 2.0, "compressor" => 3.0, "receipt" => 4.0, "delivery" => 5.0, "transfer" => 6.0, 
+    "resistor" => 7.0, "short_pipe" => 8.0, "regulator" => 9.0, "valve" => 10.0, "storage" => 11.0
+)
+
+
+const _gm_component_parameter_order = Dict(
+    "id" => 1.0, "junction_type" => 2.0, 
+    "p_min" => 3.0, "p_max" => 4.0, "p_nominal" => 5.0,
+
+    "fr_junction" => 11.0, "to_junction" => 12.0,
+    "length" => 13.0, "diameter" => 14.0, "friction_factor" => 15.0,
+    "flow_min" => 16.0, "flow_max" => 17.0,
+    "c_ratio_min" => 18.0, "c_ratio_max" => 19.0,
+    "power_max" => 20.0, 
+
+    "junction_id" => 51.0,
+    "injection_nominal" => 52.0, "injection_min" => 53.0, "injection_max" => 54.0,
+
+    "withdrawal_nominal" => 72.0, "withdrawal_min" => 73.0, "withdrawal_max" => 74.0,
+
+    "status" => 500.0,
+)
+
+
+"prints the text summary for a data dictionary to IO"
+function summary(io::IO, data::Dict{String,Any}; kwargs...)
+    InfrastructureModels.summary(io, data;
+        component_types_order = _gm_component_types_order,
+        component_parameter_order = _gm_component_parameter_order,
+        kwargs...)
 end

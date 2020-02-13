@@ -155,7 +155,7 @@ _mg_regulator_columns = [
     ("reduction_factor_min", Float64), ("reduction_factor_max", Float64),
     ("flow_min", Float64), ("flow_max", Float64), 
     ("status", Int), 
-    ("directionality", Int),
+    ("is_bidirectional", Int),
     ("discharge_coefficient", Float64), 
     ("design_flow_rate", Float64), 
     ("design_inlet_pressure", Float64), 
@@ -248,12 +248,11 @@ function parse_m_string(data_string::String)
         if matlab_data["mgc.units"] == "si"
             case["is_si_units"] = 1
             case["is_english_units"] = 0
-        elseif matlab_data["mgc.units"] == "english"
+        elseif matlab_data["mgc.units"] == "usc"
             case["is_english_units"] = 1
             case["is_si_units"] = 0
         else 
-            case["is_english_units"] = 0
-            case["is_si_units"] = 0
+            Memento.error(_LOGGER, string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
     else
         Memento.error(_LOGGER, string("no units field found in .m file.
@@ -579,7 +578,7 @@ const non_negative_data = Dict{String,Vector{String}}(
     "pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"], 
     "compressor" => ["c_ratio_min", "c_ratio_max", "power_max", "flow_max", 
         "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "operating_cost"],
-    "resistor" => ["drag"], 
+    "resistor" => ["drag", "diameter"], 
     "transfer" => ["bid_price", "offer_price"], 
     "receipt" => ["injection_min", "injection_max", "injection_nominal", "offer_price"],
     "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"], 
