@@ -13,7 +13,7 @@ The network data dictionary structure is roughly as follows:
 "multinetwork":<boolean>,          # flag for whether or not this is multiple networks
 "gas_molar_mass":<float>,          # molecular mass of the gas. SI units are kg/mol
 "standard_density":<float>,        # Standard (nominal) density of the gas. SI units are kg/m^3
-"per_unit":<boolean>,              # Whether or not the file is in per unit (non dimensional units) or SI units.  Note that the only quantities that are non-dimensionalized are pressure and flux.  
+"per_unit":<boolean>,              # Whether or not the file is in per unit (non dimensional units) or SI units.  Note that the only quantities that are non-dimensionalized are pressure and flux.
 "compressibility_factor":<float>,  # Gas compressability. Non-dimensional.
 "baseQ":<float>,                   # Base for non-dimensionalizing volumetric flow at standard density. SI units are m^3/s
 "baseP":<float>,                   # Base for non-dimensionalizing pressure. SI units are pascal.
@@ -75,7 +75,7 @@ The network data dictionary structure is roughly as follows:
       "f_junction": <int>,          # the "from" side junction id
       "t_junction": <int>,          # the "to" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
       "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
@@ -109,7 +109,7 @@ The network data dictionary structure is roughly as follows:
     "1":{
       "f_junction": <int>,          # the "from" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).      
+      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
       "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
         ...
@@ -139,4 +139,16 @@ The following commands can be used to explore the network data dictionary,
 ```julia
 network_data = GasModels.parse_file("gaslib-40.m")
 display(network_data)
+```
+
+## Transient Data Format (CSV)
+
+The transient/time-series data will come in as one .csv file (comma separated format). The first column in the CSV format will be a time stamp in the date-time format YYYY-MM-DDTHH:MM:SS+HH:MM, where the +HH:MM indicates the timezone offset, the second column will be the component type, the third column will be the component id, the forth column will be the parameter name, and the fifth column will be the value of the parameter.  See below example for valid header names.
+
+```csv
+timestamp,component_type,component_id,parameter,value
+1992-09-12T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.104678
+1992-09-13T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.540400
+1992-09-14T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.929477
+1992-09-15T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.412720
 ```
