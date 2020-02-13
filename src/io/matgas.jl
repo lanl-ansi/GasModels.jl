@@ -15,26 +15,26 @@ end
 ### Data and functions specific to the matgas format ###
 
 _mg_data_names = [
-    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", 
-    "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R", 
-    "mgc.base_pressure", "mgc.base_length", 
-    "mgc.units", "mgc.is_per_unit", 
-    "mgc.junction", "mgc.pipe", 
-    "mgc.compressor", "mgc.receipt", 
-    "mgc.delivery", "mgc.transfer", 
-    "mgc.short_pipe", "mgc.resistor", 
-    "mgc.regulator", "mgc.valve", 
+    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
+    "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R",
+    "mgc.base_pressure", "mgc.base_length",
+    "mgc.units", "mgc.is_per_unit",
+    "mgc.junction", "mgc.pipe",
+    "mgc.compressor", "mgc.receipt",
+    "mgc.delivery", "mgc.transfer",
+    "mgc.short_pipe", "mgc.resistor",
+    "mgc.regulator", "mgc.valve",
     "mgc.storage"
 ]
 
 _mg_junction_columns = [
     ("id", Int),
-    ("p_min", Float64), ("p_max", Float64), ("p_nominal", Float64), 
-    ("junction_type", Int), 
-    ("status", Int), 
-    ("pipeline_name", Union{String,SubString{String}}), 
-    ("edi_id", Union{Int,String,SubString{String}}), 
-    ("lat", Float64), 
+    ("p_min", Float64), ("p_max", Float64), ("p_nominal", Float64),
+    ("junction_type", Int),
+    ("status", Int),
+    ("pipeline_name", Union{String,SubString{String}}),
+    ("edi_id", Union{Int,String,SubString{String}}),
+    ("lat", Float64),
     ("lon", Float64)
 ]
 
@@ -47,8 +47,8 @@ _mg_pipe_columns = [
     ("friction_factor", Float64),
     ("p_min", Float64), ("p_max", Float64),
     ("status", Int),
-    ("is_bidirectional", Int), 
-    ("pipeline_name", Union{String,SubString{String}}), 
+    ("is_bidirectional", Int),
+    ("pipeline_name", Union{String,SubString{String}}),
     ("num_spatial_discretization_points", Int)
 ]
 
@@ -59,135 +59,135 @@ _mg_compressor_columns = [
     ("c_ratio_min", Float64), ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("flow_min", Float64), ("flow_max", Float64),
-    ("inlet_p_min", Float64), ("inlet_p_max", Float64), 
+    ("inlet_p_min", Float64), ("inlet_p_max", Float64),
     ("outlet_p_min", Float64), ("outlet_p_max", Float64),
-    ("status", Int), 
-    ("operating_cost", Float64), 
-    ("directionality", Int), 
-    ("compressor_station_name", Union{String, SubString{String}}), 
-    ("pipeline_name", Union{String, SubString{String}}), 
-    ("total_installed_power", Float64), 
-    ("num_compressor_units", Int), 
-    ("compressor_type", Int), 
-    ("design_suction_pressure", Float64), 
-    ("design_discharge_pressure", Float64), 
-    ("max_compressed_volume", Float64), 
-    ("design_fuel_required", Float64), 
-    ("design_electric_power_required", Float64), 
-    ("num_units_for_peak_service", Int), 
+    ("status", Int),
+    ("operating_cost", Float64),
+    ("directionality", Int),
+    ("compressor_station_name", Union{String, SubString{String}}),
+    ("pipeline_name", Union{String, SubString{String}}),
+    ("total_installed_power", Float64),
+    ("num_compressor_units", Int),
+    ("compressor_type", SubString{String}),
+    ("design_suction_pressure", Float64),
+    ("design_discharge_pressure", Float64),
+    ("max_compressed_volume", Float64),
+    ("design_fuel_required", Float64),
+    ("design_electric_power_required", Float64),
+    ("num_units_for_peak_service", Int),
     ("peak_year", Int)
 ]
 
 _mg_short_pipe_columns = [
-    ("id", Int), 
-    ("fr_junction", Int), 
-    ("to_junction", Int), 
-    ("status", Int), 
-    ("is_bidirectional", Int), 
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
+    ("status", Int),
+    ("is_bidirectional", Int),
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
 _mg_resistor_columns = [
-    ("id", Int), 
-    ("fr_junction", Int), 
-    ("to_junction", Int), 
-    ("drag", Float64), 
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
+    ("drag", Float64),
     ("diameter", Float64),
-    ("status", Int), 
-    ("is_bidirectional", Int), 
+    ("status", Int),
+    ("is_bidirectional", Int),
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
 _mg_transfer_columns = [
-    ("id", Int), 
-    ("junction_id", Int), 
-    ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
-    ("withdrawal_nominal", Float64), 
-    ("is_dispatchable", Int), 
-    ("status", Int), 
-    ("bid_price", Float64), ("offer_price", Float64), 
-    ("exchange_point_name", Union{String, SubString{String}}), 
-    ("pipeline_name", Union{String, SubString{String}}), 
-    ("other_pipeline_name", Union{String, SubString{String}}), 
-    ("design_pressure", Float64), 
-    ("meter_capacity", Float64), 
+    ("id", Int),
+    ("junction_id", Int),
+    ("withdrawal_min", Float64), ("withdrawal_max", Float64),
+    ("withdrawal_nominal", Float64),
+    ("is_dispatchable", Int),
+    ("status", Int),
+    ("bid_price", Float64), ("offer_price", Float64),
+    ("exchange_point_name", Union{String, SubString{String}}),
+    ("pipeline_name", Union{String, SubString{String}}),
+    ("other_pipeline_name", Union{String, SubString{String}}),
+    ("design_pressure", Float64),
+    ("meter_capacity", Float64),
     ("daily_scheduled_flow", Float64)
 ]
 
 _mg_receipt_columns = [
-    ("id", Int), 
-    ("junction_id", Int), 
-    ("injection_min", Float64), ("injection_max", Float64), 
-    ("injection_nominal", Float64), 
-    ("is_dispatchable", Int), 
-    ("status", Int), 
-    ("offer_price", Float64), 
-    ("name", Union{String, SubString{String}}), 
-    ("company_name", Union{String, SubString{String}}), 
-    ("daily_scheduled_flow", Float64), 
-    ("design_capacity", Float64), 
-    ("operating_capacity", Float64), 
-    ("is_firm", Int), 
+    ("id", Int),
+    ("junction_id", Int),
+    ("injection_min", Float64), ("injection_max", Float64),
+    ("injection_nominal", Float64),
+    ("is_dispatchable", Int),
+    ("status", Int),
+    ("offer_price", Float64),
+    ("name", Union{String, SubString{String}}),
+    ("company_name", Union{String, SubString{String}}),
+    ("daily_scheduled_flow", Float64),
+    ("design_capacity", Float64),
+    ("operating_capacity", Float64),
+    ("is_firm", Int),
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
 _mg_delivery_columns = [
-    ("id", Int), 
-    ("junction_id", Int), 
-    ("withdrawal_min", Float64), ("withdrawal_max", Float64), 
-    ("withdrawal_nominal", Float64), 
-    ("is_dispatchable", Int), 
-    ("status", Int), 
-    ("bid_price", Float64), 
-    ("name", Union{String, SubString{String}}), 
-    ("company_name", Union{String, SubString{String}}), 
-    ("daily_scheduled_flow", Float64), 
-    ("design_capacity", Float64), 
-    ("operating_capacity", Float64), 
-    ("is_firm", Int), 
+    ("id", Int),
+    ("junction_id", Int),
+    ("withdrawal_min", Float64), ("withdrawal_max", Float64),
+    ("withdrawal_nominal", Float64),
+    ("is_dispatchable", Int),
+    ("status", Int),
+    ("bid_price", Float64),
+    ("name", Union{String, SubString{String}}),
+    ("company_name", Union{String, SubString{String}}),
+    ("daily_scheduled_flow", Float64),
+    ("design_capacity", Float64),
+    ("operating_capacity", Float64),
+    ("is_firm", Int),
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
 _mg_regulator_columns = [
-    ("id", Int), 
-    ("fr_junction", Int), 
-    ("to_junction", Int), 
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
     ("reduction_factor_min", Float64), ("reduction_factor_max", Float64),
-    ("flow_min", Float64), ("flow_max", Float64), 
-    ("status", Int), 
+    ("flow_min", Float64), ("flow_max", Float64),
+    ("status", Int),
     ("directionality", Int),
-    ("discharge_coefficient", Float64), 
-    ("design_flow_rate", Float64), 
-    ("design_inlet_pressure", Float64), 
-    ("design_outlet_pressure", Float64), 
+    ("discharge_coefficient", Float64),
+    ("design_flow_rate", Float64),
+    ("design_inlet_pressure", Float64),
+    ("design_outlet_pressure", Float64),
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
 _mg_valve_columns = [
-    ("id", Int), 
-    ("fr_junction", Int), 
-    ("to_junction", Int), 
-    ("status", Int), 
-    ("flow_coefficient", Float64), 
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
+    ("status", Int),
+    ("flow_coefficient", Float64),
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
 _mg_storage_columns = [
-    ("id", Int), 
-    ("junction_id", Int), 
-    ("pressure_nominal", Float64), 
-    ("flow_injection_rate_min", Float64), ("flow_injection_rate_max", Float64), 
-    ("flow_withdrawal_rate_min", Float64), ("flow_withdrawal_rate_max", Float64), 
-    ("capacity", Float64), 
-    ("status", Int), 
+    ("id", Int),
+    ("junction_id", Int),
+    ("pressure_nominal", Float64),
+    ("flow_injection_rate_min", Float64), ("flow_injection_rate_max", Float64),
+    ("flow_withdrawal_rate_min", Float64), ("flow_withdrawal_rate_max", Float64),
+    ("capacity", Float64),
+    ("status", Int),
     ("name", Union{String, SubString{String}}),
-    ("owner_name", Union{String, SubString{String}}), 
-    ("storage_type", Union{String, SubString{String}}), 
-    ("daily_withdrawal_max", Float64), 
-    ("seasonal_withdrawal_max", Float64), 
-    ("base_gas_capacity", Float64), 
-    ("working_gas_capacity", Float64), 
-    ("total_field_capacity", Float64), 
+    ("owner_name", Union{String, SubString{String}}),
+    ("storage_type", Union{String, SubString{String}}),
+    ("daily_withdrawal_max", Float64),
+    ("seasonal_withdrawal_max", Float64),
+    ("base_gas_capacity", Float64),
+    ("working_gas_capacity", Float64),
+    ("total_field_capacity", Float64),
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
@@ -231,7 +231,7 @@ function parse_m_string(data_string::String)
     end
 
     required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
-    
+
     optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit"]
 
     for data_name in required_metadata_names
@@ -243,7 +243,7 @@ function parse_m_string(data_string::String)
         end
     end
 
-    if haskey(matlab_data, "mgc.units") 
+    if haskey(matlab_data, "mgc.units")
         case["units"] = matlab_data["mgc.units"]
         if matlab_data["mgc.units"] == "si"
             case["is_si_units"] = 1
@@ -251,7 +251,7 @@ function parse_m_string(data_string::String)
         elseif matlab_data["mgc.units"] == "english"
             case["is_english_units"] = 1
             case["is_si_units"] = 0
-        else 
+        else
             case["is_english_units"] = 0
             case["is_si_units"] = 0
         end
@@ -286,19 +286,19 @@ function parse_m_string(data_string::String)
 
     if haskey(matlab_data, "mgc.R")
         case["R"] = matlab_data["mgc.R"]
-    else 
+    else
         case["R"] = 8.314
     end
 
     if haskey(matlab_data, "mgc.sound_speed")
         case["sound_speed"] = matlab_data["mgc.sound_speed"]
     else
-        # v = sqrt(gamma * R * T / M) 
+        # v = sqrt(gamma * R * T / M)
         molecular_mass_of_air = 0.02896 # kg/mol
-        gamma = case["specific_heat_capacity_ratio"] 
+        gamma = case["specific_heat_capacity_ratio"]
         T = case["temperature"] # K
         R = case["R"] # J/mol/K
-        case["sound_speed"] = round(sqrt(gamma * R * T / molecular_mass_of_air), digits=3) # m/s 
+        case["sound_speed"] = round(sqrt(gamma * R * T / molecular_mass_of_air), digits=3) # m/s
     end
 
     if haskey(matlab_data, "mgc.junction")
@@ -570,19 +570,19 @@ const _units = Dict{String,Dict{String,String}}(
 )
 
 const non_negative_metadata = [
-    "gas_specific_gravity", "specific_heat_capacity_ratio", 
+    "gas_specific_gravity", "specific_heat_capacity_ratio",
     "temperature", "sound_speed", "compressibility_factor"
 ]
 
 const non_negative_data = Dict{String,Vector{String}}(
-    "junction" => ["p_min", "p_max", "p_nominal"], 
-    "pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"], 
-    "compressor" => ["c_ratio_min", "c_ratio_max", "power_max", "flow_max", 
+    "junction" => ["p_min", "p_max", "p_nominal"],
+    "pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"],
+    "compressor" => ["c_ratio_min", "c_ratio_max", "power_max", "flow_max",
         "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "operating_cost"],
-    "resistor" => ["drag"], 
-    "transfer" => ["bid_price", "offer_price"], 
+    "resistor" => ["drag"],
+    "transfer" => ["bid_price", "offer_price"],
     "receipt" => ["injection_min", "injection_max", "injection_nominal", "offer_price"],
-    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"], 
+    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"],
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
@@ -622,7 +622,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
         push!(lines, line)
     end
     push!(lines, "")
-    
+
     for data_type in _matlab_data_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
@@ -632,7 +632,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
                 if !isempty(idxs)
                     check_id = idxs[1]
                     if haskey(data[data_type]["$check_id"], field)
-                        push!(fields_header, field) 
+                        push!(fields_header, field)
                     end
                 end
             end
@@ -649,11 +649,11 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
                                 push!(entries, "\'$(data[data_type]["$i"][field])\'")
                             elseif isa(data[data_type]["$i"][field], Float64)
                                 push!(entries, Printf.@sprintf "%.4f" data[data_type]["$i"][field])
-                            else 
+                            else
                                 push!(entries, "$(data[data_type]["$i"][field])")
                             end
-                        end 
-                    end 
+                        end
+                    end
                     push!(lines, "$(join(entries, "\t"))")
                 end
             end
@@ -679,7 +679,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
             end
         end
     end
-    
+
     push!(lines, "end\n")
 
     return join(lines, "\n")
