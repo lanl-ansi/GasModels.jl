@@ -25,6 +25,7 @@ function post_gf(gm::AbstractGasModel)
     variable_valve_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
+    variable_transfer_mass_flow(gm)
 
     for i in ids(gm, :junction)
         constraint_mass_flow_balance(gm, i)

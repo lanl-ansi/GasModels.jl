@@ -92,6 +92,10 @@ function add_production_mass_flow_setpoint!(sol, gm::AbstractGasModel)
     add_setpoint!(sol, gm, "receipt", "fg", :fg; default_value = (item) -> 0)
 end
 
+"Get the transfer mass flow set point"
+function add_transfer_mass_flow_setpoint!(sol, gm::AbstractGasModel)
+    add_setpoint!(sol, gm, "transfer", "fg", :ft; default_value = (item) -> 0)
+end
 
 "Get the load volume solutions"
 function add_load_volume_setpoint!(sol, gm::AbstractGasModel)

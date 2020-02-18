@@ -81,6 +81,14 @@ function variable_load_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::B
     end
 end
 
+"variables associated with transfer"
+function variable_transfer_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool=true)
+    if bounded 
+        gm.var[:nw][n][:ft] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_transfer))], base_name="$(n)_ft", lower_bound=ref(gm,n,:transfer,i)["withdrawal_min"], upper_bound=ref(gm,n,:transfer,i)["withdrawal_max"], start = comp_start_value(gm.ref[:nw][n][:transfer], i, "ft_start", 0.0))
+    else 
+        gm.var[:nw][n][:ft] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_transfer))], base_name="$(n)_ft", start = comp_start_value(gm.ref[:nw][n][:transfer], i, "ft_start", 0.0))
+    end 
+end
 
 "variables associated with production"
 function variable_production_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool=true)

@@ -19,6 +19,7 @@ function post_ne(gm::AbstractGasModel; kwargs...)
     variable_compressor_ne(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
+    variable_transfer_mass_flow(gm)
 
     # expansion cost objective
     objective_min_ne_cost(gm; normalization =  obj_normalization)

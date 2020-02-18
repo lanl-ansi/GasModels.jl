@@ -18,6 +18,7 @@ for (i, junction) in data["junction"]
         junction["p_max"] = junction["pmax"] 
         junction["p_nominal"] = (get(junction, "p_nominal", false) == true) ? junction["p_nominal"] : junction["pmin"]
     end
+    junction["junction_type"] = (get(junction, "junction_type", false) == true) ? Int(junction["junction_type"]) : 0
     junction["pipeline_name"] = split(ARGS[1], ".")[1]
     junction["edi_id"] = Int(junction["id"]) 
     junction["lat"] = get(junction, "latitude", 0.0)

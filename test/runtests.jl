@@ -34,13 +34,13 @@ include("common.jl")
 
     include("matgas.jl")
 
-    # include("ogf.jl")
+    include("ogf.jl")
 
     # include("ls.jl")
 
     # include("nels.jl")
 
-    # include("gf.jl")
+    include("gf.jl")
 
     # include("ne.jl")
 
