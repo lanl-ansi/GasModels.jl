@@ -13,7 +13,7 @@
     end
 
     @testset "check status=false components" begin
-        gm = build_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
+        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
         @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
         try
@@ -46,7 +46,6 @@
     @testset "check data summary" begin
         gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        GasModels.make_si_unit!(gas_data)
 
         output = sprint(GasModels.summary, gas_data)
 
@@ -59,13 +58,13 @@
         @test occursin("junction: 46", output)
         @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
-        @test occursin("qg: 201.389", output)
+        @test occursin("injection_nominal: 0.009", output)
     end
 
     @testset "check solution summary" begin
         gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf("../test/data/matgas/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
 
         output = sprint(GasModels.summary, result["solution"])
 
@@ -78,6 +77,7 @@
     end
 
 
+    #= deprecate
     @testset "check resistance calculations" begin
         @testset "calc pipe resistance smeers" begin
             gas_file = "../test/data/gaslib-40.m"
@@ -103,6 +103,7 @@
             @test  isapprox(GasModels._calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["base_pressure"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
         end
     end
+    =# 
     #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"
