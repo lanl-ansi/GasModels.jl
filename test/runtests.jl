@@ -37,7 +37,7 @@ include("common.jl")
 
     # include("nels.jl")
 
-    # include("gf.jl")
+    include("gf.jl")
 
     include("ne.jl")
 
