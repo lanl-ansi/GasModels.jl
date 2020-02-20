@@ -527,6 +527,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     return gm_data
 end
 
+
 "merges Matlab tables based on the table extension syntax"
 function _merge_generic_data!(data::Dict{String,Any})
     mg_matrix_names = [name[5:length(name)] for name in _mg_data_names]
@@ -577,8 +578,10 @@ function _get_default(dict, key, default=0.0)
     return default
 end
 
+
 "order data types should appear in matlab format"
 const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "resistor", "regulator", "valve", "receipt", "delivery", "transfer", "storage", "ne_pipe", "ne_compressor"]
+
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
@@ -604,6 +607,7 @@ const _matlab_global_params_order_required = ["gas_specific_gravity", "specific_
 
 "order of optional global parameters"
 const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+
 
 "list of units of meta data fields"
 const _units = Dict{String,Dict{String,String}}(
@@ -646,6 +650,7 @@ const non_negative_data = Dict{String,Vector{String}}(
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
+
 
 "write to matgas"
 function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String
