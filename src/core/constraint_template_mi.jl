@@ -35,12 +35,12 @@ function constraint_source_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_valves         = ref(gm,n,:valves_to,i)
     f_regulators = ref(gm,n,:regulators_fr,i)
     t_regulators = ref(gm,n,:regulators_to,i)
-    f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
-    t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
-    f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
-    t_ne_compressors = ref(gm,n,:t_ne_compressors,i)
+    ne_pipes_fr       = ref(gm,n,:ne_pipes_fr,i)
+    ne_pipes_to       = ref(gm,n,:ne_pipes_to,i)
+    ne_compressors_fr = ref(gm,n,:ne_compressors_fr,i)
+    ne_compressors_to = ref(gm,n,:ne_compressors_to,i)
 
-    constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+    constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 end
 
 
@@ -77,12 +77,12 @@ function constraint_sink_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_valves         = ref(gm,n,:valves_to,i)
     f_regulators = ref(gm,n,:regulators_fr,i)
     t_regulators = ref(gm,n,:regulators_to,i)
-    f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
-    t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
-    f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
-    t_ne_compressors = ref(gm,n,:t_ne_compressors,i)
+    ne_pipes_fr       = ref(gm,n,:ne_pipes_fr,i)
+    ne_pipes_to       = ref(gm,n,:ne_pipes_to,i)
+    ne_compressors_fr = ref(gm,n,:ne_compressors_fr,i)
+    ne_compressors_to = ref(gm,n,:ne_compressors_to,i)
 
-    constraint_sink_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+    constraint_sink_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 end
 
 
@@ -119,14 +119,14 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     t_valves         = Dict(i => ref(gm,n,:valve,i)["fr_junction"] for i in ref(gm,n,:valves_to,idx))
     f_regulators = Dict(i => ref(gm,n,:regulator,i)["to_junction"] for i in ref(gm,n,:regulators_fr,idx))
     t_regulators = Dict(i => ref(gm,n,:regulator,i)["fr_junction"] for i in ref(gm,n,:regulators_to,idx))
-    f_ne_pipes       = Dict(i => ref(gm,n,:ne_pipe,i)["to_junction"] for i in ref(gm,n,:f_ne_pipes,idx))
-    t_ne_pipes       = Dict(i => ref(gm,n,:ne_pipe,i)["fr_junction"] for i in ref(gm,n,:t_ne_pipes,idx))
-    f_ne_compressors = Dict(i => ref(gm,n,:ne_compressor,i)["to_junction"] for i in ref(gm,n,:f_ne_compressors,idx))
-    t_ne_compressors = Dict(i => ref(gm,n,:ne_compressor,i)["fr_junction"] for i in ref(gm,n,:t_ne_compressors,idx))
+    ne_pipes_fr       = Dict(i => ref(gm,n,:ne_pipe,i)["to_junction"] for i in ref(gm,n,:ne_pipes_fr,idx))
+    ne_pipes_to       = Dict(i => ref(gm,n,:ne_pipe,i)["fr_junction"] for i in ref(gm,n,:ne_pipes_to,idx))
+    ne_compressors_fr = Dict(i => ref(gm,n,:ne_compressor,i)["to_junction"] for i in ref(gm,n,:ne_compressors_fr,idx))
+    ne_compressors_to = Dict(i => ref(gm,n,:ne_compressor,i)["fr_junction"] for i in ref(gm,n,:ne_compressors_to,idx))
 
     constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
                                     t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators,
-                                    t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+                                    t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 
 end
 

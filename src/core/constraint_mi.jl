@@ -62,7 +62,7 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, deliveries, receipts, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe           = var(gm,n,:f_pipe)
     f_compressor     = var(gm,n,:f_compressor)
     f_resistor       = var(gm,n,:f_resistor)
@@ -89,8 +89,8 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
                                                                                       sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                                       sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
                                                                                       sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +
-                                                                                      sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                      sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
+                                                                                      sum(f_ne_pipe[a] for a in ne_pipes_fr) - sum(f_ne_pipe[a] for a in ne_pipes_to) +
+                                                                                      sum(f_ne_compressor[a] for a in ne_compressors_fr) - sum(f_ne_compressor[a] for a in ne_compressors_to)
                                                                             ))
 
     is_disjunction = _apply_mass_flow_cuts(y_pipe, f_pipes) &&
@@ -105,10 +105,10 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
                      _apply_mass_flow_cuts(y_valve, t_valves) &&
                      _apply_mass_flow_cuts(y_regulator, f_regulators) &&
                      _apply_mass_flow_cuts(y_regulator, t_regulators) &&
-                     _apply_mass_flow_cuts(y_ne_pipe, f_ne_pipes) &&
-                     _apply_mass_flow_cuts(y_ne_pipe, t_ne_pipes) &&
-                     _apply_mass_flow_cuts(y_ne_compressor, f_ne_compressors) &&
-                     _apply_mass_flow_cuts(y_ne_compressor, t_ne_compressors)
+                     _apply_mass_flow_cuts(y_ne_pipe, ne_pipes_fr) &&
+                     _apply_mass_flow_cuts(y_ne_pipe, ne_pipes_to) &&
+                     _apply_mass_flow_cuts(y_ne_compressor, ne_compressors_fr) &&
+                     _apply_mass_flow_cuts(y_ne_compressor, ne_compressors_to)
 
     if max(fgmin,fg_constant) > 0.0  && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
         constraint_source_flow_ne(gm, i; n=n)
@@ -314,7 +314,7 @@ end
 
 
 "Constraint: Make sure there is at least one direction set to take flow away from a junction (typically used on source nodes)"
-function constraint_source_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+function constraint_source_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
     y_pipe               = var(gm,n,:y_pipe)
     y_compressor         = var(gm,n,:y_compressor)
     y_resistor           = var(gm,n,:y_resistor)
@@ -330,8 +330,8 @@ function constraint_source_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_p
                                                                     sum(y_short_pipe[a] for a in f_short_pipes) + sum((1-y_short_pipe[a]) for a in t_short_pipes) +
                                                                     sum(y_valve[a] for a in f_valves) + sum((1-y_valve[a]) for a in t_valves) +
                                                                     sum(y_regulator[a] for a in f_regulators) + sum((1-y_regulator[a]) for a in t_regulators) +
-                                                                    sum(y_ne_pipe[a] for a in f_ne_pipes) + sum( (1-y_ne_pipe[a]) for a in t_ne_pipes) +
-                                                                    sum(y_ne_compressor[a] for a in f_ne_compressors) + sum( (1-y_ne_compressor[a]) for a in t_ne_compressors)
+                                                                    sum(y_ne_pipe[a] for a in ne_pipes_fr) + sum( (1-y_ne_pipe[a]) for a in ne_pipes_to) +
+                                                                    sum(y_ne_compressor[a] for a in ne_compressors_fr) + sum( (1-y_ne_compressor[a]) for a in ne_compressors_to)
                                                                      >= 1))
 end
 
@@ -356,7 +356,7 @@ end
 
 
 "Constraint: Make sure there is at least one direction set to take flow to a junction (typically used on sink nodes)"
-function constraint_sink_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+function constraint_sink_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
     y_pipe          = var(gm,n,:y_pipe)
     y_compressor    = var(gm,n,:y_compressor)
     y_resistor      = var(gm,n,:y_resistor)
@@ -372,8 +372,8 @@ function constraint_sink_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pip
                                                                   sum((1-y_short_pipe[a]) for a in f_short_pipes) + sum(y_short_pipe[a] for a in t_short_pipes) +
                                                                   sum((1-y_valve[a]) for a in f_valves) + sum(y_valve[a] for a in t_valves) +
                                                                   sum((1-y_regulator[a]) for a in f_regulators) + sum(y_regulator[a] for a in t_regulators) +
-                                                                  sum((1-y_ne_pipe[a]) for a in f_ne_pipes) + sum(y_ne_pipe[a] for a in t_ne_pipes) +
-                                                                  sum((1-y_ne_compressor[a]) for a in f_ne_compressors) + sum(y_ne_compressor[a] for a in t_ne_compressors)
+                                                                  sum((1-y_ne_pipe[a]) for a in ne_pipes_fr) + sum(y_ne_pipe[a] for a in ne_pipes_to) +
+                                                                  sum((1-y_ne_compressor[a]) for a in ne_compressors_fr) + sum(y_ne_compressor[a] for a in ne_compressors_to)
                                                                   >= 1))
 end
 
@@ -431,7 +431,7 @@ end
 
 
 "Constraint: This constraint is intended to ensure that flow is on direction through a node with degree 2 and no production or consumption for a node with expansion edges"
-function constraint_conserve_flow_ne(gm::AbstractMIModels, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors)
+function constraint_conserve_flow_ne(gm::AbstractMIModels, n::Int, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
     y_pipe          = var(gm,n,:y_pipe)
     y_compressor    = var(gm,n,:y_compressor)
     y_resistor      = var(gm,n,:y_resistor)
@@ -450,8 +450,8 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, n::Int, idx, f_pipes,
     for (i,key) in f_short_pipes y_fr[y_short_pipe[i]] = key  end
     for (i,key) in f_valves y_fr[y_valve[i]] = key  end
     for (i,key) in f_regulators y_fr[y_regulator[i]] = key  end
-    for (i,key) in f_ne_pipes y_fr[y_ne_pipe[i]] = key  end
-    for (i,key) in f_ne_compressors y_fr[y_ne_compressor[i]] = key  end
+    for (i,key) in ne_pipes_fr y_fr[y_ne_pipe[i]] = key  end
+    for (i,key) in ne_compressors_fr y_fr[y_ne_compressor[i]] = key  end
 
     for (i,key) in t_pipes y_to[y_pipe[i]] = key  end
     for (i,key) in t_compressors y_to[y_compressor[i]] = key  end
@@ -459,8 +459,8 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, n::Int, idx, f_pipes,
     for (i,key) in t_short_pipes y_to[y_short_pipe[i]] = key  end
     for (i,key) in t_valves y_to[y_valve[i]] = key  end
     for (i,key) in t_regulators y_to[y_regulator[i]] = key  end
-    for (i,key) in t_ne_pipes y_to[y_ne_pipe[i]] = key  end
-    for (i,key) in t_ne_compressors y_to[y_ne_compressor[i]] = key  end
+    for (i,key) in ne_pipes_to y_to[y_ne_pipe[i]] = key  end
+    for (i,key) in ne_compressors_to y_to[y_ne_compressor[i]] = key  end
 
     for (y1, t1) in y_fr
         for (y2, t2) in y_fr

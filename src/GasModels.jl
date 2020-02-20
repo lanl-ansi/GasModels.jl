@@ -52,6 +52,7 @@ module GasModels
     include("core/constraint_template_mi.jl")
     include("core/objective.jl")
     include("core/solution.jl")
+    include("core/ref.jl")
 
     include("form/mip.jl")
     include("form/lp.jl")

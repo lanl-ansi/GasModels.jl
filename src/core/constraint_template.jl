@@ -132,11 +132,11 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe, k)
-    pd_max         = ref(gm,n,:ne_pipe_ref,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe_ref,k)["pd_min"]
-    w              = ref(gm,n,:ne_pipe_ref,k)["resistance"]
-    f_min          = ref(gm,n,:ne_pipe_ref,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_pipe_ref,k)["flow_max"]
+    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
+    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
+    w              = ref(gm,n,:ne_pipe,k)["resistance"]
+    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
+    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
     constraint_pipe_mass_flow_ne(gm, n, k, f_min, f_max)
 end
 
@@ -146,8 +146,8 @@ function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe,k)
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
-    pd_max         = ref(gm,n,:ne_pipe_ref,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe_ref,k)["pd_min"]
+    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
+    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
     constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min, pd_max)
 end
 
@@ -158,8 +158,8 @@ function constraint_pipe_pressure_ne_directed(gm::AbstractGasModel, k; n::Int=gm
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     direction      = pipe["directed"]
-    pd_max         = ref(gm,n,:ne_pipe_ref,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe_ref,k)["pd_min"]
+    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
+    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
     constraint_pipe_pressure_ne_directed(gm, n, k, i, j, pd_min, pd_max, direction)
 end
 
@@ -170,8 +170,8 @@ function constraint_pipe_mass_flow_ne_directed(gm::AbstractGasModel, k; n::Int=g
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     direction      = pipe["directed"]
-    f_min          = (direction == 1) ? 0 : ref(gm,n,:ne_pipe_ref,k)["flow_min"]
-    f_max          = (direction == 1) ? ref(gm,n,:ne_pipe_ref,k)["flow_max"] : 0
+    f_min          = (direction == 1) ? 0 : ref(gm,n,:ne_pipe,k)["flow_min"]
+    f_max          = (direction == 1) ? ref(gm,n,:ne_pipe,k)["flow_max"] : 0
     constraint_pipe_mass_flow_ne_directed(gm, n, k, f_min, f_max)
 end
 
@@ -206,9 +206,9 @@ end
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe   = gm.ref[:nw][n][:ne_pipe][k]
-    w      = ref(gm,n,:ne_pipe_ref,k)["resistance"]
-    f_min  = ref(gm,n,:ne_pipe_ref,k)["flow_min"]
-    f_max  = ref(gm,n,:ne_pipe_ref,k)["flow_max"]
+    w      = ref(gm,n,:ne_pipe,k)["resistance"]
+    f_min  = ref(gm,n,:ne_pipe,k)["flow_min"]
+    f_max  = ref(gm,n,:ne_pipe,k)["flow_max"]
     constraint_pipe_ne(gm, n, k, w, f_min, f_max)
 end
 
@@ -218,11 +218,11 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe           = gm.ref[:nw][n][:ne_pipe][k]
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
-    w              = ref(gm,n,:ne_pipe_ref,k)["resistance"]
-    pd_max         = ref(gm,n,:ne_pipe_ref,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe_ref,k)["pd_min"]
-    f_min          = ref(gm,n,:ne_pipe_ref,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_pipe_ref,k)["flow_max"]
+    w              = ref(gm,n,:ne_pipe,k)["resistance"]
+    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
+    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
+    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
+    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
     constraint_pipe_weymouth_ne(gm, n, k, i, j, w, f_min, f_max, pd_min, pd_max)
 end
 
@@ -232,12 +232,12 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractGasModel, k; n::Int=gm
     pipe           = gm.ref[:nw][n][:ne_pipe][k]
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
-    w              = ref(gm,n,:ne_pipe_ref,k)["resistance"]
+    w              = ref(gm,n,:ne_pipe,k)["resistance"]
     direction      = pipe["directed"]
-    pd_max         = ref(gm,n,:ne_pipe_ref,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe_ref,k)["pd_min"]
-    f_min          = ref(gm,n,:ne_pipe_ref,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_pipe_ref,k)["flow_max"]
+    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
+    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
+    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
+    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
     constraint_pipe_weymouth_ne_directed(gm, n, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
 end
 
@@ -294,42 +294,44 @@ end
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables and there are expansion connections"
 function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int=gm.cnw)
-    junction         = ref(gm,n,:junction,i)
-    delivery         = ref(gm,n,:delivery)
-    receipt         = ref(gm,n,:receipt)
-    deliveries        = ref(gm,n,:junction_deliveries,i)
-    receipts        = ref(gm,n,:junction_receipts,i)
-    f_pipes          = ref(gm,n,:pipes_fr,i)
-    t_pipes          = ref(gm,n,:pipes_to,i)
-    f_compressors    = ref(gm,n,:compressors_fr,i)
-    t_compressors    = ref(gm,n,:compressors_to,i)
-    f_resistors      = ref(gm,n,:resistors_fr,i)
-    t_resistors      = ref(gm,n,:resistors_to,i)
-    f_short_pipes    = ref(gm,n,:short_pipes_fr,i)
-    t_short_pipes    = ref(gm,n,:short_pipes_to,i)
-    f_valves         = ref(gm,n,:valves_fr,i)
-    t_valves         = ref(gm,n,:valves_to,i)
-    f_regulators = ref(gm,n,:regulators_fr,i)
-    t_regulators = ref(gm,n,:regulators_to,i)
-    f_ne_pipes       = ref(gm,n,:f_ne_pipes,i)
-    t_ne_pipes       = ref(gm,n,:t_ne_pipes,i)
-    f_ne_compressors = ref(gm,n,:f_ne_compressors,i)
-    t_ne_compressors = ref(gm,n,:t_ne_compressors,i)
+    junction                = ref(gm,n,:junction,i)
+    f_pipes                 = ref(gm,n,:pipes_fr,i)
+    t_pipes                 = ref(gm,n,:pipes_to,i)
+    f_compressors           = ref(gm,n,:compressors_fr,i)
+    t_compressors           = ref(gm,n,:compressors_to,i)
+    f_resistors             = ref(gm,n,:resistors_fr,i)
+    t_resistors             = ref(gm,n,:resistors_to,i)
+    f_short_pipes           = ref(gm,n,:short_pipes_fr,i)
+    t_short_pipes           = ref(gm,n,:short_pipes_to,i)
+    f_valves                = ref(gm,n,:valves_fr,i)
+    t_valves                = ref(gm,n,:valves_to,i)
+    f_regulators            = ref(gm,n,:regulators_fr,i)
+    t_regulators            = ref(gm,n,:regulators_to,i)
+    delivery                = ref(gm,n,:delivery)
+    receipt                 = ref(gm,n,:receipt)
+    transfer                = ref(gm,n,:transfer)
+    dispatch_receipts       = ref(gm,n,:dispatchable_receipts_in_junction,i)
+    nondispatch_receipts    = ref(gm,n,:nondispatchable_receipts_in_junction,i)
+    dispatch_deliveries     = ref(gm,n,:dispatchable_deliveries_in_junction,i)
+    nondispatch_deliveries  = ref(gm,n,:nondispatchable_deliveries_in_junction,i)
+    dispatch_transfers      = ref(gm,n,:dispatchable_transfers_in_junction,i)
+    nondispatch_transfers   = ref(gm,n,:nondispatchable_transfers_in_junction,i)
+    fg                      = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
+    fl                      = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
+    fl                      += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
+    fgmax                   = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
+    flmax                   = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
+    flmax                   += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
+    fgmin                   = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
+    flmin                   = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
+    flmin                   += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
+    ne_pipes_fr              = ref(gm,n,:ne_pipes_fr,i)
+    ne_pipes_to              = ref(gm,n,:ne_pipes_to,i)
+    ne_compressors_fr        = ref(gm,n,:ne_compressors_fr,i)
+    ne_compressors_to        = ref(gm,n,:ne_compressors_to,i)
 
-    dispatch_receipts      = ref(gm,n,:junction_dispatchable_receipts,i)
-    nondispatch_receipts   = ref(gm,n,:junction_nondispatchable_receipts,i)
-    dispatch_deliveries      = ref(gm,n,:junction_dispatchable_deliveries,i)
-    nondispatch_deliveries   = ref(gm,n,:junction_nondispatchable_deliveries,i)
-
-    fg        = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
-    fl        = length(nondispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
-    fgmax     = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"]  for  j in dispatch_receipts)  : 0
-    flmax     = length(dispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_max"]  for  j in dispatch_deliveries)  : 0
-    fgmin     = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"]  for  j in dispatch_receipts)  : 0
-    flmin     = length(dispatch_deliveries) > 0 ? sum(receipt[j]["withdrawal_min"]  for  j in dispatch_deliveries)  : 0
-
-    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl, fg, dispatch_deliveries, dispatch_receipts, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -421,8 +423,8 @@ end
 "Template: Constraint for turning on or off flow through expansion compressor"
 function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     compressor = gm.ref[:nw][n][:ne_compressor][k]
-    f_min      = ref(gm,n,:ne_compressor_ref,k)["flow_min"]
-    f_max      = ref(gm,n,:ne_compressor_ref,k)["flow_max"]
+    f_min      = ref(gm,n,:ne_compressor,k)["flow_min"]
+    f_max      = ref(gm,n,:ne_compressor,k)["flow_max"]
     constraint_compressor_ne(gm, n, k, f_min, f_max)
 end
 
@@ -453,8 +455,8 @@ function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.c
     compressor     = ref(gm,n,:ne_compressor,k)
     i              = compressor["fr_junction"]
     j              = compressor["to_junction"]
-    f_min          = ref(gm,n,:ne_compressor_ref,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_compressor_ref,k)["flow_max"]
+    f_min          = ref(gm,n,:ne_compressor,k)["flow_min"]
+    f_max          = ref(gm,n,:ne_compressor,k)["flow_max"]
     constraint_compressor_mass_flow_ne(gm, n, k, f_min, f_max)
 end
 
@@ -482,7 +484,7 @@ function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     j_pmin         = ref(gm,n,:junction,j)["p_min"]
     i_pmax         = ref(gm,n,:junction,i)["p_max"]
     i_pmin         = ref(gm,n,:junction,i)["p_min"]
-    f_max          = ref(gm,n,:ne_compressor_ref,k)["flow_max"]
+    f_max          = ref(gm,n,:ne_compressor,k)["flow_max"]
     constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
 end
 
@@ -497,7 +499,7 @@ function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, k; n::In
     j_pmax         = ref(gm,n,:junction,j)["p_max"]
     i_pmax         = ref(gm,n,:junction,i)["p_max"]
     i_pmin         = ref(gm,n,:junction,i)["p_min"]
-    f_max          = ref(gm,n,:ne_compressor_ref,k)["flow_max"]
+    f_max          = ref(gm,n,:ne_compressor,k)["flow_max"]
     direction      = compressor["directed"]
     constraint_compressor_ratios_ne_directed(gm, n, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction)
 end
@@ -510,8 +512,8 @@ function constraint_compressor_mass_flow_ne_directed(gm::AbstractGasModel, k; n:
     j          = compressor["to_junction"]
     mf         = ref(gm,n,:max_mass_flow)
     direction  = compressor["directed"]
-    f_min     = (direction == 1) ? 0 : ref(gm,n,:ne_compressor_ref,k)["flow_min"]
-    f_max     = (direction == 1) ? ref(gm,n,:ne_compressor_ref,k)["flow_max"] : 0
+    f_min     = (direction == 1) ? 0 : ref(gm,n,:ne_compressor,k)["flow_min"]
+    f_max     = (direction == 1) ? ref(gm,n,:ne_compressor,k)["flow_max"] : 0
     constraint_compressor_mass_flow_ne_directed(gm, n, k, f_min, f_max)
 end
 

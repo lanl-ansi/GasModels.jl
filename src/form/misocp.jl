@@ -48,7 +48,7 @@ end
 function variable_pressure_difference_ne(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true)
     max_flow = ref(gm, n, :max_mass_flow)
     if bounded
-        gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :ne_pipe_ref, i)["pd_max"]), abs(ref(gm, n, :ne_pipe_ref, i)["pd_max"]), 1 / ref(gm, n, :ne_pipe_ref, i)["resistance"] * max_flow^2), start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
+        gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :ne_pipe, i)["pd_max"]), abs(ref(gm, n, :ne_pipe, i)["pd_max"]), 1 / ref(gm, n, :ne_pipe, i)["resistance"] * max_flow^2), start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
     else
         gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
     end

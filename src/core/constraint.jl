@@ -87,7 +87,7 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, deliveries, receipts, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
@@ -105,8 +105,8 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipe
                                                                                       sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                                       sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
                                                                                       sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +
-                                                                                      sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                      sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
+                                                                                      sum(f_ne_pipe[a] for a in ne_pipes_fr) - sum(f_ne_pipe[a] for a in ne_pipes_to) +
+                                                                                      sum(f_ne_compressor[a] for a in ne_compressors_fr) - sum(f_ne_compressor[a] for a in ne_compressors_to)
                                                                             ))
 end
 
