@@ -165,35 +165,30 @@ function post_nels_directed(gm::AbstractGasModel)
         constraint_short_pipe_mass_flow_directed(gm, i)
     end
 
-    for i in ids(gm,:undirected_compressor)
+    for i in ids(gm,:default_compressor)
         constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
     end
 
-    for i in ids(gm,:directed_compressor)
+    for i in ids(gm,:unidirectional_compressor)
         constraint_compressor_mass_flow_directed(gm, i)
         constraint_compressor_ratios_directed(gm, i)
     end
 
-    for i in ids(gm, :undirected_ne_compressor)
+    for i in ids(gm, :default_ne_compressor)
         constraint_compressor_ratios_ne(gm, i)
         constraint_compressor_ne(gm, i)
         constraint_compressor_mass_flow_ne(gm, i)
     end
 
-    for i in ids(gm, :directed_ne_compressor)
+    for i in ids(gm, :unidirectional_ne_compressor)
         constraint_compressor_ne(gm, i)
         constraint_compressor_mass_flow_ne_directed(gm, i)
         constraint_compressor_ratios_ne_directed(gm, i)
     end
 
-    for i in ids(gm, :undirected_valve)
+    for i in ids(gm, :valve)
         constraint_on_off_valve_mass_flow(gm, i)
-        constraint_on_off_valve_pressure(gm, i)
-    end
-
-    for i in ids(gm, :directed_valve)
-        constraint_on_off_valve_mass_flow_directed(gm, i)
         constraint_on_off_valve_pressure(gm, i)
     end
 

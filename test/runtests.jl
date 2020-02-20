@@ -36,15 +36,15 @@ include("common.jl")
 
     include("ogf.jl")
 
-    # include("ls.jl")
+    include("ls.jl")
 
-    # include("nels.jl")
+    include("nels.jl")
 
     include("gf.jl")
 
-    # include("ne.jl")
+    include("ne.jl")
 
     include("transient.jl")
 
-    # include("debug.jl")  # test gaslib-582 minlp gf
+    include("debug.jl")  # test gaslib-582 minlp gf
 end
