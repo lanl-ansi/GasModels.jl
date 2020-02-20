@@ -1,0 +1,20 @@
+{
+  "time_points": [0.0, 0.1, 0.2],
+  "withdrawal":[
+    {
+      "node_index": 1,
+      "withdrawal": [0.0, 0.0, 0.0],
+      "withdrawal_lower_bound": [0.0, 0.0, 0.0]
+    },
+    {
+      "node_index": 2,
+      "withdrawal": [12.3, 12.5, 12.7],
+      "withdrawal_lower_bound": [12.3, 12.5, 12.7]
+    },
+    {
+      "node_index": 3,
+      "withdrawal": [7.7, 7.5, 7.3],
+      "withdrawal_lower_bound": [7.7, 7.5, 7.3]
+    }
+  ]
+}
