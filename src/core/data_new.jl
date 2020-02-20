@@ -7,6 +7,7 @@
 @inline get_base_flow(data::Dict{String, Any}) = data["base_flow"]
 @inline get_base_time(data::Dict{String, Any}) = data["base_time"]
 
+
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
     p_mins = filter(x->x>0, [junction["p_min"] for junction in values(data["junction"])])
@@ -22,6 +23,7 @@ function _apply_func!(data::Dict{String,Any}, key::String, func)
     end
 end
 
+
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String, Any})
     if get(data, "is_per_unit", false) == true
@@ -34,6 +36,7 @@ function per_unit_data_field_check!(data::Dict{String, Any})
     end
 end
 
+
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, Any})
     (get(data, "base_pressure", false) == false) && (data["base_pressure"] = calc_base_pressure(data))
@@ -41,6 +44,7 @@ function add_base_values!(data::Dict{String, Any})
     data["base_time"] = get_base_length(data) / get_sound_speed(data)
     data["base_flow"] = get_base_pressure(data) / get_sound_speed(data)
 end
+
 
 "Transforms static network data into si units"
 function make_si_units!(data::Dict{String,<:Any})
@@ -137,7 +141,7 @@ function make_si_units!(data::Dict{String,<:Any})
 
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", inches_to_m)
-        end 
+        end
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", hp_to_watts)
@@ -197,6 +201,7 @@ function make_si_units!(data::Dict{String,<:Any})
     return
 end
 
+
 "Transforms network data into english units"
 function make_english_units!(data::Dict{String,<:Any})
     if get(data, "is_english_units", false) == true
@@ -225,7 +230,7 @@ function make_english_units!(data::Dict{String,<:Any})
 
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", m_to_inches)
-        end 
+        end
 
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "power_max", watts_to_hp)
@@ -284,6 +289,7 @@ function make_english_units!(data::Dict{String,<:Any})
     end
     return
 end
+
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String,<:Any})
@@ -364,6 +370,7 @@ function make_per_unit!(data::Dict{String,<:Any})
     return
 end
 
+
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String,<:Any})
     for field in non_negative_metadata
@@ -382,6 +389,7 @@ function check_non_negativity(data::Dict{String,<:Any})
         end
     end
 end
+
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String,<:Any})
@@ -405,6 +413,7 @@ function check_global_parameters(data::Dict{String,<:Any})
         Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
     end
 end
+
 
 "correct minimum pressures"
 function correct_p_mins!(data::Dict{String, Any}; si_value=1.37e6, english_value=200.0)
@@ -440,6 +449,7 @@ function correct_p_mins!(data::Dict{String, Any}; si_value=1.37e6, english_value
     return
 end
 
+
 "add additional compressor fields - required for transient"
 function add_compressor_fields!(data::Dict{String,<:Any})
     is_si_units = get(data, "is_si_units", 0)
@@ -463,7 +473,29 @@ function add_compressor_fields!(data::Dict{String,<:Any})
             compressor["friction_factor"] = 0.001
         end
     end
+
+    if haskey(data, "ne_compressor")
+        for (i, compressor) in data["ne_compressor"]
+            if is_si_units == true
+                compressor["diameter"] = 1.0
+                compressor["length"] = 250.0
+                compressor["friction_factor"] = 0.001
+            end
+            if is_english_units == true
+                compressor["diameter"] = 39.37
+                compressor["length"] = 0.16
+                compressor["friction_factor"] = 0.001
+            end
+            if is_per_unit == true
+                base_length = get(data, "base_length", 5000.0)
+                compressor["diameter"] = 1.0
+                compressor["length"] = 250.0/base_length
+                compressor["friction_factor"] = 0.001
+            end
+        end
+    end
 end
+
 
 "checks that all buses are unique and other components link to valid buses"
 function check_connectivity(data::Dict{String,<:Any})
@@ -503,6 +535,7 @@ function _check_connectivity(data::Dict{String,<:Any})
     end
 end
 
+
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String,<:Any})
     if InfrastructureModels.ismultinetwork(data)
@@ -524,6 +557,7 @@ function check_status(data::Dict{String,<:Any})
     end
 end
 
+
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String,<:Any})
     if InfrastructureModels.ismultinetwork(data)
@@ -540,6 +574,7 @@ function check_edge_loops(data::Dict{String,<:Any})
         end
     end
 end
+
 
 "helper function to propagate disabled status of junctions to connected components"
 function propagate_topology_status!(data::Dict{String,<:Any})
@@ -559,6 +594,7 @@ function propagate_topology_status!(data::Dict{String,<:Any})
         end
     end
 end
+
 
 "Calculates max mass flow network wide using ref"
 function _calc_max_mass_flow(ref::Dict{Symbol,Any})
@@ -581,6 +617,7 @@ function _calc_max_mass_flow(ref::Dict{Symbol,Any})
     return max_flow
 end
 
+
 "Calculate the bounds on minimum and maximum pressure difference squared"
 function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
     i = ref[:junction][i_idx]
@@ -591,6 +628,7 @@ function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
 
     return pd_min, pd_max
 end
+
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley.
 Unsteady and transient flow of compressible
@@ -606,6 +644,7 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}; base_length=5000.0)
     resistance = lambda * L * base_length / D;
     return resistance
 end
+
 
 "calculates the minimum flow on a pipe"
 function _calc_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
@@ -626,6 +665,7 @@ function _calc_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
     return min(mf, pf_max)
 end
 
+
 "A very simple model of computing resistance for resistors that is based on the Thorley model.
 Eq (2.30) in Evaluating Gas Network Capacities"
 function _calc_resistor_resistance(resistor::Dict{String,Any})
@@ -636,6 +676,7 @@ function _calc_resistor_resistance(resistor::Dict{String,Any})
     resistance = lambda / A / A / 2
     return resistance
 end
+
 
 "calculates the minimum flow on a resistor"
 function _calc_resistor_flow_min(ref::Dict{Symbol,Any}, resistor)
@@ -656,23 +697,30 @@ function _calc_resistor_flow_max(ref::Dict{Symbol,Any}, resistor)
     return min(mf, pf_max)
 end
 
+
 "calculates the minimum flow on a short pipe"
 _calc_short_pipe_flow_min(ref::Dict{Symbol,Any}, short_pipe) = -ref[:max_mass_flow]
+
 
 "calculates the maximum flow on a short pipe"
 _calc_short_pipe_flow_max(ref::Dict{Symbol,Any}, short_pipe) = ref[:max_mass_flow]
 
+
 "calculates the minimum flow on a valve"
 _calc_valve_flow_min(ref::Dict{Symbol,Any}, valve) = -ref[:max_mass_flow]
+
 
 "calculates the maximum flow on a valve"
 _calc_valve_flow_max(ref::Dict{Symbol,Any}, valve) = ref[:max_mass_flow]
 
+
 "calculates the minimum flow on a regulator"
 _calc_regulator_flow_min(ref::Dict{Symbol,Any}, regulator) = -ref[:max_mass_flow]
 
+
 "calculates the maximum flow on a regulator"
 _calc_regulator_flow_max(ref::Dict{Symbol,Any}, resistor) = ref[:max_mass_flow]
+
 
 "extracts the start value"
 function comp_start_value(set, item_key, value_key, default = 0.0)
@@ -730,6 +778,56 @@ function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Di
            aligned_regulators, opposite_regulators
 end
 
+
+"calculates connections in parallel with one another and their orientation"
+function _calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
+    i = min(connection["fr_junction"], connection["to_junction"])
+    j = max(connection["fr_junction"], connection["to_junction"])
+
+    parallel_pipes          = haskey(ref(gm,n,:parallel_pipes), (i,j)) ? ref(gm,n,:parallel_pipes, (i,j)) : []
+    parallel_compressors    = haskey(ref(gm,n,:parallel_compressors), (i,j)) ? ref(gm,n,:parallel_compressors, (i,j)) : []
+    parallel_short_pipes    = haskey(ref(gm,n,:parallel_short_pipes), (i,j)) ? ref(gm,n,:parallel_short_pipes, (i,j)) : []
+    parallel_resistors      = haskey(ref(gm,n,:parallel_resistors), (i,j)) ? ref(gm,n,:parallel_resistors, (i,j)) : []
+    parallel_valves         = haskey(ref(gm,n,:parallel_valves), (i,j)) ? ref(gm,n,:parallel_valves, (i,j)) : []
+    parallel_regulators = haskey(ref(gm,n,:parallel_regulators), (i,j)) ? ref(gm,n,:parallel_regulators, (i,j)) : []
+    parallel_ne_pipes       = haskey(ref(gm,n,:parallel_ne_pipes), (i,j)) ? ref(gm,n,:parallel_ne_pipes, (i,j)) : []
+    parallel_ne_compressors = haskey(ref(gm,n,:parallel_ne_compressors), (i,j)) ? ref(gm,n,:parallel_ne_compressors, (i,j)) : []
+
+    num_connections = length(parallel_pipes) + length(parallel_compressors) + length(parallel_short_pipes) + length(parallel_resistors) +
+                      length(parallel_valves) + length(parallel_regulators) + length(parallel_ne_pipes) + length(parallel_ne_compressors)
+
+    pipes = ref(gm,n,:pipe)
+    compressors = ref(gm,n,:compressor)
+    resistors = ref(gm,n,:resistor)
+    short_pipes = ref(gm,n,:short_pipe)
+    valves = ref(gm,n,:valve)
+    regulators = ref(gm,n,:regulator)
+    ne_pipes = ref(gm,n,:ne_pipe)
+    ne_compressors = ref(gm,n,:ne_compressor)
+
+    aligned_pipes           = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
+    opposite_pipes          = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
+    aligned_compressors     = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
+    opposite_compressors    = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
+    aligned_resistors       = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
+    opposite_resistors      = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
+    aligned_short_pipes     = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
+    opposite_short_pipes    = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
+    aligned_valves          = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
+    opposite_valves         = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
+    aligned_regulators  = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
+    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
+    aligned_ne_pipes        = filter(i -> ne_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_ne_pipes)
+    opposite_ne_pipes       = filter(i -> ne_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_ne_pipes)
+    aligned_ne_compressors  = filter(i -> ne_compressors[i]["fr_junction"] == connection["fr_junction"], parallel_ne_compressors)
+    opposite_ne_compressors = filter(i -> ne_compressors[i]["fr_junction"] != connection["fr_junction"], parallel_ne_compressors)
+
+    return num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors
+end
+
+
 "prints the text summary for a data file to IO"
 function summary(io::IO, file::String; kwargs...)
     data = parse_file(file)
@@ -739,20 +837,20 @@ end
 
 
 const _gm_component_types_order = Dict(
-    "junction" => 1.0, "pipe" => 2.0, "compressor" => 3.0, "receipt" => 4.0, "delivery" => 5.0, "transfer" => 6.0, 
+    "junction" => 1.0, "pipe" => 2.0, "compressor" => 3.0, "receipt" => 4.0, "delivery" => 5.0, "transfer" => 6.0,
     "resistor" => 7.0, "short_pipe" => 8.0, "regulator" => 9.0, "valve" => 10.0, "storage" => 11.0
 )
 
 
 const _gm_component_parameter_order = Dict(
-    "id" => 1.0, "junction_type" => 2.0, 
+    "id" => 1.0, "junction_type" => 2.0,
     "p_min" => 3.0, "p_max" => 4.0, "p_nominal" => 5.0,
 
     "fr_junction" => 11.0, "to_junction" => 12.0,
     "length" => 13.0, "diameter" => 14.0, "friction_factor" => 15.0,
     "flow_min" => 16.0, "flow_max" => 17.0,
     "c_ratio_min" => 18.0, "c_ratio_max" => 19.0,
-    "power_max" => 20.0, 
+    "power_max" => 20.0,
 
     "junction_id" => 51.0,
     "injection_nominal" => 52.0, "injection_min" => 53.0, "injection_max" => 54.0,
