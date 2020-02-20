@@ -546,8 +546,8 @@ end
 "Template: constraints on flow across control valves with on/off direction variables"
 function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
     valve = ref(gm,n,:regulator,k)
-    f_min = ref(gm,n,:regulator_ref,k)["flow_min"]
-    f_max = ref(gm,n,:regulator_ref,k)["flow_max"]
+    f_min = ref(gm,n,:regulator,k)["flow_min"]
+    f_max = ref(gm,n,:regulator,k)["flow_max"]
     constraint_on_off_regulator_mass_flow(gm, n, k, f_min, f_max)
 end
 
@@ -558,8 +558,8 @@ function constraint_on_off_regulator_mass_flow_directed(gm::AbstractGasModel, k;
     i          = valve["fr_junction"]
     j          = valve["to_junction"]
     direction  = valve["directed"]
-    f_min = (direction == 1) ? 0 : ref(gm,n,:regulator_ref,k)["flow_min"]
-    f_max = (direction == 1) ? ref(gm,n,:regulator_ref,k)["flow_max"] : 0
+    f_min = (direction == 1) ? 0 : ref(gm,n,:regulator,k)["flow_min"]
+    f_max = (direction == 1) ? ref(gm,n,:regulator,k)["flow_max"] : 0
     constraint_on_off_regulator_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
@@ -569,13 +569,13 @@ function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int=gm
     regulator = ref(gm,n,:regulator,k)
     i             = regulator["fr_junction"]
     j             = regulator["to_junction"]
-    max_ratio     = regulator["c_ratio_max"]
-    min_ratio     = regulator["c_ratio_min"]
+    max_ratio     = regulator["reduction_factor_max"]
+    min_ratio     = regulator["reduction_factor_min"]
     j_pmin        = ref(gm,n,:junction,j)["p_min"]
     j_pmax        = ref(gm,n,:junction,j)["p_max"]
     i_pmax        = ref(gm,n,:junction,i)["p_max"]
     i_pmin        = ref(gm,n,:junction,i)["p_min"]
-    f_max         = ref(gm,n,:regulator_ref,k)["flow_max"] #mf
+    f_max         = ref(gm,n,:regulator,k)["flow_max"] #mf
     constraint_on_off_regulator_pressure(gm, n, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
 end
 
@@ -585,8 +585,8 @@ function constraint_on_off_regulator_pressure_directed(gm::AbstractGasModel, k; 
     valve     = ref(gm,n,:regulator,k)
     i         = valve["fr_junction"]
     j         = valve["to_junction"]
-    max_ratio = valve["c_ratio_max"]
-    min_ratio = valve["c_ratio_min"]
+    max_ratio = valve["reduction_factor_max"]
+    min_ratio = valve["reduction_factor_min"]
     j_pmax    = ref(gm,n,:junction,j)["p_max"]
     i_pmax    = ref(gm,n,:junction,i)["p_max"]
     direction = valve["direction"]

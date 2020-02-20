@@ -1,9 +1,3 @@
-#####################################################################
-#                                                                   #
-# This file provides functions for interfacing with .m data files   #
-#                                                                   #
-#####################################################################
-
 "Parses the matgas data from either a filename or an IO object"
 function parse_matgas(file::Union{IO, String})
     mg_data = parse_m_file(file)
@@ -12,9 +6,7 @@ function parse_matgas(file::Union{IO, String})
 end
 
 
-### Data and functions specific to the matgas format ###
-
-_mg_data_names = [
+const _mg_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
     "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R",
     "mgc.base_pressure", "mgc.base_length",
@@ -24,10 +16,11 @@ _mg_data_names = [
     "mgc.delivery", "mgc.transfer",
     "mgc.short_pipe", "mgc.resistor",
     "mgc.regulator", "mgc.valve",
-    "mgc.storage"
+    "mgc.storage", "mgc.ne_pipe",
+    "mgc.ne_compressor"
 ]
 
-_mg_junction_columns = [
+const _mg_junction_columns = [
     ("id", Int),
     ("p_min", Float64), ("p_max", Float64), ("p_nominal", Float64),
     ("junction_type", Int),
@@ -38,7 +31,7 @@ _mg_junction_columns = [
     ("lon", Float64)
 ]
 
-_mg_pipe_columns = [
+const _mg_pipe_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -52,7 +45,7 @@ _mg_pipe_columns = [
     ("num_spatial_discretization_points", Int)
 ]
 
-_mg_compressor_columns = [
+const _mg_compressor_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -78,7 +71,7 @@ _mg_compressor_columns = [
     ("peak_year", Int)
 ]
 
-_mg_short_pipe_columns = [
+const _mg_short_pipe_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -87,7 +80,7 @@ _mg_short_pipe_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mg_resistor_columns = [
+const _mg_resistor_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -98,7 +91,7 @@ _mg_resistor_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mg_transfer_columns = [
+const _mg_transfer_columns = [
     ("id", Int),
     ("junction_id", Int),
     ("withdrawal_min", Float64), ("withdrawal_max", Float64),
@@ -114,7 +107,7 @@ _mg_transfer_columns = [
     ("daily_scheduled_flow", Float64)
 ]
 
-_mg_receipt_columns = [
+const _mg_receipt_columns = [
     ("id", Int),
     ("junction_id", Int),
     ("injection_min", Float64), ("injection_max", Float64),
@@ -131,7 +124,7 @@ _mg_receipt_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-_mg_delivery_columns = [
+const _mg_delivery_columns = [
     ("id", Int),
     ("junction_id", Int),
     ("withdrawal_min", Float64), ("withdrawal_max", Float64),
@@ -148,7 +141,7 @@ _mg_delivery_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-_mg_regulator_columns = [
+const _mg_regulator_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -163,7 +156,7 @@ _mg_regulator_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mg_valve_columns = [
+const _mg_valve_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -172,7 +165,7 @@ _mg_valve_columns = [
     ("pipeline_name", Union{String, SubString{String}})
 ]
 
-_mg_storage_columns = [
+const _mg_storage_columns = [
     ("id", Int),
     ("junction_id", Int),
     ("pressure_nominal", Float64),
@@ -191,7 +184,8 @@ _mg_storage_columns = [
     ("edi_id", Union{Int, String, SubString{String}})
 ]
 
-""
+
+"parses matlab-formatted .m file"
 function parse_m_file(file_string::String)
     mg_data = open(file_string) do io
         parse_m_file(io)
@@ -201,7 +195,7 @@ function parse_m_file(file_string::String)
 end
 
 
-""
+"parses matlab-formatted .m file"
 function parse_m_file(io::IO)
     data_string = read(io, String)
 
@@ -209,7 +203,7 @@ function parse_m_file(io::IO)
 end
 
 
-""
+"parses matlab-format string"
 function parse_m_string(data_string::String)
     matlab_data, func_name, colnames = InfrastructureModels.parse_matlab_string(data_string, extended=true)
 
@@ -251,7 +245,7 @@ function parse_m_string(data_string::String)
         elseif matlab_data["mgc.units"] == "usc"
             case["is_english_units"] = 1
             case["is_si_units"] = 0
-        else 
+        else
             Memento.error(_LOGGER, string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
     else
@@ -404,7 +398,7 @@ function parse_m_string(data_string::String)
         for valve_row in matlab_data["mgc.valve"]
             valve_data = InfrastructureModels.row_to_typed_dict(valve_row, _mg_valve_columns)
             valve_data["index"] = InfrastructureModels.check_type(Int, valve_row[1])
-            push!(regulators, valve_data)
+            push!(valves, valve_data)
         end
         case["valve"] = valves
     end
@@ -447,11 +441,8 @@ function parse_m_string(data_string::String)
     return case
 end
 
-### Data and functions specific to GasModel format ###
 
-"""
-Converts a matgas dict into a PowerModels dict
-"""
+"Converts a matgas dict into a PowerModels dict"
 function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     gm_data = deepcopy(mg_data)
 
@@ -467,6 +458,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
 
     return gm_data
 end
+
 
 "merges Matlab tables based on the table extension syntax"
 function _merge_generic_data!(data::Dict{String,Any})
@@ -518,8 +510,10 @@ function _get_default(dict, key, default=0.0)
     return default
 end
 
+
 "order data types should appear in matlab format"
 const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "resistor", "regulator", "valve", "receipt", "delivery", "transfer", "storage"]
+
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
@@ -543,6 +537,7 @@ const _matlab_global_params_order_required = ["gas_specific_gravity", "specific_
 
 "order of optional global parameters"
 const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+
 
 "list of units of meta data fields"
 const _units = Dict{String,Dict{String,String}}(
@@ -578,13 +573,14 @@ const non_negative_data = Dict{String,Vector{String}}(
     "pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"],
     "compressor" => ["c_ratio_min", "c_ratio_max", "power_max", "flow_max",
         "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "operating_cost"],
-    "resistor" => ["drag", "diameter"], 
-    "transfer" => ["bid_price", "offer_price"], 
+    "resistor" => ["drag", "diameter"],
+    "transfer" => ["bid_price", "offer_price"],
     "receipt" => ["injection_min", "injection_max", "injection_nominal", "offer_price"],
     "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"],
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
+
 
 "write to matgas"
 function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si", include_extended::Bool=false)::String

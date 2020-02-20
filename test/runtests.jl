@@ -45,4 +45,6 @@ include("common.jl")
     # include("ne.jl")
 
     include("transient.jl")
+
+    # include("debug.jl")  # test gaslib-582 minlp gf
 end
