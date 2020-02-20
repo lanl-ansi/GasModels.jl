@@ -45,7 +45,49 @@ const _mg_pipe_columns = [
     ("num_spatial_discretization_points", Int)
 ]
 
+const _mg_ne_pipe_columns = [
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
+    ("diameter", Float64),
+    ("length", Float64),
+    ("friction_factor", Float64),
+    ("p_min", Float64), ("p_max", Float64),
+    ("status", Int),
+    ("construction_cost", Float64),
+    ("is_bidirectional", Int),
+    ("pipeline_name", Union{String,SubString{String}}),
+    ("num_spatial_discretization_points", Int)
+]
+
 const _mg_compressor_columns = [
+    ("id", Int),
+    ("fr_junction", Int),
+    ("to_junction", Int),
+    ("c_ratio_min", Float64), ("c_ratio_max", Float64),
+    ("power_max", Float64),
+    ("flow_min", Float64), ("flow_max", Float64),
+    ("inlet_p_min", Float64), ("inlet_p_max", Float64),
+    ("outlet_p_min", Float64), ("outlet_p_max", Float64),
+    ("status", Int),
+    ("construction_cost", Float64),
+    ("operating_cost", Float64),
+    ("directionality", Int),
+    ("compressor_station_name", Union{String, SubString{String}}),
+    ("pipeline_name", Union{String, SubString{String}}),
+    ("total_installed_power", Float64),
+    ("num_compressor_units", Int),
+    ("compressor_type", SubString{String}),
+    ("design_suction_pressure", Float64),
+    ("design_discharge_pressure", Float64),
+    ("max_compressed_volume", Float64),
+    ("design_fuel_required", Float64),
+    ("design_electric_power_required", Float64),
+    ("num_units_for_peak_service", Int),
+    ("peak_year", Int)
+]
+
+const _mg_ne_compressor_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -320,6 +362,16 @@ function parse_m_string(data_string::String)
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
+    if haskey(matlab_data, "mgc.ne_pipe")
+        ne_pipes = []
+        for pipe_row in matlab_data["mgc.ne_pipe"]
+            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, _mg_ne_pipe_columns)
+            pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
+            push!(ne_pipes, pipe_data)
+        end
+        case["ne_pipe"] = ne_pipes
+    end
+
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
@@ -331,6 +383,16 @@ function parse_m_string(data_string::String)
     else
         Memento.error(_LOGGER, string("no compressor table found in .m file.
             The file seems to be missing \"mgc.compressor = [...];\""))
+    end
+
+    if haskey(matlab_data, "mgc.ne_compressor")
+        ne_compressors = []
+        for compressor_row in matlab_data["mgc.ne_compressor"]
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, _mg_ne_compressor_columns)
+            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
+            push!(ne_compressors, compressor_data)
+        end
+        case["ne_compressor"] = ne_compressors
     end
 
     if haskey(matlab_data, "mgc.short_pipe")
