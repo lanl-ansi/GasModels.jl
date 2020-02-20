@@ -1,3 +1,5 @@
+using InfrastructureModels
+
 #####################################################################
 #                                                                   #
 # This file provides functions for interfacing with .m data files   #
@@ -123,7 +125,7 @@ function parse_old_m_string(data_string::String)
     if func_name != nothing
         case["name"] = func_name
     else
-        Memento.warn(_LOGGER,"no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
+        @warn "no case name found in .m file.  The file seems to be missing \"function mgc = ...\""
         case["name"] = "no_name_found"
     end
 
@@ -131,7 +133,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        Memento.warn(_LOGGER, "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
+        @warn  "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\""
         case["source_version"] = "0.0.0+"
     end
 
@@ -144,7 +146,7 @@ function parse_old_m_string(data_string::String)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            Memento.error(_LOGGER, string("no $constant found in .m file"))
+            @error  string("no $constant found in .m file")
         end
     end
 
@@ -282,10 +284,10 @@ function parse_old_m_string(data_string::String)
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                Memento.info(_LOGGER,"extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
+                @info "extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)"
             else
                 case[case_name] = value
-                Memento.info(_LOGGER,"extending matlab format with constant data: $(case_name)")
+                @info "extending matlab format with constant data: $(case_name)"
             end
         end
     end
@@ -413,17 +415,17 @@ function _old_merge_generic_data!(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mlab_matrix) != length(v)
-                        Memento.error(_LOGGER,"failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mlab_matrix)) and $(length(v)) respectively.")
+                        @error "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mlab_matrix)) and $(length(v)) respectively."
                     end
 
-                    Memento.info(_LOGGER,"extending matlab format by appending matrix \"$(k)\" in to \"$(mlab_name)\"")
+                    @info "extending matlab format by appending matrix \"$(k)\" in to \"$(mlab_name)\""
 
                     for (i, row) in enumerate(mlab_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                @error  "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name."
                             end
                             row[key] = merge_row[key]
                         end

@@ -574,22 +574,24 @@ end
 
 
 "order data types should appear in matlab format"
-const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "resistor", "regulator", "valve", "receipt", "delivery", "transfer", "storage"]
+const _matlab_data_order = ["junction", "pipe", "compressor", "short_pipe", "resistor", "regulator", "valve", "receipt", "delivery", "transfer", "storage", "ne_pipe", "ne_compressor"]
 
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
-    "junction"      => [entry[1] for entry in _mg_junction_columns],
-    "pipe"          => [entry[1] for entry in _mg_pipe_columns],
-    "compressor"    => [entry[1] for entry in _mg_compressor_columns],
-    "short_pipe"    => [entry[1] for entry in _mg_short_pipe_columns],
-    "resistor"      => [entry[1] for entry in _mg_resistor_columns],
-    "regulator"     => [entry[1] for entry in _mg_regulator_columns],
-    "valve"         => [entry[1] for entry in _mg_valve_columns],
-    "receipt"       => [entry[1] for entry in _mg_receipt_columns],
-    "delivery"      => [entry[1] for entry in _mg_delivery_columns],
-    "transfer"      => [entry[1] for entry in _mg_transfer_columns],
-    "storage"       => [entry[1] for entry in _mg_storage_columns]
+    "junction"      => [key for (key, dtype) in _mg_junction_columns],
+    "pipe"          => [key for (key, dtype) in _mg_pipe_columns],
+    "compressor"    => [key for (key, dtype) in _mg_compressor_columns],
+    "short_pipe"    => [key for (key, dtype) in _mg_short_pipe_columns],
+    "resistor"      => [key for (key, dtype) in _mg_resistor_columns],
+    "regulator"     => [key for (key, dtype) in _mg_regulator_columns],
+    "valve"         => [key for (key, dtype) in _mg_valve_columns],
+    "receipt"       => [key for (key, dtype) in _mg_receipt_columns],
+    "delivery"      => [key for (key, dtype) in _mg_delivery_columns],
+    "transfer"      => [key for (key, dtype) in _mg_transfer_columns],
+    "storage"       => [key for (key, dtype) in _mg_storage_columns],
+    "ne_pipe"       => [key for (key, dtype) in _mg_ne_pipe_columns],
+    "ne_compressor" => [key for (key, dtype) in _mg_ne_compressor_columns]
 )
 
 
@@ -721,11 +723,11 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     if include_extended
         for data_type in _matlab_data_order
             if haskey(data, data_type)
-                push!(lines, "%% $data_type data (extended)")
-                all_ext_cols = Set([col for cols in keys(values(data[data_type])) for col in cols if !(col in _matlab_field_order[data_type])])
+                all_ext_cols = Set([col for item in values(data[data_type]) for col in keys(item) if !(col in _matlab_field_order[data_type])])
                 common_ext_cols = [col for col in all_ext_cols if all(col in keys(item) for item in values(data[data_type]))]
 
                 if !isempty(common_ext_cols)
+                    push!(lines, "%% $data_type data (extended)")
                     push!(lines, "%column_names% $(join(common_ext_cols, "\t"))")
                     push!(lines, "mgc.$(data_type)_data = [")
                     for i in sort([parse(Int, i) for i in keys(data[data_type])])
