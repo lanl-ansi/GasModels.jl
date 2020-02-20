@@ -40,4 +40,4 @@ mutable struct MINLPGasModel <: AbstractMINLPModel @gm_fields end
 
 
 "Union of MI Models"
-AbstractMIModels = Union{AbstractMISOCPModel, AbstractMINLPModel, AbstractMIPModel}
+AbstractMIModels = Union{AbstractMISOCPModel, AbstractMINLPModel}
