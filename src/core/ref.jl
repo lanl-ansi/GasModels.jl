@@ -49,6 +49,7 @@ function _ref_add_ne!(nw_refs::Dict; base_length=5000.0)
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
             compressor["pd_min"] = pd_min
             compressor["pd_max"] = pd_max
+            compressor["resistance"] = _calc_pipe_resistance(compressor; base_length=base_length)
             compressor["flow_min"] = _calc_pipe_flow_min(ref, compressor)
             compressor["flow_max"] = _calc_pipe_flow_min(ref, compressor)
         end
