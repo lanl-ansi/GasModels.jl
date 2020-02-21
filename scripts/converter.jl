@@ -350,6 +350,10 @@ if !haskey(data, "name")
     data["name"] = split(file, ".")[1]
 end
 
+if !haskey(data, "name")
+    data["name"] = split(ARGS[1], ".")[1]
+end
+
 for key in keys(data)
     if !(key in accepted_keys)
         delete!(data, key)
