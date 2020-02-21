@@ -2,7 +2,6 @@ using GasModels
 
 GasModels.silence()
 
-
 using JuMP
 using Ipopt
 using Cbc
@@ -38,5 +37,3 @@ include("gf.jl")
 include("ne_minlp.jl")
 include("ne_misocp.jl")
 include("ne_nlp.jl")
-
-#include("unstable.jl")

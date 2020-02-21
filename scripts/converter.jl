@@ -4,10 +4,22 @@ using JSON
 include("old_matlab.jl")
 
 file = ARGS[1]
-out_file = split(ARGS[1], ".")[1] * ".json"
-println("$file -> $out_file")
-data = parse_old_matlab(ARGS[1])
+
+json_out_file = split(ARGS[1], ".")[1] * ".json"
+matgas_out_file = split(ARGS[1], ".")[1] * "_matgas.m"
+
+println("$file -> $matgas_out_file")
+
+if endswith(ARGS[1], ".json")
+    data = open(ARGS[1], "r") do f
+        data = JSON.parse(f)
+    end
+else
+    data = parse_old_matlab(ARGS[1])
+end
+
 @show data["per_unit"]
+
 accepted_keys = ["junction"]
 for (i, junction) in data["junction"]
     junction["id"] = (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) : parse(Int64, i)
@@ -302,15 +314,18 @@ data["economic_weighting"] = 0.95
 data["base_pressure"] = data["baseP"]
 data["base_length"] = 5000.0
 
+if !haskey(data, "name")
+    data["name"] = split(ARGS[1], ".")[1]
+end
+
 for key in keys(data)
     if !(key in accepted_keys)
         delete!(data, key)
     end
 end
 
-JSON.print(open(out_file,"w"), data, 2)
+# JSON.print(open(json_out_file,"w"), data, 2)
 
-matgas_out_file = split(ARGS[1], ".")[1] * "_matgas.m"
 write_matgas!(data, matgas_out_file; include_extended=true)
 
 
