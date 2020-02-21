@@ -80,7 +80,7 @@
     #= deprecate
     @testset "check resistance calculations" begin
         @testset "calc pipe resistance smeers" begin
-            gas_file = "../test/data/gaslib-40.m"
+            gas_file = "../test/data/matgas/gaslib-40.m"
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
@@ -88,7 +88,7 @@
         end
 
         @testset "calc pipe resistance thorley" begin
-            gas_file = "../test/data/A1.m"
+            gas_file = "../test/data/matgas/A1.m"
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
@@ -96,14 +96,14 @@
         end
 
         @testset "calc resistor resistance simple" begin
-            gas_file = "../test/data/gaslib-582.json"
+            gas_file = "../test/data/matgas/gaslib-582.m"
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
             @test  isapprox(GasModels._calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["base_pressure"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
         end
     end
-    =# 
+    =#
     #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"
