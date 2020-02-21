@@ -20,7 +20,7 @@
 #    @testset "A3 NLP case" begin
 #        println("A3 NLP")
 #        obj_normalization = 1000000.0
-#        result = run_ne("../examples/data/matgas/matgas/A3.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
+#        result = run_ne("../examples/data/matgas/A3.m", NLPGasModel, minlp_solver; obj_normalization = obj_normalization)
 #        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 #        @test isapprox(result["objective"]*obj_normalization, 1781; atol = 1.0)
 #    end
