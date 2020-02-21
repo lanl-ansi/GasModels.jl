@@ -140,15 +140,3 @@ The following commands can be used to explore the network data dictionary,
 network_data = GasModels.parse_file("gaslib-40.m")
 display(network_data)
 ```
-
-## Transient Data Format (CSV)
-
-The transient/time-series data will come in as one .csv file (comma separated format). The first column in the CSV format will be a time stamp in the date-time format YYYY-MM-DDTHH:MM:SS+HH:MM, where the +HH:MM indicates the timezone offset, the second column will be the component type, the third column will be the component id, the forth column will be the parameter name, and the fifth column will be the value of the parameter.  See below example for valid header names.
-
-```csv
-timestamp,component_type,component_id,parameter,value
-1992-09-12T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.104678
-1992-09-13T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.540400
-1992-09-14T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.929477
-1992-09-15T00:00:00.0+00:00,delivery,1,withdrawal_nominal,0.412720
-```
