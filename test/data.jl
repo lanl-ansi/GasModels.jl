@@ -58,7 +58,7 @@
         @test occursin("junction: 46", output)
         @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
-        @test occursin("injection_nominal: 0.009", output)
+        @test occursin("injection_nominal: 0.333", output)
     end
 
     @testset "check solution summary" begin
@@ -77,33 +77,16 @@
     end
 
 
-    #= deprecate
     @testset "check resistance calculations" begin
-        @testset "calc pipe resistance smeers" begin
-            gas_file = "../test/data/matgas/gaslib-40.m"
-            gas_data = GasModels.parse_file(gas_file)
-            gas_ref  = GasModels.build_ref(gas_data)
-
-            @test  isapprox(GasModels._calc_pipe_resistance_smeers(gas_ref[:nw][0], gas_data["pipe"]["32"]), 5.9719269834653; atol=1e-4)
-        end
-
-        @testset "calc pipe resistance thorley" begin
+        @testset "calc pipe resistance" begin
             gas_file = "../test/data/matgas/A1.m"
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
-            @test  isapprox(GasModels._calc_pipe_resistance_thorley(gas_ref[:nw][0], gas_data["ne_pipe"]["26"]), (108.24469414437586 * (gas_data["base_pressure"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
-        end
-
-        @testset "calc resistor resistance simple" begin
-            gas_file = "../test/data/matgas/gaslib-582.m"
-            gas_data = GasModels.parse_file(gas_file)
-            gas_ref  = GasModels.build_ref(gas_data)
-
-            @test  isapprox(GasModels._calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["base_pressure"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), (108.24469414437586 * (gas_data["base_pressure"]^2/gas_data["base_flow"]^2)) / 1e5^2; atol=1e-4)
         end
     end
-    =#
+
     #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"

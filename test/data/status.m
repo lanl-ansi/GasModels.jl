@@ -6,6 +6,7 @@ mgc.specific_heat_capacity_ratio = 1.4000;  % unitless
 mgc.temperature = 288.7060;  % K
 mgc.compressibility_factor = 1.0000;  % unitless
 mgc.units = 'si';
+mgc.gas_molar_mass = 0.0185674; % kg/mol
 
 %% optional global data (that was either provided or computed based on required global data)
 mgc.sound_speed = 371.6643;  % m/s

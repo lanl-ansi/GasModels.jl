@@ -3,7 +3,6 @@ function mgc = model6_new_format
 mgc.gas_specific_gravity = 0.6;
 mgc.specific_heat_capacity_ratio = 1.4;
 mgc.temperature = 288.7060;
-mgc.sound_speed = 371.6643;
 mgc.R = 8.314;
 mgc.compressibility_factor = 1;
 mgc.base_pressure = 3000000; % all base values are in same units as specified by units field
@@ -11,6 +10,7 @@ mgc.base_length = 5000; % all base values are in same units as specified by unit
 mgc.units = 'si';
 mgc.is_per_unit = 0;
 mgc.economic_weighting = 0.95;
+mgc.gas_molar_mass = 0.0185674; % kg/mol
 
 
 %% junction data

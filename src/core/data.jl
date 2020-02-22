@@ -15,6 +15,15 @@ function calc_base_pressure(data::Dict{String,<:Any})
     return isempty(p_mins) ? 1.0 : minimum(p_mins)
 end
 
+"calculates the base_time"
+function calc_base_time(data::Dict{String,<:Any})
+    return get_base_length(data) / get_sound_speed(data)
+end
+
+"calculates the base_flow"
+function calc_base_flow(data::Dict{String,<:Any})
+    return get_base_pressure(data) / get_sound_speed(data)
+end
 
 "apply a function on a dict entry"
 function _apply_func!(data::Dict{String,Any}, key::String, func)
@@ -30,8 +39,8 @@ function per_unit_data_field_check!(data::Dict{String, Any})
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
-            data["base_time"] = get_base_length(data) / get_sound_speed(data)
-            data["base_flow"] = get_base_pressure(data) / get_sound_speed(data)
+            data["base_time"] = calc_base_time(data)
+            (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
         end
     end
 end
@@ -41,8 +50,8 @@ end
 function add_base_values!(data::Dict{String, Any})
     (get(data, "base_pressure", false) == false) && (data["base_pressure"] = calc_base_pressure(data))
     (get(data, "base_length", false) == false) && (data["base_length"] = 5000.0)
-    data["base_time"] = get_base_length(data) / get_sound_speed(data)
-    data["base_flow"] = get_base_pressure(data) / get_sound_speed(data)
+    data["base_time"] = calc_base_time(data)
+    (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
 end
 
 
@@ -71,6 +80,12 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_max", rescale_pressure)
         end
 
+        for (i, pipe) in get(data, "ne_pipe", [])
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+        end
+
         for (i, compressor) in get(data, "compressor", [])
             _apply_func!(compressor, "length", rescale_length)
             _apply_func!(compressor, "flow_min", rescale_flow)
@@ -80,6 +95,17 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "outlet_p_min", rescale_pressure)
             _apply_func!(compressor, "outlet_p_max", rescale_pressure)
         end
+
+        for (i, compressor) in get(data, "ne_compressor", [])
+            _apply_func!(compressor, "length", rescale_length)
+            _apply_func!(compressor, "flow_min", rescale_flow)
+            _apply_func!(compressor, "flow_max", rescale_flow)
+            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+        end
+
 
         for (i, transfer) in get(data, "transfer", [])
             _apply_func!(transfer, "withdrawal_min", rescale_flow)
@@ -630,13 +656,30 @@ function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
 end
 
 
+"Calculates pipeline resistance from this paper Thorley and CH Tiley. Unsteady and transient flow of compressible
+fluids in pipelines–a review of theoretical and some experimental studies.
+International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
+This is used in many of Zlotnik's papers
+This calculation expresses resistance in terms of mass flow equations"
+function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed)
+    lambda     = pipe["friction_factor"]
+    D          = pipe["diameter"]
+    L          = pipe["length"] * base_length
+
+    a_sqr = sound_speed^2
+    A     = (pi*D^2) / 4 # cross sectional area
+    resistance = ( (D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
+    return resistance
+end
+
+
 "Calculates pipeline resistance from this paper Thorley and CH Tiley.
 Unsteady and transient flow of compressible
 fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
 This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
-function _calc_pipe_resistance(pipe::Dict{String,Any}; base_length=5000.0)
+function _calc_pipe_resistance_rho_phi_space(pipe::Dict{String,Any}, base_length)
     lambda      = pipe["friction_factor"]
     D           = pipe["diameter"]
     L           = pipe["length"]
@@ -662,6 +705,7 @@ function _calc_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
     pd_max         = pipe["pd_max"]
     w              = pipe["resistance"]
     pf_max         = pd_max < 0 ? -sqrt(w*abs(pd_max)) : sqrt(w*abs(pd_max))
+
     return min(mf, pf_max)
 end
 

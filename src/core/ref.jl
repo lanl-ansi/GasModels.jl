@@ -1,10 +1,10 @@
 
 function ref_add_ne!(gm::AbstractGasModel)
-    _ref_add_ne!(gm.ref[:nw]; base_length=gm.ref[:base_length])
+    _ref_add_ne!(gm.ref[:nw]; base_length=gm.ref[:base_length], base_pressure=gm.ref[:base_pressure], base_flow=gm.ref[:base_flow], sound_speed=gm.ref[:sound_speed])
 end
 
 
-function _ref_add_ne!(nw_refs::Dict; base_length=5000.0)
+function _ref_add_ne!(nw_refs::Dict; base_length=5000.0, base_pressure=1.0, base_flow=1.0/371.6643, sound_speed=371.6643)
     for (nw, ref) in nw_refs
         ref[:ne_pipe]       = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -41,7 +41,7 @@ function _ref_add_ne!(nw_refs::Dict; base_length=5000.0)
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
             pipe["pd_min"] = pd_min
             pipe["pd_max"] = pd_max
-            pipe["resistance"] = _calc_pipe_resistance(pipe, base_length=base_length)
+            pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
             pipe["flow_min"] = _calc_pipe_flow_min(ref, pipe)
             pipe["flow_max"] = _calc_pipe_flow_min(ref, pipe)
         end
@@ -52,7 +52,7 @@ function _ref_add_ne!(nw_refs::Dict; base_length=5000.0)
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
             compressor["pd_min"] = pd_min
             compressor["pd_max"] = pd_max
-            compressor["resistance"] = _calc_pipe_resistance(compressor; base_length=base_length)
+            compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
             compressor["flow_min"] = _calc_pipe_flow_min(ref, compressor)
             compressor["flow_max"] = _calc_pipe_flow_min(ref, compressor)
         end

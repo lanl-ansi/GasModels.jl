@@ -3,19 +3,22 @@ using JSON
 
 include("old_matlab.jl")
 
-file = ARGS[1]
+#file = ARGS[1]
 
-json_out_file = split(ARGS[1], ".")[1] * ".json"
-matgas_out_file = split(ARGS[1], ".")[1] * "_matgas.m"
+file = "C:/Users/210117/Documents/GitHub/GasModels.jl/test/data/gaslib-582.json"
+
+json_out_file = split(file, ".")[1] * ".json"
+matgas_out_file = split(file, ".")[1] * "_matgas.m"
+
 
 println("$file -> $matgas_out_file")
 
-if endswith(ARGS[1], ".json")
-    data = open(ARGS[1], "r") do f
+if endswith(file, ".json")
+    data = open(file, "r") do f
         data = JSON.parse(f)
     end
 else
-    data = parse_old_matlab(ARGS[1])
+    data = parse_old_matlab(file)
 end
 
 @show data["per_unit"]
@@ -33,7 +36,7 @@ for (i, junction) in data["junction"]
         junction["p_nominal"] = (get(junction, "p", false) == true) ? junction["p"] : junction["pmin"]
     end
     junction["junction_type"] = (get(junction, "junction_type", false) == true) ? Int(junction["junction_type"]) : 0
-    junction["pipeline_name"] = split(ARGS[1], ".")[1]
+    junction["pipeline_name"] = split(file, ".")[1]
     junction["edi_id"] = Int(junction["id"])
     junction["lat"] = get(junction, "latitude", 0.0)
     junction["lon"] = get(junction, "longitude", 0.0)
@@ -300,22 +303,50 @@ push!(accepted_keys, "economic_weighting")
 push!(accepted_keys, "base_pressure")
 push!(accepted_keys, "base_length")
 push!(accepted_keys, "name")
-data["gas_specific_gravity"] = 0.6
-data["specific_heat_capacity_ratio"] = 1.4
-data["temperature"] = 288.7060
-data["sound_speed"] = 371.6643
-data["R"] = 8.314
-data["compressibility_factor"] = 1.0
-data["units"] = "si"
+
+if !haskey(data,"gas_specific_gravity")
+    data["gas_specific_gravity"] = 0.6
+end
+
+if !haskey(data,"specific_heat_capacity_ratio")
+    data["specific_heat_capacity_ratio"] = 1.4
+end
+
+if !haskey(data,"temperature")
+    data["temperature"] = 288.7060
+end
+
+if !haskey(data,"R")
+    data["R"] = 8.314
+end
+
+if !haskey(data,"compressibility_factor")
+    data["compressibility_factor"] = 1.0
+end
+
+if !haskey(data,"economic_weighting")
+    data["economic_weighting"] = 0.95
+end
+
+if !haskey(data,"sound_speed")
+    molecular_mass = data["gas_molar_mass"] # kg/mol
+    z = data["compressibility_factor"]
+    T = data["temperature"] # K
+    R = data["R"] # J/mol/K
+    data["sound_speed"] = sqrt(z * R * T / molecular_mass)
+end
+
+data["base_pressure"] = data["baseP"]
+data["base_length"] = 5000.0
+data["base_flow"] = data["baseQ"]
 data["is_per_unit"] = 0
 data["is_si_units"] = 1
 data["is_english_units"] = 0
-data["economic_weighting"] = 0.95
-data["base_pressure"] = data["baseP"]
-data["base_length"] = 5000.0
+data["units"] = "si"
+
 
 if !haskey(data, "name")
-    data["name"] = split(ARGS[1], ".")[1]
+    data["name"] = split(file, ".")[1]
 end
 
 for key in keys(data)
@@ -327,5 +358,3 @@ end
 # JSON.print(open(json_out_file,"w"), data, 2)
 
 write_matgas!(data, matgas_out_file; include_extended=true)
-
-

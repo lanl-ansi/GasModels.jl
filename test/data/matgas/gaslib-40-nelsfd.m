@@ -3,12 +3,12 @@ function mgc = gaslib-40-nelsfd
 %% required global data
 mgc.gas_specific_gravity = 0.6000;
 mgc.specific_heat_capacity_ratio = 1.4000;  % unitless
-mgc.temperature = 288.7060;  % K
-mgc.compressibility_factor = 1.0000;  % unitless
+mgc.temperature = 273.15;  % K
+mgc.compressibility_factor = 0.8;  % unitless
 mgc.units = 'si';
 
 %% optional global data (that was either provided or computed based on required global data)
-mgc.sound_speed = 371.6643;  % m/s
+mgc.gas_molar_mass = 0.0185674; % kg/mol
 mgc.R = 8.3140;  % J/(mol K)
 mgc.base_pressure = 8101325;  % Pa
 mgc.base_length = 5000.0000;  % m

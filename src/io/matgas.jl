@@ -8,7 +8,7 @@ end
 
 const _mg_data_names = [
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
-    "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R",
+    "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R", "mgc.gas_molar_mass",
     "mgc.base_pressure", "mgc.base_length",
     "mgc.units", "mgc.is_per_unit",
     "mgc.junction", "mgc.pipe",
@@ -268,7 +268,7 @@ function parse_m_string(data_string::String)
 
     required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
 
-    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit"]
+    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit", "mgc.gas_molar_mass"]
 
     for data_name in required_metadata_names
         (data_name == "mgc.units") && (continue)
@@ -325,15 +325,21 @@ function parse_m_string(data_string::String)
         case["R"] = 8.314
     end
 
+    if haskey(matlab_data, "mgc.gas_molar_mass")
+        case["gas_molar_mass"] = matlab_data["mgc.gas_molar_mass"]
+    else
+        case["gas_molar_mass"] = 0.02896
+    end
+
     if haskey(matlab_data, "mgc.sound_speed")
         case["sound_speed"] = matlab_data["mgc.sound_speed"]
     else
         # v = sqrt(gamma * R * T / M)
-        molecular_mass_of_air = 0.02896 # kg/mol
-        gamma = case["specific_heat_capacity_ratio"]
+        molecular_mass = case["gas_molar_mass"] # kg/mol
+        z = case["compressibility_factor"]
         T = case["temperature"] # K
         R = case["R"] # J/mol/K
-        case["sound_speed"] = round(sqrt(gamma * R * T / molecular_mass_of_air), digits=3) # m/s
+        case["sound_speed"] = sqrt(z * R * T / molecular_mass) # m/s
     end
 
     if haskey(matlab_data, "mgc.junction")
@@ -654,7 +660,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -670,7 +676,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% optional global data (that was either provided or computed based on required global data)")
     for param in _matlab_global_params_order_optional
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -707,7 +713,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
                             if isa(data[data_type]["$i"][field], Union{String, SubString{String}})
                                 push!(entries, "\'$(data[data_type]["$i"][field])\'")
                             elseif isa(data[data_type]["$i"][field], Float64)
-                                push!(entries, Printf.@sprintf "%.4f" data[data_type]["$i"][field])
+                                push!(entries, Printf.@sprintf "%f" data[data_type]["$i"][field])
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")
                             end
