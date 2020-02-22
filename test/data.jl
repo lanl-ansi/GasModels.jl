@@ -77,7 +77,6 @@
     end
 
 
-    #= deprecate
     @testset "check resistance calculations" begin
         @testset "calc pipe resistance" begin
             gas_file = "../test/data/matgas/A1.m"
@@ -87,7 +86,7 @@
             @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), 2.3023057843927686; atol=1e-4)
         end
     end
-    =#
+
     #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"

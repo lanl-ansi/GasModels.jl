@@ -351,7 +351,7 @@ if !haskey(data, "name")
 end
 
 if !haskey(data, "name")
-    data["name"] = split(ARGS[1], ".")[1]
+    data["name"] = split(file, ".")[1]
 end
 
 for key in keys(data)
