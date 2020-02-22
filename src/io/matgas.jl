@@ -660,7 +660,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -676,7 +676,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% optional global data (that was either provided or computed based on required global data)")
     for param in _matlab_global_params_order_optional
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -712,7 +712,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
                             if isa(data[data_type]["$i"][field], Union{String, SubString{String}})
                                 push!(entries, "\'$(data[data_type]["$i"][field])\'")
                             elseif isa(data[data_type]["$i"][field], Float64)
-                                push!(entries, Printf.@sprintf "%.4f" data[data_type]["$i"][field])
+                                push!(entries, Printf.@sprintf "%f" data[data_type]["$i"][field])
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")
                             end
