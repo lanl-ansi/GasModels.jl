@@ -1,10 +1,10 @@
 function mgc = gaslib_582
 
 %% required global data
-mgc.gas_specific_gravity = 0.600000;
-mgc.specific_heat_capacity_ratio = 1.400000;  % unitless
-mgc.temperature = 288.150000;  % K
-mgc.compressibility_factor = 0.800000;  % unitless
+mgc.gas_specific_gravity = 0.6;
+mgc.specific_heat_capacity_ratio = 1.4;  % unitless
+mgc.temperature = 288.15;  % K
+mgc.compressibility_factor = 0.8;  % unitless
 mgc.units = 'si';
 
 %% optional global data (that was either provided or computed based on required global data)
@@ -14,7 +14,7 @@ mgc.base_pressure = 12101325;  % Pa
 mgc.base_length = 5000.000000;  % m
 mgc.is_per_unit = 0;
 mgc.base_flow = 1882.5843611111;
-
+mgc.gas_molar_mass = 0.0180488790169; % kg/mol
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon

@@ -11,6 +11,7 @@ mgc.units = 'si';
 mgc.is_per_unit = 0;
 mgc.economic_weighting = 0.95;
 mgc.gas_molar_mass = 0.0185674; % kg/mol
+mgc.sound_speed = 359.548406333;
 
 
 %% junction data

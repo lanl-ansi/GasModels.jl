@@ -57,6 +57,7 @@ end
 
 "Transforms static network data into si units"
 function make_si_units!(data::Dict{String,<:Any})
+
     if get(data, "is_si_units", false) == true
         return
     end
@@ -165,11 +166,30 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_max", psi_to_pascal)
         end
 
+        for (i, pipe) in get(data, "ne_pipe", [])
+            _apply_func!(pipe, "diameter", inches_to_m)
+            _apply_func!(pipe, "length", miles_to_m)
+            _apply_func!(pipe, "p_min", psi_to_pascal)
+            _apply_func!(pipe, "p_max", psi_to_pascal)
+        end
+
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", inches_to_m)
         end
 
         for (i, compressor) in get(data, "compressor", [])
+            _apply_func!(compressor, "power_max", hp_to_watts)
+            _apply_func!(compressor, "diameter", inches_to_m)
+            _apply_func!(compressor, "length", miles_to_m)
+            _apply_func!(compressor, "flow_min", mmscfd_to_kgps)
+            _apply_func!(compressor, "flow_max", mmscfd_to_kgps)
+            _apply_func!(compressor, "inlet_p_min", psi_to_pascal)
+            _apply_func!(compressor, "inlet_p_max", psi_to_pascal)
+            _apply_func!(compressor, "outlet_p_min", psi_to_pascal)
+            _apply_func!(compressor, "outlet_p_max", psi_to_pascal)
+        end
+
+        for (i, compressor) in get(data, "ne_compressor", [])
             _apply_func!(compressor, "power_max", hp_to_watts)
             _apply_func!(compressor, "diameter", inches_to_m)
             _apply_func!(compressor, "length", miles_to_m)
@@ -254,11 +274,30 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_max", pascal_to_psi)
         end
 
+        for (i, pipe) in get(data, "ne_pipe", [])
+            _apply_func!(pipe, "diameter", m_to_inches)
+            _apply_func!(pipe, "length", m_to_miles)
+            _apply_func!(pipe, "p_min", pascal_to_psi)
+            _apply_func!(pipe, "p_max", pascal_to_psi)
+        end
+
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", m_to_inches)
         end
 
         for (i, compressor) in get(data, "compressor", [])
+            _apply_func!(compressor, "power_max", watts_to_hp)
+            _apply_func!(compressor, "diameter", m_to_inches)
+            _apply_func!(compressor, "length", m_to_miles)
+            _apply_func!(compressor, "flow_min", kgps_to_mmscfd)
+            _apply_func!(compressor, "flow_max", kgps_to_mmscfd)
+            _apply_func!(compressor, "inlet_p_min", pascal_to_psi)
+            _apply_func!(compressor, "inlet_p_max", pascal_to_psi)
+            _apply_func!(compressor, "outlet_p_min", pascal_to_psi)
+            _apply_func!(compressor, "outlet_p_max", pascal_to_psi)
+        end
+
+        for (i, compressor) in get(data, "ne_compressor", [])
             _apply_func!(compressor, "power_max", watts_to_hp)
             _apply_func!(compressor, "diameter", m_to_inches)
             _apply_func!(compressor, "length", m_to_miles)
@@ -344,7 +383,23 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_max", rescale_pressure)
         end
 
+        for (i, pipe) in get(data, "ne_pipe", [])
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+        end
+
         for (i, compressor) in get(data, "compressor", [])
+            _apply_func!(compressor, "length", rescale_length)
+            _apply_func!(compressor, "flow_min", rescale_flow)
+            _apply_func!(compressor, "flow_max", rescale_flow)
+            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+        end
+
+        for (i, compressor) in get(data, "ne_compressor", [])
             _apply_func!(compressor, "length", rescale_length)
             _apply_func!(compressor, "flow_min", rescale_flow)
             _apply_func!(compressor, "flow_max", rescale_flow)
