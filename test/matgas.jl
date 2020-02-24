@@ -5,7 +5,7 @@
         result = run_ls("../test/data/matgas/gaslib-40-ls.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 #        @test isapprox(result["objective"]*result["solution"]["base_flow"], 515.23066377; atol = 1e-1)  || isapprox(result["objective"]*result["solution"]["base_flow"], 456.54; atol = 1e-1)
-        @test isapprox(isapprox(result["objective"]*result["solution"]["base_flow"], 456.54; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["base_flow"], 456.54; atol = 1e-1)
     end
 
     #Check the second order code model
