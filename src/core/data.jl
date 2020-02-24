@@ -75,7 +75,19 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(junction, "p_nominal", rescale_pressure)
         end
 
+        for (i, junction) in get(data, "original_junction", [])
+            _apply_func!(junction, "p_min", rescale_pressure)
+            _apply_func!(junction, "p_max", rescale_pressure)
+            _apply_func!(junction, "p_nominal", rescale_pressure)
+        end
+
         for (i, pipe) in get(data, "pipe", [])
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+        end
+
+        for (i, pipe) in get(data, "original_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
@@ -160,6 +172,19 @@ function make_si_units!(data::Dict{String,<:Any})
         end
 
         for (i, pipe) in get(data, "pipe", [])
+            _apply_func!(pipe, "diameter", inches_to_m)
+            _apply_func!(pipe, "length", miles_to_m)
+            _apply_func!(pipe, "p_min", psi_to_pascal)
+            _apply_func!(pipe, "p_max", psi_to_pascal)
+        end
+
+        for (i, junction) in get(data, "original_junction", [])
+            _apply_func!(junction, "p_min", psi_to_pascal)
+            _apply_func!(junction, "p_max", psi_to_pascal)
+            _apply_func!(junction, "p_nominal", psi_to_pascal)
+        end
+
+        for (i, pipe) in get(data, "original_pipe", [])
             _apply_func!(pipe, "diameter", inches_to_m)
             _apply_func!(pipe, "length", miles_to_m)
             _apply_func!(pipe, "p_min", psi_to_pascal)
@@ -274,6 +299,19 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "p_max", pascal_to_psi)
         end
 
+        for (i, junction) in get(data, "original_junction", [])
+            _apply_func!(junction, "p_min", pascal_to_psi)
+            _apply_func!(junction, "p_max", pascal_to_psi)
+            _apply_func!(junction, "p_nominal", pascal_to_psi)
+        end
+
+        for (i, pipe) in get(data, "original_pipe", [])
+            _apply_func!(pipe, "diameter", m_to_inches)
+            _apply_func!(pipe, "length", m_to_miles)
+            _apply_func!(pipe, "p_min", pascal_to_psi)
+            _apply_func!(pipe, "p_max", pascal_to_psi)
+        end
+
         for (i, pipe) in get(data, "ne_pipe", [])
             _apply_func!(pipe, "diameter", m_to_inches)
             _apply_func!(pipe, "length", m_to_miles)
@@ -378,6 +416,18 @@ function make_per_unit!(data::Dict{String,<:Any})
         end
 
         for (i, pipe) in get(data, "pipe", [])
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+        end
+
+        for (i, junction) in get(data, "original_junction", [])
+            _apply_func!(junction, "p_min", rescale_pressure)
+            _apply_func!(junction, "p_max", rescale_pressure)
+            _apply_func!(junction, "p_nominal", rescale_pressure)
+        end
+
+        for (i, pipe) in get(data, "original_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
