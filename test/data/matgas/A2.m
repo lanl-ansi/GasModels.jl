@@ -1,19 +1,20 @@
 function mgc = A2
 
 %% required global data
-mgc.gas_specific_gravity = 0.6000;
-mgc.specific_heat_capacity_ratio = 1.4000;  % unitless
-mgc.temperature = 281.15;  % K
-mgc.compressibility_factor = 0.8;  % unitless
-mgc.units = 'si';
+mgc.gas_specific_gravity         = 0.6;
+mgc.specific_heat_capacity_ratio = 1.4;  % unitless
+mgc.temperature                  = 281.15;  % K
+mgc.compressibility_factor       = 0.8;  % unitless
+mgc.units                        = 'si';
 
 %% optional global data (that was either provided or computed based on required global data)
 mgc.gas_molar_mass = 0.0185674; % kg/mol
-mgc.R = 8.3140;  % J/(mol K)
-mgc.base_pressure = 8000000;  % Pa
-mgc.base_length = 5000.0000;  % m
-mgc.is_per_unit = 0;
-mgc.sound_speed = 317.353652234;
+mgc.R              = 8.3140;  % J/(mol K)
+mgc.base_pressure  = 8000000;  % Pa
+mgc.base_length    = 5000.0000;  % m
+mgc.is_per_unit    = 0;
+mgc.sound_speed    = 317.353652234;
+mgc.base_flow      = 535.85648148148;
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon
@@ -64,7 +65,7 @@ mgc.pipe = [
 3	  2	  3	0.8900	  6000.0000	  0.00703703698533	  0.0000	      8000000.0000	1
 4	  2	  3	0.8900	  6000.0000	  0.00703703698533	  0.0000	      8000000.0000	1
 5	  3	  4	0.8900	  26000.0000	0.0070370214686638	0.0000	      8000000.0000	1
-7	  6	  7	0.5901	  29000.0000	0.0075887596878999	3000000.0000	8000000.0000	1
+7	  6	  7	0.5901	  29000.0000	0.0075887596878999	0.0000        8000000.0000	1
 8	  7	  4	0.5901	  19000.0000	0.0075887420846735	0.0000	      8000000.0000	1
 12	9	  10	0.8900	20000.0000	0.007037056381259	  0.0000	      6620000.0000	1
 13	9	  10	0.3955	20000.0000	0.008190753060659	  0.0000	      6620000.0000	1

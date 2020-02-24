@@ -660,7 +660,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -676,7 +676,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
     push!(lines, "%% optional global data (that was either provided or computed based on required global data)")
     for param in _matlab_global_params_order_optional
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -713,7 +713,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
                             if isa(data[data_type]["$i"][field], Union{String, SubString{String}})
                                 push!(entries, "\'$(data[data_type]["$i"][field])\'")
                             elseif isa(data[data_type]["$i"][field], Float64)
-                                push!(entries, Printf.@sprintf "%f" data[data_type]["$i"][field])
+                                push!(entries, Printf.@sprintf "%.4f" data[data_type]["$i"][field])
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")
                             end
@@ -753,29 +753,29 @@ end
 
 "writes data structure to matlab format"
 function write_matgas!(data::Dict{String,Any}, fileout::String; units::String="si", include_extended::Bool=false)
-    if haskey(data, "original_pipe") 
+    if haskey(data, "original_pipe")
         data["new_pipe"] = deepcopy(data["pipe"])
         data["pipe"] = deepcopy(data["original_pipe"])
         delete!(data, "original_pipe")
-    end 
+    end
     if haskey(data, "original_junction")
         data["new_junction"] = deepcopy(data["junction"])
         data["junction"] = deepcopy(data["original_junction"])
         delete!(data, "original_junction")
-    end 
+    end
 
     open(fileout, "w") do f
         write(f, _gasmodels_to_matgas_string(data; units=units, include_extended=include_extended))
     end
-    
-    if haskey(data, "new_pipe") 
+
+    if haskey(data, "new_pipe")
         data["original_pipe"] = deepcopy(data["pipe"])
         data["pipe"] = deepcopy(data["new_pipe"])
         delete!(data, "new_pipe")
-    end 
+    end
     if haskey(data, "new_junction")
         data["original_junction"] = deepcopy(data["junction"])
         data["junction"] = deepcopy(data["new_junction"])
         delete!(data, "new_junction")
-    end 
+    end
 end

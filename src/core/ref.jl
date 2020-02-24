@@ -43,7 +43,7 @@ function _ref_add_ne!(nw_refs::Dict; base_length=5000.0, base_pressure=1.0, base
             pipe["pd_max"] = pd_max
             pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
             pipe["flow_min"] = _calc_pipe_flow_min(ref, pipe)
-            pipe["flow_max"] = _calc_pipe_flow_min(ref, pipe)
+            pipe["flow_max"] = _calc_pipe_flow_max(ref, pipe)
         end
 
         for (idx,compressor) in ref[:ne_compressor]
@@ -54,7 +54,7 @@ function _ref_add_ne!(nw_refs::Dict; base_length=5000.0, base_pressure=1.0, base
             compressor["pd_max"] = pd_max
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
             compressor["flow_min"] = _calc_pipe_flow_min(ref, compressor)
-            compressor["flow_max"] = _calc_pipe_flow_min(ref, compressor)
+            compressor["flow_max"] = _calc_pipe_flow_max(ref, compressor)
         end
     end
 end
