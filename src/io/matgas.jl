@@ -753,7 +753,29 @@ end
 
 "writes data structure to matlab format"
 function write_matgas!(data::Dict{String,Any}, fileout::String; units::String="si", include_extended::Bool=false)
+    if haskey(data, "original_pipe") 
+        data["new_pipe"] = deepcopy(data["pipe"])
+        data["pipe"] = deepcopy(data["original_pipe"])
+        delete!(data, "original_pipe")
+    end 
+    if haskey(data, "original_junction")
+        data["new_junction"] = deepcopy(data["junction"])
+        data["junction"] = deepcopy(data["original_junction"])
+        delete!(data, "original_junction")
+    end 
+
     open(fileout, "w") do f
         write(f, _gasmodels_to_matgas_string(data; units=units, include_extended=include_extended))
     end
+    
+    if haskey(data, "new_pipe") 
+        data["original_pipe"] = deepcopy(data["pipe"])
+        data["pipe"] = deepcopy(data["new_pipe"])
+        delete!(data, "new_pipe")
+    end 
+    if haskey(data, "new_junction")
+        data["original_junction"] = deepcopy(data["junction"])
+        data["junction"] = deepcopy(data["new_junction"])
+        delete!(data, "new_junction")
+    end 
 end
