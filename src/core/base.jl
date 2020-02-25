@@ -122,7 +122,7 @@ function instantiate_model(data::Dict{String,<:Any}, model_type, build_method; r
 end
 
 ""
-function optimize_model!(gm::AbstractGasModel; optimizer::Union{JuMP.OptimizerFactory,Nothing}=nothing, solution_builder=solution_gf!)
+function optimize_model!(gm::AbstractGasModel; optimizer, solution_builder=solution_gf!)
     if optimizer === nothing
         if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
             Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")

@@ -9,9 +9,10 @@
 
 ## Staged
 
-- introduced matgas format (breaking) (#147)
-- removed requirement that all edges must have unique ids (breaking)
-- introduced optimal gas flow formulation (ogf)
+- Introduced matgas format (breaking) (#147)
+- Added support for JuMP v0.21 and Infrastructure v0.4
+- Removed requirement that all edges must have unique ids (breaking)
+- Introduced optimal gas flow formulation (ogf)
 
 ## v0.5
 
