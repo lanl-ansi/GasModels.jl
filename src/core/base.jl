@@ -123,20 +123,19 @@ end
 
 ""
 function optimize_model!(gm::AbstractGasModel; optimizer, solution_builder=solution_gf!)
-    if optimizer === nothing
+    if optimizer != nothing
         if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-            Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")
+            JuMP.set_optimizer(gm.model, optimizer)
         else
-            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
-        end
-    else
-        if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
-        else
-            Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
-            _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
+            Memento.warn(_LOGGER, "Model already contains optimizer, cannot use optimizer specified in `optimize_model!`")
         end
     end
+
+    if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
+        Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")
+    end
+
+    _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
 
     try
         solve_time = MOI.get(gm.model, MOI.SolveTime())
