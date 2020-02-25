@@ -38,7 +38,7 @@ mgc.pipe = [
 % id fr_junction to_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name totat_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volumne design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
 mgc.compressor = [
 1	1	5	1	1.40    3000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
-2	2	6	1	1.35	2000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
+2	2	6	1	1.35	  2000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
 ];
 
 %% transfer data
