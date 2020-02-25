@@ -8,8 +8,9 @@ GasModels.jl Change Log
 - Implement a multi-network test
 
 ### Staged
-- removed requirement that all edges must have unique ids (breaking)
-- introduced optimal gas flow formulation (ogf)
+- Added support for JuMP v0.21 and Infrastructure v0.4
+- Removed requirement that all edges must have unique ids (breaking)
+- Introduced optimal gas flow formulation (ogf)
 
 ### v0.5
 - Renamed various function names for consistency (breaking)
