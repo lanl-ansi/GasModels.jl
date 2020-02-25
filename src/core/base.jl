@@ -82,9 +82,10 @@ ext(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
 
 
 "Do a solve of the problem"
-function JuMP.optimize!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory)
+function JuMP.optimize!(gm::AbstractGasModel, optimizer)
     if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model, optimizer)
+        JuMP.set_optimizer(gm.model, optimizer)
+        _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
     else
         Memento.warn(_LOGGER, "Model already contains optimizer factory, cannot use optimizer specified in `optimize_model!`")
         _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
@@ -142,7 +143,7 @@ end
 
 
 ""
-function optimize_model!(gm::AbstractGasModel, optimizer::JuMP.OptimizerFactory; solution_builder=solution_gf!)
+function optimize_model!(gm::AbstractGasModel, optimizer; solution_builder=solution_gf!)
     solve_time = JuMP.optimize!(gm, optimizer)
 
     result = build_solution(gm, solve_time; solution_builder=solution_builder)

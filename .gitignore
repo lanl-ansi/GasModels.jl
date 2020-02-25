@@ -8,3 +8,5 @@ bin
 .project
 scip.set
 src/scratch
+
+Manifest.toml

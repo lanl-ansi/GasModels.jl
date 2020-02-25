@@ -2,7 +2,7 @@ using Documenter, GasModels
 
 makedocs(
     modules = [GasModels],
-    format = Documenter.HTML(analytics = "UA-367975-10"),
+    format = Documenter.HTML(analytics = "UA-367975-10", mathengine = Documenter.MathJax()),
     sitename = "GasModels",
     authors = "Russell Bent and contributors.",
     pages = [
