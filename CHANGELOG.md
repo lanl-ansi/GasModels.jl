@@ -2,16 +2,16 @@
 
 ## Pending
 
-- Add data consistency checks to file parsing
-- Refactor to make code style / conventions consistent with Infrastructure Models ecosystem (#136) (breaking)
 - Implement constraints on compressor power
 - Implement a multi-network test
 
-## Staged
+## v0.6
 
 - Introduced matgas format (breaking) (#147)
+- Add data consistency checks to file parsing
 - Added support for JuMP v0.21 and Infrastructure v0.4
 - Removed requirement that all edges must have unique ids (breaking)
+- Refactor to make code style / conventions consistent with Infrastructure Models ecosystem (#136) (breaking)
 - Introduced optimal gas flow formulation (ogf)
 
 ## v0.5
