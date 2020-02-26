@@ -3,9 +3,7 @@ using JSON
 
 include("old_matlab.jl")
 
-#file = ARGS[1]
-
-file = "C:/Users/210117/Documents/GitHub/GasModels.jl/test/data/gaslib-582.json"
+file = ARGS[1]
 
 json_out_file = split(file, ".")[1] * ".json"
 matgas_out_file = split(file, ".")[1] * "_matgas.m"
@@ -354,7 +352,5 @@ for key in keys(data)
         delete!(data, key)
     end
 end
-
-# JSON.print(open(json_out_file,"w"), data, 2)
 
 write_matgas!(data, matgas_out_file; include_extended=true)
