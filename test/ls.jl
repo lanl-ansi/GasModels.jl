@@ -5,7 +5,7 @@
         result = run_ls("../test/data/matgas/gaslib-40-ls.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         # after relaxation
-        @test isapprox(result["objective"]*result["solution"]["base_flow"], 515.2312009025778; atol = 1e-1) || isapprox(result["objective"]*result["solution"]["base_flow"], 456.52; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["base_flow"], 456.52; atol = 1e-1)
     end
 
     #Check the second order cone model on load shedding with priorities
@@ -14,7 +14,7 @@
         result = run_ls("../test/data/matgas/gaslib-40-ls-priority.m", MISOCPGasModel, cvx_minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         # After relaxation
-        @test isapprox(result["objective"]*result["solution"]["base_flow"], 463.624073939234; atol = 1e-1) || isapprox(result["objective"]*result["solution"]["base_flow"], 410.75; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["base_flow"], 410.75; atol = 1e-1)
         @warn(result["objective"]*result["solution"]["base_flow"])
     end
 
