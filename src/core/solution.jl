@@ -71,7 +71,7 @@ end
 
 "Get the pressure solutions"
 function add_junction_pressure_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "junction", "p_nominal", :p; scale = (x,item) -> sqrt(JuMP.value(x)))
+    add_setpoint!(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(JuMP.value(x)))
 end
 
 
@@ -94,7 +94,7 @@ end
 
 "Get the transfer mass flow set point"
 function add_transfer_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "transfer", "fg", :ft; default_value = (item) -> 0)
+    add_setpoint!(sol, gm, "transfer", "ft", :ft; default_value = (item) -> 0)
 end
 
 "Get the load volume solutions"

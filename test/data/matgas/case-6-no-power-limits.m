@@ -7,11 +7,12 @@ mgc.R = 8.314;
 mgc.compressibility_factor = 1;
 mgc.base_pressure = 3000000; % all base values are in same units as specified by units field
 mgc.base_length = 5000; % all base values are in same units as specified by units field
+mgc.base_flow = 8071.8;
 mgc.units = 'si';
 mgc.is_per_unit = 0;
-mgc.economic_weighting = 0.95;
+mgc.economic_weighting = 1.0;
 mgc.gas_molar_mass = 0.0185674; % kg/mol
-mgc.sound_speed = 359.548406333;
+mgc.sound_speed = 371.6643;
 
 
 %% junction data
@@ -37,8 +38,8 @@ mgc.pipe = [
 %% compressor data
 % id fr_junction to_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name totat_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volumne design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
 mgc.compressor = [
-1	1	5	1	1.40    100000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
-2	2	6	1	1.35	  100000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
+1	1	5	1	2    100000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
+2	2	6	1	2 	 100000000 	0	1000  3000000	6000000  3000000	6000000  1  10 2
 ];
 
 %% transfer data
@@ -54,15 +55,5 @@ mgc.transfer = [
 %% receipt data
 % id junction_id injection_min injection_max injection_nominal is_dispatchable status offer_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
 mgc.receipt = [
-1    1    0    1000    500    1     1  1.25
-];
-
-%% delivery data
-% id junction_id withdrawal_min withdrawal_max withdrawal_nominal is_dispatchable status bid_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
-mgc.delivery = [
-1    2    0 1.0  0  0  1  0
-2    3    0 2.0  0  0  1  0
-3    4    0 1.5  0  0  1  0
-4    5    0 2.0  0  0  1  0
-5    6    0 1.0  0  0  1  0
+1    1    0    1000    500    1     1  -1000
 ];

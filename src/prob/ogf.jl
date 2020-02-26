@@ -28,13 +28,13 @@ function post_ogf(gm::AbstractGasModel; kwargs...)
     variable_transfer_mass_flow(gm)
     variable_compression_ratio(gm)
 
-   objective_min_economic_costs(gm)
+    objective_min_economic_costs(gm)
 
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
        if (junction["junction_type"] == 1)
            constraint_pressure(gm,i)
-    end
+       end
     end
 
     for i in ids(gm, :pipe)

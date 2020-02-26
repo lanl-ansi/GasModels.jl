@@ -73,30 +73,35 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(junction, "p_min", rescale_pressure)
             _apply_func!(junction, "p_max", rescale_pressure)
             _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, junction) in get(data, "original_junction", [])
             _apply_func!(junction, "p_min", rescale_pressure)
             _apply_func!(junction, "p_max", rescale_pressure)
             _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, pipe) in get(data, "pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, pipe) in get(data, "original_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, pipe) in get(data, "ne_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, compressor) in get(data, "compressor", [])
@@ -107,6 +112,8 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", rescale_pressure)
             _apply_func!(compressor, "outlet_p_min", rescale_pressure)
             _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "f", rescale_flow)
+            _apply_func!(compressor, "power_max", rescale_flow)
         end
 
         for (i, compressor) in get(data, "ne_compressor", [])
@@ -117,6 +124,8 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", rescale_pressure)
             _apply_func!(compressor, "outlet_p_min", rescale_pressure)
             _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "f", rescale_flow)
+            _apply_func!(compressor, "power_max", rescale_flow)
         end
 
 
@@ -124,18 +133,21 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(transfer, "withdrawal_min", rescale_flow)
             _apply_func!(transfer, "withdrawal_max", rescale_flow)
             _apply_func!(transfer, "withdrawal_nominal", rescale_flow)
+            _apply_func!(transfer, "ft", rescale_flow)
         end
 
         for (i, receipt) in get(data, "receipt", [])
             _apply_func!(receipt, "injection_min", rescale_flow)
             _apply_func!(receipt, "injection_max", rescale_flow)
             _apply_func!(receipt, "injection_nominal", rescale_flow)
+            _apply_func!(receipt, "fg", rescale_flow)
         end
 
         for (i, delivery) in get(data, "delivery", [])
             _apply_func!(delivery, "withdrawal_min", rescale_flow)
             _apply_func!(delivery, "withdrawal_max", rescale_flow)
             _apply_func!(delivery, "withdrawal_nominal", rescale_flow)
+            _apply_func!(delivery, "fd", rescale_flow)
         end
 
         for (i, regulator) in get(data, "regulator", [])
@@ -144,6 +156,7 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(regulator, "design_flow_rate", rescale_flow)
             _apply_func!(regulator, "design_inlet_pressure", rescale_pressure)
             _apply_func!(regulator, "design_outlet_pressure", rescale_pressure)
+            _apply_func!(regulator, "f", rescale_flow)
         end
 
         for (i, storage) in get(data, "storage", [])
@@ -169,6 +182,7 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(junction, "p_min", psi_to_pascal)
             _apply_func!(junction, "p_max", psi_to_pascal)
             _apply_func!(junction, "p_nominal", psi_to_pascal)
+            _apply_func!(junction, "p", psi_to_pascal)
         end
 
         for (i, pipe) in get(data, "pipe", [])
@@ -176,12 +190,14 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "length", miles_to_m)
             _apply_func!(pipe, "p_min", psi_to_pascal)
             _apply_func!(pipe, "p_max", psi_to_pascal)
+            _apply_func!(pipe, "f", mmscfd_to_kgps)
         end
 
         for (i, junction) in get(data, "original_junction", [])
             _apply_func!(junction, "p_min", psi_to_pascal)
             _apply_func!(junction, "p_max", psi_to_pascal)
             _apply_func!(junction, "p_nominal", psi_to_pascal)
+            _apply_func!(junction, "p", psi_to_pascal)
         end
 
         for (i, pipe) in get(data, "original_pipe", [])
@@ -196,10 +212,12 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "length", miles_to_m)
             _apply_func!(pipe, "p_min", psi_to_pascal)
             _apply_func!(pipe, "p_max", psi_to_pascal)
+            _apply_func!(pipe, "f", mmscfd_to_kgps)
         end
 
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", inches_to_m)
+            _apply_func!(resistor, "f", mmscfd_to_kgps)
         end
 
         for (i, compressor) in get(data, "compressor", [])
@@ -212,6 +230,7 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", psi_to_pascal)
             _apply_func!(compressor, "outlet_p_min", psi_to_pascal)
             _apply_func!(compressor, "outlet_p_max", psi_to_pascal)
+            _apply_func!(compressor, "f", mmscfd_to_kgps)
         end
 
         for (i, compressor) in get(data, "ne_compressor", [])
@@ -224,12 +243,14 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", psi_to_pascal)
             _apply_func!(compressor, "outlet_p_min", psi_to_pascal)
             _apply_func!(compressor, "outlet_p_max", psi_to_pascal)
+            _apply_func!(compressor, "f", mmscfd_to_kgps)
         end
 
         for (i, transfer) in get(data, "transfer", [])
             _apply_func!(transfer, "withdrawal_min", mmscfd_to_kgps)
             _apply_func!(transfer, "withdrawal_max", mmscfd_to_kgps)
             _apply_func!(transfer, "withdrawal_nominal", mmscfd_to_kgps)
+            _apply_func!(transfer, "ft", mmscfd_to_kgps)
             _apply_func!(transfer, "bid_price", inv_mmscfd_to_kgps)
             _apply_func!(transfer, "offer_price", inv_mmscfd_to_kgps)
         end
@@ -238,6 +259,7 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(receipt, "injection_min", mmscfd_to_kgps)
             _apply_func!(receipt, "injection_max", mmscfd_to_kgps)
             _apply_func!(receipt, "injection_nominal", mmscfd_to_kgps)
+            _apply_func!(receipt, "fg", mmscfd_to_kgps)
             _apply_func!(receipt, "offer_price", inv_mmscfd_to_kgps)
         end
 
@@ -245,6 +267,7 @@ function make_si_units!(data::Dict{String,<:Any})
             _apply_func!(delivery, "withdrawal_min", mmscfd_to_kgps)
             _apply_func!(delivery, "withdrawal_max", mmscfd_to_kgps)
             _apply_func!(delivery, "withdrawal_nominal", mmscfd_to_kgps)
+            _apply_func!(delivery, "fd", mmscfd_to_kgps)
             _apply_func!(delivery, "bid_price", inv_mmscfd_to_kgps)
         end
 
@@ -290,6 +313,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(junction, "p_min", pascal_to_psi)
             _apply_func!(junction, "p_max", pascal_to_psi)
             _apply_func!(junction, "p_nominal", pascal_to_psi)
+            _apply_func!(junction, "p", pascal_to_psi)
         end
 
         for (i, pipe) in get(data, "pipe", [])
@@ -297,12 +321,14 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "length", m_to_miles)
             _apply_func!(pipe, "p_min", pascal_to_psi)
             _apply_func!(pipe, "p_max", pascal_to_psi)
+            _apply_func!(pipe, "f", kgps_to_mmscfd)
         end
 
         for (i, junction) in get(data, "original_junction", [])
             _apply_func!(junction, "p_min", pascal_to_psi)
             _apply_func!(junction, "p_max", pascal_to_psi)
             _apply_func!(junction, "p_nominal", pascal_to_psi)
+            _apply_func!(junction, "p", pascal_to_psi)
         end
 
         for (i, pipe) in get(data, "original_pipe", [])
@@ -310,6 +336,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "length", m_to_miles)
             _apply_func!(pipe, "p_min", pascal_to_psi)
             _apply_func!(pipe, "p_max", pascal_to_psi)
+            _apply_func!(pipe, "f", kgps_to_mmscfd)
         end
 
         for (i, pipe) in get(data, "ne_pipe", [])
@@ -317,10 +344,12 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(pipe, "length", m_to_miles)
             _apply_func!(pipe, "p_min", pascal_to_psi)
             _apply_func!(pipe, "p_max", pascal_to_psi)
+            _apply_func!(pipe, "f", kgps_to_mmscfd)
         end
 
         for (i, resistor) in get(data, "resistor", [])
             _apply_func!(resistor, "diameter", m_to_inches)
+            _apply_func!(resistor, "f", kgps_to_mmscfd)
         end
 
         for (i, compressor) in get(data, "compressor", [])
@@ -333,6 +362,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", pascal_to_psi)
             _apply_func!(compressor, "outlet_p_min", pascal_to_psi)
             _apply_func!(compressor, "outlet_p_max", pascal_to_psi)
+            _apply_func!(compressor, "f", kgps_to_mmscfd)
         end
 
         for (i, compressor) in get(data, "ne_compressor", [])
@@ -345,12 +375,14 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", pascal_to_psi)
             _apply_func!(compressor, "outlet_p_min", pascal_to_psi)
             _apply_func!(compressor, "outlet_p_max", pascal_to_psi)
+            _apply_func!(compressor, "f", kgps_to_mmscfd)
         end
 
         for (i, transfer) in get(data, "transfer", [])
             _apply_func!(transfer, "withdrawal_min", kgps_to_mmscfd)
             _apply_func!(transfer, "withdrawal_max", kgps_to_mmscfd)
             _apply_func!(transfer, "withdrawal_nominal", kgps_to_mmscfd)
+            _apply_func!(transfer, "ft", kgps_to_mmscfd)
             _apply_func!(transfer, "bid_price", inv_kgps_to_mmscfd)
             _apply_func!(transfer, "offer_price", inv_kgps_to_mmscfd)
         end
@@ -359,6 +391,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(receipt, "injection_min", kgps_to_mmscfd)
             _apply_func!(receipt, "injection_max", kgps_to_mmscfd)
             _apply_func!(receipt, "injection_nominal", kgps_to_mmscfd)
+            _apply_func!(receipt, "fg", kgps_to_mmscfd)
             _apply_func!(receipt, "offer_price", inv_kgps_to_mmscfd)
         end
 
@@ -366,6 +399,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(delivery, "withdrawal_min", kgps_to_mmscfd)
             _apply_func!(delivery, "withdrawal_max", kgps_to_mmscfd)
             _apply_func!(delivery, "withdrawal_nominal", kgps_to_mmscfd)
+            _apply_func!(delivery, "fd", kgps_to_mmscfd)
             _apply_func!(delivery, "bid_price", inv_kgps_to_mmscfd)
         end
 
@@ -375,6 +409,7 @@ function make_english_units!(data::Dict{String,<:Any})
             _apply_func!(regulator, "design_flow_rate", kgps_to_mmscfd)
             _apply_func!(regulator, "design_inlet_pressure", pascal_to_psi)
             _apply_func!(regulator, "design_outlet_pressure", pascal_to_psi)
+            _apply_func!(regulator, "f", kgps_to_mmscfd)
         end
 
         for (i, storage) in get(data, "storage", [])
@@ -413,30 +448,35 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(junction, "p_min", rescale_pressure)
             _apply_func!(junction, "p_max", rescale_pressure)
             _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, pipe) in get(data, "pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, junction) in get(data, "original_junction", [])
             _apply_func!(junction, "p_min", rescale_pressure)
             _apply_func!(junction, "p_max", rescale_pressure)
             _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, pipe) in get(data, "original_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, pipe) in get(data, "ne_pipe", [])
             _apply_func!(pipe, "length", rescale_length)
             _apply_func!(pipe, "p_min", rescale_pressure)
             _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, compressor) in get(data, "compressor", [])
@@ -447,6 +487,8 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", rescale_pressure)
             _apply_func!(compressor, "outlet_p_min", rescale_pressure)
             _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "f", rescale_flow)
+            _apply_func!(compressor, "power_max", rescale_flow)
         end
 
         for (i, compressor) in get(data, "ne_compressor", [])
@@ -457,24 +499,29 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(compressor, "inlet_p_max", rescale_pressure)
             _apply_func!(compressor, "outlet_p_min", rescale_pressure)
             _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "f", rescale_flow)
+            _apply_func!(compressor, "power_max", rescale_flow)
         end
 
         for (i, transfer) in get(data, "transfer", [])
             _apply_func!(transfer, "withdrawal_min", rescale_flow)
             _apply_func!(transfer, "withdrawal_max", rescale_flow)
             _apply_func!(transfer, "withdrawal_nominal", rescale_flow)
+            _apply_func!(transfer, "ft", rescale_flow)
         end
 
         for (i, receipt) in get(data, "receipt", [])
             _apply_func!(receipt, "injection_min", rescale_flow)
             _apply_func!(receipt, "injection_max", rescale_flow)
             _apply_func!(receipt, "injection_nominal", rescale_flow)
+            _apply_func!(receipt, "fg", rescale_flow)
         end
 
         for (i, delivery) in get(data, "delivery", [])
             _apply_func!(delivery, "withdrawal_min", rescale_flow)
             _apply_func!(delivery, "withdrawal_max", rescale_flow)
             _apply_func!(delivery, "withdrawal_nominal", rescale_flow)
+            _apply_func!(delivery, "fd", rescale_flow)
         end
 
         for (i, regulator) in get(data, "regulator", [])
@@ -483,6 +530,7 @@ function make_per_unit!(data::Dict{String,<:Any})
             _apply_func!(regulator, "design_flow_rate", rescale_flow)
             _apply_func!(regulator, "design_inlet_pressure", rescale_pressure)
             _apply_func!(regulator, "design_outlet_pressure", rescale_pressure)
+            _apply_func!(regulator, "f", rescale_flow)
         end
 
         for (i, storage) in get(data, "storage", [])

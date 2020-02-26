@@ -644,9 +644,9 @@ const non_negative_data = Dict{String,Vector{String}}(
     "compressor" => ["c_ratio_min", "c_ratio_max", "power_max", "flow_max",
         "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "operating_cost"],
     "resistor" => ["drag", "diameter"],
-    "transfer" => ["bid_price", "offer_price"],
-    "receipt" => ["injection_min", "injection_max", "injection_nominal", "offer_price"],
-    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "bid_price"],
+    "transfer" => [],
+    "receipt" => ["injection_min", "injection_max", "injection_nominal"],
+    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal"],
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )

@@ -103,6 +103,7 @@ function post_nels_directed(gm::AbstractGasModel)
     variable_valve_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
+    variable_transfer_mass_flow(gm)
 
     # expansion variables
     variable_pipe_ne(gm)

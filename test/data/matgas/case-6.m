@@ -7,11 +7,14 @@ mgc.R = 8.314;
 mgc.compressibility_factor = 1;
 mgc.base_pressure = 3000000; % all base values are in same units as specified by units field
 mgc.base_length = 5000; % all base values are in same units as specified by units field
+mgc.base_flow = 8071.8;
 mgc.units = 'si';
 mgc.is_per_unit = 0;
 mgc.economic_weighting = 0.95;
 mgc.gas_molar_mass = 0.0185674; % kg/mol
-mgc.sound_speed = 359.548406333;
+%mgc.sound_speed = 359.548406333;
+mgc.sound_speed = 371.6643;
+
 
 
 %% junction data
@@ -54,7 +57,7 @@ mgc.transfer = [
 %% receipt data
 % id junction_id injection_min injection_max injection_nominal is_dispatchable status offer_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
 mgc.receipt = [
-1    1    0    1000    500    1     1  1.25
+1    1    0    1000    500    1     1  -1000
 ];
 
 %% delivery data
