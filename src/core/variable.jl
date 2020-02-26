@@ -5,9 +5,15 @@
 "variables associated with pressure squared"
 function variable_pressure_sqr(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool = true)
     if bounded
-        gm.var[:nw][n][:p] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:junction])], base_name="$(n)_p", lower_bound=gm.ref[:nw][n][:junction][i]["pmin"]^2, upper_bound=gm.ref[:nw][n][:junction][i]["pmax"]^2, start = comp_start_value(gm.ref[:nw][n][:junction], i, "p_start", gm.ref[:nw][n][:junction][i]["pmin"]^2))
+        gm.var[:nw][n][:p] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:junction])], 
+            base_name="$(n)_p", 
+            lower_bound=gm.ref[:nw][n][:junction][i]["p_min"]^2, 
+            upper_bound=gm.ref[:nw][n][:junction][i]["p_max"]^2, 
+            start = comp_start_value(gm.ref[:nw][n][:junction], i, "p_start", gm.ref[:nw][n][:junction][i]["p_min"]^2))
     else
-        gm.var[:nw][n][:p] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:junction])], base_name="$(n)_p", start = comp_start_value(gm.ref[:nw][n][:junction], i, "p_start", gm.ref[:nw][n][:junction][i]["pmin"]^2))
+        gm.var[:nw][n][:p] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:junction])], 
+            base_name="$(n)_p", 
+            start = comp_start_value(gm.ref[:nw][n][:junction], i, "p_start", gm.ref[:nw][n][:junction][i]["p_min"]^2))
     end
 end
 
@@ -21,14 +27,14 @@ function variable_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool =
         gm.var[:nw][n][:f_resistor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_f_resistor", lower_bound=-max_flow, upper_bound=max_flow, start = comp_start_value(gm.ref[:nw][n][:resistor], i, "f_start", 0))
         gm.var[:nw][n][:f_short_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:short_pipe])], base_name="$(n)_f_short_pipe", lower_bound=-max_flow, upper_bound=max_flow, start = comp_start_value(gm.ref[:nw][n][:short_pipe], i, "f_start", 0))
         gm.var[:nw][n][:f_valve] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:valve])], base_name="$(n)_f_valve", lower_bound=-max_flow, upper_bound=max_flow, start = comp_start_value(gm.ref[:nw][n][:valve], i, "f_start", 0))
-        gm.var[:nw][n][:f_control_valve] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:control_valve])], base_name="$(n)_f_control_valve", lower_bound=-max_flow, upper_bound=max_flow, start = comp_start_value(gm.ref[:nw][n][:control_valve], i, "f_start", 0))
+        gm.var[:nw][n][:f_regulator] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:regulator])], base_name="$(n)_f_regulator", lower_bound=-max_flow, upper_bound=max_flow, start = comp_start_value(gm.ref[:nw][n][:regulator], i, "f_start", 0))
     else
         gm.var[:nw][n][:f_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:pipe], i, "f_start", 0))
         gm.var[:nw][n][:f_compressor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:compressor])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:compressor], i, "f_start", 0))
         gm.var[:nw][n][:f_resistor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:resistor], i, "f_start", 0))
         gm.var[:nw][n][:f_short_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:short_pipe])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:short_pipe], i, "f_start", 0))
         gm.var[:nw][n][:f_valve] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:valve])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:valve], i, "f_start", 0))
-        gm.var[:nw][n][:f_control_valve] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:control_valve])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:control_valve], i, "f_start", 0))
+        gm.var[:nw][n][:f_regulator] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:regulator])], base_name="$(n)_f", start = comp_start_value(gm.ref[:nw][n][:regulator], i, "f_start", 0))
     end
 end
 
@@ -62,38 +68,46 @@ end
 "0-1 variables associated with operating valves"
 function variable_valve_operation(gm::AbstractGasModel, n::Int=gm.cnw)
     gm.var[:nw][n][:v_valve]         = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])], binary=true, base_name="$(n)_v_valve", start = comp_start_value(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
-    gm.var[:nw][n][:v_control_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:control_valve])], binary=true, base_name="$(n)_v_control_valve", start = comp_start_value(gm.ref[:nw][n][:control_valve], l, "v_start", 1.0))
+    gm.var[:nw][n][:v_regulator] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:regulator])], binary=true, base_name="$(n)_v_regulator", start = comp_start_value(gm.ref[:nw][n][:regulator], l, "v_start", 1.0))
 end
 
 
 "variables associated with demand"
 function variable_load_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool=true)
     if bounded
-        gm.var[:nw][n][:fl] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatch_consumer))], base_name="$(n)_fl", lower_bound=_calc_flmin(gm.data, gm.ref[:nw][n][:consumer][i]), upper_bound=_calc_flmax(gm.data, gm.ref[:nw][n][:consumer][i]), start = comp_start_value(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))
+        gm.var[:nw][n][:fl] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_delivery))], base_name="$(n)_fl", lower_bound=ref(gm,n,:delivery,i)["withdrawal_min"], upper_bound=ref(gm,n,:delivery,i)["withdrawal_max"], start = comp_start_value(gm.ref[:nw][n][:delivery], i, "fl_start", 0.0))
     else
-        gm.var[:nw][n][:fl] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatch_consumer))], base_name="$(n)_fl", start = comp_start_value(gm.ref[:nw][n][:consumer], i, "fl_start", 0.0))
+        gm.var[:nw][n][:fl] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_delivery))], base_name="$(n)_fl", start = comp_start_value(gm.ref[:nw][n][:delivery], i, "fl_start", 0.0))
     end
 end
 
+"variables associated with transfer"
+function variable_transfer_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool=true)
+    if bounded 
+        gm.var[:nw][n][:ft] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_transfer))], base_name="$(n)_ft", lower_bound=ref(gm,n,:transfer,i)["withdrawal_min"], upper_bound=ref(gm,n,:transfer,i)["withdrawal_max"], start = comp_start_value(gm.ref[:nw][n][:transfer], i, "ft_start", 0.0))
+    else 
+        gm.var[:nw][n][:ft] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_transfer))], base_name="$(n)_ft", start = comp_start_value(gm.ref[:nw][n][:transfer], i, "ft_start", 0.0))
+    end 
+end
 
 "variables associated with production"
 function variable_production_mass_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool=true)
     if bounded
-        gm.var[:nw][n][:fg] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatch_producer))], base_name="$(n)_fg", lower_bound=_calc_fgmin(gm.data, ref(gm,n,:producer,i)), upper_bound=_calc_fgmax(gm.data, ref(gm,n,:producer,i)), start = comp_start_value(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))
+        gm.var[:nw][n][:fg] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_receipt))], base_name="$(n)_fg", lower_bound=ref(gm,n,:receipt,i)["injection_min"], upper_bound=ref(gm,n,:receipt,i)["injection_max"], start = comp_start_value(gm.ref[:nw][n][:receipt], i, "fg_start", 0.0))
     else
-        gm.var[:nw][n][:fg] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatch_producer))], base_name="$(n)_fg", start = comp_start_value(gm.ref[:nw][n][:producer], i, "fg_start", 0.0))
+        gm.var[:nw][n][:fg] = JuMP.@variable(gm.model, [i in keys(ref(gm,n,:dispatchable_receipt))], base_name="$(n)_fg", start = comp_start_value(gm.ref[:nw][n][:receipt], i, "fg_start", 0.0))
     end
 end
 
 
 "variables associated with direction of flow on the connections. yp = 1 imples flow goes from f_junction to t_junction. yn = 1 imples flow goes from t_junction to f_junction"
-function variable_connection_direction(gm::AbstractGasModel, n::Int=gm.cnw; pipe=gm.ref[:nw][n][:pipe], compressor=gm.ref[:nw][n][:compressor], short_pipe=gm.ref[:nw][n][:short_pipe], resistor=gm.ref[:nw][n][:resistor], valve=gm.ref[:nw][n][:valve], control_valve=gm.ref[:nw][n][:control_valve])
+function variable_connection_direction(gm::AbstractGasModel, n::Int=gm.cnw; pipe=gm.ref[:nw][n][:pipe], compressor=gm.ref[:nw][n][:compressor], short_pipe=gm.ref[:nw][n][:short_pipe], resistor=gm.ref[:nw][n][:resistor], valve=gm.ref[:nw][n][:valve], regulator=gm.ref[:nw][n][:regulator])
     gm.var[:nw][n][:y_pipe]          = JuMP.@variable(gm.model, [l in keys(pipe)], binary=true, base_name="$(n)_y", start = comp_start_value(pipe, l, "y_start", 1.0))
     gm.var[:nw][n][:y_compressor]    = JuMP.@variable(gm.model, [l in keys(compressor)], binary=true, base_name="$(n)_y", start = comp_start_value(compressor, l, "y_start", 1.0))
     gm.var[:nw][n][:y_resistor]      = JuMP.@variable(gm.model, [l in keys(resistor)], binary=true, base_name="$(n)_y", start = comp_start_value(resistor, l, "y_start", 1.0))
     gm.var[:nw][n][:y_short_pipe]    = JuMP.@variable(gm.model, [l in keys(short_pipe)], binary=true, base_name="$(n)_y", start = comp_start_value(short_pipe, l, "y_start", 1.0))
     gm.var[:nw][n][:y_valve]         = JuMP.@variable(gm.model, [l in keys(valve)], binary=true, base_name="$(n)_y", start = comp_start_value(valve, l, "y_start", 1.0))
-    gm.var[:nw][n][:y_control_valve] = JuMP.@variable(gm.model, [l in keys(control_valve)], binary=true, base_name="$(n)_y", start = comp_start_value(control_valve, l, "y_start", 1.0))
+    gm.var[:nw][n][:y_regulator]     = JuMP.@variable(gm.model, [l in keys(regulator)], binary=true, base_name="$(n)_y", start = comp_start_value(regulator, l, "y_start", 1.0))
 end
 
 
@@ -106,13 +120,13 @@ end
 
 "Variable Set: Define variables needed for modeling flow across connections"
 function variable_flow(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flow(gm,n; bounded=bounded)
+    variable_mass_flow(gm,n,bounded=bounded)
 end
 
 
 "Variable Set: Define variables needed for modeling flow across connections where some flows are directionally constrained"
 function variable_flow_directed(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flow(gm,n; bounded=bounded)
+    variable_mass_flow(gm,n,bounded=bounded)
 end
 
 
@@ -124,7 +138,7 @@ end
 
 "Variable Set: Define variables needed for modeling flow across connections that are expansions and some flows are directionally constrained"
 function variable_flow_ne_directed(gm::AbstractGasModel, n::Int=gm.cnw; bounded::Bool = true)
-    variable_mass_flow_ne(gm,n; bounded=bounded)
+    variable_mass_flow_ne(gm,n,bounded=bounded)
 end
 
 

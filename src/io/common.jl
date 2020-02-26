@@ -3,36 +3,46 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString="m")
+function parse_file(io::IO; filetype::AbstractString="m", skip_correct::Bool=false)
     if filetype == "m"
-        pmd_data = GasModels.parse_matlab(io)
+        pmd_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
         pmd_data = GasModels.parse_json(io)
     else
         Memento.error(_LOGGER, "only .m and .json files are supported")
     end
 
-    correct_network_data!(pmd_data)
+    if !skip_correct
+        correct_network_data!(pmd_data)
+    end
 
     return pmd_data
 end
 
 
 ""
-function parse_file(file::String)
+function parse_file(file::String; skip_correct::Bool=false)
     pmd_data = open(file) do io
-        parse_file(io; filetype=split(lowercase(file), '.')[end])
+        parse_file(io; filetype=split(lowercase(file), '.')[end], skip_correct=skip_correct)
     end
     return pmd_data
 end
 
 
-""
-function correct_network_data!(data::Dict{String,Any})
-    check_pressure_limits(data)
-    check_pipe_parameters(data)
-    check_compressor_parameters(data)
+"""
+    correct_network_data!(data::Dict{String,Any})
 
+Data integrity checks 
+"""
+function correct_network_data!(data::Dict{String,Any})
+    check_non_negativity(data)
+    correct_p_mins!(data)
+
+    per_unit_data_field_check!(data)
+    add_compressor_fields!(data)
+
+    make_si_units!(data)
+    add_base_values!(data)
     make_per_unit!(data)
 
     check_connectivity(data)

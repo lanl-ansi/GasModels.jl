@@ -1,19 +1,19 @@
 @testset "test data handling and parsing" begin
     @testset "gaslib40 summary from dict" begin
-        data = GasModels.parse_file("../test/data/matlab/gaslib40.m")
+        data = GasModels.parse_file("../test/data/matgas/gaslib-40.m")
         output = sprint(GasModels.summary, data)
 
         line_count = count(c -> c == '\n', output)
         @test line_count >= 150 && line_count <= 250
-        @test occursin("name: gaslib40", output)
+        @test occursin("name: gaslib-40", output)
         @test occursin("Table: junction", output)
         @test occursin("Table: pipe", output)
-        @test occursin("Table: producer", output)
-        @test occursin("Table: consumer", output)
+        @test occursin("Table: receipt", output)
+        @test occursin("Table: delivery", output)
     end
 
     @testset "check status=false components" begin
-        gm = build_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
+        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
         @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
         try
@@ -44,9 +44,8 @@
     end
 
     @testset "check data summary" begin
-        gas_file = "../test/data/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        GasModels.make_si_unit!(gas_data)
 
         output = sprint(GasModels.summary, gas_data)
 
@@ -55,17 +54,17 @@
         @test line_count >= 180 && line_count <= 220
         @test occursin("name: gaslib-40", output)
         @test occursin("pipe: 39", output)
-        @test occursin("consumer: 29", output)
+        @test occursin("delivery: 29", output)
         @test occursin("junction: 46", output)
-        @test occursin("producer: 3", output)
+        @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
-        @test occursin("qg: 201.389", output)
+        @test occursin("injection_nominal: 0.333", output)
     end
 
     @testset "check solution summary" begin
-        gas_file = "../test/data/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf("../test/data/gaslib-40.m", MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
 
         output = sprint(GasModels.summary, result["solution"])
 
@@ -78,51 +77,17 @@
     end
 
 
-    @testset "check grail data parsing" begin
-        grail_network_file = "../test/data/grail-3.json"
-        grail_demand_file = "../test/data/grail-3-profile.json"
-
-        gas_data = GasModels.parse_grail(grail_network_file, grail_demand_file)
-
-        @test length(gas_data["connection"]) == 4
-        @test length(gas_data["junction"]) == 4
-        @test length(gas_data["producer"]) == 0
-        @test length(gas_data["consumer"]) == 2
-
-        #TODO see if we can get one of these test working
-        #result = GasModels.run_gf(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
-        #result = GasModels.run_ls(gas_data, GasModels.MISOCPGasModel, cvx_minlp_solver)
-
-        #@test result["termination_status"] == OPTIMAL
-        #@test result["objective"] == 0.0
-    end
-
     @testset "check resistance calculations" begin
-        @testset "calc pipe resistance smeers" begin
-            gas_file = "../test/data/gaslib-40.m"
+        @testset "calc pipe resistance" begin
+            gas_file = "../test/data/matgas/A1.m"
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
-            @test  isapprox(GasModels._calc_pipe_resistance_smeers(gas_ref[:nw][0], gas_data["pipe"]["32"]), 5.9719269834653; atol=1e-4)
-        end
-
-        @testset "calc pipe resistance thorley" begin
-            gas_file = "../test/data/A1.m"
-            gas_data = GasModels.parse_file(gas_file)
-            gas_ref  = GasModels.build_ref(gas_data)
-
-            @test  isapprox(GasModels._calc_pipe_resistance_thorley(gas_ref[:nw][0], gas_data["ne_pipe"]["26"]), (108.24469414437586 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
-        end
-
-        @testset "calc resistor resistance simple" begin
-            gas_file = "../test/data/gaslib-582.json"
-            gas_data = GasModels.parse_file(gas_file)
-            gas_ref  = GasModels.build_ref(gas_data)
-
-            @test  isapprox(GasModels._calc_resistor_resistance_simple(gas_ref[:nw][0], gas_data["resistor"]["605"]), (7.434735082304529e10 * (gas_data["baseP"]^2/gas_data["baseQ"]^2)) / 1e5^2; atol=1e-4)
+            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), (108.24469414437586 * (gas_data["base_pressure"]^2/gas_data["base_flow"]^2)) / 1e5^2; atol=1e-4)
         end
     end
 
+    #=
     @testset "check data parser warnings / errors" begin
         gas_file = "../test/data/warnings.m"
 
@@ -144,13 +109,13 @@
 
         data = GasModels.parse_file(gas_file)
 
-        data["junction"]["1"]["pmin"] = -1
+        data["junction"]["1"]["p_min"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
-        data["junction"]["1"]["pmin"] = 3.0
+        data["junction"]["1"]["p_min"] = 3.0
 
-        data["junction"]["1"]["pmax"] = -1
+        data["junction"]["1"]["p_max"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
-        data["junction"]["1"]["pmax"] = 6.0
+        data["junction"]["1"]["p_max"] = 6.0
 
         data["pipe"]["1"]["diameter"] = -1
         @test_throws(TESTLOG, ErrorException, GasModels.correct_network_data!(data))
@@ -197,7 +162,8 @@
 
         @test gas_data["pipe"]["2"]["status"] == 0
         @test gas_data["pipe"]["4"]["status"] == 0
-        @test gas_data["consumer"]["2"]["status"] == 0
-        @test gas_data["consumer"]["4"]["status"] == 0
+        @test gas_data["delivery"]["2"]["status"] == 0
+        @test gas_data["delivery"]["4"]["status"] == 0
     end
+    =#
 end

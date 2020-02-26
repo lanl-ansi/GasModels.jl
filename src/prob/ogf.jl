@@ -25,15 +25,16 @@ function post_ogf(gm::AbstractGasModel; kwargs...)
     variable_valve_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
+    variable_transfer_mass_flow(gm)
     variable_compression_ratio(gm)
 
-   objective_min_economic_costs(gm)
+    objective_min_economic_costs(gm)
 
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
        if (junction["junction_type"] == 1)
            constraint_pressure(gm,i)
-    end
+       end
     end
 
     for i in ids(gm, :pipe)
@@ -66,9 +67,9 @@ function post_ogf(gm::AbstractGasModel; kwargs...)
         constraint_on_off_valve_pressure(gm, i)
     end
 
-    for i in ids(gm, :control_valve)
-        constraint_on_off_control_valve_mass_flow(gm, i)
-        constraint_on_off_control_valve_pressure(gm, i)
+    for i in ids(gm, :regulator)
+        constraint_on_off_regulator_mass_flow(gm, i)
+        constraint_on_off_regulator_pressure(gm, i)
     end
 end
 
@@ -80,6 +81,7 @@ function solution_ogf!(gm::AbstractGasModel,sol::Dict{String,Any})
     add_direction_setpoint!(sol, gm)
     add_load_volume_setpoint!(sol, gm)
     add_load_mass_flow_setpoint!(sol, gm)
+    add_transfer_mass_flow_setpoint!(sol, gm)
     add_production_volume_setpoint!(sol, gm)
     add_production_mass_flow_setpoint!(sol, gm)
     add_compressor_ratio_setpoint!(sol, gm)

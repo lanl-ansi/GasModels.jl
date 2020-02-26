@@ -65,47 +65,48 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
     f_short_pipe    = var(gm,n,:f_short_pipe)
     f_valve         = var(gm,n,:f_valve)
-    f_control_valve = var(gm,n,:f_control_valve)
+    f_regulator = var(gm,n,:f_regulator)
     fg              = var(gm,n,:fg)
     fl              = var(gm,n,:fl)
-    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+    ft              = var(gm,n,:ft)
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
                                                                             sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                             sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
                                                                             sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                             sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                            sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves)
+                                                                            sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators)
                                                                         ))
 end
 
 
 "Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_control_valves, t_control_valves, f_ne_pipes, t_ne_pipes, f_ne_compressors, t_ne_compressors, fl_constant, fg_constant, consumers, producers, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
     f_short_pipe    = var(gm,n,:f_short_pipe)
     f_valve         = var(gm,n,:f_valve)
-    f_control_valve = var(gm,n,:f_control_valve)
+    f_regulator = var(gm,n,:f_regulator)
     f_ne_pipe       = var(gm,n,:f_ne_pipe)
     f_ne_compressor = var(gm,n,:f_ne_compressor)
     fg              = var(gm,n,:fg)
     fl              = var(gm,n,:fl)
-    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in producers) - sum(fl[a] for a in consumers) ==
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
                                                                                       sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                                       sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                                       sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
                                                                                       sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                                       sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                                      sum(f_control_valve[a] for a in f_control_valves) - sum(f_control_valve[a] for a in t_control_valves) +
-                                                                                      sum(f_ne_pipe[a] for a in f_ne_pipes) - sum(f_ne_pipe[a] for a in t_ne_pipes) +
-                                                                                      sum(f_ne_compressor[a] for a in f_ne_compressors) - sum(f_ne_compressor[a] for a in t_ne_compressors)
+                                                                                      sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +
+                                                                                      sum(f_ne_pipe[a] for a in ne_pipes_fr) - sum(f_ne_pipe[a] for a in ne_pipes_to) +
+                                                                                      sum(f_ne_compressor[a] for a in ne_compressors_fr) - sum(f_ne_compressor[a] for a in ne_compressors_to)
                                                                             ))
 end
 
@@ -352,36 +353,36 @@ end
 #################################################################################################
 
 "constraints on flow across control valves that are undirected"
-function constraint_on_off_control_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f = var(gm,n,:f_control_valve,k)
-    v = var(gm,n,:v_control_valve,k)
+function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
+    f = var(gm,n,:f_regulator,k)
+    v = var(gm,n,:v_regulator,k)
     _add_constraint!(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
     _add_constraint!(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
 "Constraint: Flow across control valves when direction is constrained"
-function constraint_on_off_control_valve_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f = var(gm,n,:f_control_valve,k)
-    v = var(gm,n,:v_control_valve,k)
+function constraint_on_off_regulator_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
+    f = var(gm,n,:f_regulator,k)
+    v = var(gm,n,:v_regulator,k)
 
-    _add_constraint!(gm, n,:control_valve_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max*v))
-    _add_constraint!(gm, n,:control_valve_flow_direction3, k, JuMP.@constraint(gm.model, f_min*v <= f))
+    _add_constraint!(gm, n,:regulator_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max*v))
+    _add_constraint!(gm, n,:regulator_flow_direction3, k, JuMP.@constraint(gm.model, f_min*v <= f))
 end
 
 
 "Constraint: Pressure drop across a control valves when directions is constrained"
-function constraint_on_off_control_valve_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, direction)
+function constraint_on_off_regulator_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, direction)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
-    v  = var(gm,n,:v_control_valve,k)
+    v  = var(gm,n,:v_regulator,k)
 
     if direction == 1
-        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
-        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
     else
-        _add_constraint!(gm, n, :control_valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - pi <= (1-v)*j_pmax^2))
-        _add_constraint!(gm, n, :control_valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi - pj <= (1-v)*i_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  pi - pj <= (1-v)*i_pmax^2))
     end
 end
 

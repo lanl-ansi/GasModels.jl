@@ -9,10 +9,10 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true, pipe=ref(gm, n, :undirected_pipe), compressor=ref(gm, n, :undirected_compressor), resistor=ref(gm, n, :undirected_resistor), short_pipe=ref(gm, n, :undirected_short_pipe), valve=ref(gm, n, :undirected_valve), control_valve=ref(gm, n, :undirected_control_valve))
+function variable_flow_directed(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true, pipe=ref(gm, n, :undirected_pipe), compressor=ref(gm, n, :default_compressor), resistor=ref(gm, n, :undirected_resistor), short_pipe=ref(gm, n, :undirected_short_pipe), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
     variable_pressure_difference(gm, n; bounded=bounded)
     variable_mass_flow(gm, n; bounded=bounded)
-    variable_connection_direction(gm, n; pipe=pipe, compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, control_valve=control_valve)
+    variable_connection_direction(gm, n; pipe=pipe, compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, regulator=regulator)
 end
 
 
@@ -25,7 +25,7 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true, ne_pipe=ref(gm, n, :undirected_ne_pipe), ne_compressor=ref(gm, n, :undirected_ne_compressor))
+function variable_flow_ne_directed(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true, ne_pipe=ref(gm, n, :undirected_ne_pipe), ne_compressor=ref(gm, n, :default_compressor))
     variable_pressure_difference_ne(gm, n; bounded=bounded)
     variable_mass_flow_ne(gm, n; bounded=bounded)
     variable_connection_direction_ne(gm, n; ne_pipe=ne_pipe, ne_compressor=ne_compressor)
@@ -35,8 +35,8 @@ end
 ""
 function variable_pressure_difference(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true)
     if bounded
-        gm.var[:nw][n][:l_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :pipe_ref, i)[:pd_max]), abs(ref(gm, n, :pipe_ref, i)[:pd_max])), start=comp_start_value(gm.ref[:nw][n][:pipe], i, "l_start", 0))
-        gm.var[:nw][n][:l_resistor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :resistor_ref, i)[:pd_min]), abs(ref(gm, n, :resistor_ref, i)[:pd_max])), start=comp_start_value(gm.ref[:nw][n][:resistor], i, "l_start", 0))
+        gm.var[:nw][n][:l_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :pipe, i)["pd_min"]), abs(ref(gm, n, :pipe, i)["pd_max"])), start=comp_start_value(gm.ref[:nw][n][:pipe], i, "l_start", 0))
+        gm.var[:nw][n][:l_resistor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :resistor, i)["pd_min"]), abs(ref(gm, n, :resistor, i)["pd_max"])), start=comp_start_value(gm.ref[:nw][n][:resistor], i, "l_start", 0))
     else
         gm.var[:nw][n][:l_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:pipe])], base_name="$(n)_l_pipe", start=comp_start_value(gm.ref[:nw][n][:pipe], i, "l_start", 0))
         gm.var[:nw][n][:l_resistor] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:resistor])], base_name="$(n)_l_resistor", start=comp_start_value(gm.ref[:nw][n][:resistor], i, "l_start", 0))
@@ -48,7 +48,7 @@ end
 function variable_pressure_difference_ne(gm::AbstractMISOCPModel, n::Int=gm.cnw; bounded::Bool=true)
     max_flow = ref(gm, n, :max_mass_flow)
     if bounded
-        gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :ne_pipe_ref, i)[:pd_max]), abs(ref(gm, n, :ne_pipe_ref, i)[:pd_max]), 1 / ref(gm, n, :ne_pipe_ref, i)[:w] * max_flow^2), start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
+        gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", lower_bound=0.0, upper_bound=max(abs(ref(gm, n, :ne_pipe, i)["pd_max"]), abs(ref(gm, n, :ne_pipe, i)["pd_max"]), 1 / ref(gm, n, :ne_pipe, i)["resistance"] * max_flow^2), start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
     else
         gm.var[:nw][n][:l_ne_pipe] = JuMP.@variable(gm.model, [i in keys(gm.ref[:nw][n][:ne_pipe])], base_name="$(n)_l_ne_pipe", start=comp_start_value(gm.ref[:nw][n][:ne_pipe], i, "l_start", 0))
     end

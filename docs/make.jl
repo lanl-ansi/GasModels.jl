@@ -9,7 +9,7 @@ makedocs(
         "Home" => "index.md",
         "Manual" => [
             "Getting Started" => "quickguide.md",
-            "Network Data Format" => "network-data.md",
+            "Input Data Formats" => "data-format.md",
             "Result Data Format" => "result-data.md",
             "Mathematical Model" => "math-model.md"
         ],

@@ -18,7 +18,7 @@ function build_solution(gm::AbstractGasModel, solve_time; solution_builder=solut
                 "short_pipe_count" => haskey(nw_data, "short_pipe") ? length(nw_data["short_pipe"]) : 0,
                 "compressor_count" => haskey(nw_data, "compressor") ? length(nw_data["compressor"]) : 0,
                 "valve_count" => haskey(nw_data, "valve") ? length(nw_data["valve"]) : 0,
-                "control_valve_count" => haskey(nw_data, "control_valve") ? length(nw_data["control_valve"]) : 0,
+                "regulator_count" => haskey(nw_data, "regulator") ? length(nw_data["regulator"]) : 0,
                 "resistor_count" => haskey(nw_data, "resistor") ? length(nw_data["resistor"]) : 0
             )
         end
@@ -28,7 +28,7 @@ function build_solution(gm::AbstractGasModel, solve_time; solution_builder=solut
         data["pipe_count"] = haskey(gm.data, "pipe") ? length(gm.data["pipe"]) : 0
         data["compressor_count"] = haskey(gm.data, "compressor") ? length(gm.data["compressor"]) : 0
         data["valve_count"] = haskey(gm.data, "valve") ? length(gm.data["valve"]) : 0
-        data["control_valve_count"] = haskey(gm.data, "control_valve") ? length(gm.data["control_valve"]) : 0
+        data["regulator_count"] = haskey(gm.data, "regulator") ? length(gm.data["regulator"]) : 0
         data["resistor_count"] = haskey(gm.data, "resistor") ? length(gm.data["resistor"]) : 0
         data["short_pipe_count"] = haskey(gm.data, "short_pipe") ? length(gm.data["short_pipe"]) : 0
     end
@@ -56,7 +56,7 @@ end
 
 ""
 function _init_solution(gm::AbstractGasModel)
-    data_keys = ["per_unit", "baseP", "baseQ", "multinetwork"]
+    data_keys = ["is_per_unit", "base_pressure", "base_flow", "multinetwork"]
     return Dict{String,Any}(key => gm.data[key] for key in data_keys)
 end
 
@@ -83,25 +83,29 @@ end
 
 "Get the load mass flow solutions"
 function add_load_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "consumer", "fl", :fl; default_value = (item) -> 0)
+    add_setpoint!(sol, gm, "delivery", "fl", :fl; default_value = (item) -> 0)
 end
 
 
 "Get the production mass flow set point"
 function add_production_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "producer", "fg", :fg; default_value = (item) -> 0)
+    add_setpoint!(sol, gm, "receipt", "fg", :fg; default_value = (item) -> 0)
 end
 
+"Get the transfer mass flow set point"
+function add_transfer_mass_flow_setpoint!(sol, gm::AbstractGasModel)
+    add_setpoint!(sol, gm, "transfer", "ft", :ft; default_value = (item) -> 0)
+end
 
 "Get the load volume solutions"
 function add_load_volume_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "consumer", "ql", :fl; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
+    add_setpoint!(sol, gm, "delivery", "ql", :fl; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
 
 "Get the production volume set point"
 function add_production_volume_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "producer", "qg", :fg; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
+    add_setpoint!(sol, gm, "receipt", "qg", :fg; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
 end
 
 
@@ -110,7 +114,7 @@ function add_direction_setpoint!(sol, gm::AbstractGasModel)
     add_setpoint!(sol, gm, "pipe", "y", :y_pipe)
     add_setpoint!(sol, gm, "compressor", "y", :y_compressor)
     add_setpoint!(sol, gm, "valve", "y", :y_valve)
-    add_setpoint!(sol, gm, "control_valve", "y", :y_control_valve)
+    add_setpoint!(sol, gm, "regulator", "y", :y_regulator)
     add_setpoint!(sol, gm, "resistor", "y", :y_resistor)
     add_setpoint!(sol, gm, "short_pipe", "y", :y_short_pipe)
 end
@@ -119,7 +123,7 @@ end
 "Get the valve solutions"
 function add_valve_setpoint!(sol, gm::AbstractGasModel)
     add_setpoint!(sol, gm, "valve", "v", :v_valve)
-    add_setpoint!(sol, gm, "control_valve", "v", :v_control_valve)
+    add_setpoint!(sol, gm, "regulator", "v", :v_regulator)
 end
 
 
@@ -127,7 +131,7 @@ end
 function add_connection_flow_setpoint!(sol, gm::AbstractGasModel)
     add_setpoint!(sol, gm, "pipe", "f", :f_pipe)
     add_setpoint!(sol, gm, "compressor", "f", :f_compressor)
-    add_setpoint!(sol, gm, "control_valve", "f", :f_control_valve)
+    add_setpoint!(sol, gm, "regulator", "f", :f_regulator)
     add_setpoint!(sol, gm, "valve", "f", :f_valve)
     add_setpoint!(sol, gm, "resistor", "f", :f_resistor)
     add_setpoint!(sol, gm, "short_pipe", "f", :f_short_pipe)
@@ -136,8 +140,8 @@ end
 
 "Add the compressor solutions"
 function add_compressor_ratio_setpoint!(sol, gm::AbstractGasModel; default_value = (item) -> 1)
-    add_setpoint!(sol, gm, "compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
-    add_setpoint!(sol, gm, "control_valve", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["f_junction"]],var[item["t_junction"]]]   )
+    add_setpoint!(sol, gm, "compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
+    add_setpoint!(sol, gm, "regulator", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
 end
 
 

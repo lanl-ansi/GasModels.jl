@@ -14,10 +14,9 @@ import Ipopt
 import Cbc
 import Juniper
 
-ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, print_level=0, sb="yes")
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, print_level=0, sb="yes", max_iter=50000)
 cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
 juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0, sb="yes"),mip_solver=cbc_solver, log_levels=[])
-tol_ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, print_level=0, sb="yes", tol=1e-10)
 
 using Test
 
@@ -32,8 +31,6 @@ include("common.jl")
 @testset "GasModels" begin
     include("data.jl")
 
-    include("matlab.jl")
-
     include("ogf.jl")
 
     include("ls.jl")
@@ -43,4 +40,8 @@ include("common.jl")
     include("gf.jl")
 
     include("ne.jl")
+
+    include("transient.jl")
+
+    include("debug.jl")  # test gaslib-582 minlp gf
 end
