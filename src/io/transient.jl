@@ -194,6 +194,8 @@ end
 
 function create_time_series_block(data::Array{Dict{String,Any},1};
     total_time=86400.0, time_step=3600.0, additional_time=14400.0)::Dict{String,Any}
+    # create time information 
+    time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time 
     if (3600.0 % time_step) != 0.0 
         Memento.error(_LOGGER, "the 3600 seconds has to be exactly divisible by the time step, 
@@ -202,8 +204,66 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
     num_time_points = Int(ceil(end_time / time_step )) + 1
     num_physical_time_points = Int(ceil(total_time / time_step)) + 1
     time_points = collect(LinRange(0.0, end_time, num_time_points))
-    for time_point in data 
-        print(time_point)
+
+    time_series_block["num_steps"] = num_time_points 
+    time_series_block["num_physical_time_points"] = num_physical_time_points
+    time_series_block["time_points"] = time_points 
+    time_series_block["time_step"] = time_step
+
+    for data_point in data 
+        component_type = data_point["component_type"]
+        component_id = data_point["component_id"]
+        parameter = data_point["parameter"]
+        value = data_point["value"]
+        time_stamp = DateTime(split(data_point["time_stamp"], "+")[1])
+        if ~haskey(time_series_block, component_type)
+            time_series_block[component_type] = Dict{String,Any}()
+            if ~haskey(time_series_block[component_type], component_id)
+                time_series_block[component_type][component_id] = Dict()
+                if ~haskey(time_series_block[component_type][component_id], parameter)
+                    time_series_block[component_type][component_id][parameter] = Dict(
+                        "values" => [value],
+                        "time_stamp" => [time_stamp]
+                    )
+                else 
+                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
+                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
+                end 
+            else 
+                if ~haskey(time_series_block[component_type][component_id], parameter)
+                    time_series_block[component_type][component_id][parameter] = Dict(
+                        "values" => [value],
+                        "time_stamp" => [time_stamp]
+                    )
+                else 
+                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
+                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
+                end 
+            end 
+        else 
+            if ~haskey(time_series_block[component_type], component_id)
+                time_series_block[component_type][component_id] = Dict()
+                if ~haskey(time_series_block[component_type][component_id], parameter)
+                    time_series_block[component_type][component_id][parameter] = Dict(
+                        "values" => [value],
+                        "time_stamp" => [time_stamp]
+                    )
+                else 
+                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
+                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
+                end 
+            else 
+                if ~haskey(time_series_block[component_type][component_id], parameter)
+                    time_series_block[component_type][component_id][parameter] = Dict(
+                        "values" => [value],
+                        "time_stamp" => [time_stamp]
+                    )
+                else 
+                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
+                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
+                end 
+            end 
+        end 
     end 
 
 
