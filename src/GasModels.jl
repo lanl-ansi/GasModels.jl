@@ -10,6 +10,9 @@ module GasModels
     import Printf
     import MathOptInterface
 
+    using Dates
+    using Dierckx
+
     const MOI = MathOptInterface
     const MOIU = MathOptInterface.Utilities
 
