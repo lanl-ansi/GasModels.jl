@@ -9,6 +9,7 @@ module GasModels
     import Memento
     import Printf
     import MathOptInterface
+
     const MOI = MathOptInterface
     const MOIU = MathOptInterface.Utilities
 

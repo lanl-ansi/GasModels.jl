@@ -3,10 +3,9 @@ using JSON
 
 include("old_matlab.jl")
 
-
 file = ARGS[1]
 
-json_out_file = split(file, ".")[1] * "_matgas.json"
+json_out_file = split(file, ".")[1] * ".json"
 matgas_out_file = split(file, ".")[1] * "_matgas.m"
 
 
@@ -345,10 +344,6 @@ data["is_si_units"] = 1
 data["is_english_units"] = 0
 data["units"] = "si"
 
-
-if !haskey(data, "name")
-    data["name"] = split(file, ".")[1]
-end
 
 if !haskey(data, "name")
     data["name"] = split(file, ".")[1]

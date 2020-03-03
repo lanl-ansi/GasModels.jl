@@ -32,7 +32,7 @@ end
 """
     correct_network_data!(data::Dict{String,Any})
 
-Data integrity checks 
+Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)
@@ -40,12 +40,10 @@ function correct_network_data!(data::Dict{String,Any})
 
     per_unit_data_field_check!(data)
     add_compressor_fields!(data)
+
     make_si_units!(data)
     add_base_values!(data)
     make_per_unit!(data)
-    add_base_values!(data)
-    make_per_unit!(data)
-    
 
     check_connectivity(data)
     check_status(data)
