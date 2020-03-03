@@ -50,14 +50,14 @@ function parse_files(static_file::String, transient_file::String;
 
     check_global_parameters(static_data)
 
-    prep_transient_data!(static_data)
-    transient_data = parse_transient(transient_file, spatial_discretization=spatial_discretization)
+    prep_transient_data!(static_data, spatial_discretization=spatial_discretization)
+    transient_data = parse_transient(transient_file)
     # make_si_units!(transient_data, units=static_data["units"])
-    create_time_series_block(transient_data, 
+    time_series_block = create_time_series_block(transient_data, 
         total_time=total_time, 
         time_step=time_step, 
         additional_time=additional_time)
-    return static_data, transient_data
+    return static_data, transient_data, time_series_block
 end
 
 function get_max_pipe_id(pipes::Dict{String,Any})::Int 
@@ -210,63 +210,37 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
     time_series_block["time_points"] = time_points 
     time_series_block["time_step"] = time_step
 
-    for data_point in data 
-        component_type = data_point["component_type"]
-        component_id = data_point["component_id"]
-        parameter = data_point["parameter"]
-        value = data_point["value"]
-        time_stamp = DateTime(split(data_point["time_stamp"], "+")[1])
-        if ~haskey(time_series_block, component_type)
-            time_series_block[component_type] = Dict{String,Any}()
-            if ~haskey(time_series_block[component_type], component_id)
-                time_series_block[component_type][component_id] = Dict()
-                if ~haskey(time_series_block[component_type][component_id], parameter)
-                    time_series_block[component_type][component_id][parameter] = Dict(
-                        "values" => [value],
-                        "time_stamp" => [time_stamp]
-                    )
-                else 
-                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
-                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
-                end 
-            else 
-                if ~haskey(time_series_block[component_type][component_id], parameter)
-                    time_series_block[component_type][component_id][parameter] = Dict(
-                        "values" => [value],
-                        "time_stamp" => [time_stamp]
-                    )
-                else 
-                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
-                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
-                end 
-            end 
-        else 
-            if ~haskey(time_series_block[component_type], component_id)
-                time_series_block[component_type][component_id] = Dict()
-                if ~haskey(time_series_block[component_type][component_id], parameter)
-                    time_series_block[component_type][component_id][parameter] = Dict(
-                        "values" => [value],
-                        "time_stamp" => [time_stamp]
-                    )
-                else 
-                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
-                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
-                end 
-            else 
-                if ~haskey(time_series_block[component_type][component_id], parameter)
-                    time_series_block[component_type][component_id][parameter] = Dict(
-                        "values" => [value],
-                        "time_stamp" => [time_stamp]
-                    )
-                else 
-                    push!(time_series_block[component_type][component_id][parameter]["values"], value)
-                    push!(time_series_block[component_type][component_id][parameter]["time_stamp"], time_stamp)
-                end 
-            end 
-        end 
-    end 
+    for line in data
+        type = line["component_type"]
+        id = line["component_id"]
+        param = line["parameter"]
+        val = parse(Float64, line["value"])
+        timestamp = DateTime(split(line["timestamp"], "+")[1])
+
+        if !haskey(time_series_block, type)
+            time_series_block[type] = Dict{String,Any}()
+        end
+
+        if !haskey(time_series_block[type], id)
+            time_series_block[type][id] = Dict{String,Any}()
+        end
+
+        if !haskey(time_series_block[type][id], param)
+            time_series_block[type][id][param] = Dict{String,Any}(
+                "values" => [],
+                "times" => [], 
+                "timestamps" => []
+            )
+        end
+
+        push!(time_series_block[type][id][param]["values"], val)
+        push!(time_series_block[type][id][param]["timestamps"], timestamp)
+        time_val = (time_series_block[type][id][param]["timestamps"][end] - 
+        time_series_block[type][id][param]["timestamps"][1]) / Millisecond(1) * 1/1000.0
+        push!(time_series_block[type][id][param]["times"], time_val)
+
+    end
 
 
-
-    return Dict()
+    return time_series_block
 end 
