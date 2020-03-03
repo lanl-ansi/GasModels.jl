@@ -687,6 +687,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
         push!(lines, line)
     end
     push!(lines, "")
+
     for data_type in _matlab_data_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
@@ -743,6 +744,7 @@ function _gasmodels_to_matgas_string(data::Dict{String,Any}; units::String="si",
             end
         end
     end
+
     push!(lines, "end\n")
 
     return join(lines, "\n")
