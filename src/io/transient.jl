@@ -20,7 +20,9 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
 end
 
 "parses two files - a static file and a transient csv file and preps the data"
-function parse_files(static_file::String, transient_file::String)
+function parse_files(static_file::String, transient_file::String; 
+    total_time=86400.0, time_step=3600.0, 
+    spatial_discretization=10000.0, additional_time=14400.0)
     static_filetype = split(lowercase(static_file), '.')[end]
     if static_filetype == "m"
         static_data = open(static_file) do io 
@@ -49,7 +51,12 @@ function parse_files(static_file::String, transient_file::String)
     check_global_parameters(static_data)
 
     prep_transient_data!(static_data)
-    transient_data = parse_transient(transient_file)
+    transient_data = parse_transient(transient_file, spatial_discretization=spatial_discretization)
+    # make_si_units!(transient_data, units=static_data["units"])
+    create_time_series_block(transient_data, 
+        total_time=total_time, 
+        time_step=time_step, 
+        additional_time=additional_time)
     return static_data, transient_data
 end
 
@@ -61,15 +68,15 @@ function get_max_pipe_id(pipes::Dict{String,Any})::Int
     return max_pipe_id
 end 
 
-function prep_transient_data!(data::Dict{String,Any}; length_discretization::Float64=10000.0)
+function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Float64=10000.0)
     max_pipe_id = get_max_pipe_id(data["pipe"])
     num_sub_pipes = Dict()
     short_pipes = []
     long_pipes = []
     for (key, pipe) in data["pipe"]
-        (pipe["length"] < length_discretization) && (push!(short_pipes, key); continue)
+        (pipe["length"] < spatial_discretization) && (push!(short_pipes, key); continue)
         push!(long_pipes, key)
-        count = Int(floor(pipe["length"]/length_discretization) + 1)
+        count = Int(floor(pipe["length"]/spatial_discretization) + 1)
         num_sub_pipes[key] = count
     end 
 
@@ -184,3 +191,22 @@ function prep_transient_data!(data::Dict{String,Any}; length_discretization::Flo
         end 
     end 
 end
+
+function create_time_series_block(data::Array{Dict{String,Any},1};
+    total_time=86400.0, time_step=3600.0, additional_time=14400.0)::Dict{String,Any}
+    end_time = total_time + additional_time 
+    if (3600.0 % time_step) != 0.0 
+        Memento.error(_LOGGER, "the 3600 seconds has to be exactly divisible by the time step, 
+        provide a time step that exactly divides 3600.0")
+    end 
+    num_time_points = Int(ceil(end_time / time_step )) + 1
+    num_physical_time_points = Int(ceil(total_time / time_step)) + 1
+    time_points = collect(LinRange(0.0, end_time, num_time_points))
+    for time_point in data 
+        print(time_point)
+    end 
+
+
+
+    return Dict()
+end 
