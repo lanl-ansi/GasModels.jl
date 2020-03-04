@@ -22,7 +22,7 @@ end
 "parses two files - a static file and a transient csv file and preps the data"
 function parse_files(static_file::String, transient_file::String; 
     total_time=86400.0, time_step=3600.0, 
-    spatial_discretization=10000.0, additional_time=14400.0)
+    spatial_discretization=10000.0, additional_time=21600.0)
     static_filetype = split(lowercase(static_file), '.')[end]
     if static_filetype == "m"
         static_data = open(static_file) do io 
@@ -193,7 +193,7 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
 end
 
 function create_time_series_block(data::Array{Dict{String,Any},1};
-    total_time=86400.0, time_step=3600.0, additional_time=14400.0)::Dict{String,Any}
+    total_time=86400.0, time_step=3600.0, additional_time=21600.0)::Dict{String,Any}
     # create time information 
     time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time 
@@ -210,10 +210,12 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
     time_series_block["time_points"] = time_points 
     time_series_block["time_step"] = time_step
 
+    fields = Set()
     for line in data
         type = line["component_type"]
         id = line["component_id"]
         param = line["parameter"]
+        push!(fields, (type, id, param))
         val = parse(Float64, line["value"])
         timestamp = DateTime(split(line["timestamp"], "+")[1])
 
@@ -228,8 +230,9 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
         if !haskey(time_series_block[type][id], param)
             time_series_block[type][id][param] = Dict{String,Any}(
                 "values" => [],
-                "times" => [], 
-                "timestamps" => []
+                "timestamps" => [],
+                "times" => [],
+                "reduced_data_points" => []
             )
         end
 
@@ -237,9 +240,25 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
         push!(time_series_block[type][id][param]["timestamps"], timestamp)
         time_val = (time_series_block[type][id][param]["timestamps"][end] - 
         time_series_block[type][id][param]["timestamps"][1]) / Millisecond(1) * 1/1000.0
-        push!(time_series_block[type][id][param]["times"], time_val)
-
+        if (time_val <= total_time)
+            push!(time_series_block[type][id][param]["times"], time_val)
+            push!(time_series_block[type][id][param]["reduced_data_points"], val)
+        end 
     end
+
+    for (type, id, param) in fields 
+        start_val = time_series_block[type][id][param]["reduced_data_points"][1]
+        end_val = time_series_block[type][id][param]["reduced_data_points"][end]
+        middle_time = total_time + additional_time/2
+        middle_val = (end_val + start_val)/2
+        push!(time_series_block[type][id][param]["times"], middle_time)
+        push!(time_series_block[type][id][param]["reduced_data_points"], middle_val)
+        push!(time_series_block[type][id][param]["times"], end_time)
+        push!(time_series_block[type][id][param]["reduced_data_points"], start_val)
+        x = time_series_block[type][id][param]["times"]
+        y = time_series_block[type][id][param]["reduced_data_points"]
+        time_series_block[type][id][param]["itp"] = Spline1D(x, y, periodic=true)
+    end 
 
 
     return time_series_block
