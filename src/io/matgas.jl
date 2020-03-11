@@ -336,10 +336,10 @@ function parse_m_string(data_string::String)
     else
         # v = sqrt(gamma * R * T / M)
         molecular_mass = case["gas_molar_mass"] # kg/mol
-        z = case["compressibility_factor"]
+        gamma = 1/case["gas_specific_gravity"] # adiabatic gas constant (approx 1.4 approx 1/gas_specific_gravity)
         T = case["temperature"] # K
         R = case["R"] # J/mol/K
-        case["sound_speed"] = sqrt(z * R * T / molecular_mass) # m/s
+        case["sound_speed"] = sqrt(gamma * R * T / molecular_mass) # m/s
     end
 
     if haskey(matlab_data, "mgc.junction")
