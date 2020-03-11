@@ -38,7 +38,8 @@ module GasModels
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
         "temperature", "sound_speed", "compressibility_factor", "R",
         "base_pressure", "base_length", "base_flow", "base_time",
-        "units", "is_per_unit", "is_english_units", "is_si_units", "time_discretization_points", "gas_molar_mass"])
+        "units", "is_per_unit", "is_english_units", "is_si_units", 
+        "time_points", "time_step", "num_physical_time_points", "gas_molar_mass"])
 
     include("io/json.jl")
     include("io/common.jl")

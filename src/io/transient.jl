@@ -52,12 +52,21 @@ function parse_files(static_file::String, transient_file::String;
 
     prep_transient_data!(static_data, spatial_discretization=spatial_discretization)
     transient_data = parse_transient(transient_file)
-    # make_si_units!(transient_data, units=static_data["units"])
+    make_si_units!(transient_data, static_data)
     time_series_block = create_time_series_block(transient_data, 
         total_time=total_time, 
         time_step=time_step, 
         additional_time=additional_time)
-    return static_data, transient_data, time_series_block
+
+    static_data["num_physical_time_points"] = time_series_block["num_physical_time_points"]
+    pop!(time_series_block, "num_physical_time_points")
+    static_data["time_points"] = deepcopy(time_series_block["time_points"])
+    pop!(time_series_block, "time_points")
+    static_data["time_step"] = time_series_block["time_step"]
+    pop!(time_series_block, "time_step")
+    static_data["time_series"] = deepcopy(time_series_block)
+    mn_data = InfrastructureModels.make_multinetwork(static_data, _gm_global_keys)
+    return mn_data
 end
 
 function get_max_pipe_id(pipes::Dict{String,Any})::Int 
