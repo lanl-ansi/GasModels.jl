@@ -54,6 +54,35 @@ function add_base_values!(data::Dict{String, Any})
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
 end
 
+"make transient data to si units"
+function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::Dict{String,Any})
+    if static_data["units"] == "si"
+        return 
+    end 
+    mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(static_data)
+    inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(static_data)
+    pressure_params = ["p_min", "p_max", "p_nominal", "p", "inlet_p_min", "inlet_p_max", 
+        "outlet_p_min", "outlet_p_max", "design_inlet_pressure", 
+        "design_outlet_pressure", "pressure_nominal"]
+    flow_params = ["f", "fd", "ft", "fg", "flow_min", "flow_max", 
+        "withdrawal_min", "withdrawal_max", "withdrawal_nominal", 
+        "injection_min", "injection_max", "injection_nominal", 
+        "design_flow_rate", "flow_injection_rate_min", "flow_injection_rate_max",
+        "flow_withdrawal_rate_min", "flow_withdrawal_rate_max"]
+    inv_flow_params = ["bid_price", "offer_price"]
+    for line in transient_data
+        param = line["parameter"]
+        if param in pressure_params
+            line["value"] = psi_to_pascal(line["value"])
+        end 
+        if param in flow_params 
+            line["value"] = mmscfd_to_kgps(line["value"])
+        end 
+        if param in inv_flow_params 
+            line["value"] = inv_mmscfd_to_kgps(line["value"])
+        end
+    end 
+end
 
 "Transforms static network data into si units"
 function make_si_units!(data::Dict{String,<:Any})
