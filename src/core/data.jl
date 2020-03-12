@@ -54,7 +54,6 @@ function per_unit_data_field_check!(data::Dict{String, Any})
         else
             data["base_time"] = calc_base_time(data)
             (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
-            (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
         end
     end
 end
@@ -70,6 +69,8 @@ function add_base_values!(data::Dict{String, Any})
     data["base_diameter"] = 1.0
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
     (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
+    
+    
 end
 
 "make transient data to si units"
@@ -102,35 +103,14 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
     end 
 end
 
-"Transforms network data into si units"
-function make_si_units!(data::Dict{String,<:Any})
-    if data["is_si_units"] == true 
-        return
-    end 
-    if InfrastructureModels.ismultinetwork(data)
-        for (i, nw_data) in data["nw"]
-            _make_si_units!(nw_data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
-        end
-    else
-        _make_si_units!(data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
-    end
-    data["is_si_units"] = 1 
-    data["is_per_unit"] = 0
-    data["is_english_units"] = 0
-end
-
 "Transforms static network data into si units"
-function _make_si_units!(data::Dict{String,<:Any}, is_si_units, is_english_units, is_per_unit)
+function make_si_units!(data::Dict{String,<:Any})
 
-    is_si_units = is_si_units
-    is_english_units = is_english_units
-    is_per_unit = is_per_unit
-
-    if is_si_units == true
+    if get(data, "is_si_units", false) == true
         return
     end
 
-    if is_per_unit == true
+    if get(data, "is_per_unit", false) == true
         rescale_flow      = x -> x * get_base_flow(data)
         rescale_pressure  = x -> x * get_base_pressure(data)
         rescale_length    = x -> x * get_base_length(data)
@@ -236,12 +216,12 @@ function _make_si_units!(data::Dict{String,<:Any}, is_si_units, is_english_units
             _apply_func!(storage, "capacity", rescale_mass)
         end
 
-        is_per_unit = 0
-        is_si_units = 1
-        is_english_units = 0
+        data["is_per_unit"] = 0
+        data["is_si_units"] = 1
+        data["is_english_units"] = 0
     end
 
-    if is_english_units == true
+    if get(data, "is_english_units", false) == true
         mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
         inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(data)
         mmscf_to_kg = x -> x * get_mmscfd_to_kgps_conversion_factor(data) * 86400.0
@@ -356,11 +336,11 @@ function _make_si_units!(data::Dict{String,<:Any}, is_si_units, is_english_units
             _apply_func!(storage, "capacity", mmscf_to_kg)
         end
 
-        is_per_unit = 0
-        is_si_units = 1
-        is_english_units = 0
+        data["is_per_unit"] = 0
+        data["is_si_units"] = 1
+        data["is_english_units"] = 0
     end
-    return 
+    return
 end
 
 
