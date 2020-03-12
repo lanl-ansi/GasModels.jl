@@ -9,6 +9,7 @@
 @inline get_base_flow(data::Dict{String, Any}) = data["base_flow"]
 @inline get_base_flux(data::Dict{String, Any}) = data["base_flux"]
 @inline get_base_time(data::Dict{String, Any}) = data["base_time"]
+@inline get_base_diameter(data::Dict{String, Any}) = data["base_diameter"]
 
 
 "calculates base_pressure"
@@ -73,8 +74,6 @@ function add_base_values!(data::Dict{String, Any})
     data["base_diameter"] = 1.0
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
     (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
-    
-    
 end
 
 "make transient data to si units"
@@ -107,246 +106,229 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
     end 
 end
 
-"Transforms static network data into si units"
+const _params_for_unit_conversions = Dict(
+    "junction" => ["p_min", "p_max", "p_nominal", "p"], 
+    "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
+    "pipe" => ["length", "p_min", "p_max", "f"], 
+    "original_pipe" => ["length", "p_min", "p_max", "f"], 
+    "ne_pipe" => ["length", "p_min", "p_max", "f"],  
+    "compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
+    "ne_compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
+    "transfer" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "ft"], 
+    "receipt" => ["injection_min", "injection_max", "injection_nominal", "fg"], 
+    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "fd"], 
+    "regulator" => ["flow_min", "flow_max", "design_flow_rate", "design_inlet_pressure", "design_outlet_pressure", "f"], 
+    "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max", "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
+)
+
+"Transforms data to si units"
+function si_to_pu!(data::Dict{String,<:Any}; id="0")
+    rescale_flow      = x -> x / get_base_flow(data)
+    rescale_inv_flow      = x -> x * get_base_flow(data)
+    rescale_pressure  = x -> x / get_base_pressure(data)
+    rescale_length    = x -> x / get_base_length(data)
+    rescale_time      = x -> x / get_base_time(data)
+    rescale_mass      = x -> x / get_base_flow(data) / get_base_time(data)
+    rescale_diameter  = x -> x / get_base_diameter(data)
+    functions = Dict(
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
+    )
+    nw_data = (id == "0") ? data : data["nw"][id]
+
+    for (component, parameters) in _params_for_unit_conversions
+        for (i, component) in get(nw_data, component, [])
+            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+            end 
+            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+                @assert data["is_per_unit"] == 1
+                component["is_per_unit"] = data["is_per_unit"]
+                component["is_si_units"] = 0
+                component["is_english_units"] = 0
+            end 
+            if component["is_si_units"] == true && component["is_per_unit"] == false
+                for param in parameters
+                    _apply_func!(component, param, functions[param])
+                    component["is_si_units"] = 0
+                    component["is_english_units"] = 0 
+                    component["is_per_unit"] = 1
+                end
+            end
+        end 
+    end 
+end 
+
+function pu_to_si!(data::Dict{String,<:Any}; id="0")
+    rescale_flow      = x -> x * get_base_flow(data)
+    rescale_inv_flow  = x -> x / get_base_flow(data)
+    rescale_pressure  = x -> x * get_base_pressure(data)
+    rescale_length    = x -> x * get_base_length(data)
+    rescale_time      = x -> x * get_base_time(data)
+    rescale_mass      = x -> x * get_base_flow(data) * get_base_time(data)
+    rescale_diameter  = x -> x * get_base_diameter(data)
+    functions = Dict(
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
+    )
+    nw_data = (id == "0") ? data : data["nw"][id]
+
+    for (component, parameters) in _params_for_unit_conversions
+        for (i, component) in get(nw_data, component, [])
+            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+            end 
+            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+                @assert data["is_per_unit"] == 1
+                component["is_per_unit"] = data["is_per_unit"]
+                component["is_si_units"] = 0
+                component["is_english_units"] = 0
+            end
+            if component["is_si_units"] == false && component["is_per_unit"] == true
+                for param in parameters
+                    _apply_func!(component, param, functions[param])
+                    component["is_si_units"] = 1 
+                    component["is_english_units"] = 0
+                    component["is_per_unit"] = 0
+                end
+            end
+        end 
+    end 
+end 
+
+function si_to_english!(data::Dict{String,<:Any}; id="0")
+    rescale_flow        = x -> x * get_kgps_to_mmscfd_conversion_factor(data)
+    rescale_inv_flow    = x -> x / get_kgps_to_mmscfd_conversion_factor(data)
+    rescale_mass        = x -> x / get_mmscfd_to_kgps_conversion_factor(data) / 86400.0
+    rescale_pressure    = pascal_to_psi
+    rescale_length      = m_to_miles
+    rescale_diameter    = m_to_inches
+    functions = Dict(
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
+    )
+
+    nw_data = (id == "0") ? data : data["nw"][id]
+
+    for (component, parameters) in _params_for_unit_conversions
+        for (i, component) in get(nw_data, component, [])
+            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+            end 
+            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+                @assert data["is_per_unit"] == 1
+                component["is_per_unit"] = data["is_per_unit"]
+                component["is_si_units"] = 0
+                component["is_english_units"] = 0
+            end 
+            if component["is_english_units"] == false && component["is_si_units"] == true
+                for param in parameters
+                    _apply_func!(component, param, functions[param])
+                    component["is_si_units"] = 0 
+                    component["is_english_units"] = 1
+                    component["is_per_unit"] = 0
+                end
+            end
+        end 
+    end
+end 
+
+function english_to_si!(data::Dict{String,<:Any}; id="0")
+    rescale_flow        = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
+    rescale_inv_flow    = x -> x / get_mmscfd_to_kgps_conversion_factor(data)
+    rescale_mass        = x -> x * get_mmscfd_to_kgps_conversion_factor(data) * 86400.0
+    rescale_pressure    = psi_to_pascal
+    rescale_length      = miles_to_m
+    rescale_diameter    = inches_to_m
+    functions = Dict(
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
+    )
+
+    nw_data = (id == "0") ? data : data["nw"][id]
+
+    for (component, parameters) in _params_for_unit_conversions
+        for (i, component) in get(nw_data, component, [])
+            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+            end 
+            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+                @assert data["is_per_unit"] == 1
+                component["is_per_unit"] = data["is_per_unit"]
+                component["is_si_units"] = 0
+                component["is_english_units"] = 0
+            end 
+            if component["is_english_units"] == true && component["is_si_units"] == false
+                for param in parameters
+                    _apply_func!(component, param, functions[param])
+                    component["is_si_units"] = 1 
+                    component["is_english_units"] = 0
+                    component["is_per_unit"] = 0
+                end
+            end
+        end 
+    end 
+
+end 
+
+"transforms data to si units"
 function make_si_units!(data::Dict{String,<:Any})
-
-    if get(data, "is_si_units", false) == true
-        return
-    end
-
-    if get(data, "is_per_unit", false) == true
-        rescale_flow      = x -> x * get_base_flow(data)
-        rescale_pressure  = x -> x * get_base_pressure(data)
-        rescale_length    = x -> x * get_base_length(data)
-        rescale_time      = x -> x * get_base_time(data)
-        rescale_mass      = x -> x * get_base_flow(data) * get_base_time(data)
-
-        for (i, junction) in get(data, "junction", [])
-            _apply_func!(junction, "p_min", rescale_pressure)
-            _apply_func!(junction, "p_max", rescale_pressure)
-            _apply_func!(junction, "p_nominal", rescale_pressure)
-            _apply_func!(junction, "p", rescale_pressure)
-        end
-
-        for (i, junction) in get(data, "original_junction", [])
-            _apply_func!(junction, "p_min", rescale_pressure)
-            _apply_func!(junction, "p_max", rescale_pressure)
-            _apply_func!(junction, "p_nominal", rescale_pressure)
-            _apply_func!(junction, "p", rescale_pressure)
-        end
-
-        for (i, pipe) in get(data, "pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, pipe) in get(data, "original_pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, pipe) in get(data, "ne_pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, compressor) in get(data, "compressor", [])
-            _apply_func!(compressor, "length", rescale_length)
-            _apply_func!(compressor, "flow_min", rescale_flow)
-            _apply_func!(compressor, "flow_max", rescale_flow)
-            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "f", rescale_flow)
-            _apply_func!(compressor, "power_max", rescale_flow)
-        end
-
-        for (i, compressor) in get(data, "ne_compressor", [])
-            _apply_func!(compressor, "length", rescale_length)
-            _apply_func!(compressor, "flow_min", rescale_flow)
-            _apply_func!(compressor, "flow_max", rescale_flow)
-            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "f", rescale_flow)
-            _apply_func!(compressor, "power_max", rescale_flow)
-        end
-
-
-        for (i, transfer) in get(data, "transfer", [])
-            _apply_func!(transfer, "withdrawal_min", rescale_flow)
-            _apply_func!(transfer, "withdrawal_max", rescale_flow)
-            _apply_func!(transfer, "withdrawal_nominal", rescale_flow)
-            _apply_func!(transfer, "ft", rescale_flow)
-        end
-
-        for (i, receipt) in get(data, "receipt", [])
-            _apply_func!(receipt, "injection_min", rescale_flow)
-            _apply_func!(receipt, "injection_max", rescale_flow)
-            _apply_func!(receipt, "injection_nominal", rescale_flow)
-            _apply_func!(receipt, "fg", rescale_flow)
-        end
-
-        for (i, delivery) in get(data, "delivery", [])
-            _apply_func!(delivery, "withdrawal_min", rescale_flow)
-            _apply_func!(delivery, "withdrawal_max", rescale_flow)
-            _apply_func!(delivery, "withdrawal_nominal", rescale_flow)
-            _apply_func!(delivery, "fd", rescale_flow)
-        end
-
-        for (i, regulator) in get(data, "regulator", [])
-            _apply_func!(regulator, "flow_min", rescale_flow)
-            _apply_func!(regulator, "flow_max", rescale_flow)
-            _apply_func!(regulator, "design_flow_rate", rescale_flow)
-            _apply_func!(regulator, "design_inlet_pressure", rescale_pressure)
-            _apply_func!(regulator, "design_outlet_pressure", rescale_pressure)
-            _apply_func!(regulator, "f", rescale_flow)
-        end
-
-        for (i, storage) in get(data, "storage", [])
-            _apply_func!(storage, "pressure_nominal", rescale_pressure)
-            _apply_func!(storage, "flow_injection_rate_min", rescale_flow)
-            _apply_func!(storage, "flow_injection_rate_max", rescale_flow)
-            _apply_func!(storage, "flow_withdrawal_rate_min", rescale_flow)
-            _apply_func!(storage, "flow_withdrawal_rate_max", rescale_flow)
-            _apply_func!(storage, "capacity", rescale_mass)
-        end
-
-        data["is_per_unit"] = 0
+    if get(data, "is_si_units", false) == true 
+        return 
+    end 
+    if get(data, "is_per_unit", false) == true 
+        if InfrastructureModels.ismultinetwork(data)
+            for (i, _) in data["nw"]
+                pu_to_si!(data, id=i)
+            end 
+        else 
+            pu_to_si!(data)
+        end 
         data["is_si_units"] = 1
         data["is_english_units"] = 0
-    end
-
-    if get(data, "is_english_units", false) == true
-        mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
-        inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(data)
-        mmscf_to_kg = x -> x * get_mmscfd_to_kgps_conversion_factor(data) * 86400.0
-
-        for (i, junction) in get(data, "junction", [])
-            _apply_func!(junction, "p_min", psi_to_pascal)
-            _apply_func!(junction, "p_max", psi_to_pascal)
-            _apply_func!(junction, "p_nominal", psi_to_pascal)
-            _apply_func!(junction, "p", psi_to_pascal)
-        end
-
-        for (i, pipe) in get(data, "pipe", [])
-            _apply_func!(pipe, "diameter", inches_to_m)
-            _apply_func!(pipe, "length", miles_to_m)
-            _apply_func!(pipe, "p_min", psi_to_pascal)
-            _apply_func!(pipe, "p_max", psi_to_pascal)
-            _apply_func!(pipe, "f", mmscfd_to_kgps)
-        end
-
-        for (i, junction) in get(data, "original_junction", [])
-            _apply_func!(junction, "p_min", psi_to_pascal)
-            _apply_func!(junction, "p_max", psi_to_pascal)
-            _apply_func!(junction, "p_nominal", psi_to_pascal)
-            _apply_func!(junction, "p", psi_to_pascal)
-        end
-
-        for (i, pipe) in get(data, "original_pipe", [])
-            _apply_func!(pipe, "diameter", inches_to_m)
-            _apply_func!(pipe, "length", miles_to_m)
-            _apply_func!(pipe, "p_min", psi_to_pascal)
-            _apply_func!(pipe, "p_max", psi_to_pascal)
-        end
-
-        for (i, pipe) in get(data, "ne_pipe", [])
-            _apply_func!(pipe, "diameter", inches_to_m)
-            _apply_func!(pipe, "length", miles_to_m)
-            _apply_func!(pipe, "p_min", psi_to_pascal)
-            _apply_func!(pipe, "p_max", psi_to_pascal)
-            _apply_func!(pipe, "f", mmscfd_to_kgps)
-        end
-
-        for (i, resistor) in get(data, "resistor", [])
-            _apply_func!(resistor, "diameter", inches_to_m)
-            _apply_func!(resistor, "f", mmscfd_to_kgps)
-        end
-
-        for (i, compressor) in get(data, "compressor", [])
-            _apply_func!(compressor, "power_max", hp_to_watts)
-            _apply_func!(compressor, "diameter", inches_to_m)
-            _apply_func!(compressor, "length", miles_to_m)
-            _apply_func!(compressor, "flow_min", mmscfd_to_kgps)
-            _apply_func!(compressor, "flow_max", mmscfd_to_kgps)
-            _apply_func!(compressor, "inlet_p_min", psi_to_pascal)
-            _apply_func!(compressor, "inlet_p_max", psi_to_pascal)
-            _apply_func!(compressor, "outlet_p_min", psi_to_pascal)
-            _apply_func!(compressor, "outlet_p_max", psi_to_pascal)
-            _apply_func!(compressor, "f", mmscfd_to_kgps)
-        end
-
-        for (i, compressor) in get(data, "ne_compressor", [])
-            _apply_func!(compressor, "power_max", hp_to_watts)
-            _apply_func!(compressor, "diameter", inches_to_m)
-            _apply_func!(compressor, "length", miles_to_m)
-            _apply_func!(compressor, "flow_min", mmscfd_to_kgps)
-            _apply_func!(compressor, "flow_max", mmscfd_to_kgps)
-            _apply_func!(compressor, "inlet_p_min", psi_to_pascal)
-            _apply_func!(compressor, "inlet_p_max", psi_to_pascal)
-            _apply_func!(compressor, "outlet_p_min", psi_to_pascal)
-            _apply_func!(compressor, "outlet_p_max", psi_to_pascal)
-            _apply_func!(compressor, "f", mmscfd_to_kgps)
-        end
-
-        for (i, transfer) in get(data, "transfer", [])
-            _apply_func!(transfer, "withdrawal_min", mmscfd_to_kgps)
-            _apply_func!(transfer, "withdrawal_max", mmscfd_to_kgps)
-            _apply_func!(transfer, "withdrawal_nominal", mmscfd_to_kgps)
-            _apply_func!(transfer, "ft", mmscfd_to_kgps)
-            _apply_func!(transfer, "bid_price", inv_mmscfd_to_kgps)
-            _apply_func!(transfer, "offer_price", inv_mmscfd_to_kgps)
-        end
-
-        for (i, receipt) in get(data, "receipt", [])
-            _apply_func!(receipt, "injection_min", mmscfd_to_kgps)
-            _apply_func!(receipt, "injection_max", mmscfd_to_kgps)
-            _apply_func!(receipt, "injection_nominal", mmscfd_to_kgps)
-            _apply_func!(receipt, "fg", mmscfd_to_kgps)
-            _apply_func!(receipt, "offer_price", inv_mmscfd_to_kgps)
-        end
-
-        for (i, delivery) in get(data, "delivery", [])
-            _apply_func!(delivery, "withdrawal_min", mmscfd_to_kgps)
-            _apply_func!(delivery, "withdrawal_max", mmscfd_to_kgps)
-            _apply_func!(delivery, "withdrawal_nominal", mmscfd_to_kgps)
-            _apply_func!(delivery, "fd", mmscfd_to_kgps)
-            _apply_func!(delivery, "bid_price", inv_mmscfd_to_kgps)
-        end
-
-        for (i, regulator) in get(data, "regulator", [])
-            _apply_func!(regulator, "flow_min", mmscfd_to_kgps)
-            _apply_func!(regulator, "flow_max", mmscfd_to_kgps)
-            _apply_func!(regulator, "design_flow_rate", mmscfd_to_kgps)
-            _apply_func!(regulator, "design_inlet_pressure", psi_to_pascal)
-            _apply_func!(regulator, "design_outlet_pressure", psi_to_pascal)
-        end
-
-        for (i, storage) in get(data, "storage", [])
-            _apply_func!(storage, "pressure_nominal", psi_to_pascal)
-            _apply_func!(storage, "flow_injection_rate_min", mmscfd_to_kgps)
-            _apply_func!(storage, "flow_injection_rate_max", mmscfd_to_kgps)
-            _apply_func!(storage, "flow_withdrawal_rate_min", mmscfd_to_kgps)
-            _apply_func!(storage, "flow_withdrawal_rate_max", mmscfd_to_kgps)
-            _apply_func!(storage, "capacity", mmscf_to_kg)
-        end
-
         data["is_per_unit"] = 0
+    end 
+    if get(data, "is_english_units", false) == true 
+        if InfrastructureModels.ismultinetwork(data)
+            for (i, _) in data["nw"]
+                english_to_si!(data, id=i)
+            end 
+        else 
+            english_to_si!(data) 
+        end 
         data["is_si_units"] = 1
         data["is_english_units"] = 0
-    end
-    return
-end
-
+        data["is_per_unit"] = 0
+    end 
+end 
 
 "Transforms network data into english units"
 function make_english_units!(data::Dict{String,<:Any})
@@ -356,130 +338,19 @@ function make_english_units!(data::Dict{String,<:Any})
     if get(data, "is_per_unit", false) == true
         make_si_units!(data)
     end
-    if get(data, "is_si_units", false) == true
-        kgps_to_mmscfd = x -> x * get_kgps_to_mmscfd_conversion_factor(data)
-        inv_kgps_to_mmscfd = x -> x / get_kgps_to_mmscfd_conversion_factor(data)
-        kg_to_mmscf= x -> x / get_mmscfd_to_kgps_conversion_factor(data) / 86400.0
-
-        for (i, junction) in get(data, "junction", [])
-            _apply_func!(junction, "p_min", pascal_to_psi)
-            _apply_func!(junction, "p_max", pascal_to_psi)
-            _apply_func!(junction, "p_nominal", pascal_to_psi)
-            _apply_func!(junction, "p", pascal_to_psi)
-        end
-
-        for (i, pipe) in get(data, "pipe", [])
-            _apply_func!(pipe, "diameter", m_to_inches)
-            _apply_func!(pipe, "length", m_to_miles)
-            _apply_func!(pipe, "p_min", pascal_to_psi)
-            _apply_func!(pipe, "p_max", pascal_to_psi)
-            _apply_func!(pipe, "f", kgps_to_mmscfd)
-        end
-
-        for (i, junction) in get(data, "original_junction", [])
-            _apply_func!(junction, "p_min", pascal_to_psi)
-            _apply_func!(junction, "p_max", pascal_to_psi)
-            _apply_func!(junction, "p_nominal", pascal_to_psi)
-            _apply_func!(junction, "p", pascal_to_psi)
-        end
-
-        for (i, pipe) in get(data, "original_pipe", [])
-            _apply_func!(pipe, "diameter", m_to_inches)
-            _apply_func!(pipe, "length", m_to_miles)
-            _apply_func!(pipe, "p_min", pascal_to_psi)
-            _apply_func!(pipe, "p_max", pascal_to_psi)
-            _apply_func!(pipe, "f", kgps_to_mmscfd)
-        end
-
-        for (i, pipe) in get(data, "ne_pipe", [])
-            _apply_func!(pipe, "diameter", m_to_inches)
-            _apply_func!(pipe, "length", m_to_miles)
-            _apply_func!(pipe, "p_min", pascal_to_psi)
-            _apply_func!(pipe, "p_max", pascal_to_psi)
-            _apply_func!(pipe, "f", kgps_to_mmscfd)
-        end
-
-        for (i, resistor) in get(data, "resistor", [])
-            _apply_func!(resistor, "diameter", m_to_inches)
-            _apply_func!(resistor, "f", kgps_to_mmscfd)
-        end
-
-        for (i, compressor) in get(data, "compressor", [])
-            _apply_func!(compressor, "power_max", watts_to_hp)
-            _apply_func!(compressor, "diameter", m_to_inches)
-            _apply_func!(compressor, "length", m_to_miles)
-            _apply_func!(compressor, "flow_min", kgps_to_mmscfd)
-            _apply_func!(compressor, "flow_max", kgps_to_mmscfd)
-            _apply_func!(compressor, "inlet_p_min", pascal_to_psi)
-            _apply_func!(compressor, "inlet_p_max", pascal_to_psi)
-            _apply_func!(compressor, "outlet_p_min", pascal_to_psi)
-            _apply_func!(compressor, "outlet_p_max", pascal_to_psi)
-            _apply_func!(compressor, "f", kgps_to_mmscfd)
-        end
-
-        for (i, compressor) in get(data, "ne_compressor", [])
-            _apply_func!(compressor, "power_max", watts_to_hp)
-            _apply_func!(compressor, "diameter", m_to_inches)
-            _apply_func!(compressor, "length", m_to_miles)
-            _apply_func!(compressor, "flow_min", kgps_to_mmscfd)
-            _apply_func!(compressor, "flow_max", kgps_to_mmscfd)
-            _apply_func!(compressor, "inlet_p_min", pascal_to_psi)
-            _apply_func!(compressor, "inlet_p_max", pascal_to_psi)
-            _apply_func!(compressor, "outlet_p_min", pascal_to_psi)
-            _apply_func!(compressor, "outlet_p_max", pascal_to_psi)
-            _apply_func!(compressor, "f", kgps_to_mmscfd)
-        end
-
-        for (i, transfer) in get(data, "transfer", [])
-            _apply_func!(transfer, "withdrawal_min", kgps_to_mmscfd)
-            _apply_func!(transfer, "withdrawal_max", kgps_to_mmscfd)
-            _apply_func!(transfer, "withdrawal_nominal", kgps_to_mmscfd)
-            _apply_func!(transfer, "ft", kgps_to_mmscfd)
-            _apply_func!(transfer, "bid_price", inv_kgps_to_mmscfd)
-            _apply_func!(transfer, "offer_price", inv_kgps_to_mmscfd)
-        end
-
-        for (i, receipt) in get(data, "receipt", [])
-            _apply_func!(receipt, "injection_min", kgps_to_mmscfd)
-            _apply_func!(receipt, "injection_max", kgps_to_mmscfd)
-            _apply_func!(receipt, "injection_nominal", kgps_to_mmscfd)
-            _apply_func!(receipt, "fg", kgps_to_mmscfd)
-            _apply_func!(receipt, "offer_price", inv_kgps_to_mmscfd)
-        end
-
-        for (i, delivery) in get(data, "delivery", [])
-            _apply_func!(delivery, "withdrawal_min", kgps_to_mmscfd)
-            _apply_func!(delivery, "withdrawal_max", kgps_to_mmscfd)
-            _apply_func!(delivery, "withdrawal_nominal", kgps_to_mmscfd)
-            _apply_func!(delivery, "fd", kgps_to_mmscfd)
-            _apply_func!(delivery, "bid_price", inv_kgps_to_mmscfd)
-        end
-
-        for (i, regulator) in get(data, "regulator", [])
-            _apply_func!(regulator, "flow_min", kgps_to_mmscfd)
-            _apply_func!(regulator, "flow_max", kgps_to_mmscfd)
-            _apply_func!(regulator, "design_flow_rate", kgps_to_mmscfd)
-            _apply_func!(regulator, "design_inlet_pressure", pascal_to_psi)
-            _apply_func!(regulator, "design_outlet_pressure", pascal_to_psi)
-            _apply_func!(regulator, "f", kgps_to_mmscfd)
-        end
-
-        for (i, storage) in get(data, "storage", [])
-            _apply_func!(storage, "pressure_nominal", pascal_to_psi)
-            _apply_func!(storage, "flow_injection_rate_min", kgps_to_mmscfd)
-            _apply_func!(storage, "flow_injection_rate_max", kgps_to_mmscfd)
-            _apply_func!(storage, "flow_withdrawal_rate_min", kgps_to_mmscfd)
-            _apply_func!(storage, "flow_withdrawal_rate_max", kgps_to_mmscfd)
-            _apply_func!(storage, "capacity", kg_to_mmscf)
-        end
-
-        data["is_per_unit"] = 0
+    if get(data, "is_si_units", false) == true 
+        if InfrastructureModels.ismultinetwork(data)
+            for (i, _) in data["nw"]
+                si_to_english!(data, id=i)
+            end 
+        else 
+            si_to_english!(data) 
+        end 
         data["is_si_units"] = 0
         data["is_english_units"] = 1
+        data["is_per_unit"] = 0
     end
-    return
-end
-
+end 
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String,<:Any})
@@ -490,117 +361,18 @@ function make_per_unit!(data::Dict{String,<:Any})
         make_si_units!(data)
     end
     if get(data, "is_si_units", false) == true
-        rescale_flow      = x -> x / get_base_flow(data)
-        rescale_pressure  = x -> x / get_base_pressure(data)
-        rescale_length    = x -> x / get_base_length(data)
-        rescale_time      = x -> x / get_base_time(data)
-        rescale_mass      = x -> x / get_base_flow(data) / get_base_time(data)
-
-        for (i, junction) in get(data, "junction", [])
-            _apply_func!(junction, "p_min", rescale_pressure)
-            _apply_func!(junction, "p_max", rescale_pressure)
-            _apply_func!(junction, "p_nominal", rescale_pressure)
-            _apply_func!(junction, "p", rescale_pressure)
-        end
-
-        for (i, pipe) in get(data, "pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, junction) in get(data, "original_junction", [])
-            _apply_func!(junction, "p_min", rescale_pressure)
-            _apply_func!(junction, "p_max", rescale_pressure)
-            _apply_func!(junction, "p_nominal", rescale_pressure)
-            _apply_func!(junction, "p", rescale_pressure)
-        end
-
-        for (i, pipe) in get(data, "original_pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, pipe) in get(data, "ne_pipe", [])
-            _apply_func!(pipe, "length", rescale_length)
-            _apply_func!(pipe, "p_min", rescale_pressure)
-            _apply_func!(pipe, "p_max", rescale_pressure)
-            _apply_func!(pipe, "f", rescale_flow)
-        end
-
-        for (i, compressor) in get(data, "compressor", [])
-            _apply_func!(compressor, "length", rescale_length)
-            _apply_func!(compressor, "flow_min", rescale_flow)
-            _apply_func!(compressor, "flow_max", rescale_flow)
-            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "f", rescale_flow)
-            _apply_func!(compressor, "power_max", rescale_flow)
-        end
-
-        for (i, compressor) in get(data, "ne_compressor", [])
-            _apply_func!(compressor, "length", rescale_length)
-            _apply_func!(compressor, "flow_min", rescale_flow)
-            _apply_func!(compressor, "flow_max", rescale_flow)
-            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
-            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
-            _apply_func!(compressor, "f", rescale_flow)
-            _apply_func!(compressor, "power_max", rescale_flow)
-        end
-
-        for (i, transfer) in get(data, "transfer", [])
-            _apply_func!(transfer, "withdrawal_min", rescale_flow)
-            _apply_func!(transfer, "withdrawal_max", rescale_flow)
-            _apply_func!(transfer, "withdrawal_nominal", rescale_flow)
-            _apply_func!(transfer, "ft", rescale_flow)
-        end
-
-        for (i, receipt) in get(data, "receipt", [])
-            _apply_func!(receipt, "injection_min", rescale_flow)
-            _apply_func!(receipt, "injection_max", rescale_flow)
-            _apply_func!(receipt, "injection_nominal", rescale_flow)
-            _apply_func!(receipt, "fg", rescale_flow)
-        end
-
-        for (i, delivery) in get(data, "delivery", [])
-            _apply_func!(delivery, "withdrawal_min", rescale_flow)
-            _apply_func!(delivery, "withdrawal_max", rescale_flow)
-            _apply_func!(delivery, "withdrawal_nominal", rescale_flow)
-            _apply_func!(delivery, "fd", rescale_flow)
-        end
-
-        for (i, regulator) in get(data, "regulator", [])
-            _apply_func!(regulator, "flow_min", rescale_flow)
-            _apply_func!(regulator, "flow_max", rescale_flow)
-            _apply_func!(regulator, "design_flow_rate", rescale_flow)
-            _apply_func!(regulator, "design_inlet_pressure", rescale_pressure)
-            _apply_func!(regulator, "design_outlet_pressure", rescale_pressure)
-            _apply_func!(regulator, "f", rescale_flow)
-        end
-
-        for (i, storage) in get(data, "storage", [])
-            _apply_func!(storage, "pressure_nominal", rescale_pressure)
-            _apply_func!(storage, "flow_injection_rate_min", rescale_flow)
-            _apply_func!(storage, "flow_injection_rate_max", rescale_flow)
-            _apply_func!(storage, "flow_withdrawal_rate_min", rescale_flow)
-            _apply_func!(storage, "flow_withdrawal_rate_max", rescale_flow)
-            _apply_func!(storage, "capacity", rescale_mass)
-        end
-
-        data["is_per_unit"] = 1
+        if InfrastructureModels.ismultinetwork(data)
+            for (i, _) in data["nw"]
+                si_to_pu!(data, id=i)
+            end 
+        else 
+            si_to_pu!(data) 
+        end 
         data["is_si_units"] = 0
         data["is_english_units"] = 0
+        data["is_per_unit"] = 1
     end
-    return
-end
-
+end 
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String,<:Any})

@@ -51,7 +51,7 @@
 
         line_count = count(c -> c == '\n', output)
 
-        @test line_count >= 180 && line_count <= 220
+        @test line_count >= 180 && line_count <= 240
         @test occursin("name: gaslib-40", output)
         @test occursin("pipe: 39", output)
         @test occursin("delivery: 29", output)
