@@ -59,20 +59,6 @@ function per_unit_data_field_check!(data::Dict{String, Any})
     end
 end
 
-function modify_units_fields!(component, is_si_units, is_english_units, is_per_unit)
-    component["is_per_unit"] = is_per_unit
-    component["is_si_units"] = is_si_units
-    component["is_english_units"] = is_english_units
-end 
-
-@inline has_units_fields(component) = haskey(component, "is_per_unit") && haskey(component, "is_si_units") && haskey(component, "is_english_units")
-@inline get_units_fields(component) = component["is_si_units"], component["is_english_units"], component["is_per_unit"]
-
-function remove_units_fields!(component)
-    (get(component, "is_per_unit", false) != false) && (pop!(component, "is_per_unit"))
-    (get(component, "is_si_units", false) != false) && (pop!(component, "is_si_units"))
-    (get(component, "is_english_units", false) != false) && (pop!(component, "is_english_units"))
-end 
 
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, Any})
@@ -123,10 +109,10 @@ function make_si_units!(data::Dict{String,<:Any})
     end 
     if InfrastructureModels.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
-            _, _, _ = _make_si_units!(nw_data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
+            _make_si_units!(nw_data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
         end
     else
-        _, _, _ = _make_si_units!(data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
+        _make_si_units!(data, data["is_si_units"], data["is_english_units"], data["is_per_unit"])
     end
     data["is_si_units"] = 1 
     data["is_per_unit"] = 0
@@ -152,80 +138,50 @@ function _make_si_units!(data::Dict{String,<:Any}, is_si_units, is_english_units
         rescale_mass      = x -> x * get_base_flow(data) * get_base_time(data)
 
         for (i, junction) in get(data, "junction", [])
-            (~has_units_fields(junction)) && (modify_units_fields!(junction, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(junction)
-            if is_pu == true 
-                _apply_func!(junction, "p_min", rescale_pressure)
-                _apply_func!(junction, "p_max", rescale_pressure)
-                _apply_func!(junction, "p_nominal", rescale_pressure)
-                _apply_func!(junction, "p", rescale_pressure)
-                modify_units_fields!(junction, 1, 0, 0)
-            end 
+            _apply_func!(junction, "p_min", rescale_pressure)
+            _apply_func!(junction, "p_max", rescale_pressure)
+            _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, junction) in get(data, "original_junction", [])
-            (~has_units_fields(junction)) && (modify_units_fields!(junction, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(junction)
-            if is_pu == true 
-                _apply_func!(junction, "p_min", rescale_pressure)
-                _apply_func!(junction, "p_max", rescale_pressure)
-                _apply_func!(junction, "p_nominal", rescale_pressure)
-                _apply_func!(junction, "p", rescale_pressure)
-                modify_units_fields!(junction, 1, 0, 0)
-            end
+            _apply_func!(junction, "p_min", rescale_pressure)
+            _apply_func!(junction, "p_max", rescale_pressure)
+            _apply_func!(junction, "p_nominal", rescale_pressure)
+            _apply_func!(junction, "p", rescale_pressure)
         end
 
         for (i, pipe) in get(data, "pipe", [])
-            (~has_units_fields(pipe)) && (modify_units_fields!(pipe, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(pipe)
-            if is_pu == true 
-                _apply_func!(pipe, "length", rescale_length)
-                _apply_func!(pipe, "p_min", rescale_pressure)
-                _apply_func!(pipe, "p_max", rescale_pressure)
-                _apply_func!(pipe, "f", rescale_flow)
-                modify_units_fields!(pipe, 1, 0, 0)
-            end
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, pipe) in get(data, "original_pipe", [])
-            (~has_units_fields(pipe)) && (modify_units_fields!(pipe, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(pipe)
-            if is_pu == true 
-                _apply_func!(pipe, "length", rescale_length)
-                _apply_func!(pipe, "p_min", rescale_pressure)
-                _apply_func!(pipe, "p_max", rescale_pressure)
-                _apply_func!(pipe, "f", rescale_flow)
-                modify_units_fields!(pipe, 1, 0, 0)
-            end
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, pipe) in get(data, "ne_pipe", [])
-            (~has_units_fields(pipe)) && (modify_units_fields!(pipe, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(pipe)
-            if is_pu == true 
-                _apply_func!(pipe, "length", rescale_length)
-                _apply_func!(pipe, "p_min", rescale_pressure)
-                _apply_func!(pipe, "p_max", rescale_pressure)
-                _apply_func!(pipe, "f", rescale_flow)
-                modify_units_fields!(pipe, 1, 0, 0)
-            end
+            _apply_func!(pipe, "length", rescale_length)
+            _apply_func!(pipe, "p_min", rescale_pressure)
+            _apply_func!(pipe, "p_max", rescale_pressure)
+            _apply_func!(pipe, "f", rescale_flow)
         end
 
         for (i, compressor) in get(data, "compressor", [])
-            (~has_units_fields(compressor)) && (modify_units_fields!(compressor, 0, 0, 1))
-            is_si, is_english, is_pu = get_units_fields(compressor)
-            if is_pu == true 
-                _apply_func!(compressor, "length", rescale_length)
-                _apply_func!(compressor, "flow_min", rescale_flow)
-                _apply_func!(compressor, "flow_max", rescale_flow)
-                _apply_func!(compressor, "inlet_p_min", rescale_pressure)
-                _apply_func!(compressor, "inlet_p_max", rescale_pressure)
-                _apply_func!(compressor, "outlet_p_min", rescale_pressure)
-                _apply_func!(compressor, "outlet_p_max", rescale_pressure)
-                _apply_func!(compressor, "f", rescale_flow)
-                _apply_func!(compressor, "power_max", rescale_flow)
-                modify_units_fields!(compressor, 1, 0, 0)
-            end
+            _apply_func!(compressor, "length", rescale_length)
+            _apply_func!(compressor, "flow_min", rescale_flow)
+            _apply_func!(compressor, "flow_max", rescale_flow)
+            _apply_func!(compressor, "inlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "inlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_min", rescale_pressure)
+            _apply_func!(compressor, "outlet_p_max", rescale_pressure)
+            _apply_func!(compressor, "f", rescale_flow)
+            _apply_func!(compressor, "power_max", rescale_flow)
         end
 
         for (i, compressor) in get(data, "ne_compressor", [])
@@ -404,7 +360,7 @@ function _make_si_units!(data::Dict{String,<:Any}, is_si_units, is_english_units
         is_si_units = 1
         is_english_units = 0
     end
-    return is_si_units, is_english_units, is_per_unit
+    return 
 end
 
 
