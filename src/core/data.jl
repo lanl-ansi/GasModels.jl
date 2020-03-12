@@ -52,7 +52,10 @@ function per_unit_data_field_check!(data::Dict{String, Any})
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
+            (get(data, "base_speed", false) == false) && (data["base_speed"] = data["sound_speed"])
+            (get(data, "base_density", false) == false) && (data["base_density"] = calc_base_density(data))
             data["base_time"] = calc_base_time(data)
+            data["base_diameter"] = 1.0
             (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
             (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
         end
