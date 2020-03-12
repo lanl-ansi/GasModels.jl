@@ -13,6 +13,7 @@ mgc.R = 8.3140;  % J/(mol K)
 mgc.base_pressure = 8101325;  % Pa
 mgc.base_length = 5000.0000;  % m
 mgc.base_flow = 1100.0;
+mgc.sound_speed = 312.806;
 mgc.is_per_unit = 0;
 
 %% junction data
