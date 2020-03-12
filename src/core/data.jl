@@ -54,6 +54,7 @@ function per_unit_data_field_check!(data::Dict{String, Any})
         else
             data["base_time"] = calc_base_time(data)
             (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
+            (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
         end
     end
 end
