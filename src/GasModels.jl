@@ -72,6 +72,7 @@ module GasModels
     include("prob/ls.jl")
     include("prob/nels.jl")
     include("prob/ogf.jl")
+    include("prob/transient_compressor_power.jl")
 
     include("io/diagnostics.jl")
 
