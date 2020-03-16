@@ -66,6 +66,7 @@ function parse_files(static_file::String, transient_file::String;
     pop!(time_series_block, "time_step")
     static_data["time_series"] = deepcopy(time_series_block)
     mn_data = InfrastructureModels.make_multinetwork(static_data, _gm_global_keys)
+    make_per_unit!(mn_data)
     return mn_data
 end
 

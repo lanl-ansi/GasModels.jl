@@ -312,6 +312,11 @@ function make_si_units!(data::Dict{String,<:Any})
         else 
             pu_to_si!(data)
         end 
+        if haskey(data, "time_points") 
+            rescale_time = x -> x * get_base_time(data)
+            data["time_points"] = rescale_time.(data["time_points"])
+            data["time_step"] = rescale_time(data["time_step"])
+        end 
         data["is_si_units"] = 1
         data["is_english_units"] = 0
         data["is_per_unit"] = 0
@@ -367,6 +372,11 @@ function make_per_unit!(data::Dict{String,<:Any})
             end 
         else 
             si_to_pu!(data) 
+        end 
+        if haskey(data, "time_points") 
+            rescale_time = x -> x / get_base_time(data)
+            data["time_points"] = rescale_time.(data["time_points"])
+            data["time_step"] = rescale_time(data["time_step"])
         end 
         data["is_si_units"] = 0
         data["is_english_units"] = 0
