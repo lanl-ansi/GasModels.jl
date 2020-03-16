@@ -176,6 +176,9 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
                 "junction_type" => 0,
                 "status" => 1, 
                 "is_physical" => false,
+                "is_si_units" => data["is_si_units"], 
+                "is_english_units" => data["is_english_units"],
+                "is_per_unit" => data["is_english_units"]
             )
         end
         
@@ -195,7 +198,10 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
                 "index" => id,
                 "p_min" => pipe["p_min"],
                 "p_max" => pipe["p_max"],
-                "is_bidirectional" => pipe["is_bidirectional"]
+                "is_bidirectional" => pipe["is_bidirectional"],
+                "is_si_units" => data["is_si_units"], 
+                "is_english_units" => data["is_english_units"],
+                "is_per_unit" => data["is_english_units"]
             )
         end 
     end 
