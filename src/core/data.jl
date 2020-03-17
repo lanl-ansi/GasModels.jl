@@ -4,7 +4,6 @@
 "data getters"
 @inline get_base_pressure(data::Dict{String, Any}) = data["base_pressure"]
 @inline get_base_density(data::Dict{String, Any}) = data["base_density"]
-@inline get_base_speed(data::Dict{String, Any}) = data["base_speed"]
 @inline get_base_length(data::Dict{String, Any}) = data["base_length"]
 @inline get_base_flow(data::Dict{String, Any}) = data["base_flow"]
 @inline get_base_flux(data::Dict{String, Any}) = data["base_flux"]
@@ -21,22 +20,22 @@ end
 
 "calculates the base_time"
 function calc_base_time(data::Dict{String,<:Any})
-    return get_base_length(data) / get_base_speed(data)
+    return get_base_length(data) / data["sound_speed"]
 end
 
 "calculates the base_flow - this is actually wrong terminology (has to be base_flux - kg/m^2/s, flow is kg/s)"
 function calc_base_flow(data::Dict{String,<:Any})
-    return get_base_pressure(data) / get_base_speed(data)
+    return get_base_pressure(data) / data["sound_speed"]
 end
 
 "calculates the base_flux"
 function calc_base_flux(data::Dict{String,<:Any})
-    return get_base_density(data) * get_base_speed(data)
+    return get_base_density(data) * data["sound_speed"]
 end
 
 "calculates the base density"
 function calc_base_density(data::Dict{String,<:Any})
-    return get_base_pressure(data) / get_base_speed(data) / get_base_speed(data)
+    return get_base_pressure(data) / data["sound_speed"] / data["sound_speed"]
 end
 
 "apply a function on a dict entry"
@@ -53,7 +52,6 @@ function per_unit_data_field_check!(data::Dict{String, Any})
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
-            (get(data, "base_speed", false) == false) && (data["base_speed"] = data["sound_speed"])
             (get(data, "base_density", false) == false) && (data["base_density"] = calc_base_density(data))
             data["base_time"] = calc_base_time(data)
             data["base_diameter"] = 1.0
@@ -67,7 +65,6 @@ end
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, Any})
     (get(data, "base_pressure", false) == false) && (data["base_pressure"] = calc_base_pressure(data))
-    (get(data, "base_speed", false) == false) && (data["base_speed"] = data["sound_speed"])
     (get(data, "base_density", false) == false) && (data["base_density"] = calc_base_density(data))
     (get(data, "base_length", false) == false) && (data["base_length"] = 5000.0)
     data["base_time"] = calc_base_time(data)
