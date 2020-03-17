@@ -165,6 +165,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
+            pipe["area"] = pi * pipe["diameter"] / 4.0
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
             pipe["pd_min"] = pd_min
             pipe["pd_max"] = pd_max
@@ -176,6 +177,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, compressor) in ref[:compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
+            compressor["area"] = pi * compressor["diameter"] / 4.0
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
             compressor["pd_min"] = pd_min
             compressor["pd_max"] = pd_max

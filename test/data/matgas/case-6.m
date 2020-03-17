@@ -54,7 +54,7 @@ mgc.transfer = [
 %% receipt data
 % id junction_id injection_min injection_max injection_nominal is_dispatchable status offer_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
 mgc.receipt = [
-1    1    0    1000    500    1     1  -1000
+1    1    0    1000    500    1     1  1.25
 ];
 
 %% delivery data
