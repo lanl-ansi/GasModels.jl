@@ -21,7 +21,7 @@ function get_mmscfd_to_kgps_conversion_factor(data::Dict{String, Any})::Number
     atm = get_one_atm_in_pascal()
     R = get_universal_R(data)
     T = get_temperature(data)
-    return 1000.0 * 0.02832 / 86400.0 * (atm / (R * T) * 1e6) * get_gas_specific_gravity() * get_molecular_mass_of_air()
+    return 1000.0 * 0.02832 / 86400.0 * (atm / (R * T) * 1e6) * get_gas_specific_gravity(data) * get_molecular_mass_of_air()
 end 
 
 get_kgps_to_mmscfd_conversion_factor(data::Dict{String, Any})::Number = 1/get_mmscfd_to_kgps_conversion_factor(data)
