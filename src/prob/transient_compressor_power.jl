@@ -44,24 +44,29 @@ function build_transient_compressor_power(gm::AbstractGasModel)
         gm.var[:nw][n][:compressor_ratio] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :compressor))], 
             base_name="$(n)_c_ratio", 
             lower_bound=ref(gm, n, :compressor, i, "c_ratio_min"), 
-            upper_bound=ref(gm, n, :compressor, i, "c_ratio_min")
+            upper_bound=ref(gm, n, :compressor, i, "c_ratio_max")
         )
-        gm.var[:nw][n][:injection] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :receipt))], 
+        gm.var[:nw][n][:injection] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :dispatchable_receipt))], 
             base_name="$(n)_injection", 
             lower_bound=ref(gm, n, :receipt, i, "injection_min"), 
             upper_bound=ref(gm, n, :receipt, i, "injection_max")
         )
-        gm.var[:nw][n][:withdrawal] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :delivery))], 
+        gm.var[:nw][n][:withdrawal] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :dispatchable_delivery))], 
             base_name="$(n)_withdrawal", 
             lower_bound=ref(gm, n, :receipt, i, "withdrwal_min"), 
             upper_bound=ref(gm, n, :receipt, i, "withdrawal_max")
         )
-        gm.var[:nw][n][:transfer_injection] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :transfer))],
+        gm.var[:nw][n][:transfer_effective] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :dispatchable_transfer))],
+            base_name="$(n)_transfer_withdrawal", 
+            lower_bound=ref(gm, n, :transfer, i, "withdrawal_min"),
+            upper_bound=-ref(gm, n, :transfer, i, "withdrawal_max")
+        )
+        gm.var[:nw][n][:transfer_injection] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :dispatchable_transfer))],
             base_name="$(n)_transfer_injection", 
             lower_bound=0.0,
             upper_bound=-ref(gm, n, :transfer, i, "withdrawal_min")
         )
-        gm.var[:nw][n][:transfer_withdrawal] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :transfer))],
+        gm.var[:nw][n][:transfer_withdrawal] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :dispatchable_transfer))],
             base_name="$(n)_transfer_withdrawal", 
             lower_bound=0.0,
             upper_bound=ref(gm, n, :transfer, i, "withdrawal_max")
@@ -71,17 +76,54 @@ function build_transient_compressor_power(gm::AbstractGasModel)
     # density derivative expressions 
     Drho = Dict{Int, Any}()
     for n in time_points[1:end-1] 
-        gm.ext[:nw][n][:density_derivative] = Dict{Int, Any}()
+        gm.expr[:nw][n][:density_derivative] = Dict{Int, Any}()
         if (n == 1)
             prev = time_points[end-1]
             for i in ref(gm, n, :non_slack_junction_ids)
-                ext(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, prev, :density, i)) / gm.ref[:time_step]
+                expr(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, prev, :density, i)) / gm.ref[:time_step]
             end
         else 
             for i in ref(gm, n, :non_slack_junction_ids)
-                ext(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, n-1, :density, i)) / gm.ref[:time_step]
+                expr(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, n-1, :density, i)) / gm.ref[:time_step]
             end
         end 
+        gm.expr[:nw][n][:total_injection] = Dict{Int, Any}()
+        gm.expr[:nw][n][:total_edge_out_flow] = Dict{Int, Any}()
+        for (i, junction) in ref(gm, n, :junction)
+            expr(gm, n, :total_injection)[i] = 0
+            expr(gm, n, :total_edge_out_flow)[i] = 0
+            for j in ref(gm, n, :dispatchable_receipts_in_junction, i)
+                expr(gm, n, :total_injection)[i] += var(gm, n, :injection, j)
+            end 
+            for j in ref(gm, n, :dispatchable_transfers_in_junction, i)
+                expr(gm, n, :total_injection)[i] -= var(gm, n, :transfer_effective, j)
+            end 
+            for j in ref(gm, n, :dispatchable_deliveries_in_junction, i)
+                expr(gm, n, :total_injection)[i] -= var(gm, n, :withdrawal, j)
+            end 
+            for j in ref(gm, n, :non_dispatchable_receipts_in_junction, i)
+                expr(gm, n, :total_injection)[i] += ref(gm, n, :receipt, j, "injection_nominal")
+            end 
+            for j in ref(gm, n, :non_dispatchable_transfers_in_junction, i)
+                expr(gm, n, :total_injection)[i] -= ref(gm, n, :transfer, j, "withdrawal_nominal") 
+            end
+            for j in ref(gm, n, :non_dispatchable_deliveries_in_junction, i)
+                expr(gm, n, :total_injection)[i] -= ref(gm, n, :delivery, j, "withdrawal_nominal") 
+            end 
+            for j in ref(gm, n, :pipes_fr, i)
+                expr(gm, n, :total_edge_out_flow)[i] += var(gm, n, :pipe_flow, j)
+            end 
+            for j in ref(gm, n, :compressors_fr, i)
+                expr(gm, n, :total_edge_out_flow)[i] += var(gm, n, :compressor_flow, j)
+            end 
+            for j in ref(gm, n, :pipes_to, i)
+                expr(gm, n, :total_edge_out_flow)[i] -= var(gm, n, :pipe_flow, j)
+            end 
+            for j in ref(gm, n, :compressors_to, i)
+                expr(gm, n, :total_edge_out_flow)[i] -= var(gm, n, :compressor_flow, j)
+            end 
+        end 
+
     end 
     
     for n in time_points[1:end-1]
@@ -127,9 +169,21 @@ function build_transient_compressor_power(gm::AbstractGasModel)
             JuMP.@NLconstraint(gm.model, W * f * (alpha^m - 1) <= compressor["power_max"])
         end 
 
-        # mass balance constraints
-        
+        # transfer separation 
+        for (i, transfer) in ref(gm, n, :dispatchable_transfer)
+            JuMP.@variable(gm.model, var(gm, n, :transfer_injection, i) >= -var(gm, n, :transfer_effective, i))
+            JuMP.@variable(gm.model, var(gm, n, :transfer_withdrawal, i) >= var(gm, n, :transfer_effective, i))
+        end 
 
+        # mass balance constraints for slack junctions 
+        gm.con[:nw][n][:slack_junctions_mass_balance] = JuMP.@constraint(gm.model, [i in keys(ref(gm, n, :slack_junctions))], 
+            expr(gm, n, :total_injection, i) == expr(gm, n, :total_edge_out_flow, i)
+        )
+
+        # mass balance constraints for non-slack junctions 
+        for i in ref(gm, n, :non_slack_junction_ids)
+
+        end 
         
         
     end 
