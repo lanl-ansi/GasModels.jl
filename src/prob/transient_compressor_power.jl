@@ -7,7 +7,20 @@ end
 ""
 function build_transient_compressor_power(gm::AbstractGasModel)
     time_points = sort(collect(nw_ids(gm)))
+
     for n in time_points
+        if (n == time_points[end])
+            # enforcing time-periodicity without adding additional variables (is esp. good for Ipopt)
+            gm.var[:nw][n][:density] = var(gm, time_points[1], :density)
+            gm.var[:nw][n][:pressure] = var(gm, time_points[1], :pressure)
+            gm.var[:nw][n][:compressor_flow] = var(gm, time_points[1], :compressor_flow)
+            gm.var[:nw][n][:pipe_flow] = var(gm, time_points[1], :pipe_flow)
+            gm.var[:nw][n][:compressor_ratio] = var(gm, time_points[1], :compressor_ratio)
+            gm.var[:nw][n][:injection] = var(gm, time_points[1], :injection)
+            gm.var[:nw][n][:withdrawal] = var(gm, time_points[1], :withdrawal)
+            gm.var[:nw][n][:transfer_injection] = var(gm, time_points[1], :transfer_injection)
+            gm.var[:nw][n][:transfer_withdrawal] = var(gm, time_points[1], :transfer_withdrawal)
+        end 
         gm.var[:nw][n][:density] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :junction))], 
             base_name="$(n)_rho", 
             lower_bound=ref(gm, n, :junction, i, "p_min"), 
@@ -23,10 +36,10 @@ function build_transient_compressor_power(gm::AbstractGasModel)
             lower_bound=-ref(gm, n, :max_mass_flow), 
             upper_bound=ref(gm, n, :max_mass_flow)
         )
-        gm.var[:nw][n][:pipe_flux] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :pipe))], 
-            base_name="$(n)_phi_pipe", 
-            lower_bound=-ref(gm, n, :max_mass_flow)/ref(gm, n, :pipe, i, "area"), 
-            upper_bound=ref(gm, n, :max_mass_flow)/ref(gm, n, :pipe, i, "area")
+        gm.var[:nw][n][:pipe_flow] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :pipe))], 
+            base_name="$(n)_f_pipe", 
+            lower_bound=-ref(gm, n, :max_mass_flow), 
+            upper_bound=ref(gm, n, :max_mass_flow)
         )
         gm.var[:nw][n][:compressor_ratio] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :compressor))], 
             base_name="$(n)_c_ratio", 
@@ -53,6 +66,71 @@ function build_transient_compressor_power(gm::AbstractGasModel)
             lower_bound=0.0,
             upper_bound=ref(gm, n, :transfer, i, "withdrawal_max")
         )
+    end 
+
+    # density derivative expressions 
+    Drho = Dict{Int, Any}()
+    for n in time_points[1:end-1] 
+        gm.ext[:nw][n][:density_derivative] = Dict{Int, Any}()
+        if (n == 1)
+            prev = time_points[end-1]
+            for i in ref(gm, n, :non_slack_junction_ids)
+                ext(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, prev, :density, i)) / gm.ref[:time_step]
+            end
+        else 
+            for i in ref(gm, n, :non_slack_junction_ids)
+                ext(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, n-1, :density, i)) / gm.ref[:time_step]
+            end
+        end 
+    end 
+    
+    for n in time_points[1:end-1]
+        # slack node density and pressure fixed to a certain value
+        gm.con[:nw][n][:slack_density] = JuMP.@constraint(gm.model, [i in keys(ref(gm, n, :slack_junctions))], 
+            var(gm, n, :density)[i] == ref(gm, n, :slack_junctions, i)["p_nominal"]
+        )
+        gm.con[:nw][n][:slack_pressure] = JuMP.@constraint(gm.model, [i in keys(ref(gm, n, :slack_junctions))], 
+            var(gm, n, :pressure)[i] == ref(gm, n, :slack_junctions, i)["p_nominal"]
+        )
+
+        # pressure density relationship 
+        gm.con[:nw][n][:pressure_density_eq] = JuMP.@constraint(gm.model, [i in keys(ref(gm, n, :junction))], 
+            var(gm, n, :pressure)[i] == var(gm, n, :density)[i]
+        )
+        
+        # pipe physics
+        for (i, pipe) in ref(gm, n, :pipe)
+            p_fr = var(gm, n, :pressure, pipe["fr_junction"])
+            p_to = var(gm, n, :pressure, pipe["to_junction"])
+            f = var(gm, n, :pipe_flow, i)
+            resistance = pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] / pipe["diameter"] / pipe["area"] / pipe["area"]
+            JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0)
+            
+        end 
+        
+        # compressor physics
+        for (i, compressor) in ref(gm, n, :compressor)
+            p_fr = var(gm, n, :pressure, compressor["fr_junction"])
+            p_to = var(gm, n, :pressure, compressor["to_junction"])
+            alpha = var(gm, n, :compressor_ratio, i)
+            f = var(gm, n, :compressor_flow, i)
+            JuMP.@constraint(gm.model, p_to == alpha * p_fr)
+            JuMP.@constraint(gm.model, f * (p_fr - p_to) <= 0)
+        end 
+
+        # compressor power constraint
+        for (i, compressor) in ref(gm, n, :compressor)
+            alpha = var(gm, n, :compressor_ratio, i)
+            f = var(gm, n, :compressor_flow, i)
+            m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio] 
+            W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
+            JuMP.@NLconstraint(gm.model, W * f * (alpha^m - 1) <= compressor["power_max"])
+        end 
+
+        # mass balance constraints
+        
+
+        
         
     end 
 end
