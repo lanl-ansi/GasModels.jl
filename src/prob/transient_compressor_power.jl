@@ -76,6 +76,7 @@ function build_transient_compressor_power(gm::AbstractGasModel)
     # density derivative expressions 
     Drho = Dict{Int, Any}()
     for n in time_points[1:end-1] 
+
         gm.expr[:nw][n][:density_derivative] = Dict{Int, Any}()
         if (n == 1)
             prev = time_points[end-1]
@@ -87,6 +88,7 @@ function build_transient_compressor_power(gm::AbstractGasModel)
                 expr(gm, n, :density_derivative)[i] = (var(gm, n, :density, i) - var(gm, n-1, :density, i)) / gm.ref[:time_step]
             end
         end 
+
         gm.expr[:nw][n][:total_injection] = Dict{Int, Any}()
         gm.expr[:nw][n][:total_edge_out_flow] = Dict{Int, Any}()
         for (i, junction) in ref(gm, n, :junction)
@@ -123,6 +125,21 @@ function build_transient_compressor_power(gm::AbstractGasModel)
                 expr(gm, n, :total_edge_out_flow)[i] -= var(gm, n, :compressor_flow, j)
             end 
         end 
+
+        (n == 1) && (continue)
+        gm.expr[:nw][n][:non_slack_derivative] = Dict{Int,Any}()
+        for i in ref(gm, n, :non_slack_junction_ids)
+            expr(gm, n, :non_slack_derivative)[i] = 0
+            derivative_indices = ref(gm, n, :non_slack_neighbors, i)
+            for j in derivative_indices
+                pipe_info = ref(gm, n, :neighbors, j)[i]
+                id = pipe_info["id"]
+                is_compressor = pipe_info["is_compressor"]
+                pipe = is_compressor ? ref(gm, n, :compressor, id) : ref(gm, n, :pipe, id)
+                 
+            end 
+        end 
+
 
     end 
     
