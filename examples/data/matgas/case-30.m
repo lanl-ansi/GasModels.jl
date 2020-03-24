@@ -1,18 +1,17 @@
 function mgc = model30_new_format
 
-mgc.gas_specific_gravity = 0.6;
+mgc.gas_specific_gravity         = 0.6;
 mgc.specific_heat_capacity_ratio = 1.4;
-mgc.temperature = 288.7060;
-mgc.compressibility_factor = 1;
-mgc.base_pressure = 3447378.645; % all base values are in same units as specified by units field
-mgc.base_length = 5000; % all base values are in same units as specified by units field
-mgc.units = 'si';
-mgc.is_per_unit = 0;
-mgc.economic_weighting = 0.95;
-
+mgc.temperature                  = 288.7060;
+mgc.compressibility_factor       = 1;
+mgc.base_pressure                = 3447378.645; % all base values are in same units as specified by units field
+mgc.base_length                  = 5000; % all base values are in same units as specified by units field
+mgc.units                        = 'si';
+mgc.is_per_unit                  = 0;
+mgc.economic_weighting           = 0.95;
 
 %% junction data
-% id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon 
+% id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
 mgc.junction = [
 1   3447378.645 5515805.832 3447378.645 1   1   'synthetic30'   1   0.8714  -0.755
 2   3447378.645 5515805.832 3447378.645 0   1   'synthetic30'   2   0.4018  -0.2421
@@ -51,11 +50,11 @@ mgc.junction = [
 mgc.pipe = [
 1   26  2	0.9144	100000	0.01    3447378.645 5515805.832	1  1  'synthetic30' 1
 2   2   3   0.635   30000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
-3   28  4   0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1 
-4   4   5   0.635   15000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1 
+3   28  4   0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
+4   4   5   0.635   15000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 5   5   6   0.635   10000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
-6   5   7   0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1 
-7   7   8   0.635   10000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1 
+6   5   7   0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
+7   7   8   0.635   10000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 8   27  9   0.9144  5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 9   9   10  0.9144  60000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 10  10  11  0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
@@ -85,7 +84,7 @@ mgc.compressor = [
 5   20  30  1   1.40    745700      0   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
 ];
 
-%% transfer 
+%% transfer
 % id junction_id withdrawal_min withdrawal_max withdrawal_nominal is_dispatchable status bid_price offer_price exchange_point_name pipeline_name other_pipeline_name design_pressure meter_capacity daily_scheduled_flow
 mgc.transfer = [
 1   6   -1.7966  1.7966 0.0  1  1   11.979   10.781   'LDC_A'

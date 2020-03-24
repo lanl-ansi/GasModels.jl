@@ -1,18 +1,18 @@
 function mgc = gaslib-582-10
 
 %% required global data
-mgc.gas_specific_gravity = 0.6000;
-mgc.specific_heat_capacity_ratio = 1.4000;  % unitless
-mgc.temperature = 288.7060;  % K
-mgc.compressibility_factor = 1.0000;  % unitless
-mgc.units = 'si';
+mgc.gas_specific_gravity         = 0.6;
+mgc.specific_heat_capacity_ratio = 1.4;  % unitless
+mgc.temperature                  = 288.706;  % K
+mgc.compressibility_factor       = 1.0;  % unitless
+mgc.units                        = 'si';
 
 %% optional global data (that was either provided or computed based on required global data)
-mgc.sound_speed = 371.6643;  % m/s
-mgc.R = 8.3140;  % J/(mol K)
-mgc.base_pressure = 12101325;  % Pa
-mgc.base_length = 5000.0000;  % m
-mgc.is_per_unit = 0;
+mgc.sound_speed                  = 371.6643;  % m/s
+mgc.R                            = 8.314;  % J/(mol K)
+mgc.base_pressure                = 12101325;  % Pa
+mgc.base_length                  = 5000;  % m
+mgc.is_per_unit                  = 0;
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon
@@ -1651,7 +1651,7 @@ mgc.ne_pipe = [
 ];
 
 %% ne_compressor data
-% 
+%
 mgc.ne_compressor = [
 ];
 
