@@ -244,7 +244,7 @@ function build_transient_compressor_power(gm::AbstractGasModel)
         for (i, compressor) in ref(gm, n, :compressor)
             alpha = var(gm, n, :compressor_ratio, i)
             f = var(gm, n, :compressor_flow, i)
-            push!(compressor_power_expressions, JuMP.@NLexpression(W * f * (alpha^m - 1)))
+            push!(compressor_power_expressions, JuMP.@NLexpression(gm.model, W * f * (alpha^m - 1)))
         end 
     end 
    JuMP.@NLobjective(gm.model, Min, econ_weight * load_shed_expression + (1-econ_weight) * sum(compressor_power_expressions))
