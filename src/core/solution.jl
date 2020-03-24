@@ -37,7 +37,7 @@ function build_solution(gm::AbstractGasModel, solve_time; solution_builder=solut
         "optimizer" => string(typeof(gm.model.moi_backend.optimizer)),
         "termination_status" => JuMP.termination_status(gm.model),
         "primal_status" => JuMP.primal_status(gm.model),
-        "dual_status" => JuMP.dual_status(gm.model),
+        "dual_status" => _guard_dual_status(gm.model),
         "objective" => _guard_objective_value(gm.model),
         "objective_lb" => _guard_objective_bound(gm.model),
         "objective_gap" => abs((_guard_objective_value(gm.model) - _guard_objective_bound(gm.model)) / _guard_objective_value(gm.model)) * 100,
@@ -198,4 +198,16 @@ function _guard_objective_bound(model)
     end
 
     return obj_lb
+end
+
+""
+function _guard_dual_status(model)
+    dual_status = NaN
+
+    try
+        dual_status = JuMP.dual_status(model)
+    catch
+    end
+
+    return dual_status
 end

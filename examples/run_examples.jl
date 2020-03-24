@@ -33,7 +33,10 @@ else
     minlp_solver = couenne_solver
 end
 
-include("gf.jl")
-include("ne_minlp.jl")
-include("ne_misocp.jl")
-include("ne_nlp.jl")
+
+
+#include("gf.jl")
+#include("ne_minlp.jl")
+include("ne_gaslib-40.jl")
+#include("ne_misocp.jl")
+#include("ne_nlp.jl")

@@ -200,8 +200,6 @@ function constraint_compressor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min,
     f = var(gm,n,:f_compressor,k)
     _add_constraint!(gm, n, :on_off_compressor_flow_direction1, k, JuMP.@constraint(gm.model, (1-y)*f_min <= f))
     _add_constraint!(gm, n, :on_off_compressor_flow_direction2, k, JuMP.@constraint(gm.model, f <= y*f_max))
-
-#    constraint_parallel_flow(gm, k)
     constraint_compressor_parallel_flow(gm, k; n=n)
 end
 
