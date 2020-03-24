@@ -15,10 +15,9 @@
 
     @testset "gaslib 40 25% case" begin
         println("gaslib 40 - MINLP 25%")
-        obj_normalization = 10.0
-        result = run_ne("../examples/data/matgas/gaslib-40-25.m", MINLPGasModel, minlp_solver; obj_normalization=obj_normalization)
+        result = run_ne("../examples/data/matgas/gaslib-40-25.m", MINLPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 41.08; atol = 1e-2)
+        @test isapprox(result["objective"], 41.08; atol = 1e-2)
     end
 
     @testset "gaslib 40 50% case" begin
