@@ -223,15 +223,32 @@ function build_transient_compressor_power(gm::AbstractGasModel)
         
     end 
 
-    # objective 
+    # objective (load shed objective added for now)
     m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio] 
     W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
     econ_weight = gm.ref[:economic_weighting]
     load_shed_expression = 0
-    compressor_power_expression = 0
+    compressor_power_expressions = []
     for n in time_points
-        load_shed_expression += sum( ref(gm, n, :receipt, i)["offer_price"] * var(gm, n, :injection, i) for i in keys(ref(gm, n, :receipt)) )
+        for (i, receipt) in ref(gm, n, :dispatchable_receipt)
+            load_shed_expression += receipt["offer_price"] * var(gm, n, :injection, i)
+        end 
+        for (i, delivery) in ref(gm, n, :dispatchable_delivery)
+            load_shed_expression -= delivery["bid_price"] * var(gm, n, :withdrawal, i)
+        end 
+        for (i, transfer) in ref(gm, n, :dispatchable_transfer)
+            load_shed_expression += (transfer["offer_price"] * var(gm, n, :transfer_injection, i) - 
+                transfer["bid_price"] * var(gm, n, :transfer_withdrawal, i)
+            )
+        end 
+        for (i, compressor) in ref(gm, n, :compressor)
+            alpha = var(gm, n, :compressor_ratio, i)
+            f = var(gm, n, :compressor_flow, i)
+            push!(compressor_power_expressions, W * f * (alpha^m - 1))
+        end 
     end 
+    @NLobjective(m, Min, econ_weight * load_shed_expression + (1-econ_weight) * sum(compressor_power_expressions))
+    
 end
 
 ""
