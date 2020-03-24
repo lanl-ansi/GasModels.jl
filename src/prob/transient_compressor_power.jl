@@ -247,8 +247,8 @@ function build_transient_compressor_power(gm::AbstractGasModel)
             push!(compressor_power_expressions, W * f * (alpha^m - 1))
         end 
     end 
-    @NLobjective(m, Min, econ_weight * load_shed_expression + (1-econ_weight) * sum(compressor_power_expressions))
-    
+    @NLobjective(gm.model, Min, econ_weight * load_shed_expression + (1-econ_weight) * sum(compressor_power_expressions))
+
 end
 
 ""
