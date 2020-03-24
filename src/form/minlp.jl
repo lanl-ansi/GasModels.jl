@@ -1,30 +1,30 @@
 # Define MINLP implementations of Gas Models
 
 "Variables needed for modeling flow in MI models"
-function variable_flow(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true)
-    variable_mass_flow(gm, n; bounded=bounded)
-    variable_connection_direction(gm, n)
+function variable_flow(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    variable_mass_flow(gm, n; bounded=bounded, report=report)
+    variable_connection_direction(gm, n; report=report)
 end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, pipe=ref(gm, n, :undirected_pipe), compressor=ref(gm, n, :default_compressor), resistor=ref(gm, n, :undirected_resistor), short_pipe=ref(gm, n, :undirected_short_pipe), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
-    variable_mass_flow(gm, n; bounded=bounded)
-    variable_connection_direction(gm, n; pipe=pipe, compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, regulator=regulator)
+function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, pipe=ref(gm, n, :undirected_pipe), compressor=ref(gm, n, :default_compressor), resistor=ref(gm, n, :undirected_resistor), short_pipe=ref(gm, n, :undirected_short_pipe), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
+    variable_mass_flow(gm, n; bounded=bounded, report=report)
+    variable_connection_direction(gm, n; pipe=pipe, compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, regulator=regulator, report=report)
 end
 
 
 "Variables needed for modeling flow in MI models"
-function variable_flow_ne(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true)
-    variable_mass_flow_ne(gm, n; bounded=bounded)
-    variable_connection_direction_ne(gm, n)
+function variable_flow_ne(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
+    variable_connection_direction_ne(gm, n; report=report)
 end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, ne_pipe=ref(gm, n, :undirected_ne_pipe), ne_compressor=ref(gm, n, :default_compressor))
-    variable_mass_flow_ne(gm, n; bounded=bounded)
-    variable_connection_direction_ne(gm, n; ne_pipe=ne_pipe, ne_compressor=ne_compressor)
+function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_pipe=ref(gm, n, :undirected_ne_pipe), ne_compressor=ref(gm, n, :default_compressor))
+    variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
+    variable_connection_direction_ne(gm, n; ne_pipe=ne_pipe, ne_compressor=ne_compressor, report=report)
 end
 
 

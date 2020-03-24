@@ -1,5 +1,8 @@
 module GasModels
     import InfrastructureModels
+    const _IM = InfrastructureModels
+
+    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, optimize_model!, @im_fields, ismultinetwork
 
     import JSON
     import JuMP

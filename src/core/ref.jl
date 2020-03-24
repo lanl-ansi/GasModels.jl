@@ -1,10 +1,10 @@
 
-function ref_add_ne!(gm::AbstractGasModel)
-    _ref_add_ne!(gm.ref[:nw]; base_length=gm.ref[:base_length], base_pressure=gm.ref[:base_pressure], base_flow=gm.ref[:base_flow], sound_speed=gm.ref[:sound_speed])
+function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    _ref_add_ne!(refs[:nw]; base_length=refs[:base_length], base_pressure=refs[:base_pressure], base_flow=refs[:base_flow], sound_speed=refs[:sound_speed])
 end
 
 
-function _ref_add_ne!(nw_refs::Dict; base_length=5000.0, base_pressure=1.0, base_flow=1.0/371.6643, sound_speed=371.6643)
+function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressure=1.0, base_flow=1.0/371.6643, sound_speed=371.6643)
     for (nw, ref) in nw_refs
         ref[:ne_pipe]       = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()

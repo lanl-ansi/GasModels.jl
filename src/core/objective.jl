@@ -4,6 +4,8 @@
 
 "function for costing expansion of pipes and compressors"
 function objective_min_ne_cost(gm::AbstractGasModel, nws=[gm.cnw])
+    normalization = get(gm.data, "objective_normalization", 1.0)
+
     zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)
     zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)
 
@@ -44,7 +46,7 @@ end
 
 
 "function for minimizing economic costs"
-function objective_min_economic_costs(gm::AbstractGasModel, nws=[gm.cnw]; weighting_factor=1.0)
+function objective_min_economic_costs(gm::AbstractGasModel, nws=[gm.cnw])
     r               = Dict(n => var(gm,n,:r) for n in nws)
     f               = Dict(n => var(gm,n,:f_compressor) for n in nws)
     fl              = Dict(n => var(gm,n,:fl) for n in nws)
@@ -59,7 +61,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws=[gm.cnw]; weight
     prod_prices     = Dict(n => Dict(i => get(ref(gm,n,:receipt,i),"offer_price",1.0) for i in prod_set[n]) for n in nws)
     transfer_prices = Dict(n => Dict(i => get(ref(gm,n,:transfer,i),"bid_price", 1.0) for i in transfer_set[n]) for n in nws)
 
-    economic_weighting = gm.data["economic_weighting"]
+    economic_weighting = get(gm.data, "economic_weighting", 1.0)
 
     JuMP.@NLobjective(gm.model, Min, sum( economic_weighting*sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) +
                                                 economic_weighting*sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) +

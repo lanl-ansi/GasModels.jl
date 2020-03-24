@@ -1,88 +1,11 @@
 # stuff that is universal to all gas models
-
 "root of the gas formulation hierarchy"
-abstract type AbstractGasModel end
+abstract type AbstractGasModel <: _IM.AbstractInfrastructureModel end
 
 
 "a macro for adding the base GasModels fields to a type definition"
-InfrastructureModels.@def gm_fields begin
-    model::JuMP.AbstractModel
+_IM.@def gm_fields begin GasModels.@im_fields end
 
-    data::Dict{String,<:Any}
-    setting::Dict{String,<:Any}
-    solution::Dict{String,<:Any}
-
-    ref::Dict{Symbol,<:Any}
-    var::Dict{Symbol,<:Any}
-    con::Dict{Symbol,<:Any}
-    cnw::Int
-
-    # Extension dictionary
-    # Extensions should define a type to hold information particular to
-    # their functionality, and store an instance of the type in this
-    # dictionary keyed on an extension-specific symbol
-    ext::Dict{Symbol,<:Any}
-end
-
-
-"default generic constructor"
-function InitializeGasModel(GasModel::Type, data::Dict{String,<:Any}; ext=Dict{Symbol,Any}(), setting=Dict{String,Any}(), jump_model::JuMP.AbstractModel=JuMP.Model(), kwargs...)
-    @assert GasModel <: AbstractGasModel
-
-    ref = InfrastructureModels.ref_initialize(data, _gm_global_keys)  # reference data
-
-    var = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
-    con = Dict{Symbol,Any}(:nw => Dict{Int,Any}())
-    for nw_id in keys(ref[:nw])
-        var[:nw][nw_id] = Dict{Symbol,Any}()
-        con[:nw][nw_id] = Dict{Symbol,Any}()
-    end
-
-    cnw = minimum([k for k in keys(ref[:nw])])
-
-    gm = GasModel(
-        jump_model, # model
-        data, # data
-        setting, # setting
-        Dict{String,Any}(), # solution
-        ref,
-        var, # vars
-        con,
-        cnw,
-        ext # ext
-    )
-    return gm
-end
-
-### Helper functions for working with multinetworks and multiconductors
-ismultinetwork(gm::AbstractGasModel) = (length(gm.ref[:nw]) > 1)
-nw_ids(gm::AbstractGasModel) = keys(gm.ref[:nw])
-nws(gm::AbstractGasModel) = gm.ref[:nw]
-
-### Helper functions for ignoring multinetwork support
-ids(gm::AbstractGasModel, key::Symbol) = ids(gm, gm.cnw, key)
-ids(gm::AbstractGasModel, n::Int, key::Symbol) = keys(gm.ref[:nw][n][key])
-
-ref(gm::AbstractGasModel, key::Symbol) = ref(gm, gm.cnw, key)
-ref(gm::AbstractGasModel, key::Symbol, idx) = ref(gm, gm.cnw, key, idx)
-ref(gm::AbstractGasModel, n::Int, key::Symbol) = gm.ref[:nw][n][key]
-ref(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ref[:nw][n][key][idx]
-
-var(gm::AbstractGasModel, key::Symbol) = var(gm, gm.cnw, key)
-var(gm::AbstractGasModel, key::Symbol, idx) = var(gm, gm.cnw, key, idx)
-var(gm::AbstractGasModel, n::Int, key::Symbol) = gm.var[:nw][n][key]
-var(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.var[:nw][n][key][idx]
-
-
-con(gm::AbstractGasModel, key::Symbol) = con(gm, gm.cnw, key)
-con(gm::AbstractGasModel, key::Symbol, idx) = con(gm, gm.cnw, key, idx)
-con(gm::AbstractGasModel, n::Int, key::Symbol) = gm.con[:nw][n][key]
-con(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.con[:nw][n][key][idx]
-
-ext(gm::AbstractGasModel, key::Symbol) = ext(gm, gm.cnw, key)
-ext(gm::AbstractGasModel, key::Symbol, idx) = ext(gm, gm.cnw, key, idx)
-ext(gm::AbstractGasModel, n::Int, key::Symbol) = gm.ext[:nw][n][key]
-ext(gm::AbstractGasModel, n::Int, key::Symbol, idx) = gm.ext[:nw][n][key][idx]
 
 ""
 function run_model(file::String, model_type, optimizer, build_method; kwargs...)
@@ -91,9 +14,14 @@ function run_model(file::String, model_type, optimizer, build_method; kwargs...)
 end
 
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_builder=solution_gf!, kwargs...)
-    gm = instantiate_model(data, model_type, build_method; ref_extensions=ref_extensions, kwargs...)
-    result = optimize_model!(gm, optimizer=optimizer; solution_builder = solution_builder)
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
+    gm = instantiate_model(data, model_type, build_method; ref_extensions=ref_extensions, ext=get(kwargs, :ext, Dict{Symbol,Any}()), setting=get(kwargs, :setting, Dict{String,Any}()), jump_model=get(kwargs, :jump_model, JuMP.Model()))
+    result = optimize_model!(gm, optimizer=optimizer, solution_processors=solution_processors)
+
+    if haskey(data, "objective_normalization")
+        result["objective"] *= data["objective_normalization"]
+    end
+
     return result
 end
 
@@ -103,61 +31,14 @@ function instantiate_model(file::String,  model_type, build_method; kwargs...)
     return instantiate_model(data, model_type, build_method; kwargs...)
 end
 
-""
-function instantiate_model(data::Dict{String,<:Any}, model_type, build_method; ref_extensions=[], multinetwork=false, kwargs...)
-    gm = InitializeGasModel(model_type, data; kwargs...)
 
-    if !multinetwork && data["multinetwork"]
-        Memento.warn(_LOGGER,"building a single network model with multinetwork data, only network ($(gm.cnw)) will be used.")
-    end
-
-    ref_add_core!(gm)
-    for ref_ext in ref_extensions
-        ref_ext(gm)
-    end
-
-    build_method(gm; kwargs...)
-
-    return gm
-end
-
-""
-function optimize_model!(gm::AbstractGasModel; optimizer, solution_builder=solution_gf!)
-    if optimizer != nothing
-        if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-            JuMP.set_optimizer(gm.model, optimizer)
-        else
-            Memento.warn(_LOGGER, "Model already contains optimizer, cannot use optimizer specified in `optimize_model!`")
-        end
-    end
-
-    if gm.model.moi_backend.state == MOIU.NO_OPTIMIZER
-        Memento.error(_LOGGER, "no optimizer specified in `optimize_model!` or the given JuMP model.")
-    end
-
-    _, solve_time, solve_bytes_alloc, sec_in_gc = @timed JuMP.optimize!(gm.model)
-
-    try
-        solve_time = MOI.get(gm.model, MOI.SolveTime())
-    catch
-        Memento.warn(_LOGGER, "the given optimizer does not provide the SolveTime() attribute, falling back on @timed.  This is not a rigorous timing value.")
-    end
-
-    result = build_solution(gm, solve_time; solution_builder=solution_builder)
-    gm.solution = result["solution"]
-    return result
+function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
+    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
 end
 
 
-"used for building ref without the need to build a initialize an AbstractGasModel"
 function build_ref(data::Dict{String,<:Any}; ref_extensions=[])
-    ref = InfrastructureModels.ref_initialize(data, _gm_global_keys)
-    _ref_add_core!(ref[:nw], base_length=data["base_length"])
-    # for ref_ext in ref_extensions
-    #     ref_ext(gm)
-    # end
-
-    return ref
+    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions=ref_extensions)
 end
 
 
@@ -183,11 +64,11 @@ Some of the common keys include:
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
 * `"pd_min","pd_max"` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
 """
-function ref_add_core!(gm::AbstractGasModel)
-    _ref_add_core!(gm.ref[:nw], base_length=gm.ref[:base_length], base_pressure=gm.ref[:base_pressure], base_flow=gm.ref[:base_flow], sound_speed=gm.ref[:sound_speed])
+function ref_add_core!(refs::Dict{Symbol,<:Any})
+    _ref_add_core!(refs[:nw], base_length=refs[:base_length], base_pressure=refs[:base_pressure], base_flow=refs[:base_flow], sound_speed=refs[:sound_speed])
 end
 
-function _ref_add_core!(nw_refs::Dict; base_length=5000.0, base_pressure=1.0,base_flow=1.0/371.6643,sound_speed=371.6643)
+function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressure=1.0,base_flow=1.0/371.6643,sound_speed=371.6643)
     for (nw, ref) in nw_refs
         ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()

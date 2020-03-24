@@ -2,12 +2,14 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ne(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ne; solution_builder = solution_ne!, ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, post_ne; ref_extensions=[ref_add_ne!], kwargs...)
 end
 
 
 "construct the gas flow feasbility problem"
-function post_ne(gm::AbstractGasModel; kwargs...)
+function post_ne(gm::AbstractGasModel)
+    obj_normalization = get(gm.data, "obj_normalization", 1.0)
+
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -111,17 +113,4 @@ end
 function add_connection_flow_ne_setpoint!(sol, gm::AbstractGasModel)
     add_setpoint!(sol, gm, "ne_pipe", "f", :f_ne_pipe)
     add_setpoint!(sol, gm, "ne_compressor", "f", :f_ne_compressor)
-end
-
-
-"Get all the solution values"
-function solution_ne!(gm::AbstractGasModel, sol::Dict{String,Any})
-    add_junction_pressure_setpoint!(sol, gm)
-    add_connection_flow_setpoint!(sol, gm)
-    add_connection_flow_ne_setpoint!(sol, gm)
-    add_direction_setpoint!(sol, gm)
-    add_direction_ne_setpoint!(sol, gm)
-    add_compressor_ratio_setpoint!(sol, gm)
-    add_compressor_ratio_ne_setpoint!(sol, gm)
-    add_connection_ne(sol, gm)
 end

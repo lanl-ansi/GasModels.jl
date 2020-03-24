@@ -14,7 +14,8 @@ mgc.base_pressure                = 8000000;  % Pa
 mgc.base_length                  = 5000;  % m
 mgc.base_flow                    = 550
 mgc.is_per_unit                  = 0;
-mgc.sound_speed                  = 317.35;
+mgc.sound_speed                  = 317.353652234;
+mgc.objective_normalization      = 1.0;
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon
