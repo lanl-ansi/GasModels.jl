@@ -5,6 +5,10 @@
 - Implement constraints on compressor power
 - Implement a multi-network test
 
+## staged
+
+- Update to InfrastructureModels solution building (breaking)
+
 ## v0.6
 
 - Introduced matgas format (breaking) (#147)

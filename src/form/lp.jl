@@ -5,9 +5,25 @@
 #################################################################################################
 
 "continous relaxation of variables associated with operating valves"
-function variable_valve_operation(gm::AbstractLPModel, n::Int=gm.cnw)
-    gm.var[:nw][n][:v_valve] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:valve])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_valve", start=comp_start_value(gm.ref[:nw][n][:valve], l, "v_start", 1.0))
-    gm.var[:nw][n][:v_regulator] = JuMP.@variable(gm.model, [l in keys(gm.ref[:nw][n][:regulator])],  upper_bound=1.0, lower_bound=0.0, base_name="$(n)_v_regulator", start=comp_start_value(gm.ref[:nw][n][:regulator], l, "v_start", 1.0))
+function variable_valve_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::Bool=true)
+    v_valve = gm.var[:nw][nw][:v_valve] = JuMP.@variable(gm.model,
+        [l in keys(gm.ref[:nw][nw][:valve])],
+        upper_bound=1.0,
+        lower_bound=0.0,
+        base_name="$(nw)_v_valve",
+        start=comp_start_value(gm.ref[:nw][nw][:valve], l, "v_start", 1.0)
+    )
+
+    v_regulator = gm.var[:nw][nw][:v_regulator] = JuMP.@variable(gm.model,
+        [l in keys(gm.ref[:nw][nw][:regulator])],
+        upper_bound=1.0,
+        lower_bound=0.0,
+        base_name="$(nw)_v_regulator",
+        start=comp_start_value(gm.ref[:nw][nw][:regulator], l, "v_start", 1.0)
+    )
+
+    report && _IM.sol_component_value(gm, nw, :valve, :v, ids(gm, nw, :valve), v_valve)
+    report && _IM.sol_component_value(gm, nw, :regulator, :v, ids(gm, nw, :regulator), v_regulator)
 end
 
 
