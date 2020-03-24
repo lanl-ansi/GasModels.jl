@@ -222,6 +222,16 @@ function build_transient_compressor_power(gm::AbstractGasModel)
         )
         
     end 
+
+    # objective 
+    m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio] 
+    W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
+    econ_weight = gm.ref[:economic_weighting]
+    load_shed_expression = 0
+    compressor_power_expression = 0
+    for n in time_points
+        load_shed_expression += sum( ref(gm, n, :receipt, i)["offer_price"] * var(gm, n, :injection, i) for i in keys(ref(gm, n, :receipt)) )
+    end 
 end
 
 ""
