@@ -59,9 +59,10 @@
     end
 
     #Check the nlp model on load shedding with priorities
-    @testset "test nlp ls priority" begin
+    @testset "test gaslib 40 nlp priority" begin
         @info "Testing gaslib nlp ls priority gaslib 40"
         result = run_ls("../test/data/matgas/gaslib-40-ls-priority.m", NLPGasModel, cvx_solver)
+        println(result["termination_status"])
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         @test isapprox(result["objective"]*result["solution"]["base_flow"], 254.48; atol = 1e-1)
     end
