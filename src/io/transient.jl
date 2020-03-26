@@ -22,7 +22,8 @@ end
 "parses two files - a static file and a transient csv file and preps the data"
 function parse_files(static_file::String, transient_file::String; 
     total_time=86400.0, time_step=3600.0, 
-    spatial_discretization=10000.0, additional_time=21600.0)
+    spatial_discretization=10000.0, additional_time=21600.0,
+    periodic=true)
     static_filetype = split(lowercase(static_file), '.')[end]
     if static_filetype == "m"
         static_data = open(static_file) do io 
@@ -56,7 +57,8 @@ function parse_files(static_file::String, transient_file::String;
     time_series_block = create_time_series_block(transient_data, 
         total_time=total_time, 
         time_step=time_step, 
-        additional_time=additional_time)
+        additional_time=additional_time,
+        periodic=periodic)
 
     static_data["num_physical_time_points"] = time_series_block["num_physical_time_points"]
     pop!(time_series_block, "num_physical_time_points")
@@ -148,9 +150,10 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
     # if original pipe is a not discretized add it to the pipe list, else add a list of discretized pipe segments with junctions
     for (key, pipe) in data["original_pipe"]
         if !pipe["is_discretized"]
-            pipe_fields = ["id", "fr_junction", "to_junction", "diameter", "length", "friction_factor", "p_min", "p_max", "status", "is_bidirectional"]
+            pipe_fields = ["id", "fr_junction", "to_junction", "diameter", "length", "friction_factor", 
+                "p_min", "p_max", "status", "is_bidirectional", "is_si_units", "is_english_units", "is_per_unit"]
+            data["pipe"][key] = Dict{String,Any}()
             for field in pipe_fields 
-                data["pipe"][key] = Dict()
                 if haskey(pipe, field)
                     data["pipe"][key][field] = pipe[field]
                 end 
@@ -209,11 +212,12 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
 end
 
 function create_time_series_block(data::Array{Dict{String,Any},1};
-    total_time=86400.0, time_step=3600.0, additional_time=21600.0)::Dict{String,Any}
+    total_time=86400.0, time_step=3600.0, additional_time=21600.0,
+    periodic=true)::Dict{String,Any}
     # create time information 
     time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time 
-    if (3600.0 % time_step) != 0.0 
+    if (time_step % 3600.0) != 0.0 
         Memento.error(_LOGGER, "the 3600 seconds has to be exactly divisible by the time step, 
         provide a time step that exactly divides 3600.0")
     end 
@@ -287,7 +291,7 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
         end 
         x = interpolators[type][id][param]["times"]
         y = interpolators[type][id][param]["reduced_data_points"]
-        interpolators[type][id][param]["itp"] = Spline1D(x, y, periodic=true)
+        interpolators[type][id][param]["itp"] = Spline1D(x, y, periodic=periodic)
 
         if !haskey(time_series_block, type)
             time_series_block[type] = Dict{String,Any}()
@@ -303,7 +307,9 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
 
         itp = interpolators[type][id][param]["itp"]
         for t in time_series_block["time_points"]
-            push!(time_series_block[type][id][param], itp(t))
+            itp_val = round(itp(t), digits=2)
+            (abs(itp_val) <= 1e-4) && (itp_val = 0.0)
+            push!(time_series_block[type][id][param], itp_val)
         end 
     end 
 
