@@ -1,0 +1,24 @@
+﻿Temperature (K):,288.706
+Gas specific gravity (G):,0.6
+Specific heat capacity ratio,1.4
+Fuel factor,0.0004
+Time horizon (hours),24
+"EOS (0 = ideal gas, 1 = CNGA)",1
+"units (SI = 0, standard = 1)",0
+"intervals (0 = points, N = # of intervals)",0
+update static model from xls (1=yes),1
+"use initial state input (0 = no (elliptic), 1 = yes)",0
+save csv output (1=yes),1
+steady-state solve only (1=yes),0
+show plots (1=yes),1
+save plots as pdf (1=yes),1
+close at end (0=no),0
+"intervals (0 = points, N = # of intervals)",0
+Optimization time intervals,24
+Space interval (km),10
+Econ weight (between 0 and 1),0.95
+Max iterations,400
+Tolerance exponent,-3
+Objective scale exponent,3
+intervals of time horizon extension,0
+exit if steady-state check infeasible,0

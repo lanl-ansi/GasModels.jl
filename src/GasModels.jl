@@ -40,7 +40,8 @@ module GasModels
         "base_pressure", "base_length", "base_flow", "base_time",
         "base_flux", "base_density", "base_diameter",
         "units", "is_per_unit", "is_english_units", "is_si_units", 
-        "time_points", "time_step", "num_physical_time_points", "gas_molar_mass"])
+        "time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
+        "economic_weighting"])
 
     include("io/json.jl")
     include("io/common.jl")

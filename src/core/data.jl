@@ -139,24 +139,22 @@ function si_to_pu!(data::Dict{String,<:Any}; id="0")
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
     nw_data = (id == "0") ? data : data["nw"][id]
-
     for (component, parameters) in _params_for_unit_conversions
-        for (i, component) in get(nw_data, component, [])
-            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end 
-            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                component["is_per_unit"] = data["is_per_unit"]
-                component["is_si_units"] = 0
-                component["is_english_units"] = 0
+            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
+                comp["is_per_unit"] = data["is_per_unit"]
+                comp["is_si_units"] = 0
+                comp["is_english_units"] = 0
             end 
-            if component["is_si_units"] == true && component["is_per_unit"] == false
+            if comp["is_si_units"] == true && comp["is_per_unit"] == false
                 for param in parameters
-                    _apply_func!(component, param, functions[param])
-                    component["is_si_units"] = 0
-                    component["is_english_units"] = 0 
-                    component["is_per_unit"] = 1
+                    _apply_func!(comp, param, functions[param])
+                    comp["is_si_units"] = 0
+                    comp["is_english_units"] = 0 
+                    comp["is_per_unit"] = 1
                 end
             end
         end 
@@ -185,22 +183,22 @@ function pu_to_si!(data::Dict{String,<:Any}; id="0")
     nw_data = (id == "0") ? data : data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, component) in get(nw_data, component, [])
-            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end 
-            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
-                component["is_per_unit"] = data["is_per_unit"]
-                component["is_si_units"] = 0
-                component["is_english_units"] = 0
+                comp["is_per_unit"] = data["is_per_unit"]
+                comp["is_si_units"] = 0
+                comp["is_english_units"] = 0
             end
-            if component["is_si_units"] == false && component["is_per_unit"] == true
+            if comp["is_si_units"] == false && comp["is_per_unit"] == true
                 for param in parameters
-                    _apply_func!(component, param, functions[param])
-                    component["is_si_units"] = 1 
-                    component["is_english_units"] = 0
-                    component["is_per_unit"] = 0
+                    _apply_func!(comp, param, functions[param])
+                    comp["is_si_units"] = 1 
+                    comp["is_english_units"] = 0
+                    comp["is_per_unit"] = 0
                 end
             end
         end 
@@ -229,22 +227,22 @@ function si_to_english!(data::Dict{String,<:Any}; id="0")
     nw_data = (id == "0") ? data : data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, component) in get(nw_data, component, [])
-            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end 
-            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
-                component["is_per_unit"] = data["is_per_unit"]
-                component["is_si_units"] = 0
-                component["is_english_units"] = 0
+                comp["is_per_unit"] = data["is_per_unit"]
+                comp["is_si_units"] = 0
+                comp["is_english_units"] = 0
             end 
-            if component["is_english_units"] == false && component["is_si_units"] == true
+            if comp["is_english_units"] == false && comp["is_si_units"] == true
                 for param in parameters
-                    _apply_func!(component, param, functions[param])
-                    component["is_si_units"] = 0 
-                    component["is_english_units"] = 1
-                    component["is_per_unit"] = 0
+                    _apply_func!(comp, param, functions[param])
+                    comp["is_si_units"] = 0 
+                    comp["is_english_units"] = 1
+                    comp["is_per_unit"] = 0
                 end
             end
         end 
@@ -273,22 +271,22 @@ function english_to_si!(data::Dict{String,<:Any}; id="0")
     nw_data = (id == "0") ? data : data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, component) in get(nw_data, component, [])
-            if ~haskey(component, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end 
-            if ~haskey(component, "is_per_unit") && haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
-                component["is_per_unit"] = data["is_per_unit"]
-                component["is_si_units"] = 0
-                component["is_english_units"] = 0
+                comp["is_per_unit"] = data["is_per_unit"]
+                comp["is_si_units"] = 0
+                comp["is_english_units"] = 0
             end 
-            if component["is_english_units"] == true && component["is_si_units"] == false
+            if comp["is_english_units"] == true && comp["is_si_units"] == false
                 for param in parameters
-                    _apply_func!(component, param, functions[param])
-                    component["is_si_units"] = 1 
-                    component["is_english_units"] = 0
-                    component["is_per_unit"] = 0
+                    _apply_func!(comp, param, functions[param])
+                    comp["is_si_units"] = 1 
+                    comp["is_english_units"] = 0
+                    comp["is_per_unit"] = 0
                 end
             end
         end 
