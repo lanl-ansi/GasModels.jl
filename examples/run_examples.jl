@@ -37,6 +37,7 @@ end
 
 #include("gf.jl")
 #include("ne_minlp.jl")
-include("ne_gaslib-40.jl")
+#include("ne_gaslib-40.jl")
+include("ne_gaslib-135.jl")
 #include("ne_misocp.jl")
 #include("ne_nlp.jl")

@@ -10,8 +10,8 @@ mgc.units                        = 'si';
 %% optional global data (that was either provided or computed based on required global data)
 mgc.gas_molar_mass               = 0.01857; % kg/mol
 mgc.R                            = 8.314;  % J/(mol K)
-mgc.base_length                  = 5000;  % m
 mgc.base_pressure                = 8101325;  % Pa
+mgc.base_length                  = 5000;  % m
 mgc.base_flow                    = 604;
 mgc.is_per_unit                  = 0;
 mgc.sound_speed                  = 312.8060

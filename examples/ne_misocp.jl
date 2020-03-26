@@ -22,74 +22,7 @@
 
 
 
-    @testset "gaslib 135 case 5%" begin
-        println("gaslib 135 - MISOCP 5%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-5.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 0.0; atol = 1e-2)
-    end
 
-    @testset "gaslib 135 case 10%" begin
-        println("gaslib 135 - MISOCP 10%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-10.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 0.0; atol = 1e-2)
-    end
-
-    @testset "gaslib 135 case 25%" begin
-        println("gaslib 135 - MISOCP 25%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-25.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 60439674; atol = 1e3)
-    end
-
-    @testset "gaslib 135 case 50%" begin
-        println("gaslib 135 - MISOCP 50%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-50.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 95319858; atol = 1e3)
-    end
-
-    @testset "gaslib 135 case 75%" begin
-        println("gaslib 135 - MISOCP 75%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-75.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"]*obj_normalization, 451591677; atol = 1e3) || isapprox(result["objective"]*obj_normalization, 466653583; atol = 1e3)
-    end
-
-    @testset "gaslib 135 case 100%" begin
-        println("gaslib 135 - MISOCP 100%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-100.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        # This one has some slight numerical instabilities, depending on the version of the misocp optimizer
-        @test isapprox(result["objective"]*obj_normalization, 1234234179; atol = 1e3) || isapprox(result["objective"]*obj_normalization, 1245093590; atol = 1e3)
-    end
-
-    @testset "gaslib 135 case 125%" begin
-        println("gaslib 135 - MISOCP 125%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-125.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == INFEASIBLE
-    end
-
-    @testset "gaslib 135 case 150%" begin
-        println("gaslib 135 - MISOCP 150%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-150.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == INFEASIBLE
-    end
-
-    @testset "gaslib 135 case 200%" begin
-        println("gaslib 135 - MISOCP 200%")
-        obj_normalization = 1000000.0
-        result = run_ne("../examples/data/matgas/gaslib-135-200.m", MISOCPGasModel, misocp_solver; obj_normalization = obj_normalization)
-        @test result["termination_status"] == INFEASIBLE
     end
 
     @testset "gaslib 582 case 5%" begin
