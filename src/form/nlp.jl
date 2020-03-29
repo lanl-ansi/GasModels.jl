@@ -104,6 +104,8 @@ function constraint_compressor_ratios(gm::AbstractNLPModel, n::Int, k, i, j, min
     _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
     _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
     _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pj) <= 0))
+
+    _IM.sol_component_value(gm, n, :compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
@@ -119,6 +121,8 @@ function constraint_compressor_ratios_ne(gm::AbstractNLPModel, n::Int, k, i, j, 
     _add_constraint!(gm, n, :compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
     _add_constraint!(gm, n, :compressor_ratios_ne2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
     _add_constraint!(gm, n, :compressor_ratios_ne3, k, JuMP.@constraint(gm.model, f * (pi - pj) <= (1-zc) * f_max * M))
+
+    _IM.sol_component_value(gm, n, :ne_compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
