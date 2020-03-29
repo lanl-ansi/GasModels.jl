@@ -133,8 +133,8 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
     end 
 
     # saving the original_pipe and original_junctions separately in the data dictionary
-    data["original_pipe"] = Dict{Any,Any}()
-    data["original_junction"] = Dict{Any,Any}()
+    data["original_pipe"] = Dict{String,Any}()
+    data["original_junction"] = Dict{String,Any}()
     for (key, pipe) in data["pipe"]
         data["original_pipe"][key] = pipe 
     end 

@@ -111,9 +111,9 @@ const _params_for_unit_conversions = Dict(
     "ne_pipe" => ["length", "p_min", "p_max", "f"],  
     "compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
     "ne_compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
-    "transfer" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "ft"], 
-    "receipt" => ["injection_min", "injection_max", "injection_nominal", "fg"], 
-    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "fd"], 
+    "transfer" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "ft", "bid_price", "offer_price"], 
+    "receipt" => ["injection_min", "injection_max", "injection_nominal", "fg", "offer_price"], 
+    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "fd", "bid_price"], 
     "regulator" => ["flow_min", "flow_max", "design_flow_rate", "design_inlet_pressure", "design_outlet_pressure", "f"], 
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max", "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
