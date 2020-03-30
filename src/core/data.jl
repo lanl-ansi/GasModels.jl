@@ -139,6 +139,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id="0")
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
     nw_data = (id == "0") ? data : data["nw"][id]
+    _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
@@ -181,7 +182,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id="0")
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
     nw_data = (id == "0") ? data : data["nw"][id]
-
+    _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
@@ -225,7 +226,6 @@ function si_to_english!(data::Dict{String,<:Any}; id="0")
     )
 
     nw_data = (id == "0") ? data : data["nw"][id]
-
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
@@ -300,16 +300,15 @@ function make_si_units!(data::Dict{String,<:Any})
         return 
     end 
     if get(data, "is_per_unit", false) == true 
-        if InfrastructureModels.ismultinetwork(data)
+        if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 pu_to_si!(data, id=i)
             end 
         else 
             pu_to_si!(data)
         end 
-        if haskey(data, "time_points") 
+        if haskey(data, "time_step") 
             rescale_time = x -> x * get_base_time(data)
-            data["time_points"] = rescale_time.(data["time_points"])
             data["time_step"] = rescale_time(data["time_step"])
         end 
         data["is_si_units"] = 1
@@ -317,7 +316,7 @@ function make_si_units!(data::Dict{String,<:Any})
         data["is_per_unit"] = 0
     end 
     if get(data, "is_english_units", false) == true 
-        if InfrastructureModels.ismultinetwork(data)
+        if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 english_to_si!(data, id=i)
             end 
@@ -339,7 +338,7 @@ function make_english_units!(data::Dict{String,<:Any})
         make_si_units!(data)
     end
     if get(data, "is_si_units", false) == true 
-        if InfrastructureModels.ismultinetwork(data)
+        if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_english!(data, id=i)
             end 
@@ -361,16 +360,15 @@ function make_per_unit!(data::Dict{String,<:Any})
         make_si_units!(data)
     end
     if get(data, "is_si_units", false) == true
-        if InfrastructureModels.ismultinetwork(data)
+        if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_pu!(data, id=i)
             end 
         else 
             si_to_pu!(data) 
         end 
-        if haskey(data, "time_points") 
+        if haskey(data, "time_step") 
             rescale_time = x -> x / get_base_time(data)
-            data["time_points"] = rescale_time.(data["time_points"])
             data["time_step"] = rescale_time(data["time_step"])
         end 
         data["is_si_units"] = 0
@@ -507,7 +505,7 @@ end
 
 "checks that all buses are unique and other components link to valid buses"
 function check_connectivity(data::Dict{String,<:Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         for (n, nw_data) in data["nw"]
             _check_connectivity(nw_data)
         end
@@ -546,7 +544,7 @@ end
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String,<:Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
     end
 
@@ -568,7 +566,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String,<:Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
     end
 
@@ -889,7 +887,7 @@ const _gm_component_parameter_order = Dict(
 
 "prints the text summary for a data dictionary to IO"
 function summary(io::IO, data::Dict{String,Any}; kwargs...)
-    InfrastructureModels.summary(io, data;
+    _IM.summary(io, data;
         component_types_order = _gm_component_types_order,
         component_parameter_order = _gm_component_parameter_order,
         kwargs...)
@@ -901,7 +899,7 @@ computes the connected components of the network graph
 returns a set of sets of juntion ids, each set is a connected component
 """
 function calc_connected_components(data::Dict{String,<:Any}; edges=_gm_edge_types)
-    if InfrastructureModels.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
     end
 

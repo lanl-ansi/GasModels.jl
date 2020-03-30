@@ -200,7 +200,7 @@ function constraint_compressor_ratio_value(gm::AbstractMISOCPModel, n::Int, k, i
     pj    = var(gm, n, :p, j)
     r     = var(gm, n, :r, k)
 
-    InfrastructureModels.relaxation_product(gm.model, pi, r, pj)
+    _IM.relaxation_product(gm.model, pi, r, pj)
 end
 
 
