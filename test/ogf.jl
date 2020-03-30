@@ -15,7 +15,7 @@
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = run_ogf(data, NLPGasModel, ipopt_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], -225.299; atol = 1e-2)
+            @test isapprox(result["objective"], -237.816; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 97.33312801519526; atol = 1e-2)
         end
