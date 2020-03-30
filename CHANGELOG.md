@@ -5,6 +5,10 @@
 - Implement constraints on compressor power
 - Implement a multi-network test
 
+## Staged
+
+- Add support for Memento v0.13, v1.0
+
 ## v0.6
 
 - Introduced matgas format (breaking) (#147)
