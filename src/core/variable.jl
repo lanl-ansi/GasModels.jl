@@ -2,26 +2,6 @@
 # The purpose of this file is to define commonly used and created variables used in gas flow models
 ##########################################################################################################
 
-"variables associated with density (transient)"
-function variable_density(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    rho = var(gm, nw)[:density] = JuMP.@variable(gm.model, 
-        [i in keys(ref(gm, nw, :junction))], 
-        base_name="$(nw)_rho", 
-        start=comp_start_value(ref(gm, nw, :junction), i, "rho_start", ref(gm, nw, :junction, i)["p_min"])
-    )
-    
-    if bounded 
-        for (i, junction) in ref(gm, nw, :junction)
-            JuMP.set_lower_bound(rho[i], ref(gm, nw, :junction, i)["p_min"])
-            JuMP.set_upper_bound(rho[i], ref(gm, nw, :junction, i)["p_max"])
-        end 
-    end 
-
-    report && _IM.sol_component_value(gm, nw, :junction, :rho, ids(gm, nw, :junction), rho)
-    report && _IM.sol_component_value(gm, nw, :junction, :p, ids(gm, nw, :junction), rho)
-end 
-
-
 "variables associated with pressure squared"
 function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     psqr = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model,
