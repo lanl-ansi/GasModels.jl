@@ -247,7 +247,7 @@ end
 
 "parses matlab-format string"
 function parse_m_string(data_string::String)
-    matlab_data, func_name, colnames = InfrastructureModels.parse_matlab_string(data_string, extended=true)
+    matlab_data, func_name, colnames = _IM.parse_matlab_string(data_string, extended=true)
 
     case = Dict{String,Any}()
 
@@ -344,8 +344,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction")
         junctions = []
         for junction_row in matlab_data["mgc.junction"]
-            junction_data = InfrastructureModels.row_to_typed_dict(junction_row, _mg_junction_columns)
-            junction_data["index"] = InfrastructureModels.check_type(Int, junction_row[1])
+            junction_data = _IM.row_to_typed_dict(junction_row, _mg_junction_columns)
+            junction_data["index"] = _IM.check_type(Int, junction_row[1])
             junction_data["is_si_units"] = case["is_si_units"]
             junction_data["is_english_units"] = case["is_english_units"]
             junction_data["is_per_unit"] = case["is_per_unit"]
@@ -360,8 +360,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.pipe")
         pipes = []
         for pipe_row in matlab_data["mgc.pipe"]
-            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, _mg_pipe_columns)
-            pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
+            pipe_data = _IM.row_to_typed_dict(pipe_row, _mg_pipe_columns)
+            pipe_data["index"] = _IM.check_type(Int, pipe_row[1])
             pipe_data["is_si_units"] = case["is_si_units"]
             pipe_data["is_english_units"] = case["is_english_units"]
             pipe_data["is_per_unit"] = case["is_per_unit"]
@@ -376,8 +376,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.ne_pipe")
         ne_pipes = []
         for pipe_row in matlab_data["mgc.ne_pipe"]
-            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, _mg_ne_pipe_columns)
-            pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
+            pipe_data = _IM.row_to_typed_dict(pipe_row, _mg_ne_pipe_columns)
+            pipe_data["index"] = _IM.check_type(Int, pipe_row[1])
             pipe_data["is_si_units"] = case["is_si_units"]
             pipe_data["is_english_units"] = case["is_english_units"]
             pipe_data["is_per_unit"] = case["is_per_unit"]
@@ -389,8 +389,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, _mg_compressor_columns)
-            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
+            compressor_data = _IM.row_to_typed_dict(compressor_row, _mg_compressor_columns)
+            compressor_data["index"] = _IM.check_type(Int, compressor_row[1])
             compressor_data["is_si_units"] = case["is_si_units"]
             compressor_data["is_english_units"] = case["is_english_units"]
             compressor_data["is_per_unit"] = case["is_per_unit"]
@@ -405,8 +405,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.ne_compressor")
         ne_compressors = []
         for compressor_row in matlab_data["mgc.ne_compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, _mg_ne_compressor_columns)
-            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
+            compressor_data = _IM.row_to_typed_dict(compressor_row, _mg_ne_compressor_columns)
+            compressor_data["index"] = _IM.check_type(Int, compressor_row[1])
             compressor_data["is_si_units"] = case["is_si_units"]
             compressor_data["is_english_units"] = case["is_english_units"]
             compressor_data["is_per_unit"] = case["is_per_unit"]
@@ -418,8 +418,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.short_pipe")
         short_pipes = []
         for short_pipe_row in matlab_data["mgc.short_pipe"]
-            short_pipe_data = InfrastructureModels.row_to_typed_dict(short_pipe_row, _mg_short_pipe_columns)
-            short_pipe_data["index"] = InfrastructureModels.check_type(Int, short_pipe_row[1])
+            short_pipe_data = _IM.row_to_typed_dict(short_pipe_row, _mg_short_pipe_columns)
+            short_pipe_data["index"] = _IM.check_type(Int, short_pipe_row[1])
             short_pipe_data["is_si_units"] = case["is_si_units"]
             short_pipe_data["is_english_units"] = case["is_english_units"]
             short_pipe_data["is_per_unit"] = case["is_per_unit"]
@@ -431,8 +431,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.resistor")
         resistors = []
         for resistor_row in matlab_data["mgc.resistor"]
-            resistor_data = InfrastructureModels.row_to_typed_dict(resistor_row, _mg_resistor_columns)
-            resistor_data["index"] = InfrastructureModels.check_type(Int, resistor_row[1])
+            resistor_data = _IM.row_to_typed_dict(resistor_row, _mg_resistor_columns)
+            resistor_data["index"] = _IM.check_type(Int, resistor_row[1])
             resistor_data["is_si_units"] = case["is_si_units"]
             resistor_data["is_english_units"] = case["is_english_units"]
             resistor_data["is_per_unit"] = case["is_per_unit"]
@@ -444,8 +444,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.transfer")
         transfers = []
         for transfer_row in matlab_data["mgc.transfer"]
-            transfer_data = InfrastructureModels.row_to_typed_dict(transfer_row, _mg_transfer_columns)
-            transfer_data["index"] = InfrastructureModels.check_type(Int, transfer_row[1])
+            transfer_data = _IM.row_to_typed_dict(transfer_row, _mg_transfer_columns)
+            transfer_data["index"] = _IM.check_type(Int, transfer_row[1])
             transfer_data["is_si_units"] = case["is_si_units"]
             transfer_data["is_english_units"] = case["is_english_units"]
             transfer_data["is_per_unit"] = case["is_per_unit"]
@@ -457,8 +457,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.receipt")
         receipts = []
         for receipt_row in matlab_data["mgc.receipt"]
-            receipt_data = InfrastructureModels.row_to_typed_dict(receipt_row, _mg_receipt_columns)
-            receipt_data["index"] = InfrastructureModels.check_type(Int, receipt_row[1])
+            receipt_data = _IM.row_to_typed_dict(receipt_row, _mg_receipt_columns)
+            receipt_data["index"] = _IM.check_type(Int, receipt_row[1])
             receipt_data["is_si_units"] = case["is_si_units"]
             receipt_data["is_english_units"] = case["is_english_units"]
             receipt_data["is_per_unit"] = case["is_per_unit"]
@@ -470,8 +470,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.delivery")
         deliveries = []
         for delivery_row in matlab_data["mgc.delivery"]
-            delivery_data = InfrastructureModels.row_to_typed_dict(delivery_row, _mg_delivery_columns)
-            delivery_data["index"] = InfrastructureModels.check_type(Int, delivery_row[1])
+            delivery_data = _IM.row_to_typed_dict(delivery_row, _mg_delivery_columns)
+            delivery_data["index"] = _IM.check_type(Int, delivery_row[1])
             delivery_data["is_si_units"] = case["is_si_units"]
             delivery_data["is_english_units"] = case["is_english_units"]
             delivery_data["is_per_unit"] = case["is_per_unit"]
@@ -483,8 +483,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.regulator")
         regulators = []
         for regulator_row in matlab_data["mgc.regulator"]
-            regulator_data = InfrastructureModels.row_to_typed_dict(regulator_row, _mg_regulator_columns)
-            regulator_data["index"] = InfrastructureModels.check_type(Int, regulator_row[1])
+            regulator_data = _IM.row_to_typed_dict(regulator_row, _mg_regulator_columns)
+            regulator_data["index"] = _IM.check_type(Int, regulator_row[1])
             regulator_data["is_si_units"] = case["is_si_units"]
             regulator_data["is_english_units"] = case["is_english_units"]
             regulator_data["is_per_unit"] = case["is_per_unit"]
@@ -496,8 +496,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.valve")
         valves = []
         for valve_row in matlab_data["mgc.valve"]
-            valve_data = InfrastructureModels.row_to_typed_dict(valve_row, _mg_valve_columns)
-            valve_data["index"] = InfrastructureModels.check_type(Int, valve_row[1])
+            valve_data = _IM.row_to_typed_dict(valve_row, _mg_valve_columns)
+            valve_data["index"] = _IM.check_type(Int, valve_row[1])
             valve_data["is_si_units"] = case["is_si_units"]
             valve_data["is_english_units"] = case["is_english_units"]
             valve_data["is_per_unit"] = case["is_per_unit"]
@@ -509,8 +509,8 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.storage")
         storages = []
         for storage_row in matlab_data["mgc.storage"]
-            storage_data = InfrastructureModels.row_to_typed_dict(storage_row, _mg_storage_columns)
-            storage_data["index"] = InfrastructureModels.check_type(Int, storage_row[1])
+            storage_data = _IM.row_to_typed_dict(storage_row, _mg_storage_columns)
+            storage_data["index"] = _IM.check_type(Int, storage_row[1])
             storage_data["is_si_units"] = case["is_si_units"]
             storage_data["is_english_units"] = case["is_english_units"]
             storage_data["is_per_unit"] = case["is_per_unit"]
@@ -531,7 +531,7 @@ function parse_m_string(data_string::String)
                 end
                 tbl = []
                 for (i, row) in enumerate(matlab_data[k])
-                    row_data = InfrastructureModels.row_to_dict(row, column_names)
+                    row_data = _IM.row_to_dict(row, column_names)
                     row_data["index"] = i
                     push!(tbl, row_data)
                 end
@@ -560,7 +560,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     _merge_generic_data!(gm_data)
 
     # use once available
-    InfrastructureModels.arrays_to_dicts!(gm_data)
+    _IM.arrays_to_dicts!(gm_data)
 
     return gm_data
 end

@@ -60,14 +60,8 @@ function parse_files(static_file::String, transient_file::String;
         additional_time=additional_time,
         periodic=periodic)
 
-    static_data["num_physical_time_points"] = time_series_block["num_physical_time_points"]
-    pop!(time_series_block, "num_physical_time_points")
-    static_data["time_points"] = deepcopy(time_series_block["time_points"])
-    pop!(time_series_block, "time_points")
-    static_data["time_step"] = time_series_block["time_step"]
-    pop!(time_series_block, "time_step")
     static_data["time_series"] = deepcopy(time_series_block)
-    mn_data = InfrastructureModels.make_multinetwork(static_data, _gm_global_keys)
+    mn_data = _IM.make_multinetwork(static_data, _gm_global_keys)
     make_per_unit!(mn_data)
     return mn_data
 end
@@ -238,7 +232,8 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
 
     time_series_block["num_steps"] = num_time_points 
     time_series_block["num_physical_time_points"] = num_physical_time_points
-    time_series_block["time_points"] = time_points 
+    time_series_block["num_time_points"] = length(time_points)
+    time_series_block["time_point"] = time_points 
     time_series_block["time_step"] = time_step
 
     interpolators = Dict{String,Any}()
@@ -306,7 +301,7 @@ function create_time_series_block(data::Array{Dict{String,Any},1};
         end
 
         itp = interpolators[type][id][param]["itp"]
-        for t in time_series_block["time_points"]
+        for t in time_series_block["time_point"]
             itp_val = round(itp(t), digits=2)
             (abs(itp_val) <= 1e-4) && (itp_val = 0.0)
             push!(time_series_block[type][id][param], itp_val)

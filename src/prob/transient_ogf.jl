@@ -1,11 +1,11 @@
 "entry point for the transient model with compressor power objective"
 function run_transient_compressor_power(data, model_type, optimizer; kwargs...)
-    @assert InfrastructureModels.ismultinetwork(data) == true 
-    return run_model(data, model_type, optimizer, build_transient_compressor_power; ref_extensions=[ref_add_transient!], multinetwork=true, kwargs...)
+    @assert _IM.ismultinetwork(data) == true 
+    return run_model(data, model_type, optimizer, build_transient_ogf; ref_extensions=[ref_add_transient!], multinetwork=true, kwargs...)
 end
 
 ""
-function build_transient_compressor_power(gm::AbstractGasModel)
+function build_transient_ogf(gm::AbstractGasModel)
     time_points = sort(collect(nw_ids(gm)))
     start_t = time_points[1]
     end_t = time_points[end]
@@ -251,7 +251,7 @@ end
 
 ""
 function ref_add_transient!(gm::AbstractGasModel)
-    if InfrastructureModels.ismultinetwork(gm.data)
+    if _IM.ismultinetwork(gm.data)
         nws_data = gm.data["nw"]
     else
         nws_data = Dict("0" => gm.data)
