@@ -268,7 +268,7 @@ function parse_m_string(data_string::String)
 
     required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
 
-    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit", "mgc.gas_molar_mass"]
+    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit", "mgc.gas_molar_mass", "mgc.economic_weighting"]
 
     for data_name in required_metadata_names
         (data_name == "mgc.units") && (continue)
@@ -328,7 +328,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.gas_molar_mass")
         case["gas_molar_mass"] = matlab_data["mgc.gas_molar_mass"]
     else
-        case["gas_molar_mass"] = 0.02896 * case["specific_gravity"]
+        case["gas_molar_mass"] = 0.02896 * case["gas_specific_gravity"]
     end
 
     if haskey(matlab_data, "mgc.sound_speed")
@@ -339,6 +339,15 @@ function parse_m_string(data_string::String)
         T = case["temperature"] # K
         R = case["R"] # J/mol/K
         case["sound_speed"] = sqrt(R * T / molecular_mass) # m/s
+    end
+
+    if haskey(matlab_data, "mgc.economic_weighting")
+        case["economic_weighting"] = matlab_data["mgc.economic_weighting"]
+    else 
+        case["economic_weighting"] = 1.0 
+        Memento.warn(_LOGGER, "economic_weighting value set to 1.0; the transient ogf
+            objective is economic_weighting * (load shed) + 
+            (1-economic_weighting) * (compressor power)")
     end
 
     if haskey(matlab_data, "mgc.junction")

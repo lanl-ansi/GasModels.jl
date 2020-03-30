@@ -1,7 +1,7 @@
-"entry point for the transient model with compressor power objective"
-function run_transient_compressor_power(data, model_type, optimizer; kwargs...)
+"entry point for the transient ogf model"
+function run_transient_ogf(data, model_type, optimizer; kwargs...)
     @assert _IM.ismultinetwork(data) == true 
-    return run_model(data, model_type, optimizer, build_transient_ogf; ref_extensions=[ref_add_transient!], multinetwork=true, kwargs...)
+    return run_model(data, model_type, optimizer, build_transient_ogf; ref_extensions=[ref_add_transient!], kwargs...)
 end
 
 ""
@@ -250,19 +250,19 @@ function build_transient_ogf(gm::AbstractGasModel)
 end
 
 ""
-function ref_add_transient!(gm::AbstractGasModel)
-    if _IM.ismultinetwork(gm.data)
-        nws_data = gm.data["nw"]
+function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    if _IM.ismultinetwork(data)
+        nws_data = data["nw"]
     else
-        nws_data = Dict("0" => gm.data)
+        nws_data = Dict("0" => data)
     end
 
     for (n, nw_data) in nws_data
         nw_id = parse(Int, n)
-        nw_ref = ref(gm, nw_id)
+        nw_ref = ref[:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            pipe["resistance"] = pipe["friction_factor"] * pipe["length"] * gm.ref[:base_length] / pipe["diameter"];
+            pipe["resistance"] = pipe["friction_factor"] * pipe["length"] * ref[:base_length] / pipe["diameter"];
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]
