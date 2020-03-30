@@ -12,11 +12,7 @@ function build_transient_ogf(gm::AbstractGasModel)
 
     # variables for first n-1 time points
     for n in time_points[1:end-1]
-        var(gm, n)[:density] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :junction))], 
-            base_name="$(n)_rho", 
-            lower_bound=ref(gm, n, :junction, i, "p_min"), 
-            upper_bound=ref(gm, n, :junction, i, "p_max")
-        )
+        variable_density(gm, n)
         
         var(gm, n)[:compressor_flow] = JuMP.@variable(gm.model, [i in keys(ref(gm, n, :compressor))], 
             base_name="$(n)_f_compressor", 
