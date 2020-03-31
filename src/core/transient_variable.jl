@@ -25,8 +25,10 @@ function variable_density(
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
-    report && _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
+    report &&
+    _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
+    report &&
+    _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
 end
 
 "variables associated with compressor mass flow (transient)"
@@ -42,7 +44,12 @@ function variable_compressor_flow(
             gm.model,
             [i in ids(gm, nw, :compressor)],
             base_name = "$(nw)_f_compressor",
-            start = comp_start_value(ref(gm, nw, :compressor), i, "f_compressor_start", 0.0)
+            start = comp_start_value(
+                ref(gm, nw, :compressor),
+                i,
+                "f_compressor_start",
+                0.0,
+            )
         )
 
     if bounded
@@ -52,7 +59,8 @@ function variable_compressor_flow(
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
+    report &&
+    _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
 end
 
 "variables associated with pipe flux (transient)"
@@ -82,9 +90,12 @@ function variable_pipe_flux(
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
-    sol_f = Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
-    report && _IM.sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
+    if report
+        _IM.sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
+        sol_f =
+            Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
+        _IM.sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
+    end
 end
 
 "variables associated with compression ratio (transient)"
@@ -109,7 +120,176 @@ function variable_c_ratio(
         end
     end
 
-    report &&
-    _IM.sol_component_value(gm, nw, :compressor, :c_ratio, ids(gm, nw, :compressor), c_ratio)
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :compressor,
+        :c_ratio,
+        ids(gm, nw, :compressor),
+        c_ratio,
+    )
 end
 
+"variables associated with injection in receipts (transient)"
+function variable_injection(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw;
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    s =
+        var(gm, nw)[:injection] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_receipt)],
+            base_name = "$(nw)_injection",
+            start = comp_start_value(
+                ref(gm, nw, :dispatchable_receipt),
+                i,
+                "receipt_start",
+                ref(gm, nw, :dispatchable_receipt, i)["injection_min"],
+            )
+        )
+
+    if bounded
+        for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
+            JuMP.set_lower_bound(s[i], receipt["injection_min"])
+            JuMP.set_upper_bound(s[i], receipt["injection_max"])
+        end
+    end
+
+    if report
+        sol_injection = Dict()
+        for (i, receipt) in ref(gm, nw, :receipt)
+            if receipt["is_dispatchable"] == true
+                sol_injection[i] = s[i]
+            else
+                sol_injection[i] = receipt["injection_nominal"]
+            end
+        end
+        _IM.sol_component_value(
+            gm,
+            nw,
+            :receipt,
+            :injection,
+            ids(gm, nw, :receipt),
+            sol_injection,
+        )
+    end
+end
+
+"variables associated with withdrawal in deliveries (transient)"
+function variable_withdrawal(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw;
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    d =
+        var(gm, nw)[:withdrawal] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_delivery)],
+            base_name = "$(nw)_withdrawal",
+            start = comp_start_value(
+                ref(gm, nw, :dispatchable_delivery),
+                i,
+                "receipt_start",
+                ref(gm, nw, :dispatchable_delivery, i)["withdrawal_min"],
+            )
+        )
+
+    if bounded
+        for (i, receipt) in ref(gm, nw, :dispatchable_delivery)
+            JuMP.set_lower_bound(d[i], receipt["withdrawal_min"])
+            JuMP.set_upper_bound(d[i], receipt["withdrawal_max"])
+        end
+    end
+
+    if report
+        sol_withdrawal = Dict()
+        for (i, delivery) in ref(gm, nw, :delivery)
+            if delivery["is_dispatchable"] == true
+                sol_withdrawal[i] = d[i]
+            else
+                sol_withdrawal[i] = delivery["withdrawal_nominal"]
+            end
+        end
+        _IM.sol_component_value(
+            gm,
+            nw,
+            :delivery,
+            :withdrawal,
+            ids(gm, nw, :delivery),
+            sol_withdrawal,
+        )
+    end
+end
+
+"variables associated with net withdrawal in transfers (transient)"
+function variable_transfer_flow(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw;
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    t =
+        var(gm, nw)[:transfer_effective] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            base_name = "$(nw)_transfer_effective"
+        )
+
+    s =
+        var(gm, nw)[:transfer_injection] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            base_name = "$(nw)_transfer_injection"
+        )
+
+    d =
+        var(gm, nw)[:transfer_withdrawal] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            base_name = "$(nw)_transfer_withdrawal"
+        )
+
+    if bounded
+        for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
+            JuMP.set_lower_bound(t[i], min(transfer["withdrawal_min"], 0.0))
+            JuMP.set_upper_bound(t[i], max(0.0, transfer["withdrawal_max"]))
+            JuMP.set_lower_bound(s[i], 0.0)
+            JuMP.set_upper_bound(s[i], max(0.0, -transfer["withdrawal_min"]))
+            JuMP.set_lower_bound(d[i], 0.0)
+            JuMP.set_upper_bound(d[i], max(transfer["withdrawal_max"], 0.0))
+        end
+    end
+
+    if report
+        sol_injection = Dict()
+        sol_withdrawal = Dict()
+        for (i, transfer) in ref(gm, nw, :transfer)
+            if transfer["is_dispatchable"] == true
+                sol_injection[i] = s[i]
+                sol_withdrawal[i] = d[i]
+            else
+                sol_injection[i] = 0.0
+                sol_withdrawal[i] = transfer["withdrawal_nominal"]
+            end
+        end
+        _IM.sol_component_value(
+            gm,
+            nw,
+            :transfer,
+            :injection,
+            ids(gm, nw, :transfer),
+            sol_injection,
+        )
+        _IM.sol_component_value(
+            gm,
+            nw,
+            :transfer,
+            :withdrawal,
+            ids(gm, nw, :transfer),
+            sol_withdrawal,
+        )
+    end
+end
