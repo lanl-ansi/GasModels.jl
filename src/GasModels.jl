@@ -55,6 +55,7 @@ module GasModels
     include("core/data.jl")
     include("core/variable.jl")
     include("core/transient_variable.jl")
+    include("core/transient_expression.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")
     include("core/constraint_mi.jl")
