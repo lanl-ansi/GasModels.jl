@@ -23,42 +23,9 @@ function build_transient_ogf(gm::AbstractGasModel)
         variable_compressor_flow(gm, n)
         variable_pipe_flux(gm, n)
         variable_c_ratio(gm, n)
-
-        var(gm, n)[:injection] = JuMP.@variable(
-            gm.model,
-            [i in keys(ref(gm, n, :dispatchable_receipt))],
-            base_name = "$(n)_injection",
-            lower_bound = ref(gm, n, :receipt, i, "injection_min"),
-            upper_bound = ref(gm, n, :receipt, i, "injection_max")
-        )
-        var(gm, n)[:withdrawal] = JuMP.@variable(
-            gm.model,
-            [i in keys(ref(gm, n, :dispatchable_delivery))],
-            base_name = "$(n)_withdrawal",
-            lower_bound = ref(gm, n, :receipt, i, "withdrawal_min"),
-            upper_bound = ref(gm, n, :receipt, i, "withdrawal_max")
-        )
-        var(gm, n)[:transfer_effective] = JuMP.@variable(
-            gm.model,
-            [i in keys(ref(gm, n, :dispatchable_transfer))],
-            base_name = "$(n)_transfer_effective",
-            lower_bound = min(ref(gm, n, :transfer, i, "withdrawal_min"), 0.0),
-            upper_bound = max(0.0, ref(gm, n, :transfer, i, "withdrawal_max"))
-        )
-        var(gm, n)[:transfer_injection] = JuMP.@variable(
-            gm.model,
-            [i in keys(ref(gm, n, :dispatchable_transfer))],
-            base_name = "$(n)_transfer_injection",
-            lower_bound = 0.0,
-            upper_bound = max(-ref(gm, n, :transfer, i, "withdrawal_min"), 0.0)
-        )
-        var(gm, n)[:transfer_withdrawal] = JuMP.@variable(
-            gm.model,
-            [i in keys(ref(gm, n, :dispatchable_transfer))],
-            base_name = "$(n)_transfer_withdrawal",
-            lower_bound = 0.0,
-            upper_bound = max(ref(gm, n, :transfer, i, "withdrawal_max"), 0.0)
-        )
+        variable_injection(gm, n)
+        variable_withdrawal(gm, n)
+        variable_transfer_flow(gm, n)
     end
 
     # enforcing time-periodicity without adding additional variables
@@ -70,7 +37,8 @@ function build_transient_ogf(gm::AbstractGasModel)
     var(gm, end_t)[:withdrawal] = var(gm, time_points[start_t], :withdrawal)
     var(gm, end_t)[:transfer_effective] = var(gm, time_points[start_t], :transfer_effective)
     var(gm, end_t)[:transfer_injection] = var(gm, time_points[start_t], :transfer_injection)
-    var(gm, end_t)[:transfer_withdrawal] = var(gm, time_points[start_t], :transfer_withdrawal)
+    var(gm, end_t)[:transfer_withdrawal] =
+        var(gm, time_points[start_t], :transfer_withdrawal)
 
 
     # expressions 
@@ -100,13 +68,16 @@ function build_transient_ogf(gm::AbstractGasModel)
                 var(gm, n, :total_injection)[i] -= var(gm, n, :withdrawal, j)
             end
             for j in ref(gm, n, :nondispatchable_receipts_in_junction, i)
-                var(gm, n, :total_injection)[i] += ref(gm, n, :receipt, j, "injection_nominal")
+                var(gm, n, :total_injection)[i] +=
+                    ref(gm, n, :receipt, j, "injection_nominal")
             end
             for j in ref(gm, n, :nondispatchable_transfers_in_junction, i)
-                var(gm, n, :total_injection)[i] -= ref(gm, n, :transfer, j, "withdrawal_nominal")
+                var(gm, n, :total_injection)[i] -=
+                    ref(gm, n, :transfer, j, "withdrawal_nominal")
             end
             for j in ref(gm, n, :nondispatchable_deliveries_in_junction, i)
-                var(gm, n, :total_injection)[i] -= ref(gm, n, :delivery, j, "withdrawal_nominal")
+                var(gm, n, :total_injection)[i] -=
+                    ref(gm, n, :delivery, j, "withdrawal_nominal")
             end
             for j in ref(gm, n, :pipes_fr, i)
                 var(gm, n, :total_edge_out_flow)[i] +=
@@ -136,10 +107,14 @@ function build_transient_ogf(gm::AbstractGasModel)
                 pipe = is_compressor ? ref(gm, n, :compressor, id) : ref(gm, n, :pipe, id)
                 x = pipe["length"] * pi * pipe["diameter"]^2 / 4.0
                 if (is_compressor && pipe["fr_junction"] == j && pipe["to_junction"] == i)
-                    var(gm, n, :non_slack_derivative)[i] +=
-                        (x * var(gm, n, :compressor_ratio, id) * var(gm, n, :density_derivative, j))
+                    var(gm, n, :non_slack_derivative)[i] += (
+                        x *
+                        var(gm, n, :compressor_ratio, id) *
+                        var(gm, n, :density_derivative, j)
+                    )
                 else
-                    var(gm, n, :non_slack_derivative)[i] += (x * var(gm, n, :density_derivative, j))
+                    var(gm, n, :non_slack_derivative)[i] +=
+                        (x * var(gm, n, :density_derivative, j))
                 end
             end
 
@@ -149,10 +124,14 @@ function build_transient_ogf(gm::AbstractGasModel)
                 pipe = is_compressor ? ref(gm, n, :compressor, id) : ref(gm, n, :pipe, id)
                 x = pipe["length"] * pi * pipe["diameter"]^2 / 4.0
                 if (is_compressor && pipe["fr_junction"] == i && pipe["to_junction"] == j)
-                    var(gm, n, :non_slack_derivative)[i] +=
-                        (x * var(gm, n, :compressor_ratio, id) * var(gm, n, :density_derivative, i))
+                    var(gm, n, :non_slack_derivative)[i] += (
+                        x *
+                        var(gm, n, :compressor_ratio, id) *
+                        var(gm, n, :density_derivative, i)
+                    )
                 else
-                    var(gm, n, :non_slack_derivative)[i] += (x * var(gm, n, :density_derivative, i))
+                    var(gm, n, :non_slack_derivative)[i] +=
+                        (x * var(gm, n, :density_derivative, i))
                 end
             end
         end
@@ -162,9 +141,12 @@ function build_transient_ogf(gm::AbstractGasModel)
         for (i, compressor) in ref(gm, n, :compressor)
             alpha = var(gm, n, :compressor_ratio, i)
             f = var(gm, n, :compressor_flow, i)
-            m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio]
+            m =
+                (gm.ref[:specific_heat_capacity_ratio] - 1) /
+                gm.ref[:specific_heat_capacity_ratio]
             W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
-            var(gm, n, :compressor_power)[i] = JuMP.@NLexpression(gm.model, W * f * (alpha^m - 1))
+            var(gm, n, :compressor_power)[i] =
+                JuMP.@NLexpression(gm.model, W * f * (alpha^m - 1))
         end
     end
 
@@ -183,7 +165,8 @@ function build_transient_ogf(gm::AbstractGasModel)
             p_to = var(gm, n, :density, pipe["to_junction"])
             f = var(gm, n, :pipe_flux, i)
             resistance =
-                pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] / pipe["diameter"]
+                pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] /
+                pipe["diameter"]
             JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0)
 
         end
@@ -226,7 +209,8 @@ function build_transient_ogf(gm::AbstractGasModel)
             gm.model,
             [i in ref(gm, n, :non_slack_junction_ids)],
             var(gm, n, :non_slack_derivative)[i] +
-            4 * (var(gm, n, :total_edge_out_flow)[i] - var(gm, n, :total_injection)[i]) == 0.0
+            4 * (var(gm, n, :total_edge_out_flow)[i] - var(gm, n, :total_injection)[i]) ==
+            0.0
         )
 
     end
@@ -241,13 +225,19 @@ function build_transient_ogf(gm::AbstractGasModel)
         for (i, receipt) in ref(gm, n, :dispatchable_receipt)
             push!(
                 load_shed_expressions,
-                JuMP.@NLexpression(gm.model, receipt["offer_price"] * var(gm, n, :injection)[i])
+                JuMP.@NLexpression(
+                    gm.model,
+                    receipt["offer_price"] * var(gm, n, :injection)[i]
+                )
             )
         end
         for (i, delivery) in ref(gm, n, :dispatchable_delivery)
             push!(
                 load_shed_expressions,
-                JuMP.@NLexpression(gm.model, -delivery["bid_price"] * var(gm, n, :withdrawal)[i])
+                JuMP.@NLexpression(
+                    gm.model,
+                    -delivery["bid_price"] * var(gm, n, :withdrawal)[i]
+                )
             )
         end
         for (i, transfer) in ref(gm, n, :dispatchable_transfer)
@@ -267,7 +257,8 @@ function build_transient_ogf(gm::AbstractGasModel)
     JuMP.@NLobjective(
         gm.model,
         Min,
-        econ_weight * sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
+        econ_weight *
+        sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
         (1 - econ_weight) *
         sum(compressor_power_expressions[i] for i = 1:length(compressor_power_expressions))
     )
@@ -288,7 +279,8 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
         for (i, pipe) in nw_ref[:pipe]
             pipe["resistance"] =
-                pipe["friction_factor"] * pipe["length"] * ref[:base_length] / pipe["diameter"]
+                pipe["friction_factor"] * pipe["length"] * ref[:base_length] /
+                pipe["diameter"]
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]
@@ -298,8 +290,10 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             pipe["flux_min"] = -sqrt((to_p_max^2 - fr_p_min^2) / pipe["resistance"])
             pipe["flux_max"] = sqrt((fr_p_max^2 - to_p_min^2) / pipe["resistance"])
         end
-        arcs_from =
-            [(i, pipe["fr_junction"], pipe["to_junction"], false) for (i, pipe) in nw_ref[:pipe]]
+        arcs_from = [
+            (i, pipe["fr_junction"], pipe["to_junction"], false)
+            for (i, pipe) in nw_ref[:pipe]
+        ]
         append!(
             arcs_from,
             [
@@ -308,8 +302,10 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             ],
         )
 
-        nw_ref[:non_slack_neighbor_junction_ids] =
-            Dict(i => [] for (i, junction) in nw_ref[:junction] if junction["junction_type"] == 0)
+        nw_ref[:non_slack_neighbor_junction_ids] = Dict(
+            i => []
+            for (i, junction) in nw_ref[:junction] if junction["junction_type"] == 0
+        )
         for (i, fr_junction, to_junction, is_compressor) in arcs_from
             is_f_slack = (nw_ref[:junction][fr_junction]["junction_type"] == 1)
             is_t_slack = (nw_ref[:junction][to_junction]["junction_type"] == 1)
@@ -319,7 +315,8 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             end
         end
 
-        nw_ref[:neighbor_edge_info] = Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
+        nw_ref[:neighbor_edge_info] =
+            Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
         for (i, fr_junction, to_junction, is_compressor) in arcs_from
             nw_ref[:neighbor_edge_info][fr_junction][to_junction] = Dict()
             nw_ref[:neighbor_edge_info][to_junction][fr_junction] = Dict()
@@ -339,7 +336,10 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
 
         if length(slack_junctions) == 0
-            Memento.error(_LOGGER, "No slack junctions found in the data - add a slack junction")
+            Memento.error(
+                _LOGGER,
+                "No slack junctions found in the data - add a slack junction",
+            )
         end
 
         if length(slack_junctions) > 1

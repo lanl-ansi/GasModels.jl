@@ -90,7 +90,10 @@ function get_max_pipe_id(pipes::Dict{String,Any})::Int
     return max_pipe_id
 end
 
-function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Float64 = 10000.0)
+function prep_transient_data!(
+    data::Dict{String,Any};
+    spatial_discretization::Float64 = 10000.0,
+)
     max_pipe_id = get_max_pipe_id(data["pipe"])
     num_sub_pipes = Dict()
     short_pipes = []
@@ -191,7 +194,8 @@ function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Fl
         sub_pipe_count = pipe["num_sub_pipes"]
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
         data["original_pipe"][key]["fr_pipe"] = max_pipe_id + pipe["id"] * 1000 + 1
-        data["original_pipe"][key]["to_pipe"] = max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
+        data["original_pipe"][key]["to_pipe"] =
+            max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
             id = max_pipe_id + pipe["id"] * 1000 + i
