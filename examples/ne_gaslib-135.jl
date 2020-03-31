@@ -2,16 +2,16 @@
 
     @testset "gaslib 135 5% case" begin
         println("gaslib 135 - MINLP 5%")
-        #result = run_ne("../examples/data/matgas/gaslib-135-5.m", MINLPGasModel, minlp_solver)
-        #@test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        #@test isapprox(result["objective"], 0.0; atol = 1e-2)
+        result = run_ne("../examples/data/matgas/gaslib-135-5.m", MINLPGasModel, minlp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 0.0; atol = 1e-2)
     end
 
     @testset "gaslib 135 25% case" begin
         println("gaslib 135 - MINLP 25%")
-#        result = run_ne("../examples/data/matgas/gaslib-135-25.m", MINLPGasModel, minlp_solver)
-#        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-#        @test isapprox(result["objective"], 60.43; atol = 1e-2)
+        result = run_ne("../examples/data/matgas/gaslib-135-25.m", MINLPGasModel, minlp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 60.43; atol = 1e-2)
     end
 
     @testset "gaslib 135 125% case" begin

@@ -3,9 +3,10 @@ using JSON
 
 include("old_matlab.jl")
 
+
 file = ARGS[1]
 
-json_out_file = split(file, ".")[1] * ".json"
+json_out_file = split(file, ".")[1] * "_matgas.json"
 matgas_out_file = split(file, ".")[1] * "_matgas.m"
 
 
@@ -76,7 +77,7 @@ for (i, compressor) in data["compressor"]
     compressor["fr_junction"] = Int(compressor["f_junction"])
     compressor["to_junction"] = Int(compressor["t_junction"])
     if get(compressor, "qmin", false) == false
-        compressor["qmin"] = 0.0
+        compressor["qmin"] = -1e4
         compressor["qmax"] = 1e4
     end
     if compressor["qmin"] == compressor["qmax"]
@@ -107,6 +108,8 @@ for (i, compressor) in data["compressor"]
         )
     compressor["operating_cost"] = 10.0
     compressor["directionality"] = 2
+    compressor["power_max"]      = get(compressor,"power_max",1e9)
+
     delete!(compressor, "compressor_i")
     delete!(compressor, "f_junction")
     delete!(compressor, "t_junction")
@@ -201,7 +204,7 @@ for (i, control_valve) in get(data, "control_valve", [])
     data["regulator"][i]["reduction_factor_max"] = control_valve["c_ratio_max"]
     data["regulator"][i]["status"] = 1
     if get(control_valve, "qmin", false) == false
-        control_valve["qmin"] = 0.0
+        control_valve["qmin"] = -1e4
         control_valve["qmax"] = 1e4
     end
     if data["per_unit"] == 1

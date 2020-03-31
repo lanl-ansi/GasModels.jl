@@ -193,14 +193,14 @@
     # f[186] + 0.12220764306078952 yn[186] <= 0.12220764306078952
     ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow1][186]
     var_ref = [gm.var[:nw][gm.cnw][:y_pipe][186], gm.var[:nw][gm.cnw][:f_pipe][186]]
-    coeff = [0.12220764306078952, -1.0]
+    coeff = [0.12256998344699432, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
 
-    @test isapprox(set.upper, 0.12220764306078952; atol = 1e-4)
+    @test isapprox(set.upper, 0.12256998344699432; atol = 1e-4)
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
@@ -210,7 +210,7 @@
 
     ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow2][186]
     var_ref = [gm.var[:nw][gm.cnw][:y_pipe][186], gm.var[:nw][gm.cnw][:f_pipe][186]]
-    coeff = [-0.12220764306078952, 1.0]
+    coeff = [-0.12256998344699432, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
