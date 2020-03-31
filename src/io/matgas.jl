@@ -85,7 +85,7 @@ const _mg_compressor_columns = Vector{Tuple{String,Type}}([
     ("design_electric_power_required", Float64),
     ("num_units_for_peak_service", Int),
     ("peak_year", Int)
-])
+]
 
 const _mg_ne_compressor_columns = Vector{Tuple{String,Type}}([
     ("id", Int),
@@ -111,7 +111,7 @@ const _mg_ne_compressor_columns = Vector{Tuple{String,Type}}([
     ("design_electric_power_required", Float64),
     ("num_units_for_peak_service", Int),
     ("peak_year", Int)
-])
+]
 
 const _mg_short_pipe_columns = Vector{Tuple{String,Type}}([
     ("id", Int),
