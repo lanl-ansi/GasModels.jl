@@ -76,16 +76,16 @@ end
 "make transient data to si units"
 function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::Dict{String,Any})
     if static_data["units"] == "si"
-        return 
-    end 
+        return
+    end
     mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(static_data)
     inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(static_data)
-    pressure_params = ["p_min", "p_max", "p_nominal", "p", "inlet_p_min", "inlet_p_max", 
-        "outlet_p_min", "outlet_p_max", "design_inlet_pressure", 
+    pressure_params = ["p_min", "p_max", "p_nominal", "p", "inlet_p_min", "inlet_p_max",
+        "outlet_p_min", "outlet_p_max", "design_inlet_pressure",
         "design_outlet_pressure", "pressure_nominal"]
-    flow_params = ["f", "fd", "ft", "fg", "flow_min", "flow_max", 
-        "withdrawal_min", "withdrawal_max", "withdrawal_nominal", 
-        "injection_min", "injection_max", "injection_nominal", 
+    flow_params = ["f", "fd", "ft", "fg", "flow_min", "flow_max",
+        "withdrawal_min", "withdrawal_max", "withdrawal_nominal",
+        "injection_min", "injection_max", "injection_nominal",
         "design_flow_rate", "flow_injection_rate_min", "flow_injection_rate_max",
         "flow_withdrawal_rate_min", "flow_withdrawal_rate_max"]
     inv_flow_params = ["bid_price", "offer_price"]
@@ -93,28 +93,28 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
         param = line["parameter"]
         if param in pressure_params
             line["value"] = psi_to_pascal(line["value"])
-        end 
-        if param in flow_params 
+        end
+        if param in flow_params
             line["value"] = mmscfd_to_kgps(line["value"])
-        end 
-        if param in inv_flow_params 
+        end
+        if param in inv_flow_params
             line["value"] = inv_mmscfd_to_kgps(line["value"])
         end
-    end 
+    end
 end
 
 const _params_for_unit_conversions = Dict(
-    "junction" => ["p_min", "p_max", "p_nominal", "p"], 
+    "junction" => ["p_min", "p_max", "p_nominal", "p"],
     "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
-    "pipe" => ["length", "p_min", "p_max", "f"], 
-    "original_pipe" => ["length", "p_min", "p_max", "f"], 
-    "ne_pipe" => ["length", "p_min", "p_max", "f"],  
-    "compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
-    "ne_compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"], 
-    "transfer" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "ft", "bid_price", "offer_price"], 
-    "receipt" => ["injection_min", "injection_max", "injection_nominal", "fg", "offer_price"], 
-    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "fd", "bid_price"], 
-    "regulator" => ["flow_min", "flow_max", "design_flow_rate", "design_inlet_pressure", "design_outlet_pressure", "f"], 
+    "pipe" => ["length", "p_min", "p_max", "f"],
+    "original_pipe" => ["length", "p_min", "p_max", "f"],
+    "ne_pipe" => ["length", "p_min", "p_max", "f"],
+    "compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"],
+    "ne_compressor" => ["length", "flow_min", "flow_max", "inlet_p_min", "inlet_p_max", "outlet_p_min", "outlet_p_max", "f", "power_max"],
+    "transfer" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "ft", "bid_price", "offer_price"],
+    "receipt" => ["injection_min", "injection_max", "injection_nominal", "fg", "offer_price"],
+    "delivery" => ["withdrawal_min", "withdrawal_max", "withdrawal_nominal", "fd", "bid_price"],
+    "regulator" => ["flow_min", "flow_max", "design_flow_rate", "design_inlet_pressure", "design_outlet_pressure", "f"],
     "storage" => ["pressure_nominal", "flow_injection_rate_min", "flow_injection_rate_max", "flow_withdrawal_rate_min", "flow_withdrawal_rate_max", "capacity"]
 )
 
@@ -128,14 +128,14 @@ function si_to_pu!(data::Dict{String,<:Any}; id="0")
     rescale_mass      = x -> x / get_base_flow(data) / get_base_time(data)
     rescale_diameter  = x -> x / get_base_diameter(data)
     functions = Dict(
-        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
-        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
-        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
-        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
-        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
-        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
-        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
-        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure,
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure,
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure,
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow,
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow,
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow,
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow,
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass,
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
     nw_data = (id == "0") ? data : data["nw"][id]
@@ -144,23 +144,23 @@ function si_to_pu!(data::Dict{String,<:Any}; id="0")
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
-            end 
+            end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 comp["is_per_unit"] = data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
-            end 
+            end
             if comp["is_si_units"] == true && comp["is_per_unit"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
                     comp["is_si_units"] = 0
-                    comp["is_english_units"] = 0 
+                    comp["is_english_units"] = 0
                     comp["is_per_unit"] = 1
                 end
             end
-        end 
-    end 
-end 
+        end
+    end
+end
 
 function pu_to_si!(data::Dict{String,<:Any}; id="0")
     rescale_flow      = x -> x * get_base_flow(data)
@@ -171,14 +171,14 @@ function pu_to_si!(data::Dict{String,<:Any}; id="0")
     rescale_mass      = x -> x * get_base_flow(data) * get_base_time(data)
     rescale_diameter  = x -> x * get_base_diameter(data)
     functions = Dict(
-        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
-        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
-        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
-        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
-        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
-        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
-        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
-        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure,
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure,
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure,
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow,
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow,
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow,
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow,
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass,
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
     nw_data = (id == "0") ? data : data["nw"][id]
@@ -187,7 +187,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id="0")
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
-            end 
+            end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
                 comp["is_per_unit"] = data["is_per_unit"]
@@ -197,14 +197,14 @@ function pu_to_si!(data::Dict{String,<:Any}; id="0")
             if comp["is_si_units"] == false && comp["is_per_unit"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 1 
+                    comp["is_si_units"] = 1
                     comp["is_english_units"] = 0
                     comp["is_per_unit"] = 0
                 end
             end
-        end 
-    end 
-end 
+        end
+    end
+end
 
 function si_to_english!(data::Dict{String,<:Any}; id="0")
     rescale_flow        = x -> x * get_kgps_to_mmscfd_conversion_factor(data)
@@ -214,14 +214,14 @@ function si_to_english!(data::Dict{String,<:Any}; id="0")
     rescale_length      = m_to_miles
     rescale_diameter    = m_to_inches
     functions = Dict(
-        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
-        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
-        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
-        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
-        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
-        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
-        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
-        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure,
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure,
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure,
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow,
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow,
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow,
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow,
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass,
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
 
@@ -230,24 +230,24 @@ function si_to_english!(data::Dict{String,<:Any}; id="0")
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
-            end 
+            end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
                 comp["is_per_unit"] = data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
-            end 
+            end
             if comp["is_english_units"] == false && comp["is_si_units"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 0 
+                    comp["is_si_units"] = 0
                     comp["is_english_units"] = 1
                     comp["is_per_unit"] = 0
                 end
             end
-        end 
+        end
     end
-end 
+end
 
 function english_to_si!(data::Dict{String,<:Any}; id="0")
     rescale_flow        = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
@@ -257,14 +257,14 @@ function english_to_si!(data::Dict{String,<:Any}; id="0")
     rescale_length      = miles_to_m
     rescale_diameter    = inches_to_m
     functions = Dict(
-        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure, 
-        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure, 
-        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure, 
-        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow, 
-        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow, 
-        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow, 
-        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow, 
-        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass, 
+        "p_min" => rescale_pressure, "p_max" => rescale_pressure, "p_nominal" => rescale_pressure, "p" => rescale_pressure,
+        "inlet_p_min" => rescale_pressure, "inlet_p_max" => rescale_pressure, "outlet_p_min" => rescale_pressure, "outlet_p_max" => rescale_pressure,
+        "design_inlet_pressure" => rescale_pressure, "design_outlet_pressure" => rescale_pressure, "pressure_nominal" => rescale_pressure,
+        "length" => rescale_length, "diameter" => rescale_diameter, "f" => rescale_flow, "flow_min" => rescale_flow, "flow_max" => rescale_flow,
+        "withdrawal_max" => rescale_flow, "withdrawal_min" => rescale_flow, "injection_min" => rescale_flow, "injection_max" => rescale_flow,
+        "withdrawal_nominal" => rescale_flow, "injection_nominal" => rescale_flow, "fd" => rescale_flow, "fg" => rescale_flow, "ft" => rescale_flow,
+        "power_max" => rescale_flow, "design_flow_rate" => rescale_flow, "flow_injection_rate_min" => rescale_flow, "flow_injection_rate_max" => rescale_flow,
+        "flow_withdrawal_rate_min" => rescale_flow, "flow_withdrawal_rate_max" => rescale_flow, "capacity" => rescale_mass,
         "bid_price" => rescale_inv_flow, "offer_price" => rescale_inv_flow
     )
 
@@ -274,60 +274,60 @@ function english_to_si!(data::Dict{String,<:Any}; id="0")
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
-            end 
+            end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
                 comp["is_per_unit"] = data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
-            end 
+            end
             if comp["is_english_units"] == true && comp["is_si_units"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 1 
+                    comp["is_si_units"] = 1
                     comp["is_english_units"] = 0
                     comp["is_per_unit"] = 0
                 end
             end
-        end 
-    end 
+        end
+    end
 
-end 
+end
 
 "transforms data to si units"
 function make_si_units!(data::Dict{String,<:Any})
-    if get(data, "is_si_units", false) == true 
-        return 
-    end 
-    if get(data, "is_per_unit", false) == true 
+    if get(data, "is_si_units", false) == true
+        return
+    end
+    if get(data, "is_per_unit", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 pu_to_si!(data, id=i)
-            end 
-        else 
+            end
+        else
             pu_to_si!(data)
-        end 
-        if haskey(data, "time_step") 
+        end
+        if haskey(data, "time_step")
             rescale_time = x -> x * get_base_time(data)
             data["time_step"] = rescale_time(data["time_step"])
-        end 
+        end
         data["is_si_units"] = 1
         data["is_english_units"] = 0
         data["is_per_unit"] = 0
-    end 
-    if get(data, "is_english_units", false) == true 
+    end
+    if get(data, "is_english_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 english_to_si!(data, id=i)
-            end 
-        else 
-            english_to_si!(data) 
-        end 
+            end
+        else
+            english_to_si!(data)
+        end
         data["is_si_units"] = 1
         data["is_english_units"] = 0
         data["is_per_unit"] = 0
-    end 
-end 
+    end
+end
 
 "Transforms network data into english units"
 function make_english_units!(data::Dict{String,<:Any})
@@ -337,19 +337,19 @@ function make_english_units!(data::Dict{String,<:Any})
     if get(data, "is_per_unit", false) == true
         make_si_units!(data)
     end
-    if get(data, "is_si_units", false) == true 
+    if get(data, "is_si_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_english!(data, id=i)
-            end 
-        else 
-            si_to_english!(data) 
-        end 
+            end
+        else
+            si_to_english!(data)
+        end
         data["is_si_units"] = 0
         data["is_english_units"] = 1
         data["is_per_unit"] = 0
     end
-end 
+end
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String,<:Any})
@@ -363,19 +363,19 @@ function make_per_unit!(data::Dict{String,<:Any})
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_pu!(data, id=i)
-            end 
-        else 
-            si_to_pu!(data) 
-        end 
-        if haskey(data, "time_step") 
+            end
+        else
+            si_to_pu!(data)
+        end
+        if haskey(data, "time_step")
             rescale_time = x -> x / get_base_time(data)
             data["time_step"] = rescale_time(data["time_step"])
-        end 
+        end
         data["is_si_units"] = 0
         data["is_english_units"] = 0
         data["is_per_unit"] = 1
     end
-end 
+end
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String,<:Any})
