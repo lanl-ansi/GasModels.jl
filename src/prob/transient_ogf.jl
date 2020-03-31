@@ -52,25 +52,13 @@ function build_transient_ogf(gm::AbstractGasModel)
     end 
 
     # for n in time_points[1:end-1]
-    #     for i in ids(gm, n, :slack_junctions)
-    #         constraint_slack_nodal_density(gm, i, n)
-    #     end 
-    #     for i in ids(gm, n, :pipe)
-    #         constraint_pipe_physics(gm, i, n)
-    #     end 
-    #     for i in ids(gm, n, :compressor)
-    #         constraint_compressor_physics(gm, i, n)
-    #         constraint_compressor_power(gm, i, n)
-    #     end 
-    #     for i in ids(gm, n, :dispatchable_transfer)
-    #         constraint_transfer_separation(gm, i, n)
-    #     end 
-    #     for i in ids(gm, n, :slack_junctions)
-    #         constraint_slack_junction_mass_balance(gm, i, n)
-    #     end 
-    #     for i in ref(gm, n, :non_slack_junction_ids)
-    #         constraint_non_slack_junction_mass_balance(gm, i, n)
-    #     end
+    #     constraint_slack_nodal_density(gm, n)
+    #     constraint_pipe_physics(gm, n)
+    #     constraint_compressor_physics(gm, n)
+    #     constraint_compressor_power(gm, n)
+    #     constraint_transfer_separation(gm, n)
+    #     constraint_slack_junction_mass_balance(gm, n)
+    #     constraint_non_slack_junction_mass_balance(gm, n)
     # end 
 
     # objective_transient(gm)
