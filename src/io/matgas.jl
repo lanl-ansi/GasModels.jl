@@ -60,7 +60,7 @@ const _mg_ne_pipe_columns = [
     ("num_spatial_discretization_points", Int)
 ]
 
-const _mg_compressor_columns = [
+const _mg_ne_compressor_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
@@ -87,7 +87,7 @@ const _mg_compressor_columns = [
     ("peak_year", Int)
 ]
 
-const _mg_ne_compressor_columns = [
+const _mg_compressor_columns = [
     ("id", Int),
     ("fr_junction", Int),
     ("to_junction", Int),
