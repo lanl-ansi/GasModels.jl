@@ -41,64 +41,41 @@ function build_transient_ogf(gm::AbstractGasModel)
         var(gm, time_points[start_t], :transfer_withdrawal)
 
 
-    for n in time_points 
-        prev = n-1 
+    for n in time_points
+        prev = n - 1
         (n == start_t) && (prev = time_points[end-1])
         expression_density_derivative(gm, n, prev)
         expression_net_nodal_injection(gm, n)
         expression_net_nodal_edge_out_flow(gm, n)
         expression_non_slack_affine_derivative(gm, n)
         expression_compressor_power(gm, n)
-    end 
+    end
 
     for n in time_points[1:end-1]
         for i in ids(gm, n, :slack_junctions)
             constraint_slack_junction_density(gm, i, n)
             constraint_slack_junction_mass_balance(gm, i, n)
-        end 
+        end
 
         for i in ref(gm, n, :non_slack_junction_ids)
             constraint_non_slack_junction_mass_balance(gm, i, n)
-        end 
-        
+        end
+
         for i in ids(gm, n, :pipe)
             constraint_pipe_physics_ideal(gm, i, n)
-        end 
-        
-        # for i in ids(gm, n, :compressor)
-        #     constraint_compressor_physics(gm, i, n)
-        #     constraint_compressor_power(gm, i, n)
-        # end 
+        end
+
+        for i in ids(gm, n, :compressor)
+            constraint_compressor_physics(gm, i, n)
+            constraint_compressor_power(gm, i, n)
+        end
 
         for i in ids(gm, n, :dispatchable_transfer)
             constraint_transfer_separation(gm, i, n)
         end
-    end 
+    end
 
     # objective_transient(gm)
-
-    # constraints
-    for n in time_points[1:end-1]
-
-        # compressor physics
-        for (i, compressor) in ref(gm, n, :compressor)
-            p_fr = var(gm, n, :density, compressor["fr_junction"])
-            p_to = var(gm, n, :density, compressor["to_junction"])
-            alpha = var(gm, n, :compressor_ratio, i)
-            f = var(gm, n, :compressor_flow, i)
-            JuMP.@constraint(gm.model, p_to == alpha * p_fr)
-            JuMP.@constraint(gm.model, f * (p_fr - p_to) <= 0)
-        end
-
-        # compressor power constraint
-        for (i, compressor) in ref(gm, n, :compressor)
-            JuMP.@NLconstraint(
-                gm.model,
-                var(gm, n, :compressor_power)[i] <= compressor["power_max"]
-            )
-        end
-
-    end
 
     # objective (load shed objective added for now)
     m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio]
@@ -175,6 +152,10 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             pipe["flux_min"] = -sqrt((to_p_max^2 - fr_p_min^2) / pipe["resistance"])
             pipe["flux_max"] = sqrt((fr_p_max^2 - to_p_min^2) / pipe["resistance"])
         end
+
+        for (i, pipe) in get(nw_ref, :original_pipe, [])
+            pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
+        end 
         arcs_from = [
             (i, pipe["fr_junction"], pipe["to_junction"], false)
             for (i, pipe) in nw_ref[:pipe]
