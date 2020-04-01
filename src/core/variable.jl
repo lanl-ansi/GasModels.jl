@@ -194,10 +194,10 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :delivery, :fl, ids(gm, nw, :dispatchable_delivery), fl)
+        _IM.sol_component_value(gm, nw, :delivery, :fd, ids(gm, nw, :dispatchable_delivery), fl)
         if haskey(gm.data, "standard_density")
             sol_ql = Dict(i => fl[i] / gm.data["standard_density"] for i in ids(gm, nw, :dispatchable_delivery))
-            _IM.sol_component_value(gm, nw, :delivery, :ql, ids(gm, nw, :dispatchable_delivery), sol_ql)
+            _IM.sol_component_value(gm, nw, :delivery, :qd, ids(gm, nw, :dispatchable_delivery), sol_ql)
         end
     end
 end
