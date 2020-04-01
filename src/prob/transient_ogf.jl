@@ -53,33 +53,32 @@ function build_transient_ogf(gm::AbstractGasModel)
 
     for n in time_points[1:end-1]
         for i in ids(gm, n, :slack_junctions)
-            constraint_slack_node_density(gm, i, n)
+            constraint_slack_junction_density(gm, i, n)
+            constraint_slack_junction_mass_balance(gm, i, n)
         end 
-        # constraint_slack_nodal_density(gm, n)
-        # constraint_pipe_physics(gm, n)
-        # constraint_compressor_physics(gm, n)
-        # constraint_compressor_power(gm, n)
-        # constraint_transfer_separation(gm, n)
-        # constraint_slack_junction_mass_balance(gm, n)
-        # constraint_non_slack_junction_mass_balance(gm, n)
+
+        for i in ref(gm, n, :non_slack_junction_ids)
+            constraint_non_slack_junction_mass_balance(gm, i, n)
+        end 
+        
+        for i in ids(gm, n, :pipe)
+            constraint_pipe_physics_ideal(gm, i, n)
+        end 
+        
+        # for i in ids(gm, n, :compressor)
+        #     constraint_compressor_physics(gm, i, n)
+        #     constraint_compressor_power(gm, i, n)
+        # end 
+
+        # for i in ids(gm, n, :dispatchable_transfer)
+        #     constraint_transfer_separation(gm, i, n)
+        # end
     end 
 
     # objective_transient(gm)
 
     # constraints
     for n in time_points[1:end-1]
-
-        # pipe physics
-        for (i, pipe) in ref(gm, n, :pipe)
-            p_fr = var(gm, n, :density, pipe["fr_junction"])
-            p_to = var(gm, n, :density, pipe["to_junction"])
-            f = var(gm, n, :pipe_flux, i)
-            resistance =
-                pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] /
-                pipe["diameter"]
-            JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0)
-
-        end
 
         # compressor physics
         for (i, compressor) in ref(gm, n, :compressor)
@@ -107,21 +106,6 @@ function build_transient_ogf(gm::AbstractGasModel)
             JuMP.@constraint(gm.model, t == d - s)
         end
 
-        # mass balance constraints for slack junctions 
-        con(gm, n)[:slack_junctions_mass_balance] = JuMP.@constraint(
-            gm.model,
-            [i in keys(ref(gm, n, :slack_junctions))],
-            var(gm, n, :net_nodal_injection)[i] == var(gm, n, :net_nodal_edge_out_flow)[i]
-        )
-
-        # mass balance constraints for non-slack junctions 
-        con(gm, n)[:non_slack_junctions_mass_balance] = JuMP.@constraint(
-            gm.model,
-            [i in ref(gm, n, :non_slack_junction_ids)],
-            var(gm, n, :non_slack_derivative)[i] +
-            4 * (var(gm, n, :net_nodal_edge_out_flow)[i] - var(gm, n, :net_nodal_injection)[i]) ==
-            0.0
-        )
 
     end
 
