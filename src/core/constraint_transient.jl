@@ -23,7 +23,7 @@ function constraint_slack_junction_mass_balance(
 end
 
 "non-slack junction mass balance"
-function constraint_slack_junction_mass_balance(
+function constraint_non_slack_junction_mass_balance(
     gm::AbstractGasModel,
     nw::Int,
     slack_junction_id::Int,
@@ -52,3 +52,15 @@ function constraint_pipe_physics_ideal(
     con(gm, nw, :pipe_physics_ideal)[pipe_id] =
         JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0)
 end
+
+"constraint transfer"
+function constraint_transfer_separation(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+    if !haskey(gm.con[:nw][nw], :effective_transfer_withdrwal)
+        con(gm, nw)[:effective_transfer_withdrawal] = Dict{Int, JuMP.ConstraintRef}()
+    end 
+    s = var(gm, nw, :transfer_injection)[i]
+    d = var(gm, nw, :transfer_withdrawal)[i]
+    t = var(gm, nw, :transfer_effective)[i]
+
+    con(gm, nw, :effective_transfer_withdrawal)[i] = JuMP.@constraint(gm.model, t == d - s)
+end 
