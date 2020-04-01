@@ -8,9 +8,6 @@ end
 
 "construct the gas flow feasbility problem"
 function post_ne(gm::AbstractGasModel; kwargs...)
-    kwargs = Dict(kwargs)
-    obj_normalization = haskey(kwargs, :obj_normalization) ? kwargs[:obj_normalization] : 1.0
-
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -22,7 +19,7 @@ function post_ne(gm::AbstractGasModel; kwargs...)
     variable_transfer_mass_flow(gm)
 
     # expansion cost objective
-    objective_min_ne_cost(gm; normalization =  obj_normalization)
+    objective_min_ne_cost(gm)
 
     for i in ids(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)

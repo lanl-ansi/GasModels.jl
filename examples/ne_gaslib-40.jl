@@ -1,3 +1,14 @@
+@testset "test nlp ne gaslib 40" begin
+
+    @testset "gaslib 40 150% case" begin
+        println("gaslib 40 - NLP 150%")
+        result = run_ne("../examples/data/matgas/gaslib-40-150.m", NLPGasModel, minlp_solver)
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == :LocalInfeasible
+    end
+
+end
+
+
 @testset "test minlp ne gaslib 40" begin
     @testset "gaslib 40 5% case" begin
         println("gaslib 40 - MINLP 5%")

@@ -83,7 +83,7 @@
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
-            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), (108.24469414437586 * (gas_data["base_pressure"]^2/gas_data["base_flow"]^2)) / 1e5^2; atol=1e-4)
+            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), 2.3023057843927686; atol=1e-4)
         end
     end
 

@@ -26,6 +26,7 @@ couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "couenne.exe")
 bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "bonmin.exe")
 
 misocp_solver = gurobi_solver
+mip_solver    = gurobi_solver
 
 if scip_solver != nothing
     minlp_solver = scip_solver
@@ -34,11 +35,8 @@ else
 end
 
 
-
-#include("gf.jl")
-#include("ne_minlp.jl")
+include("gf.jl")
+#include("ne_A3.jl")
 include("ne_gaslib-40.jl")
 include("ne_gaslib-135.jl")
 include("ne_gaslib-582.jl")
-#include("ne_misocp.jl")
-#include("ne_nlp.jl")

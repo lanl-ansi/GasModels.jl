@@ -1,3 +1,22 @@
+@testset "test nlp ne gaslib 135" begin
+
+    @testset "gaslib 135 5% case" begin
+        println("gaslib 135 - NLP 5%")
+        result = run_ne("../examples/data/matgas/gaslib-135-5.m", NLPGasModel, minlp_solver; )
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 0.0; atol = 1e-2)
+    end
+
+    @testset "gaslib 135 200% case" begin
+        println("gaslib 135 - NLP 200%")
+        result = run_ne("../examples/data/matgas/gaslib-135-200.m", NLPGasModel, minlp_solver)
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == :LocalInfeasible
+    end
+
+end
+
+
+
 @testset "test minlp ne gaslib 135" begin
 
     @testset "gaslib 135 5% case" begin
