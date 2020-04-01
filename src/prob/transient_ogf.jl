@@ -70,9 +70,9 @@ function build_transient_ogf(gm::AbstractGasModel)
         #     constraint_compressor_power(gm, i, n)
         # end 
 
-        # for i in ids(gm, n, :dispatchable_transfer)
-        #     constraint_transfer_separation(gm, i, n)
-        # end
+        for i in ids(gm, n, :dispatchable_transfer)
+            constraint_transfer_separation(gm, i, n)
+        end
     end 
 
     # objective_transient(gm)
@@ -97,15 +97,6 @@ function build_transient_ogf(gm::AbstractGasModel)
                 var(gm, n, :compressor_power)[i] <= compressor["power_max"]
             )
         end
-
-        # transfer separation 
-        for (i, transfer) in ref(gm, n, :dispatchable_transfer)
-            s = var(gm, n, :transfer_injection)[i]
-            d = var(gm, n, :transfer_withdrawal)[i]
-            t = var(gm, n, :transfer_effective)[i]
-            JuMP.@constraint(gm.model, t == d - s)
-        end
-
 
     end
 
