@@ -51,26 +51,23 @@ function build_transient_ogf(gm::AbstractGasModel)
         expression_compressor_power(gm, n)
     end 
 
-    # for n in time_points[1:end-1]
-    #     constraint_slack_nodal_density(gm, n)
-    #     constraint_pipe_physics(gm, n)
-    #     constraint_compressor_physics(gm, n)
-    #     constraint_compressor_power(gm, n)
-    #     constraint_transfer_separation(gm, n)
-    #     constraint_slack_junction_mass_balance(gm, n)
-    #     constraint_non_slack_junction_mass_balance(gm, n)
-    # end 
+    for n in time_points[1:end-1]
+        for i in ids(gm, n, :slack_junctions)
+            constraint_slack_node_density(gm, i, n)
+        end 
+        # constraint_slack_nodal_density(gm, n)
+        # constraint_pipe_physics(gm, n)
+        # constraint_compressor_physics(gm, n)
+        # constraint_compressor_power(gm, n)
+        # constraint_transfer_separation(gm, n)
+        # constraint_slack_junction_mass_balance(gm, n)
+        # constraint_non_slack_junction_mass_balance(gm, n)
+    end 
 
     # objective_transient(gm)
 
     # constraints
     for n in time_points[1:end-1]
-        # slack node density fixed to a certain value
-        con(gm, n)[:slack_density] = JuMP.@constraint(
-            gm.model,
-            [i in keys(ref(gm, n, :slack_junctions))],
-            var(gm, n, :density)[i] == ref(gm, n, :slack_junctions, i)["p_nominal"]
-        )
 
         # pipe physics
         for (i, pipe) in ref(gm, n, :pipe)
