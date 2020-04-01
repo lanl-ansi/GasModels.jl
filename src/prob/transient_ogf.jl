@@ -75,56 +75,14 @@ function build_transient_ogf(gm::AbstractGasModel)
         end
     end
 
-    # objective_transient(gm)
-
-    # objective (load shed objective added for now)
-    m = (gm.ref[:specific_heat_capacity_ratio] - 1) / gm.ref[:specific_heat_capacity_ratio]
-    W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
     econ_weight = gm.ref[:economic_weighting]
-    load_shed_expressions = []
-    compressor_power_expressions = []
-    for n in time_points
-        for (i, receipt) in ref(gm, n, :dispatchable_receipt)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    receipt["offer_price"] * var(gm, n, :injection)[i]
-                )
-            )
-        end
-        for (i, delivery) in ref(gm, n, :dispatchable_delivery)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    -delivery["bid_price"] * var(gm, n, :withdrawal)[i]
-                )
-            )
-        end
-        for (i, transfer) in ref(gm, n, :dispatchable_transfer)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    transfer["offer_price"] * var(gm, n, :transfer_injection)[i] -
-                    transfer["bid_price"] * var(gm, n, :transfer_withdrawal)[i]
-                )
-            )
-        end
-        for (i, compressor) in ref(gm, n, :compressor)
-            push!(compressor_power_expressions, var(gm, n, :compressor_power)[i])
-        end
+    if econ_weight == 1.0
+        objective_transient_load_shed(gm, time_points)
+    elseif econ_weight == 0.0 
+        objective_transient_compressor_power(gm, time_points)
+    else 
+        objective_transient_economic(gm, time_points)
     end
-    JuMP.@NLobjective(
-        gm.model,
-        Min,
-        econ_weight *
-        sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
-        (1 - econ_weight) *
-        sum(compressor_power_expressions[i] for i = 1:length(compressor_power_expressions))
-    )
-
 end
 
 ""
