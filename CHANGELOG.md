@@ -8,6 +8,10 @@
 ## staged
 
 - Update to InfrastructureModels solution building (breaking)
+- Add support for Memento v0.13, v1.0
+- Introduce transient optimal gas flow formulation (transient_ogf)
+- Support for transient optimization problem restricted to component types: junction, pipe, compressor, receipt, delivery, and transfers; objective support: load shed, compressor power, and linear combination of both.
+- Add multi-network and transient_ogf unit tests 
 
 ## v0.6
 
