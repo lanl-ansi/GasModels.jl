@@ -55,3 +55,27 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = g
         pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] / pipe["diameter"]
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
+
+"compressor physics"
+function constraint_compressor_physics(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+    if !haskey(gm.con[:nw][nw], :compressor_physics_boost)
+        con(gm, nw)[:compressor_physics_boost] = Dict{Int,JuMP.ConstraintRef}()
+    end
+    if !haskey(gm.con[:nw][nw], :compressor_physics_flow)
+        con(gm, nw)[:compressor_physics_flow] = Dict{Int,JuMP.ConstraintRef}()
+    end
+    compressor = ref(gm, nw, :compressor, i)
+    fr_junction = compressor["fr_junction"]
+    to_junction = compressor["to_junction"]
+    constraint_compressor_physics(gm, nw, i, fr_junction, to_junction)
+end
+
+"compressor power"
+function constraint_compressor_power(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+    if !haskey(gm.con[:nw][nw], :compressor_power)
+        con(gm, nw)[:compressor_power] = Dict{Int,JuMP.ConstraintRef}()
+    end
+    compressor_power = var(gm, nw, :compressor_power)[i]
+    power_max = ref(gm, nw, :compressor, i)["power_max"]
+    constraint_compressor_power(gm, nw, i, compressor_power, power_max)
+end

@@ -43,17 +43,17 @@ mgc.compressor = [
 %% transfer data
 % id junction_id withdrawal_min withdrawal_max withdrawal_nominal is_dispatchable status bid_price offer_price exchange_point_name pipeline_name other_pipeline_name design_pressure meter_capacity daily_scheduled_flow
 mgc.transfer = [
-1  2  0  30 0  1  1  3.0   2.0   'LDC_A'
-2  3  0  40 0  1  1  4.0   2.0   'LDC_B'
-3  4  0  20 0  1  1  5.0   2.0   'LDC_C'
-4  3  0  30 0  1  1  2.5   2.0   'PP_A'
-5  4  0  10 0  1  1  3.0   2.0   'PP_B'
+1  2  0  30.0 0  1  1  3.0   2.0   'LDC_A'
+2  3  0  40.0 0  1  1  4.0   2.0   'LDC_B'
+3  4  0  20.0 0  1  1  5.0   2.0   'LDC_C'
+4  3  0  30.0 0  1  1  2.5   2.0   'PP_A'
+5  4  0  10.0 0  1  1  3.0   2.0   'PP_B'
 ];
 
 %% receipt data
 % id junction_id injection_min injection_max injection_nominal is_dispatchable status offer_price name company_name daily_scheduled_flow design_capacity operating_capacity is_firm edi_id
 mgc.receipt = [
-1    1    0    1000    500    1     1  1.25
+1    1    0    1000.0    500    1     1  1.25
 ];
 
 %% delivery data

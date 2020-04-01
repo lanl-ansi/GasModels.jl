@@ -21,7 +21,7 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
                 "component_id" => component_id,
                 "parameter" => parameter,
                 "value" => value,
-            ),
+            )
         )
     end
 
