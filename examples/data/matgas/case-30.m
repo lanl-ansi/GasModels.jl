@@ -48,7 +48,7 @@ mgc.junction = [
 %% pipeline data
 % id f_junction t_junction diameter length friction_factor p_min p_max status is_bidirectional pipeline_name num_spatial_discretization_points
 mgc.pipe = [
-1   26  2	0.9144	100000	0.01    3447378.645 5515805.832	1  1  'synthetic30' 1
+1   26  2	  0.9144	100000	0.01    3447378.645 5515805.832	1  1  'synthetic30' 1
 2   2   3   0.635   30000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 3   28  4   0.635   5000    0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
 4   4   5   0.635   15000   0.01    3447378.645 5515805.832 1  1  'synthetic30' 1
@@ -77,11 +77,11 @@ mgc.pipe = [
 %% compressor data
 % id f_junction t_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name total_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volume design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
 mgc.compressor = [
-1	1	26	1	1.40    2609950     0	168.2844    3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
-2	2   27  1   1.40    1864250     0   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
-3   3   28  1   1.40    1118550     0   96.16256068 3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
-4   14  29  1   1.40    745700      0   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
-5   20  30  1   1.40    745700      0   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
+1	  1	  26	1	  1.40    2609950     -168.2844	    168.2844    3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
+2	  2   27  1   1.40    1864250     -144.243841   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
+3   3   28  1   1.40    1118550     -96.16256068  96.16256068 3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
+4   14  29  1   1.40    745700      -144.243841   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
+5   20  30  1   1.40    745700      -144.243841   144.243841  3447378.645 5515805.832  3447378.645 5515805.832  1  10 2
 ];
 
 %% transfer
