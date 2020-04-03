@@ -1301,7 +1301,7 @@ mgc.valve = [
 %% receipt data
 % id	junction_id	injection_min	injection_max	injection_nominal	is_dispatchable	status
 mgc.receipt = [
-3	  3	  0	131.2878	131.2878	0	1
+3	  3	  0	131.2878	131.2878	1	1
 5	  5	  0	38.3333	  38.3333	  0	1
 6	  6	  0	337.0556	337.0556	0	1
 7	  7	  0	34.6417	  34.6417	  0	1

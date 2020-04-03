@@ -15,7 +15,6 @@ function post_ls(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
 
-
     objective_max_load(gm)
 
     for i in ids(gm,:pipe)
