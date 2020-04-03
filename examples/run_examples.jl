@@ -31,7 +31,7 @@ mip_solver    = gurobi_solver
 if scip_solver != nothing
     minlp_solver = scip_solver
 else
-#    minlp_solver = couenne_solver
+    minlp_solver = couenne_solver
 end
 
 
