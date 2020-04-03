@@ -9,7 +9,8 @@ julia:
 codecov: true
 jobs:
   allow_failures:
-    - julia: nightly
+    - julia:
+      env: CAN_FAIL=true 
   include:
     - stage: "Documentation"
       julia: 1.3
