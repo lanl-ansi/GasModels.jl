@@ -99,7 +99,7 @@ mgc.compressor = [
 %% receipt data
 % id	junction_id	injection_min	injection_max	injection_nominal	is_dispatchable	status
 mgc.receipt = [
-1	  1	  103.69	135.53	127.55	0	1
+1	  1	  103.69	135.53	127.55	1	1
 2	  2	  0	      98.19	  98.19	  0	1
 5	  5	  0	      56.11	  32.91	  0	1
 8	  8	  237.77	257.32	257.32	0	1

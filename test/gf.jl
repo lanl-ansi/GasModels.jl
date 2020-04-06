@@ -12,17 +12,6 @@
             check_pressure_status(result["solution"], gm)
             check_compressor_ratio(result["solution"], gm)
         end
-        # @testset "gaslib 135 misocp gf" begin
-        #     # THIS TEST IS TIMING OUT ON LINUX in Travis
-        #    @info "Testing gaslib 135 misocp gf"
-        #    result = run_gf("../test/data/gaslib-135.m", MISOCPGasModel, cvx_minlp_solver)
-        #    @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        #    @test isapprox(result["objective"], 0; atol = 1e-6)
-        #    data = GasModels.parse_file("../test/data/gaslib-135.m")
-        #    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.post_gf)
-        #    check_pressure_status(result["solution"], gm)
-        #    check_compressor_ratio(result["solution"], gm)
-        # end
     end
 
     @testset "test mip gf" begin

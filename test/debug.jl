@@ -253,10 +253,6 @@
     @test isa(set, MOI.LessThan{Float64})
     @test isapprox(set.upper, 0.0; atol = 1e-4)
     @test length(func.terms) == 1
-    # c = gm.model.nlp_data.nlconstr[ref.index.value]
-    # @test JuMP._sense(c) == :<=
-    # @test isapprox(c.ub, 0.0; atol = 1e-4)
-    # @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth4][222]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -267,10 +263,6 @@
     @test isa(set, MOI.LessThan{Float64})
     @test isapprox(set.upper, 0.0; atol = 1e-4)
     @test length(func.terms) == 1
-    # c = gm.model.nlp_data.nlconstr[ref.index.value]
-    # @test JuMP._sense(c) == :<=
-    # @test isapprox(c.ub, 0.0; atol = 1e-4)
-    # @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth3][222]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -281,10 +273,6 @@
     @test isa(set, MOI.GreaterThan{Float64})
     @test isapprox(set.lower, 0.0; atol = 1e-4)
     @test length(func.terms) == 1
-    # c = gm.model.nlp_data.nlconstr[ref.index.value]
-    # @test JuMP._sense(c) == :>=
-    # @test isapprox(c.lb, 0.0; atol = 1e-4)
-    # @test length(c.terms.nd) == 17
 
     # p[302] - p[83] == 0
     ref = gm.con[:nw][gm.cnw][:short_pipe_pressure_drop][423]
