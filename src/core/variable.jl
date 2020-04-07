@@ -351,13 +351,13 @@ end
 
 
 "Variable Set: variables associated with compression ratios"
-function variable_compression_ratio(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_compression_ratio_value(gm,nw,bounded=bounded,report=report)
+function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    variable_compressor_ratio_sqr_value(gm,nw,bounded=bounded,report=report)
 end
 
 
 "variables associated with compression ratio values"
-function variable_compression_ratio_value(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_compressor_ratio_sqr_value(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     rsqr = gm.var[:nw][nw][:r] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:compressor])],
         base_name="$(nw)_r",

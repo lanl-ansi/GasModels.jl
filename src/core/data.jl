@@ -215,17 +215,16 @@ const _params_for_unit_conversions = Dict(
     ],
 )
 
-"Transforms data to si units"
-function si_to_pu!(data::Dict{String,<:Any}; id = "0")
-    rescale_flow = x -> x / get_base_flow(data)
-    rescale_inv_flow = x -> x * get_base_flow(data)
-    rescale_pressure = x -> x / get_base_pressure(data)
-    rescale_density = x -> x / get_base_density(data)
-    rescale_length = x -> x / get_base_length(data)
-    rescale_time = x -> x / get_base_time(data)
-    rescale_mass = x -> x / get_base_flow(data) / get_base_time(data)
-    rescale_diameter = x -> x / get_base_diameter(data)
-    functions = Dict(
+function _rescale_functions(
+    rescale_pressure::Function,
+    rescale_density::Function,
+    rescale_length::Function,
+    rescale_diameter::Function,
+    rescale_flow::Function,
+    rescale_mass::Function,
+    rescale_inv_flow::Function,
+)::Dict{String,Function}
+    Dict{String,Function}(
         "p_min" => rescale_pressure,
         "p_max" => rescale_pressure,
         "p_nominal" => rescale_pressure,
@@ -269,6 +268,27 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
         "bid_price" => rescale_inv_flow,
         "offer_price" => rescale_inv_flow,
     )
+end
+"Transforms data to si units"
+function si_to_pu!(data::Dict{String,<:Any}; id = "0")
+    rescale_flow = x -> x / get_base_flow(data)
+    rescale_inv_flow = x -> x * get_base_flow(data)
+    rescale_pressure = x -> x / get_base_pressure(data)
+    rescale_density = x -> x / get_base_density(data)
+    rescale_length = x -> x / get_base_length(data)
+    rescale_time = x -> x / get_base_time(data)
+    rescale_mass = x -> x / get_base_flow(data) / get_base_time(data)
+    rescale_diameter = x -> x / get_base_diameter(data)
+    functions = _rescale_functions(
+        rescale_pressure,
+        rescale_density,
+        rescale_length,
+        rescale_diameter,
+        rescale_flow,
+        rescale_mass,
+        rescale_inv_flow,
+    )
+
     nw_data = (id == "0") ? data : data["nw"][id]
     _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
@@ -305,50 +325,16 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_time = x -> x * get_base_time(data)
     rescale_mass = x -> x * get_base_flow(data) * get_base_time(data)
     rescale_diameter = x -> x * get_base_diameter(data)
-    functions = Dict(
-        "p_min" => rescale_pressure,
-        "p_max" => rescale_pressure,
-        "p_nominal" => rescale_pressure,
-        "p" => rescale_pressure,
-        "inlet_p_min" => rescale_pressure,
-        "inlet_p_max" => rescale_pressure,
-        "outlet_p_min" => rescale_pressure,
-        "outlet_p_max" => rescale_pressure,
-        "pressure" => rescale_pressure,
-        "density" => rescale_density,
-        "design_inlet_pressure" => rescale_pressure,
-        "design_outlet_pressure" => rescale_pressure,
-        "pressure_nominal" => rescale_pressure,
-        "length" => rescale_length,
-        "diameter" => rescale_diameter,
-        "f" => rescale_flow,
-        "flow_min" => rescale_flow,
-        "flow_max" => rescale_flow,
-        "flow" => rescale_flow,
-        "withdrawal" => rescale_flow,
-        "injection" => rescale_flow,
-        "power" => rescale_flow,
-        "flux" => rescale_flow,
-        "withdrawal_max" => rescale_flow,
-        "withdrawal_min" => rescale_flow,
-        "injection_min" => rescale_flow,
-        "injection_max" => rescale_flow,
-        "net_injection" => rescale_flow,
-        "withdrawal_nominal" => rescale_flow,
-        "injection_nominal" => rescale_flow,
-        "fd" => rescale_flow,
-        "fg" => rescale_flow,
-        "ft" => rescale_flow,
-        "power_max" => rescale_flow,
-        "design_flow_rate" => rescale_flow,
-        "flow_injection_rate_min" => rescale_flow,
-        "flow_injection_rate_max" => rescale_flow,
-        "flow_withdrawal_rate_min" => rescale_flow,
-        "flow_withdrawal_rate_max" => rescale_flow,
-        "capacity" => rescale_mass,
-        "bid_price" => rescale_inv_flow,
-        "offer_price" => rescale_inv_flow,
+    functions = _rescale_functions(
+        rescale_pressure,
+        rescale_density,
+        rescale_length,
+        rescale_diameter,
+        rescale_flow,
+        rescale_mass,
+        rescale_inv_flow,
     )
+
     nw_data = (id == "0") ? data : data["nw"][id]
     _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
@@ -381,51 +367,18 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_kgps_to_mmscfd_conversion_factor(data)
     rescale_inv_flow = x -> x / get_kgps_to_mmscfd_conversion_factor(data)
     rescale_mass = x -> x / get_mmscfd_to_kgps_conversion_factor(data) / 86400.0
+    rescale_density = x -> x
     rescale_pressure = pascal_to_psi
     rescale_length = m_to_miles
     rescale_diameter = m_to_inches
-    functions = Dict(
-        "p_min" => rescale_pressure,
-        "p_max" => rescale_pressure,
-        "p_nominal" => rescale_pressure,
-        "p" => rescale_pressure,
-        "inlet_p_min" => rescale_pressure,
-        "inlet_p_max" => rescale_pressure,
-        "outlet_p_min" => rescale_pressure,
-        "outlet_p_max" => rescale_pressure,
-        "pressure" => rescale_pressure,
-        "design_inlet_pressure" => rescale_pressure,
-        "design_outlet_pressure" => rescale_pressure,
-        "pressure_nominal" => rescale_pressure,
-        "length" => rescale_length,
-        "diameter" => rescale_diameter,
-        "f" => rescale_flow,
-        "flow_min" => rescale_flow,
-        "flow_max" => rescale_flow,
-        "flow" => rescale_flow,
-        "withdrawal" => rescale_flow,
-        "injection" => rescale_flow,
-        "power" => rescale_flow,
-        "flux" => rescale_flow,
-        "withdrawal_max" => rescale_flow,
-        "withdrawal_min" => rescale_flow,
-        "injection_min" => rescale_flow,
-        "injection_max" => rescale_flow,
-        "net_injection" => rescale_flow,
-        "withdrawal_nominal" => rescale_flow,
-        "injection_nominal" => rescale_flow,
-        "fd" => rescale_flow,
-        "fg" => rescale_flow,
-        "ft" => rescale_flow,
-        "power_max" => rescale_flow,
-        "design_flow_rate" => rescale_flow,
-        "flow_injection_rate_min" => rescale_flow,
-        "flow_injection_rate_max" => rescale_flow,
-        "flow_withdrawal_rate_min" => rescale_flow,
-        "flow_withdrawal_rate_max" => rescale_flow,
-        "capacity" => rescale_mass,
-        "bid_price" => rescale_inv_flow,
-        "offer_price" => rescale_inv_flow,
+    functions = _rescale_functions(
+        rescale_pressure,
+        rescale_density,
+        rescale_length,
+        rescale_diameter,
+        rescale_flow,
+        rescale_mass,
+        rescale_inv_flow,
     )
 
     nw_data = (id == "0") ? data : data["nw"][id]
@@ -953,7 +906,7 @@ function _calc_pipe_resistance(
     L = pipe["length"] * base_length
 
     a_sqr = sound_speed^2
-    A = (pi * D^2) / 4 # cross sectional area
+    A = pipe["area"] # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
     return resistance
 end
