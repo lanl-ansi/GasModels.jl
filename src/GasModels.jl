@@ -10,6 +10,9 @@ module GasModels
     import Printf
     import MathOptInterface
 
+    using Dates
+    using Dierckx
+
     const MOI = MathOptInterface
     const MOIU = MathOptInterface.Utilities
 
@@ -35,7 +38,10 @@ module GasModels
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
         "temperature", "sound_speed", "compressibility_factor", "R",
         "base_pressure", "base_length", "base_flow", "base_time",
-        "units", "is_per_unit", "is_english_units", "is_si_units", "time_discretization_points", "gas_molar_mass"])
+        "base_flux", "base_density", "base_diameter",
+        "units", "is_per_unit", "is_english_units", "is_si_units", 
+        "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
+        "economic_weighting"])
 
     include("io/json.jl")
     include("io/common.jl")
@@ -48,6 +54,10 @@ module GasModels
     include("core/unit_converters.jl")
     include("core/data.jl")
     include("core/variable.jl")
+    include("core/transient_variable.jl")
+    include("core/transient_expression.jl")
+    include("core/constraint_transient.jl")
+    include("core/constraint_template_transient.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")
     include("core/constraint_mi.jl")
@@ -67,6 +77,7 @@ module GasModels
     include("prob/ls.jl")
     include("prob/nels.jl")
     include("prob/ogf.jl")
+    include("prob/transient_ogf.jl")
 
     include("io/diagnostics.jl")
 

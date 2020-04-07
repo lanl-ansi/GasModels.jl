@@ -1,10 +1,12 @@
 name = "GasModels"
 uuid = "5e113713-6c35-5477-b766-e1109486666f"
-authors = ["Russell Bent <rbent@lanl.gov>", "Kaarthik Sundar <kaarthik@lanl.gov>"]
+authors = ["Russell Bent <rbent@lanl.gov>", "Kaarthik Sundar <kaarthik@lanl.gov>", "David Fobes <dfobes@lanl.gov>"]
 repo = "https://github.com/lanl-ansi/GasModels.jl.git"
 version = "0.7.0"
 
 [deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
@@ -17,10 +19,10 @@ Cbc = ">= 0.4"
 InfrastructureModels = "~0.4.3"
 Ipopt = ">= 0.4"
 JSON = "~0.18, ~0.19, ~0.20, ~0.21"
-JuMP = "~0.19.1, ~0.20, ~0.21"
+JuMP = "~0.21"
 Juniper = "~0.4, ~0.5, ~0.6"
 MathOptInterface = "~0.8.4, ~0.9"
-Memento = "~0.10, ~0.11, ~0.12"
+Memento = "~0.10, ~0.11, ~0.12, ~0.13, ~1.0"
 julia = "~1"
 
 [extras]

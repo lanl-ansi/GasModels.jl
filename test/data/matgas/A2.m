@@ -15,7 +15,6 @@ mgc.base_length                  = 5000;  % m
 mgc.is_per_unit                  = 0;
 mgc.sound_speed                  = 317.353652234;
 mgc.base_flow                    = 535.85648148148;
-mgc.objective_normalization      = 1.0;
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon
@@ -140,17 +139,10 @@ mgc.ne_pipe = [
 ];
 
 %% ne_compressor data
-% id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	operating_cost	directionality
+% id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	construction_cost operating_cost	directionality
 mgc.ne_compressor = [
-26	211	21	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	10	2
-30	24	241	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	10	2
-];
-
-%% ne_compressor data (extended)
-%column_names% construction_cost
-mgc.ne_compressor_data = [
-	1500.0
-	1500.0
+26	211	21	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	1500.0 10	2
+30	24	241	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	1500.0 10	2
 ];
 
 end
