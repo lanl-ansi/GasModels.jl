@@ -65,10 +65,10 @@ function parse_files(
 
     check_global_parameters(static_data)
 
-    prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
+    _prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
     transient_data = parse_transient(transient_file)
     make_si_units!(transient_data, static_data)
-    time_series_block = create_time_series_block(
+    time_series_block = _create_time_series_block(
         transient_data,
         total_time = total_time,
         time_step = time_step,
@@ -82,7 +82,8 @@ function parse_files(
     return mn_data
 end
 
-function get_max_pipe_id(pipes::Dict{String,Any})::Int
+"function to get the maximum pipe id"
+function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     max_pipe_id = 0
     for (key, pipe) in pipes
         max_pipe_id = (pipe["id"] > max_pipe_id) ? pipe["id"] : max_pipe_id
@@ -90,11 +91,12 @@ function get_max_pipe_id(pipes::Dict{String,Any})::Int
     return max_pipe_id
 end
 
-function prep_transient_data!(
+" discretizes the pipes and takes care of renumbering junctions and pipes"
+function _prep_transient_data!(
     data::Dict{String,Any};
     spatial_discretization::Float64 = 10000.0,
 )
-    max_pipe_id = get_max_pipe_id(data["pipe"])
+    max_pipe_id = _get_max_pipe_id(data["pipe"])
     num_sub_pipes = Dict()
     short_pipes = []
     long_pipes = []
@@ -238,7 +240,8 @@ function prep_transient_data!(
     end
 end
 
-function create_time_series_block(
+"creates a time series block from the csv data which is later used create a multinetwork data"
+function _create_time_series_block(
     data::Array{Dict{String,Any},1};
     total_time = 86400.0,
     time_step = 3600.0,

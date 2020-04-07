@@ -129,7 +129,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
     )
 end
 
-function objective_transient_economic(gm::AbstractGasModel, time_points)
+function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
     econ_weight = gm.ref[:economic_weighting]
     load_shed_expressions = []
     compressor_power_expressions = []
@@ -178,7 +178,7 @@ function objective_transient_economic(gm::AbstractGasModel, time_points)
     end
 end
 
-function objective_transient_load_shed(gm::AbstractGasModel, time_points)
+function objective_min_transient_load_shed(gm::AbstractGasModel, time_points)
     load_shed_expression = 0
     for nw in time_points
         for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
@@ -197,7 +197,7 @@ function objective_transient_load_shed(gm::AbstractGasModel, time_points)
     JuMP.@objective(gm.model, Min, load_shed_expression)
 end
 
-function objective_transient_compressor_power(gm::AbstractGasModel, time_points)
+function objective_min_transient_compressor_power(gm::AbstractGasModel, time_points)
     compressor_power_expressions = []
     for nw in time_points
         for (i, compressor) in ref(gm, nw, :compressor)
