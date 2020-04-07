@@ -906,7 +906,7 @@ function _calc_pipe_resistance(
     L = pipe["length"] * base_length
 
     a_sqr = sound_speed^2
-    A = pipe["area"] # cross sectional area
+    A = pi * D^2 / 4.0 # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
     return resistance
 end
