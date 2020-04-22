@@ -8,13 +8,13 @@ _IM.@def gm_fields begin GasModels.@im_fields end
 
 
 ""
-function run_model(file::String, model_type, optimizer, build_method; kwargs...)
+function solve_model(file::String, model_type, optimizer, build_method; kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(data, model_type, optimizer, build_method; kwargs...)
+    return solve_model(data, model_type, optimizer, build_method; kwargs...)
 end
 
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
+function solve_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
     gm = instantiate_model(data, model_type, build_method; ref_extensions=ref_extensions, ext=get(kwargs, :ext, Dict{Symbol,Any}()), setting=get(kwargs, :setting, Dict{String,Any}()), jump_model=get(kwargs, :jump_model, JuMP.Model()))
     result = optimize_model!(gm, optimizer=optimizer, solution_processors=solution_processors)
 

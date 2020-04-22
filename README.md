@@ -34,12 +34,12 @@ Once GasModels is installed, a optimizer is installed, and a network data file  
 using GasModels
 using <solver_package>
 
-run_gf("foo.m", FooGasModel, FooSolver())
+solve_gf("foo.m", FooGasModel, FooSolver())
 ```
 
 Similarly, an expansion optimizer can be executed with,
 ```
-run_ne("foo.m", FooGasModel, FooSolver())
+solve_ne("foo.m", FooGasModel, FooSolver())
 ```
 
 where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. MINLPGasModel) and FooSolver is the JuMP optimizer you want to use to solve the optimization problem (i.e. IpoptSolver).

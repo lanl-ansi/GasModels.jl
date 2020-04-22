@@ -64,7 +64,7 @@
     @testset "check solution summary" begin
         gas_file = "../test/data/matgas/gaslib-40.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
+        result = solve_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
 
         output = sprint(GasModels.summary, result["solution"])
 
