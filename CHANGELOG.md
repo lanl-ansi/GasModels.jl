@@ -15,7 +15,7 @@
 - Fixed bug in area computation .
 - Fixed bug in sound speed computation and other parameters
 - Fixed bugs in matgas parser by merging parses-fixes branch by @pseudocubic 
-- Rename `solve_` to `solve_`.
+- Rename `run_` to `solve_`.
 
 ## v0.6
 
