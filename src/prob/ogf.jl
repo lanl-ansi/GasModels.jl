@@ -1,20 +1,20 @@
 # Definitions for running an optimal gas flow (ogf)
 
 "entry point into running the ogf problem"
-function run_ogf(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ogf; kwargs...)
+function solve_ogf(file, model_type, optimizer; kwargs...)
+    return solve_model(file, model_type, optimizer, post_ogf; kwargs...)
 end
 
 
 ""
-function run_soc_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MISOCPGasModel, optimizer; kwargs...)
+function solve_soc_ogf(file, optimizer; kwargs...)
+    return solve_ogf(file, MISOCPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function run_minlp_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MINLPGasModel, optimizer; kwargs...)
+function solve_minlp_ogf(file, optimizer; kwargs...)
+    return solve_ogf(file, MINLPGasModel, optimizer; kwargs...)
 end
 
 

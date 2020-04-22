@@ -17,7 +17,7 @@ end
 @testset "transient (steady state replicate) case" begin
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6b.csv", 
         spatial_discretization=1e4, additional_time=0.0);
-    result = run_transient_ogf(mn_data, NLPGasModel, ipopt_solver)
+    result = solve_transient_ogf(mn_data, NLPGasModel, ipopt_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -5414.35, atol=1e-1)
     make_si_units!(result["solution"])
@@ -29,7 +29,7 @@ end
 @testset "transient time-periodic withdrawal case" begin
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", 
         spatial_discretization=1e4, additional_time=0.0);
-    result = run_transient_ogf(mn_data, NLPGasModel, ipopt_solver)
+    result = solve_transient_ogf(mn_data, NLPGasModel, ipopt_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -5207.86, atol=1e-1)
     make_si_units!(result["solution"])
