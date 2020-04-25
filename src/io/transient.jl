@@ -251,11 +251,17 @@ function _create_time_series_block(
     # create time information 
     time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time
-    if (time_step % 3600.0) != 0.0
+    if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
         Memento.error(
             _LOGGER,
             "the 3600 seconds has to be exactly divisible by the time step, 
 provide a time step that exactly divides 3600.0",
+        )
+    end
+    if time_step < 3600.0 && ~isinteger(3600.0/time_step)
+        Memento.error(
+            _LOGGER,
+            "time step should divide 3600.0 exactly when < 3600.0"
         )
     end
     if total_time > 86400.0
