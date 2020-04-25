@@ -41,7 +41,7 @@ function build_transient_ogf(gm::AbstractGasModel)
         var(gm, time_points[start_t], :transfer_withdrawal)
 
 
-    for n in time_points
+    for n in time_points[1:end-1]
         prev = n - 1
         (n == start_t) && (prev = time_points[end-1])
         expression_density_derivative(gm, n, prev)
