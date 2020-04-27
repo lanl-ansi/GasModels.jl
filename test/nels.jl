@@ -37,7 +37,7 @@
     @testset "test gaslib 40 nlp nels directed" begin
         @info "Testing gaslib nlp nels gaslib 40"
         result = solve_nels_directed("../test/data/matgas/gaslib-40-nelsfd.m", NLPGasModel, abs_minlp_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal || result["termination_status"] == ALMOST_LOCALLY_SOLVED
         @test isapprox(result["objective"] * result["solution"]["base_flow"] , 1560.12; atol = 1e-1)
     end
 end
