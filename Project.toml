@@ -16,14 +16,14 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
 Cbc = ">= 0.4"
-InfrastructureModels = "~0.4.3"
+InfrastructureModels = "~0.5"
 Ipopt = ">= 0.4"
 JSON = "~0.18, ~0.19, ~0.20, ~0.21"
-JuMP = "~0.21"
-Juniper = "~0.4, ~0.5, ~0.6"
+JuMP = "~0.20, ~0.21"
+Juniper = ">= 0.4"
 MathOptInterface = "~0.8.4, ~0.9"
-Memento = "~0.10, ~0.11, ~0.12, ~0.13, ~1.0"
-julia = "~1"
+Memento = "~0.10, ~0.11, ~0.12, ~0.13, ~1.0, ~1.1"
+julia = "^1"
 
 [extras]
 Cbc = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"

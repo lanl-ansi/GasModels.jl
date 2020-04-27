@@ -245,8 +245,9 @@ function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 
     if report
         _IM.sol_component_value(gm, nw, :receipt, :fg, ids(gm, nw, :dispatchable_receipt), fg)
+
         if haskey(gm.data, "standard_density")
-            sol_qg = Dict(i => fl[i] / gm.data["standard_density"] for i in ids(gm, nw, :dispatchable_receipt))
+            sol_qg = Dict(i => fg[i] / gm.data["standard_density"] for i in ids(gm, nw, :dispatchable_receipt))
             _IM.sol_component_value(gm, nw, :receipt, :qg, ids(gm, nw, :dispatchable_receipt), sol_qg)
         end
     end
