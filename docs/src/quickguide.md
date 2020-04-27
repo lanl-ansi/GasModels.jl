@@ -12,7 +12,7 @@ using JuMP
 ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer)
 cbc_solver = JuMP.with_optimizer(Cbc.Optimizer)
 juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=ipopt_solver, mip_solver=cbc_solver)
-GasModels.solve_soc_gf("test/data/gaslib-40.m", juniper_solver)
+GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 ```
 
 Similarly, a full non-convex Gas Flow can be executed with an MINLP optimizer like
@@ -23,7 +23,7 @@ using AmplNLWriter
 using JuMP
 
 couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "path/to/couenne")
-GasModels.solve_minlp_gf("test/data/gaslib-40.m", couenne_solver)
+GasModels.run_minlp_gf("test/data/gaslib-40.m", couenne_solver)
 ```
 ## Getting Results
 
@@ -31,13 +31,13 @@ The run commands in GasModels return detailed results data in the form of a dict
 This dictionary can be saved for further processing as follows,
 
 ```julia
-result = GasModels.solve_soc_gf("test/data/gaslib-40.m", juniper_solver)
+result = GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 ```
 
 For example, the algorithm's runtime, final objective value, and status can be accessed with,
 
 ```
-result["solve_time"]
+result["run_time"]
 result["objective"]
 result["termination_status"]
 ```
@@ -54,17 +54,17 @@ For more information about GasModels result data see the [GasModels Result Data 
 
 ## Accessing Different Formulations
 
-The function ```solve_soc_gf``` and ```solve_minl_gf``` are shorthands for a more general formulation-independent gas flow execution, ```solve_gf```.
-For example, ```solve_soc_gf``` is equivalent to,
+The function ```run_soc_gf``` and ```run_minl_gf``` are shorthands for a more general formulation-independent gas flow execution, ```run_gf```.
+For example, ```run_soc_gf``` is equivalent to,
 
 ```julia
-solve_gf("test/data/gaslib-40.m", MISOCPGasModel, juniper_solver)
+run_gf("test/data/gaslib-40.m", MISOCPGasModel, juniper_solver)
 ```
 
-where "MISOCPGasModel" indicates an SOC formulation of the gas flow equations.  This more generic `solve_gf()` allows one to solve a gas flow feasability problem with any gas network formulation implemented in GasModels.  For example, the full non convex Gas Flow can be run with,
+where "MISOCPGasModel" indicates an SOC formulation of the gas flow equations.  This more generic `run_gf()` allows one to solve a gas flow feasability problem with any gas network formulation implemented in GasModels.  For example, the full non convex Gas Flow can be run with,
 
 ```julia
-solve_gf("test/data/gaslib-40.m", MINLPGasModel, couenne_solver)
+run_gf("test/data/gaslib-40.m", MINLPGasModel, couenne_solver)
 ```
 
 ## Modifying Network Data
@@ -73,17 +73,17 @@ The following example demonstrates one way to perform multiple GasModels solves 
 ```julia
 network_data = GasModels.parse_file("test/data/gaslib-40.m")
 
-solve_gf(network_data, MISOCPGasModel, juniper_solver)
+run_gf(network_data, MISOCPGasModel, juniper_solver)
 
 network_data["junction"]["24"]["pmin"] = 0.0
 
-solve_gf(network_data, MISOCPGasModel, juniper_solver)
+run_gf(network_data, MISOCPGasModel, juniper_solver)
 ```
 
 For additional details about the network data, see the [GasModels Network Data Format](@ref) section.
 
 ## Inspecting the Formulation
-The following example demonstrates how to break a `solve_gf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by GasModels for the gas flow problem,
+The following example demonstrates how to break a `run_gf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by GasModels for the gas flow problem,
 
 ```julia
 gm = build_model("test/data/gaslib-40.m", MISOCPGasModel, GasModels.post_gf)

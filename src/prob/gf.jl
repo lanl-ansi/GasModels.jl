@@ -1,20 +1,20 @@
 # Definitions for running a feasible gas flow
 
 "entry point into running the gas flow feasability problem"
-function solve_gf(file, model_type, optimizer; kwargs...)
-    return solve_model(file, model_type, optimizer, post_gf; kwargs...)
+function run_gf(file, model_type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_gf; kwargs...)
 end
 
 
 ""
-function solve_soc_gf(file, optimizer; kwargs...)
-    return solve_gf(file, MISOCPGasModel, optimizer; kwargs...)
+function run_soc_gf(file, optimizer; kwargs...)
+    return run_gf(file, MISOCPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function solve_minlp_gf(file, optimizer; kwargs...)
-    return solve_gf(file, MINLPGasModel, optimizer; kwargs...)
+function run_minlp_gf(file, optimizer; kwargs...)
+    return run_gf(file, MINLPGasModel, optimizer; kwargs...)
 end
 
 

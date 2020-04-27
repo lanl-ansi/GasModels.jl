@@ -1,7 +1,7 @@
 "entry point for the transient ogf model"
-function solve_transient_ogf(data, model_type, optimizer; kwargs...)
+function run_transient_ogf(data, model_type, optimizer; kwargs...)
     @assert _IM.ismultinetwork(data) == true
-    return solve_model(
+    return run_model(
         data,
         model_type,
         optimizer,
