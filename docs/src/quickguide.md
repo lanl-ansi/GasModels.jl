@@ -37,7 +37,7 @@ result = GasModels.run_soc_gf("test/data/gaslib-40.m", juniper_solver)
 For example, the algorithm's runtime, final objective value, and status can be accessed with,
 
 ```
-result["run_time"]
+result["solve_time"]
 result["objective"]
 result["termination_status"]
 ```
