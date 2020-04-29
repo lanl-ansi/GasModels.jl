@@ -75,10 +75,12 @@ function variable_pressure_difference_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw
 
     if bounded
         for (i, ne_pipe) in ref(gm, nw, :ne_pipe)
+            pd_abs_max = max(abs(ref(gm, nw, :ne_pipe, i)["pd_min"]), abs(ref(gm, nw, :ne_pipe, i)["pd_max"]))
+            ub = min(pd_abs_max, inv(ref(gm, nw, :ne_pipe, i)["resistance"]) * max_flow^2)
             JuMP.set_lower_bound(l_ne_pipe[i], 0.0)
-            JuMP.set_upper_bound(l_ne_pipe[i], max(abs(ref(gm, nw, :ne_pipe, i)["pd_max"]), abs(ref(gm, nw, :ne_pipe, i)["pd_max"]), 1 / ref(gm, nw, :ne_pipe, i)["resistance"] * max_flow^2))
+            JuMP.set_upper_bound(l_ne_pipe[i], ub)
+        end
     end
-end
 
     report && _IM.sol_component_value(gm, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
 end
