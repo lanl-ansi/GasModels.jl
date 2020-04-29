@@ -83,7 +83,7 @@ function ref_degree_ne!(ref::Dict{Symbol,Any})
     end
 end
 
-"adds the additional refs that is required to used to formulate the transient formulation"
+"adds the additional data into the ref that is required to used to formulate the transient formulation"
 function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
         nws_data = data["nw"]

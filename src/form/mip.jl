@@ -108,7 +108,7 @@ function constraint_pipe_pressure_ne(gm::AbstractMIPModel, n::Int, k, i, j, pd_m
 end
 
 
-"Constraint: constrains the ratio to be p_i * ratio = p_j"
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractMIPModel, n::Int, k, i, j)
 end
 

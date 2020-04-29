@@ -15,3 +15,9 @@ which utilizes the following (internal) functions:
 ```@docs
 build_ref
 ```
+
+When using the build_ref for transient problem formulations the following ref extension has to be added to populate the fields necessary for formulate the transient optimization problems. 
+
+```@docs 
+ref_add_transient!
+```

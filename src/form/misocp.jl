@@ -194,7 +194,7 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractMISOCPModel, n::Int, k
 end
 
 
-"Constraint: constrains the ratio to be p_i * ratio = p_j"
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractMISOCPModel, n::Int, k, i, j)
     pi    = var(gm, n, :p, i)
     pj    = var(gm, n, :p, j)
