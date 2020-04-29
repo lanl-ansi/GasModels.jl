@@ -1,4 +1,4 @@
-# Problem Specifications
+# Steady State Problem Specifications
 
 ## Gas Flow (GF)
 

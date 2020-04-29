@@ -1,4 +1,4 @@
-"entry point for the transient ogf model"
+"entry point for the transient optimal gas flow model"
 function run_transient_ogf(data, model_type, optimizer; kwargs...)
     @assert _IM.ismultinetwork(data) == true
     return run_model(
@@ -11,7 +11,7 @@ function run_transient_ogf(data, model_type, optimizer; kwargs...)
     )
 end
 
-""
+"Builds the transient optimal gas flow Nonlinear problem"
 function build_transient_ogf(gm::AbstractGasModel)
     time_points = sort(collect(nw_ids(gm)))
     start_t = time_points[1]

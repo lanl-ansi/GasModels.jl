@@ -28,7 +28,10 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
     return data
 end
 
-"parses two files - a static file and a transient csv file and preps the data"
+"""
+Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments: 
+(i) `total_time` (defaults to 86400 seconds or 24 hours) - this is the total time for which transient optimization needs to be solved (ii) `time_step` (defaults to 3600 seconds or 1 hours) - this argument specifies the time discretization step (iii) `spatial_discretization` (defaults to 10000 m or 10 km) - this argument specifies the spatial discretization step (iv) `additional_time` (defaults to 21600 seconds or 6 hours) - this argument decides the time horizon that needs to be padded to the total time to in case the user wishes to perform a moving horizon transient optimization.
+"""
 function parse_files(
     static_file::String,
     transient_file::String;
@@ -36,8 +39,8 @@ function parse_files(
     time_step = 3600.0,
     spatial_discretization = 10000.0,
     additional_time = 21600.0,
-    periodic = true,
 )
+    periodic = true
     static_filetype = split(lowercase(static_file), '.')[end]
     if static_filetype == "m"
         static_data = open(static_file) do io
