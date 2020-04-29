@@ -145,7 +145,7 @@ function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i
 end
 
 
-"Constraint: constrains the ratio to be p_i * ratio = p_j"
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractNLPModel, n::Int, k, i, j)
     pi    = var(gm, n, :p, i)
     pj    = var(gm, n, :p, j)

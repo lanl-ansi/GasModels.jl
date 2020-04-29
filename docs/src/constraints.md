@@ -98,7 +98,6 @@ The disjunctive forms of problems (where directions are controlled by on/off var
 
 ```@docs
 constraint_resistor_parallel_flow
-<!-- constraint_parallel_flow_ne -->
 ```
 
 ## Compressor Constraints
@@ -152,7 +151,6 @@ The disjunctive forms of problems (where directions are controlled by on/off var
 
 ```@docs
 constraint_regulator_parallel_flow
-<!-- constraint_parallel_flow_ne -->
 ```
 
 ## Valve Constraints
@@ -172,7 +170,6 @@ The disjunctive forms of problems (where directions are controlled by on/off var
 
 ```@docs
 constraint_valve_parallel_flow
-<!-- constraint_ne_valve_parallel_flow -->
 ```
 
 ## Short Pipes
@@ -193,5 +190,4 @@ The disjunctive forms of problems (where directions are controlled by on/off var
 
 ```@docs
 constraint_short_pipe_parallel_flow
-<!-- constraint_short_parallel_flow_ne -->
 ```
