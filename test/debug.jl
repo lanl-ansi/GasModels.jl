@@ -1,6 +1,6 @@
 @testset "test gaslib 582 minlp gf" begin
     data = GasModels.parse_file("../test/data/matgas/gaslib-582.m")
-    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.post_gf)
+    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
     @test length(gm.var[:nw][gm.cnw][:p])  == 610
     @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
     @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 10

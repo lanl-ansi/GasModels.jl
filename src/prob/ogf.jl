@@ -2,7 +2,7 @@
 
 "entry point into running the ogf problem"
 function run_ogf(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ogf; kwargs...)
+    return run_model(file, model_type, optimizer, build_ogf; kwargs...)
 end
 
 
@@ -19,7 +19,7 @@ end
 
 
 "construct the ogf problem"
-function post_ogf(gm::AbstractGasModel)
+function build_ogf(gm::AbstractGasModel)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_valve_operation(gm)
