@@ -89,7 +89,7 @@ For additional details about the network data, see the [GasModels Network Data F
 The following example demonstrates how to break a `run_gf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by GasModels for the gas flow problem,
 
 ```julia
-gm = instantiate_model("test/data/matgas/gaslib-40.m", MISOCPGasModel, GasModels.post_gf)
+gm = instantiate_model("test/data/matgas/gaslib-40.m", MISOCPGasModel, GasModels.build_gf)
 print(gm.model)
 JuMP.set_optimizer(gm.model, juniper_solver)
 JuMP.optimize!(gm.model, juniper_solver)

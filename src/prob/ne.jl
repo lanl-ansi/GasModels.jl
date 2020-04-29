@@ -2,12 +2,12 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ne(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ne; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_ne; ref_extensions=[ref_add_ne!], kwargs...)
 end
 
 
 "construct the gas flow feasbility problem"
-function post_ne(gm::AbstractGasModel)
+function build_ne(gm::AbstractGasModel)
     obj_normalization = get(gm.data, "obj_normalization", 1.0)
 
     variable_pressure_sqr(gm)
