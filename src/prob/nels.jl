@@ -2,18 +2,18 @@
 
 "entry point into running the gas flow expansion planning with load shedding"
 function run_nels(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_nels; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_nels; ref_extensions=[ref_add_ne!], kwargs...)
 end
 
 
 "entry point into running the gas flow expansion planning with load shedding and a directed pipe model"
 function run_nels_directed(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_nels_directed; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_nels_directed; ref_extensions=[ref_add_ne!], kwargs...)
 end
 
 
 "construct the gas flow expansion problem to maximize load"
-function post_nels(gm::AbstractGasModel)
+function build_nels(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
@@ -97,7 +97,7 @@ end
 
 
 "construct the gas flow expansion problem to maximize load where some of the pipes are directed"
-function post_nels_directed(gm::AbstractGasModel)
+function build_nels_directed(gm::AbstractGasModel)
     variable_flow_directed(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)

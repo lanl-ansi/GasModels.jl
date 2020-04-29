@@ -13,7 +13,7 @@
     end
 
     @testset "check status=false components" begin
-        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
+        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.build_ls)
         @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
         try

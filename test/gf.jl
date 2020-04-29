@@ -8,7 +8,7 @@
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
             data = GasModels.parse_file("../test/data/matgas/gaslib-40.m")
-            gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.post_gf)
+            gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
             check_pressure_status(result["solution"], gm)
             check_compressor_ratio(result["solution"], gm)
         end
@@ -19,7 +19,7 @@
         #    @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         #    @test isapprox(result["objective"], 0; atol = 1e-6)
         #    data = GasModels.parse_file("../test/data/gaslib-135.m")
-        #    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.post_gf)
+        #    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
         #    check_pressure_status(result["solution"], gm)
         #    check_compressor_ratio(result["solution"], gm)
         # end

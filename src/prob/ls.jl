@@ -2,12 +2,12 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ls(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ls; kwargs...)
+    return run_model(file, model_type, optimizer, build_ls; kwargs...)
 end
 
 
 "construct the gas flow feasbility problem"
-function post_ls(gm::AbstractGasModel)
+function build_ls(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
