@@ -100,7 +100,7 @@ mgc.receipt = [
 
 The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
-Consumer data is defined with the following tabular format
+Delivery data is defined with the following tabular format
 
 ```
 %% delivery data
@@ -110,3 +110,12 @@ mgc.delivery = [
 ```
 
 The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
+
+## Parsing Transient Data 
+To run the transient formulations, apart from parsing the network file [Matgas Format (.m)](@ref), a time-series [Transient Data Format (CSV)](@ref) file has to be parsed. The following method provides a way to do so: 
+
+```@docs 
+parse_files
+```
+
+The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument. 

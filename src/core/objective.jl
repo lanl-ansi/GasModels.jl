@@ -129,6 +129,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
     )
 end
 
+"transient objective for minimizing a linear combination of compressor power and load shed"
 function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
     econ_weight = gm.ref[:economic_weighting]
     load_shed_expressions = []
@@ -178,6 +179,7 @@ function objective_min_transient_economic_costs(gm::AbstractGasModel, time_point
     end
 end
 
+"minimum load shedding objective for transient OGF problem"
 function objective_min_transient_load_shed(gm::AbstractGasModel, time_points)
     load_shed_expression = 0
     for nw in time_points[1:end-1]
@@ -197,6 +199,7 @@ function objective_min_transient_load_shed(gm::AbstractGasModel, time_points)
     JuMP.@objective(gm.model, Min, load_shed_expression)
 end
 
+"minium compressor power objective for transient OGF problem"
 function objective_min_transient_compressor_power(gm::AbstractGasModel, time_points)
     compressor_power_expressions = []
     for nw in time_points[1:end-1]

@@ -1,4 +1,4 @@
-"fixing slack node density value"
+"Constraint: fixing slack node density value"
 function constraint_slack_junction_density(
     gm::AbstractGasModel,
     nw::Int,
@@ -15,7 +15,7 @@ function constraint_slack_junction_density(
     )
 end
 
-"slack junction mass balance"
+"Constraint: slack junction mass balance"
 function constraint_slack_junction_mass_balance(
     gm::AbstractGasModel,
     nw::Int,
@@ -32,7 +32,7 @@ function constraint_slack_junction_mass_balance(
     )
 end
 
-"non-slack junction mass balance"
+"Constraint: non-slack junction mass balance"
 function constraint_non_slack_junction_mass_balance(
     gm::AbstractGasModel,
     nw::Int,
@@ -53,7 +53,7 @@ function constraint_non_slack_junction_mass_balance(
     )
 end
 
-"pipe physics ideal gas assumption"
+"Constraint: pipe physics with an ideal gas assumption"
 function constraint_pipe_physics_ideal(
     gm::AbstractGasModel,
     nw::Int,
@@ -74,7 +74,7 @@ function constraint_pipe_physics_ideal(
     )
 end
 
-"constraint transfer"
+"Constraint: aggregate withdrawal at transfer points computation"
 function constraint_transfer_separation(
     gm::AbstractGasModel,
     transfer_id::Int,
@@ -93,7 +93,7 @@ function constraint_transfer_separation(
     )
 end
 
-"compressor physics"
+"Constraint: compressor physics"
 function constraint_compressor_physics(
     gm::AbstractGasModel,
     nw::Int,
@@ -121,7 +121,7 @@ function constraint_compressor_physics(
     )
 end
 
-"compressor power"
+"Constraint: compressor power"
 function constraint_compressor_power(
     gm::AbstractGasModel,
     nw::Int,

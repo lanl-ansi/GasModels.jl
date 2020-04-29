@@ -48,7 +48,7 @@ Private  = true
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/mi/minlp.jl"]
+Pages   = ["form/minlp.jl"]
 Order   = [:function]
 Private  = true
 ```
@@ -57,7 +57,7 @@ Private  = true
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["form/mi/misocp.jl"]
+Pages   = ["form/misocp.jl"]
 Order   = [:function]
 Private  = true
 ```

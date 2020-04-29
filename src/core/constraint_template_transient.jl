@@ -1,10 +1,10 @@
-"fixing slack node density value"
+"Template: fixing slack node density value"
 function constraint_slack_junction_density(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     fixed_density = ref(gm, nw, :slack_junctions, i)["p_nominal"]
     constraint_slack_junction_density(gm, nw, i, fixed_density)
 end
 
-"slack junction mass balance"
+"Template: slack junction mass balance"
 function constraint_slack_junction_mass_balance(
     gm::AbstractGasModel,
     i::Int,
@@ -15,7 +15,7 @@ function constraint_slack_junction_mass_balance(
     constraint_slack_junction_mass_balance(gm, nw, i, net_injection, net_edge_out_flow)
 end
 
-"non-slack junction mass balance"
+"Template: non-slack junction mass balance"
 function constraint_non_slack_junction_mass_balance(
     gm::AbstractGasModel,
     i::Int,
@@ -34,7 +34,7 @@ function constraint_non_slack_junction_mass_balance(
     )
 end
 
-"pipe physics"
+"Template: pipe physics with ideal gas assumption"
 function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
@@ -44,7 +44,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = g
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
-"compressor physics"
+"Template: compressor physics"
 function constraint_compressor_physics(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     compressor = ref(gm, nw, :compressor, i)
     fr_junction = compressor["fr_junction"]
@@ -52,7 +52,7 @@ function constraint_compressor_physics(gm::AbstractGasModel, i::Int, nw::Int = g
     constraint_compressor_physics(gm, nw, i, fr_junction, to_junction)
 end
 
-"compressor power"
+"Template: compressor power"
 function constraint_compressor_power(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     compressor_power = var(gm, nw, :compressor_power)[i]
     power_max = ref(gm, nw, :compressor, i)["power_max"]
