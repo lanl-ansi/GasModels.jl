@@ -60,47 +60,14 @@ StandardMyFooForm <: AbstractFooModel
 FooGasModel = AbstractGasModel{StandardFooForm}
 ```
 
-## NLP
+## Supported Formulations
 
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/nlp.jl"]
-Order   = [:function]
-Private  = true
-```
+All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be MIP since valve controls are discrete.
 
-## MINLP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/minlp.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## MISOCP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/misocp.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## MIP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/mip.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## LP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/lp.jl"]
-Order   = [:function]
-Private  = true
-```
+| Formulation      | Steady-State         | Transient             | Description           |
+| ---------------- | -------------------- | --------------------- | --------------------- |
+| NLP              |       Y              |          N            | Physics is modeled using nonlinear equations. |
+| MINLP            |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| MINLP            |       Y              |          N            | Physics is modeled using second order cone equations. Directionality of flow is modeled using discrete variables |
+| MINLP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
+| LP               |       Y              |          N            | Physics is modeled using linear equations. |

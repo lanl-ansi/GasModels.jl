@@ -11,9 +11,12 @@ At the top level the results data dictionary is structured as follows:
 {
 "optimizer":<string>,        # name of the Julia class used to solve the model
 "termination_status":<type>, # optimizer status at termination
+"dual_status":<type>,        # optimizer dual status at termination
+"primal_status":<type>,      # optimizer primal status at termination
 "solve_time":<float>,        # reported solve time (seconds)
 "objective":<float>,         # the final evaluation of the objective function
 "objective_lb":<float>,      # the final lower bound of the objective function (if available)
+"objective_gap":<float>,     # the final gap between the lower bound and upper bound of the objective function (if available)
 "machine":{...},             # computer hardware information (details below)
 "data":{...},                # test case information (details below)
 "solution":{...}            # complete solution information (details below)
@@ -62,8 +65,8 @@ For example the data for a junction, `data["junction"]["1"]` is structured as fo
 
 ```
 {
-"pmin": 0.0,
-"pmax": 1.0,
+"p_min": 0.0,
+"p_max": 1.0,
 ...
 }
 ```
@@ -91,25 +94,22 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
 "junction":{
     "1":{
       "p": <float>,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals
-      "psqr": <float>,   # pressure squared. Non-dimensional quantity. Multiply by baseP^2 to get pascals^2
        ...
     },
     "2":{...},
     ...
 },
-"consumer":{
+"delivery":{
     "1":{
       "fl": <float>,  # variable mass flow consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
-      "ql": <float>,  # the varible volumetric gas demand at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s.
        ...
     },
     "2":{...},
     ...
 },
-"producer":{
+"receipt":{
     "1":{
       "fg": <float>,  # variable mass flow produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
-      "qg": <float>,  # the varible volumetric gas produced at standard density. Non-dimensional quantity. Multiply by baseQ to get m^3/s.        ...
     },
     "2":{...},
     ...
@@ -145,13 +145,13 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
     "2":{...},
     ...
 },
-"control_valve":{
+"regulator":{
     "1":{
       "f": <float>,                 # mass flow through the compressor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
       "v": <int>,                   # 1 if valve is open. 0 otherwise
-      "ratio": <float>,             # multiplicative decompression ratio
+      "r": <float>,             # multiplicative decompression ratio
         ...
     },
     "2":{...},
@@ -195,7 +195,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "f": <float>,                 # mass flow through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
-      "ratio": <float>,             # multiplicative compression ratio
+      "r": <float>,             # multiplicative compression ratio
       "built": <float>,          # 1 if compressor was built. 0 otherwise.
         ...
     },
