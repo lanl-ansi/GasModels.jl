@@ -47,7 +47,7 @@ used when the run command was called.
 "pipe_count":<int>,             # the number of pipe edges in the network data structure
 "valve_count":<int>,            # the number of valve edges in the network data structure
 "resistor_count":<int>,         # the number of resistor edges in the network data structure
-"control_valve_count":<int>,    # the number of valve edges in the network data structure
+"regulator_count":<int>,    # the number of valve edges in the network data structure
 "short_pipe_count":<int>,       # the number of short pipe edges in the network data structure
 "compressor_count":<int>        # the number of compressor edges in the network data structure
 }
