@@ -15,17 +15,17 @@ makedocs(
         ],
         "Library" => [
             "Network Formulations" => "formulations.md",
-            "Steady State Problem Specifications" => "ss-specifications.md",
-            "Modeling Components" => [
-                "GasModel" => "model.md",
-                "Objective" => "objective.md",
-                "Variables" => "variables.md",
-                "Constraints" => "constraints.md"
+            "Steady State Specifications" => [
+                "Problem Specifications" => "ss-specifications.md",
+                "Objective"              => "objective.md",
+                "Variables"              => "variables.md",
+                "Constraints"            => "constraints.md"
             ],
-            "Transient Problem Specifications" => "transient-specifications.md",
+            "Transient Specifications" => "transient-specifications.md",
             "File IO" => "parser.md"
         ],
-        "Developer" => "developer.md"
+        "Developer" => "developer.md",
+        "Examples" =>  "examples.md"
     ]
 )
 

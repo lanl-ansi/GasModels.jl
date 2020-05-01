@@ -9,14 +9,14 @@ At the top level the results data dictionary is structured as follows:
 
 ```json
 {
-"optimizer":<string>,    # name of the Julia class used to solve the model
+"optimizer":<string>,        # name of the Julia class used to solve the model
 "termination_status":<type>, # optimizer status at termination
-"solve_time":<float>,    # reported solve time (seconds)
-"objective":<float>,     # the final evaluation of the objective function
-"objective_lb":<float>,  # the final lower bound of the objective function (if available)
-"machine":{...},         # computer hardware information (details below)
-"data":{...},            # test case information (details below)
-"solution":{...}         # complete solution information (details below)
+"solve_time":<float>,        # reported solve time (seconds)
+"objective":<float>,         # the final evaluation of the objective function
+"objective_lb":<float>,      # the final lower bound of the objective function (if available)
+"machine":{...},             # computer hardware information (details below)
+"data":{...},                # test case information (details below)
+"solution":{...}            # complete solution information (details below)
 }
 ```
 
@@ -39,14 +39,14 @@ used when the run command was called.
 
 ```json
 {
-"name":<string>,      # the name from the network data structure
-"junction_count":<int>,    # the number of nodes in the network data structure
-"pipe_count":<int>,    # the number of pipe edges in the network data structure
-"valve_count":<int>,    # the number of valve edges in the network data structure
-"resistor_count":<int>,    # the number of resistor edges in the network data structure
+"name":<string>,                # the name from the network data structure
+"junction_count":<int>,         # the number of nodes in the network data structure
+"pipe_count":<int>,             # the number of pipe edges in the network data structure
+"valve_count":<int>,            # the number of valve edges in the network data structure
+"resistor_count":<int>,         # the number of resistor edges in the network data structure
 "control_valve_count":<int>,    # the number of valve edges in the network data structure
-"short_pipe_count":<int>,    # the number of short pipe edges in the network data structure
-"compressor_count":<int>  # the number of compressor edges in the network data structure
+"short_pipe_count":<int>,       # the number of short pipe edges in the network data structure
+"compressor_count":<int>        # the number of compressor edges in the network data structure
 }
 ```
 
