@@ -7,7 +7,7 @@ end
 
 
 const _mg_data_names = Vector{String}([
-    "mgc.gas_specific_gravity", "mgc.gas_molar_mass", "mgc.specific_heat_capacity_ratio",
+    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
     "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R", "mgc.gas_molar_mass",
     "mgc.base_pressure", "mgc.base_length", "mgc.base_flow",
     "mgc.units", "mgc.is_per_unit",
@@ -292,9 +292,12 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
-    required_metadata_names = ["mgc.gas_specific_gravity", "mgc.gas_molar_mass", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
+    required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
 
-    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.base_flow", "mgc.is_per_unit", "mgc.gas_molar_mass", "mgc.economic_weighting"]
+    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.gas_molar_mass",
+                               "mgc.base_pressure", "mgc.base_length",
+                               "mgc.base_flow", "mgc.is_per_unit",
+                               "mgc.gas_molar_mass", "mgc.economic_weighting"]
 
     for data_name in required_metadata_names
         (data_name == "mgc.units") && (continue)
