@@ -65,6 +65,21 @@ The network data dictionary structure is roughly as follows:
     "2":{...},
     ...
 },
+"transfer":{
+    "1":{
+        "junction_id": <float>,         # junction id
+        "withdrawal_max": <float>,      # the maximum mass flow demand. SI units are kg/s.
+        "withdrawal_min": <float>,      # the minimum mass flow demand. SI units are kg/s. (can be negative, in which case it is gas injection)
+        "withdrawal_nominal": <float>,  # nominal mass flow demand. SI units are kg/s.
+        "offer_price": <float>,         # price for selling gas at the receipt.
+        "bid_price": <float>,           # price for buying gas at the delivery.
+        "is_dispatchable": <int>,       # whether or not the unit is dispatchable (0 = transfer should consume withdrawl_nominal, 1 = transfer can consume between withdrawal_min and withdrawal_max).
+        "status": <int>,                # status of the component (0 = off, 1 = on). Default is 1.
+        ...
+    },
+    "2":{...},
+    ...
+},
 "pipe":{
     "1":{
       "length": <float>,            # the length of the connection. SI units are m.
@@ -98,8 +113,8 @@ The network data dictionary structure is roughly as follows:
 }
 "short_pipe":{
     "1":{
-      "fr_junction": <int>,          # the "from" side junction id
-      "to_junction": <int>,          # the "to" side junction id
+      "fr_junction": <int>,         # the "from" side junction id
+      "to_junction": <int>,         # the "to" side junction id
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
       "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
         ...
@@ -109,10 +124,10 @@ The network data dictionary structure is roughly as follows:
 }
 "valve":{
     "1":{
-      "fr_junction": <int>,          # the "from" side junction id
-      "to_junction": <int>,          # the "to" side junction id
-      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
+      "fr_junction": <int>,             # the "from" side junction id
+      "to_junction": <int>,             # the "to" side junction id
+      "status": <int>,                  # status of the component (0 = off, 1 = on). Default is 1.
+      "is_bidirectional": <int>,        # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
@@ -120,12 +135,12 @@ The network data dictionary structure is roughly as follows:
 }
 "regulator":{
     "1":{
-      "fr_junction": <int>,          # the "from" side junction id
-      "to_junction": <int>,          # the "to" side junction id
-      "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
+      "fr_junction": <int>,             # the "from" side junction id
+      "to_junction": <int>,             # the "to" side junction id
+      "reduction_factor_min": <float>,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "reduction_factor_max": <float>,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "status": <int>,                  # status of the component (0 = off, 1 = on). Default is 1.
+      "is_bidirectional": <int>,        # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
@@ -138,6 +153,21 @@ The network data dictionary structure is roughly as follows:
       "drag": <float>,              # the drag factor of resistors. Non dimensional.
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
       "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    "2":{...},
+    ...
+}
+"storage":{
+    "1":{
+        "junction_id": <float>,                 # id of the junction in which storage is located
+        "pressure_nomial": <float>,             # nominal pressure inside the storage 
+        "flow_injection_rate_min": <float>,     # minimum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_injection_rate_max": <float>,     # maximum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_withdrawal_rate_min": <float>,    # minimum flow rate at which gas can be withdrawn from storage. SI units is kg/s
+        "flow_withdrawal_rate_max": <float>,    # maxium flow rate at which gas can be withdrawn storage. SI units is kg/s  
+        "capacity": <float>,                    # capacity of storage in kg 
+        "status": <int>,                        # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},
