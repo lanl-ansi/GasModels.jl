@@ -249,6 +249,33 @@ These components are used to model locations which can store and release natural
 | name                         | String  | Case Name              |                     |                               |          | Name of Network Case                                               |
 | year                         | Int     | Year                   |                     |                               |          | Year from which data originated                                    |
 
+## Matgas extensions
+
+The matgas format supports extensions which allow users to define arbitrary components and data which are used in customized problems and formulations.  For example, the syntax
+
+```julia
+  %column_names% data_field_name1, data_field_name2, ...
+  mgc.component_data = [
+  data1, data2
+  data1, data2
+  ...
+  ]
+```
+
+is used to add data to standard gas components.  In this example, the data dictionary for `component` will be augmented with fields called `data_field_name1`, `data_field_name2`, etc. The names trailing the keyword `%column_name%` are used as the keys in the data dictionary for each `component`. The key word `mgc.component_data` is used to indicate the component the new data should be associated with.  For example, `mgc.pipe_data` adds the data to pipes. The data should be listed in the same order as used by the tables that specify the required data for the component.  The syntax
+
+```julia
+  %column_names% data_field_name1, data_field_name2, ...
+  mgc.component = [
+  data1, data2
+  data1, data2
+  ...
+  ]
+```
+
+is then used to specify completely new components which are not specified in the default format.  This example would create an entry from components called `component` in the data dictionary.
+
+
 # Transient Data Format (CSV)
 
 The transient/time-series data will come in as one .csv file (comma separated format). The first column in the CSV format will be a time stamp in the date-time format YYYY-MM-DDTHH:MM:SS+HH:MM, where the +HH:MM indicates the timezone offset, the second column will be the component type, the third column will be the component id, the forth column will be the parameter name, and the fifth column will be the value of the parameter.  See below example for valid header names.

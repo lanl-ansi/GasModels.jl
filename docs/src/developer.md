@@ -20,3 +20,11 @@
 - `f`: mass flow
 - `fl`: mass flow consumption
 - `fg`: mass flow production
+
+## Developing steady-state problems and formulations
+
+In the current version of `GasModels`, the supported variable space is pressure (`p`) and mass flow (`f`) for steady-state modeling. Long term there are plans to support problems specified in the variable space of density $\rho$ and mass flux $\phi$.  Generally speaking, most steady-state models use/assume the single network formulation that is not discretized in time or space. Thus, most natural gas network models are read in and directly used by steady-state specifications.
+
+A long term development plan is to largely unify the declartion of variables and constraints which are common to both steady-state and transient model (he only difference being single vs. multi-network representations).
+
+## Developing transient problems and formulations
