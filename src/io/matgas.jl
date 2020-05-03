@@ -7,9 +7,9 @@ end
 
 
 const _mg_data_names = Vector{String}([
-    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
+    "mgc.gas_specific_gravity", "mgc.gas_molar_mass", "mgc.specific_heat_capacity_ratio",
     "mgc.temperature", "mgc.sound_speed", "mgc.compressibility_factor", "mgc.R", "mgc.gas_molar_mass",
-    "mgc.base_pressure", "mgc.base_length",
+    "mgc.base_pressure", "mgc.base_length", "mgc.base_flow",
     "mgc.units", "mgc.is_per_unit",
     "mgc.junction", "mgc.pipe",
     "mgc.compressor", "mgc.receipt",
@@ -292,9 +292,9 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
-    required_metadata_names = ["mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
+    required_metadata_names = ["mgc.gas_specific_gravity", "mgc.gas_molar_mass", "mgc.specific_heat_capacity_ratio", "mgc.temperature", "mgc.compressibility_factor", "mgc.units"]
 
-    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.is_per_unit", "mgc.gas_molar_mass", "mgc.economic_weighting"]
+    optional_metadata_names = ["mgc.sound_speed", "mgc.R", "mgc.base_pressure", "mgc.base_length", "mgc.base_flow", "mgc.is_per_unit", "mgc.gas_molar_mass", "mgc.economic_weighting"]
 
     for data_name in required_metadata_names
         (data_name == "mgc.units") && (continue)
@@ -334,6 +334,13 @@ function parse_m_string(data_string::String)
         case["base_length"] = matlab_data["mgc.base_length"]
     else
         Memento.warn(_LOGGER, string("no base_length found in .m file.
+            This value will be auto-assigned based on the pipe data"))
+    end
+
+    if haskey(matlab_data, "mgc.base_flow")
+        case["base_flow"] = matlab_data["mgc.base_flow"]
+    else
+        Memento.warn(_LOGGER, string("no base_flow found in .m file.
             This value will be auto-assigned based on the pipe data"))
     end
 
@@ -675,11 +682,11 @@ const _matlab_field_order = Dict{String,Array}(
 
 
 "order of required global parameters"
-const _matlab_global_params_order_required = ["gas_specific_gravity", "specific_heat_capacity_ratio", "temperature", "compressibility_factor"]
+const _matlab_global_params_order_required = ["gas_specific_gravity", "gas_molar_mass", "specific_heat_capacity_ratio", "temperature", "compressibility_factor"]
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "base_flow", "is_per_unit"]
 
 
 "list of units of meta data fields"
@@ -693,6 +700,7 @@ const _units = Dict{String,Dict{String,String}}(
         "sound_speed" => "m/s",
         "base_pressure" => "Pa",
         "base_length" => "m",
+        "base_flow" => "kg/m^2/s", # TODO: Is this correct?
     ),
     "english" => Dict{String,String}(
         "specific_gravity" => "unitless",
@@ -703,11 +711,12 @@ const _units = Dict{String,Dict{String,String}}(
         "sound_speed" => "m/s",
         "base_pressure" => "psi",
         "base_length" => "miles",
+        "base_flow" => "lb/ft^2/s", # TODO: Is this correct?
     )
 )
 
 const non_negative_metadata = [
-    "gas_specific_gravity", "specific_heat_capacity_ratio",
+    "gas_specific_gravity", "gas_molar_mass", "specific_heat_capacity_ratio",
     "temperature", "sound_speed", "compressibility_factor"
 ]
 
