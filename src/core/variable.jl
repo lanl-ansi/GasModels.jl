@@ -17,8 +17,8 @@ function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bo
     end
 
     if report
-        sol_p = Dict(i => JuMP.@NLexpression(gm.model, sqrt(psqr[i])) for i in ids(gm, nw, :junction))
-        _IM.sol_component_value(gm, nw, :junction, :p, ids(gm, nw, :junction), sol_p)
+        #sol_p = Dict(i => JuMP.@NLexpression(gm.model, sqrt(psqr[i])) for i in ids(gm, nw, :junction))
+        #_IM.sol_component_value(gm, nw, :junction, :p, ids(gm, nw, :junction), sol_p)
     end
 end
 
@@ -373,7 +373,7 @@ function variable_compressor_ratio_sqr_value(gm::AbstractGasModel, nw::Int=gm.cn
     end
 
     if report
-        sol_r = Dict(i => JuMP.@NLexpression(gm.model, sqrt(rsqr[i])) for i in ids(gm, nw, :compressor))
-        _IM.sol_component_value(gm, nw, :compressor, :r, ids(gm, nw, :compressor), sol_r)
+        #sol_r = Dict(i => JuMP.@NLexpression(gm.model, sqrt(rsqr[i])) for i in ids(gm, nw, :compressor))
+        #_IM.sol_component_value(gm, nw, :compressor, :r, ids(gm, nw, :compressor), sol_r)
     end
 end

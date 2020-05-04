@@ -833,7 +833,7 @@ end
 "helper function to propagate disabled status of junctions to connected components"
 function propagate_topology_status!(data::Dict{String,<:Any})
     disabled_junctions = Set([
-        junc["junction_i"] for junc in values(data["junction"]) if junc["status"] == 0
+        junc["index"] for junc in values(data["junction"]) if junc["status"] == 0
     ])
 
     for comp_type in _gm_component_types

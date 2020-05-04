@@ -321,7 +321,7 @@ function constraint_compressor_ratios_directed(gm::AbstractGasModel, n::Int, k, 
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj == pi))
     end
 
-    _IM.sol_component_value(gm, n, :compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
+    #_IM.sol_component_value(gm, n, :compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
@@ -348,7 +348,7 @@ function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, n::Int, 
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
     end
 
-    _IM.sol_component_value(gm, n, :ne_compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
+    #_IM.sol_component_value(gm, n, :ne_compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
