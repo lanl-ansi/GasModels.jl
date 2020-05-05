@@ -5,7 +5,7 @@
 - Implement constraints on compressor power
 - Implement a multi-network test
 
-## staged
+## v0.7
 
 - Update to InfrastructureModels solution building (breaking)
 - Add support for Memento v0.13, v1.0
@@ -14,7 +14,7 @@
 - Add multi-network and transient_ogf unit tests
 - Fixed bug in area computation .
 - Fixed bug in sound speed computation and other parameters
-- Fixed bugs in matgas parser by merging parses-fixes branch by @pseudocubic 
+- Fixed bugs in matgas parser by merging parses-fixes branch by @pseudocubic
 
 ## v0.6
 
