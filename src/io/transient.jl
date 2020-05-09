@@ -94,6 +94,26 @@ function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     return max_pipe_id
 end
 
+"function to calculate bearing given 2 lat lon values"
+function _calc_bearing(fr, to)
+    y = cos(to[1] * pi/180) * sin(abs(to[2] - fr[2]) * pi/180)
+    x = cos(fr[1] * pi/180) * sin(to[1] * pi/180) - sin(fr[1] * pi/180) * cos(to[1] * pi/180) * cos((to[2]-fr[2]) * pi/180)
+    beta = atan(y, x)
+    return (beta *180.0/pi + 360) % 360
+end 
+
+"function to calculate lat lon given origin, bearing, and distance"
+function _get_lat_lon(fr, bearing, distance)
+    R = 6378.1
+    brng = bearing * pi/180.0
+    d = distance/1000.0
+    lat1 = fr[1] * pi/180 
+    lon1 = fr[2] * pi/180
+    lat2 = asin(sin(lat1) * cos(d/R) + cos(lat1) * sin(d/R) * cos(brng))
+    lon2 = lon1 + atan(sin(brng) * sin(d/R)  * cos(lat1), cos(d/R) - sin(lat1) * sin(lat2))
+    return (lat2 * 180/pi, lon2 * 180/pi)
+end 
+
 " discretizes the pipes and takes care of renumbering junctions and pipes"
 function _prep_transient_data!(
     data::Dict{String,Any};
@@ -193,10 +213,15 @@ function _prep_transient_data!(
             data["original_pipe"][key]["to_pipe"] = pipe["id"]
             continue
         end
-
+        fr_lat_lon = (data["junction"][string(pipe["fr_junction"])]["lat"], 
+            data["junction"][string(pipe["fr_junction"])]["lon"])
+        to_lat_lon = (data["junction"][string(pipe["to_junction"])]["lat"], 
+            data["junction"][string(pipe["to_junction"])]["lon"])
+        bearing_original_pipe = _calc_bearing(fr_lat_lon, to_lat_lon)
         fr_junction = data["junction"][string(pipe["fr_junction"])]
         to_junction = data["junction"][string(pipe["to_junction"])]
         sub_pipe_count = pipe["num_sub_pipes"]
+        dist = pipe["length"] / sub_pipe_count
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
         data["original_pipe"][key]["fr_pipe"] = max_pipe_id + pipe["id"] * 1000 + 1
         data["original_pipe"][key]["to_pipe"] =
@@ -204,6 +229,7 @@ function _prep_transient_data!(
 
         for i = 1:intermediate_junction_count
             id = max_pipe_id + pipe["id"] * 1000 + i
+            lat, lon = _get_lat_lon(fr_lat_lon, bearing_original_pipe, dist * i)
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
                 "p_min" => min(fr_junction["p_min"], to_junction["p_min"]),
@@ -215,6 +241,8 @@ function _prep_transient_data!(
                 "is_si_units" => data["is_si_units"],
                 "is_english_units" => data["is_english_units"],
                 "is_per_unit" => data["is_english_units"],
+                "lat" => lat, 
+                "lon" => lon
             )
         end
 
