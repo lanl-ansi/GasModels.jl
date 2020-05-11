@@ -69,7 +69,7 @@
         output = sprint(GasModels.summary, result["solution"])
 
         line_count = count(c -> c == '\n', output)
-        @test line_count >= 100 && line_count <= 125
+        @test line_count >= 100 && line_count <= 150
         @test occursin("pipe: 39", output)
         @test occursin("junction: 46", output)
         @test occursin("Table: pipe", output)
