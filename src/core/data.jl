@@ -412,51 +412,18 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
     rescale_inv_flow = x -> x / get_mmscfd_to_kgps_conversion_factor(data)
     rescale_mass = x -> x * get_mmscfd_to_kgps_conversion_factor(data) * 86400.0
+    rescale_density = x -> x
     rescale_pressure = psi_to_pascal
     rescale_length = miles_to_m
     rescale_diameter = inches_to_m
-    functions = Dict(
-        "p_min" => rescale_pressure,
-        "p_max" => rescale_pressure,
-        "p_nominal" => rescale_pressure,
-        "p" => rescale_pressure,
-        "inlet_p_min" => rescale_pressure,
-        "inlet_p_max" => rescale_pressure,
-        "outlet_p_min" => rescale_pressure,
-        "outlet_p_max" => rescale_pressure,
-        "pressure" => rescale_pressure,
-        "design_inlet_pressure" => rescale_pressure,
-        "design_outlet_pressure" => rescale_pressure,
-        "pressure_nominal" => rescale_pressure,
-        "length" => rescale_length,
-        "diameter" => rescale_diameter,
-        "f" => rescale_flow,
-        "flow_min" => rescale_flow,
-        "flow_max" => rescale_flow,
-        "flow" => rescale_flow,
-        "withdrawal" => rescale_flow,
-        "injection" => rescale_flow,
-        "power" => rescale_flow,
-        "flux" => rescale_flow,
-        "withdrawal_max" => rescale_flow,
-        "withdrawal_min" => rescale_flow,
-        "injection_min" => rescale_flow,
-        "injection_max" => rescale_flow,
-        "net_injection" => rescale_flow,
-        "withdrawal_nominal" => rescale_flow,
-        "injection_nominal" => rescale_flow,
-        "fd" => rescale_flow,
-        "fg" => rescale_flow,
-        "ft" => rescale_flow,
-        "power_max" => rescale_flow,
-        "design_flow_rate" => rescale_flow,
-        "flow_injection_rate_min" => rescale_flow,
-        "flow_injection_rate_max" => rescale_flow,
-        "flow_withdrawal_rate_min" => rescale_flow,
-        "flow_withdrawal_rate_max" => rescale_flow,
-        "capacity" => rescale_mass,
-        "bid_price" => rescale_inv_flow,
-        "offer_price" => rescale_inv_flow,
+    functions = _rescale_functions(
+        rescale_pressure,
+        rescale_density,
+        rescale_length,
+        rescale_diameter,
+        rescale_flow,
+        rescale_mass,
+        rescale_inv_flow,
     )
 
     nw_data = (id == "0") ? data : data["nw"][id]
