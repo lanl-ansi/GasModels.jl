@@ -69,7 +69,7 @@
         output = sprint(GasModels.summary, result["solution"])
 
         line_count = count(c -> c == '\n', output)
-        @test line_count >= 100 && line_count <= 125
+        @test line_count >= 100 && line_count <= 150
         @test occursin("pipe: 39", output)
         @test occursin("junction: 46", output)
         @test occursin("Table: pipe", output)
@@ -83,7 +83,7 @@
             gas_data = GasModels.parse_file(gas_file)
             gas_ref  = GasModels.build_ref(gas_data)
 
-            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), (108.24469414437586 * (gas_data["base_pressure"]^2/gas_data["base_flow"]^2)) / 1e5^2; atol=1e-4)
+            @test  isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), 2.3023057843927686; atol=1e-4)
         end
     end
 

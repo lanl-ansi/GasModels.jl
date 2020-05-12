@@ -16,8 +16,8 @@ end
 
 "Constraint: Constraints which define pressure drop across a resistor"
 function constraint_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
     _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
@@ -25,8 +25,8 @@ end
 
 "Constraint: constraints on pressure drop across where direction is constrained"
 function constraint_resistor_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
     _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
 end
@@ -58,7 +58,7 @@ end
 
 " Constraint: standard flow balance equation where demand and production are variables "
 function constraint_pressure(gm::AbstractGasModel, n::Int, i, p_nom)
-    p  = var(gm,n,:p,i)
+    p  = var(gm,n,:psqr,i)
     JuMP.set_lower_bound(p, p_nom)
     JuMP.set_upper_bound(p, p_nom)
 end
@@ -117,8 +117,8 @@ end
 
 "Constraint: Constraint on pressure drop across a short pipe"
 function constraint_short_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :short_pipe_pressure_drop, k, JuMP.@constraint(gm.model,  pi == pj))
 end
 
@@ -149,8 +149,8 @@ end
 
 "Constraint: Constraints on pressure drop across valves where the valve can open or close"
 function constraint_on_off_valve_pressure(gm::AbstractGasModel, n::Int, k, i, j, i_pmax, j_pmax)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     v  = var(gm,n,:v_valve,k)
     _add_constraint!(gm, n, :valve_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - ((1-v)*j_pmax^2) <= pi))
     _add_constraint!(gm, n, :valve_pressure_drop2, k, JuMP.@constraint(gm.model,  pi <= pj + ((1-v)*i_pmax^2)))
@@ -190,8 +190,8 @@ end
 
 "Constraint: Constraints which define pressure drop across a pipe"
 function constraint_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
     _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
@@ -199,8 +199,8 @@ end
 
 "Constraint: constraints on pressure drop across where direction is constrained"
 function constraint_pipe_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
     _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
 end
@@ -208,8 +208,8 @@ end
 
 "Constraint: constraints on pressure drop across an expansion pipe"
 function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, pd_min  <= pi - pj))
     _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
@@ -247,8 +247,8 @@ end
 
 "Constraint: Pressure drop across an expansion pipe when direction is constrained"
 function constraint_pipe_pressure_ne_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max, direction)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     z  = var(gm,n,:zp,k)
 
     if direction == 1
@@ -311,8 +311,8 @@ end
 
 "Constraint: Compressor ratio when the flow direction is constrained"
 function constraint_compressor_ratios_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, direction)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
 
     if direction == 1
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
@@ -320,8 +320,6 @@ function constraint_compressor_ratios_directed(gm::AbstractGasModel, n::Int, k, 
     else
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj == pi))
     end
-
-    #_IM.sol_component_value(gm, n, :compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
@@ -337,8 +335,8 @@ end
 
 "Constraint: Pressure drop across an expansion compressor when direction is constrained"
 function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     zc = var(gm,n,:zc,k)
 
     if direction == 1
@@ -347,8 +345,6 @@ function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, n::Int, 
     else
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
     end
-
-    #_IM.sol_component_value(gm, n, :ne_compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
 
 
@@ -377,8 +373,8 @@ end
 
 "Constraint: Pressure drop across a control valves when directions is constrained"
 function constraint_on_off_regulator_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, direction)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     v  = var(gm,n,:v_regulator,k)
 
     if direction == 1

@@ -9,7 +9,6 @@
 end
 
 
-# Check the full nonlinear model
 @testset "test minlp gf" begin
         @testset "gaslib 40 case" begin
             println("gaslib 40 - MINLP")

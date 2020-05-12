@@ -31,8 +31,8 @@ end
 "Weymouth equation with discrete direction variables"
 function constraint_pipe_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_pipe, k)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_pipe, k)
 
     # when y = 1, the first two equations say w*(pi - pj) == f^2.
@@ -55,8 +55,8 @@ end
 "Weymouth equation with discrete direction variables"
 function constraint_resistor_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_resistor, k)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_resistor, k)
 
     _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 - (1-y)*2*f_min^2))
@@ -68,8 +68,8 @@ end
 
 "Weymouth equation with one way direction"
 function constraint_pipe_weymouth_directed(gm::AbstractMINLPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_pipe, k)
 
     if direction == 1
@@ -84,8 +84,8 @@ end
 
 "Weymouth equation with one way direction"
 function constraint_resistor_weymouth_directed(gm::AbstractMINLPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_resistor, k)
 
     if direction == 1
@@ -102,8 +102,8 @@ end
 function constraint_pipe_weymouth_ne(gm::AbstractMINLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y = var(gm, n, :y_ne_pipe, k)
 
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
@@ -130,8 +130,8 @@ end
 
 "Weymouth equation for directed expansion pipes"
 function constraint_pipe_weymouth_ne_directed(gm::AbstractMINLPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
@@ -147,9 +147,9 @@ end
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractMINLPModel, n::Int, k, i, j)
-    pi    = var(gm, n, :p, i)
-    pj    = var(gm, n, :p, j)
-    r = var(gm, n, :r, k)
+    pi    = var(gm, n, :psqr, i)
+    pj    = var(gm, n, :psqr, j)
+    r = var(gm, n, :rsqr, k)
     _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@NLconstraint(gm.model, r^2 * pi <= pj))
     _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@NLconstraint(gm.model, r^2 * pi >= pj))
 end

@@ -36,6 +36,7 @@
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 1687; atol = 1.0)
         end
+
     end
 
     @testset "test mip ne" begin
@@ -68,6 +69,7 @@
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0.0; atol = 1e-1)
         end
+
     end
 
     @testset "test nlp ne" begin

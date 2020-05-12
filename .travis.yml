@@ -9,7 +9,8 @@ julia:
 codecov: true
 jobs:
   allow_failures:
-    - julia: nightly
+    - julia:
+      env: CAN_FAIL=true 
   include:
     - stage: "Documentation"
       julia: 1.4
@@ -18,3 +19,10 @@ jobs:
         - julia --project=docs/ -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path=pwd()))'
         - julia --project=docs/ docs/make.jl
       after_success: skip
+    - stage: "Examples"
+      env: CAN_FAIL=true
+      julia: 1.3
+      os: linux
+      script:
+        - julia --project=examples -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path=pwd()))'
+        - julia --project=examples --color=yes examples/run_examples.jl

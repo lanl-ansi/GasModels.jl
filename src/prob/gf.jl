@@ -2,7 +2,7 @@
 
 "entry point into running the gas flow feasability problem"
 function run_gf(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_gf; kwargs...)
+    return run_model(file, model_type, optimizer, build_gf; solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!], kwargs...)
 end
 
 

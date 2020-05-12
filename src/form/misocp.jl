@@ -25,7 +25,7 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_pipe=ref(gm, nw, :undirected_ne_pipe), ne_compressor=ref(gm, nw, :default_compressor))
+function variable_flow_ne_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_pipe=ref(gm, nw, :undirected_ne_pipe), ne_compressor=ref(gm, nw, :default_ne_compressor))
     variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
     variable_mass_flow_ne(gm, nw; bounded=bounded, report=report)
     variable_connection_direction_ne(gm, nw; ne_pipe=ne_pipe, ne_compressor=ne_compressor, report=report)
@@ -89,8 +89,8 @@ end
 "Weymouth equation for an undirected pipe"
 function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y  = var(gm, n, :y_pipe, k)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     l  = var(gm, n, :l_pipe, k)
     f  = var(gm, n, :f_pipe, k)
 
@@ -108,8 +108,8 @@ end
 "Weymouth equation for an undirected pipe"
 function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_resistor, k)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     l  = var(gm, n, :l_resistor, k)
     f  = var(gm, n, :f_resistor, k)
 
@@ -126,8 +126,8 @@ end
 
 "Weymouth equation with a pipe with one way flow"
 function constraint_pipe_weymouth_directed(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     l  = var(gm, n, :l_pipe, k)
     f  = var(gm, n, :f_pipe, k)
 
@@ -143,8 +143,8 @@ end
 
 "Weymouth equation with a resistor with one way flow"
 function constraint_resistor_weymouth_directed(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     l  = var(gm, n, :l_resistor, k)
     f  = var(gm, n, :f_resistor, k)
 
@@ -161,8 +161,8 @@ end
 "Weymouth equation for an undirected expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y = var(gm, n, :y_ne_pipe, k)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
     l  = var(gm, n, :l_ne_pipe, k)
     f  = var(gm, n, :f_ne_pipe, k)
@@ -180,8 +180,8 @@ end
 
 "Weymouth equation for expansion pipes with undirected expansion pipes"
 function constraint_pipe_weymouth_ne_directed(gm::AbstractMISOCPModel, n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :p, i)
-    pj = var(gm, n, :p, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
     l  = var(gm, n, :l_ne_pipe, k)
     f  = var(gm, n, :f_ne_pipe, k)
@@ -198,9 +198,9 @@ end
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractMISOCPModel, n::Int, k, i, j)
-    pi    = var(gm, n, :p, i)
-    pj    = var(gm, n, :p, j)
-    r     = var(gm, n, :r, k)
+    pi    = var(gm, n, :psqr, i)
+    pj    = var(gm, n, :psqr, j)
+    r     = var(gm, n, :rsqr, k)
 
     _IM.relaxation_product(gm.model, pi, r, pj)
 end

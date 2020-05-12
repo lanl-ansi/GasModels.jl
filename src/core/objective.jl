@@ -57,7 +57,7 @@ end
 
 "function for minimizing compressor energy"
 function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
-    r = Dict(n => var(gm, n, :r) for n in nws)
+    r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     gamma = gm.data["specific_heat_capacity_ratio"]
     m = (gamma - 1) / gamma
@@ -74,7 +74,7 @@ end
 
 "function for minimizing economic costs"
 function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
-    r = Dict(n => var(gm, n, :r) for n in nws)
+    r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     fl = Dict(n => var(gm, n, :fl) for n in nws)
     fg = Dict(n => var(gm, n, :fg) for n in nws)

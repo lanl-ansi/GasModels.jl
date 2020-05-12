@@ -2,7 +2,7 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ls(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_ls; kwargs...)
+    return run_model(file, model_type, optimizer, build_ls; solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!], kwargs...)
 end
 
 
@@ -14,7 +14,6 @@ function build_ls(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
-
 
     objective_max_load(gm)
 
