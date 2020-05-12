@@ -2,7 +2,7 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ne(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_ne; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_ne; ref_extensions=[ref_add_ne!], solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!, sol_ne_compressor_p_to_r!], kwargs...)
 end
 
 
@@ -89,28 +89,28 @@ function build_ne(gm::AbstractGasModel)
 end
 
 
-"Special function for whether or not a connection is added"
-function add_connection_ne(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "ne_pipe", "built", :zp; default_value = (item) -> NaN)
-    add_setpoint!(sol, gm, "ne_compressor", "built", :zc; default_value = (item) -> NaN)
-end
+#"Special function for whether or not a connection is added"
+#function add_connection_ne(sol, gm::AbstractGasModel)
+#    add_setpoint!(sol, gm, "ne_pipe", "built", :zp; default_value = (item) -> NaN)
+#    add_setpoint!(sol, gm, "ne_compressor", "built", :zc; default_value = (item) -> NaN)
+#end
 
 
-"Get the direction solutions"
-function add_direction_ne_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "ne_pipe", "y", :y_ne_pipe)
-    add_setpoint!(sol, gm, "ne_compressor", "y", :y_ne_compressor)
-end
+#"Get the direction solutions"
+#function add_direction_ne_setpoint!(sol, gm::AbstractGasModel)
+#    add_setpoint!(sol, gm, "ne_pipe", "y", :y_ne_pipe)
+#    add_setpoint!(sol, gm, "ne_compressor", "y", :y_ne_compressor)
+#end
 
 
-"Add the compressor solutions"
-function add_compressor_ratio_ne_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
-end
+#"Add the compressor solutions"
+#function add_compressor_ratio_ne_setpoint!(sol, gm::AbstractGasModel)
+#    add_setpoint!(sol, gm, "ne_compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
+#end
 
 
-"Add the flow solutions to new lines"
-function add_connection_flow_ne_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "ne_pipe", "f", :f_ne_pipe)
-    add_setpoint!(sol, gm, "ne_compressor", "f", :f_ne_compressor)
-end
+#"Add the flow solutions to new lines"
+#function add_connection_flow_ne_setpoint!(sol, gm::AbstractGasModel)
+#    add_setpoint!(sol, gm, "ne_pipe", "f", :f_ne_pipe)
+#    add_setpoint!(sol, gm, "ne_compressor", "f", :f_ne_compressor)
+#end

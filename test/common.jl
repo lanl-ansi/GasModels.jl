@@ -21,7 +21,7 @@ function check_compressor_ratio(sol, gm)
     for (idx,val) in sol["compressor"]
         k = parse(Int64,idx)
         connection = gm.ref[:nw][gm.cnw][:compressor][parse(Int64,idx)]
-        @test val["ratio"] <= connection["c_ratio_max"] + 1e-6
-        @test val["ratio"] >= connection["c_ratio_min"] - 1e-6
+        @test val["r"] <= connection["c_ratio_max"] + 1e-6
+        @test val["r"] >= connection["c_ratio_min"] - 1e-6
     end
 end

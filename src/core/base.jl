@@ -8,9 +8,9 @@ _IM.@def gm_fields begin GasModels.@im_fields end
 
 
 ""
-function run_model(file::String, model_type, optimizer, build_method; kwargs...)
+function run_model(file::String, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(data, model_type, optimizer, build_method; kwargs...)
+    return run_model(data, model_type, optimizer, build_method; ref_extensions=ref_extensions, solution_processors= solution_processors, kwargs...)
 end
 
 ""
@@ -38,7 +38,7 @@ end
 
 """
 Builds the ref dictionary from the data dictionary. Additionally the ref
-dictionary would contain fields populated by the optional vector of 
+dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions=[])

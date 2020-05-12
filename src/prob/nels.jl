@@ -2,13 +2,13 @@
 
 "entry point into running the gas flow expansion planning with load shedding"
 function run_nels(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_nels; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_nels; ref_extensions=[ref_add_ne!], solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!, sol_ne_compressor_p_to_r!], kwargs...)
 end
 
 
 "entry point into running the gas flow expansion planning with load shedding and a directed pipe model"
 function run_nels_directed(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_nels_directed; ref_extensions=[ref_add_ne!], kwargs...)
+    return run_model(file, model_type, optimizer, build_nels_directed; ref_extensions=[ref_add_ne!], solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!, sol_ne_compressor_p_to_r!], kwargs...)
 end
 
 

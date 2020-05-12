@@ -4,7 +4,7 @@
 
 "variables associated with pressure squared"
 function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    psqr = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model,
+    psqr = gm.var[:nw][nw][:psqr] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:junction])],
         base_name="$(nw)_p",
         start=comp_start_value(gm.ref[:nw][nw][:junction], i, "p_start", gm.ref[:nw][nw][:junction][i]["p_min"]^2))
@@ -16,10 +16,7 @@ function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bo
         end
     end
 
-    if report
-        sol_p = Dict(i => JuMP.@NLexpression(gm.model, sqrt(psqr[i])) for i in ids(gm, nw, :junction))
-        _IM.sol_component_value(gm, nw, :junction, :p, ids(gm, nw, :junction), sol_p)
-    end
+    report && _IM.sol_component_value(gm, nw, :junction, :psqr, ids(gm, nw, :junction), psqr)
 end
 
 
@@ -353,13 +350,7 @@ end
 
 "Variable Set: variables associated with compression ratios"
 function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_compressor_ratio_sqr_value(gm,nw,bounded=bounded,report=report)
-end
-
-
-"variables associated with compression ratio values"
-function variable_compressor_ratio_sqr_value(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    rsqr = gm.var[:nw][nw][:r] = JuMP.@variable(gm.model,
+    rsqr = gm.var[:nw][nw][:rsqr] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:compressor])],
         base_name="$(nw)_r",
         start=comp_start_value(gm.ref[:nw][nw][:compressor], i, "ratio_start", 0.0)
@@ -372,8 +363,5 @@ function variable_compressor_ratio_sqr_value(gm::AbstractGasModel, nw::Int=gm.cn
         end
     end
 
-    if report
-        sol_r = Dict(i => JuMP.@NLexpression(gm.model, sqrt(rsqr[i])) for i in ids(gm, nw, :compressor))
-        _IM.sol_component_value(gm, nw, :compressor, :r, ids(gm, nw, :compressor), sol_r)
-    end
+    report && _IM.sol_component_value(gm, nw, :compressor, :rsqr, ids(gm, nw, :compressor), rsqr)
 end
