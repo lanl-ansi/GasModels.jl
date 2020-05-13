@@ -2,12 +2,12 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ls(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_ls; solution_builder = solution_ls!, kwargs...)
+    return run_model(file, model_type, optimizer, build_ls; solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!], kwargs...)
 end
 
 
 "construct the gas flow feasbility problem"
-function post_ls(gm::AbstractGasModel)
+function build_ls(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_valve_operation(gm)
@@ -52,18 +52,4 @@ function post_ls(gm::AbstractGasModel)
         constraint_on_off_regulator_mass_flow(gm, i)
         constraint_on_off_regulator_pressure(gm, i)
     end
-end
-
-
-"Get all the load shedding solution values"
-function solution_ls!(gm::AbstractGasModel,sol::Dict{String,Any})
-    add_junction_pressure_setpoint!(sol, gm)
-    add_connection_flow_setpoint!(sol, gm)
-    add_direction_setpoint!(sol, gm)
-    add_load_volume_setpoint!(sol, gm)
-    add_load_mass_flow_setpoint!(sol, gm)
-    add_transfer_mass_flow_setpoint!(sol, gm)
-    add_production_volume_setpoint!(sol, gm)
-    add_production_mass_flow_setpoint!(sol, gm)
-    add_compressor_ratio_setpoint!(sol, gm)
 end

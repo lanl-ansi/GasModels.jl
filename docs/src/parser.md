@@ -6,8 +6,7 @@ CurrentModule = GasModels
 
 ## General Data Formats
 
-The json file format is a direct JSON serialization of GasModels internal data model. As such, the json file format is intended to be a temporary storage format. GasModels does not maintain backwards
-compatability with serializations of earlier versions of the Gas Models internal data model.
+The json file format is a direct JSON serialization of GasModels internal data model. As such, the json file format is intended to be a temporary storage format. GasModels does not maintain backwards compatibility with serializations of earlier versions of the Gas Models internal data model.
 
 ```@docs
 parse_file
@@ -19,92 +18,104 @@ parse_json
 The following method is the main methods for parsing Matlab data files:
 
 ```@docs
-parse_matpower
+parse_matgas
 ```
 
 We also provide the following (internal) helper methods:
 
 ```@autodocs
 Modules = [GasModels]
-Pages   = ["io/matpower.jl"]
+Pages   = ["io/matgas.jl"]
 Order   = [:function]
 Private  = true
 ```
 
-This format was designed to have a similar look a feel to the matlab MatPower format, however, it standardizes around data requirements developed by the GasModels development team. It is largely stable, though it has not yet standardized the data fields for valves, control valves, short pipes, resistors, and storage.  Such data can be incorporated using the matlab extensions developed in InfrastructureModels.jl, with standard formats expected to be introduced at a later date.
+This format was designed to have a similar look a feel to the Matlab MatPower format (in the case of GasModels, we refer to it as the MatGas format), however, it standardizes around data requirements developed by the GasModels development team. It is largely stable. Additional fields for each component in the MatGas format can be incorporated using the Matlab extensions developed in InfrastructureModels.jl.
 
 The top of the file contains global information about the network like its name, gas temperature, etc.
 
 ```
-function mgc = gaslib40                       % Name of the network model
+function mgc = gaslib-40
 
-mgc.sound_speed = 312.805;                    % Speed of sound
-mgc.temperature = 273.15;                     % Gas temperature
-mgc.R = 8.314;                                % Universal gas constant
-mgc.compressibility_factor = 0.8;             % Gas compressibility factor
-mgc.gas_molar_mass = 0.0185674;               % Molar mass of the gas
-mgc.gas_specific_gravity = 0.6;               % Specific gravity of the gas
-mgc.specific_heat_capacity_ratio = 1.4;       % Heat capacity ratio of the gas
-mgc.standard_density = 1.0;                   % Standard density value
-mgc.baseP = 8101325;                          % Normalization constant for pressure
-mgc.baseF = 604.167;                          % Normalization constant for flow
-mgc.per_unit = true;                          % Whether or not the parameters are in per unit
+%% required global data
+mgc.gas_specific_gravity         = 0.6;
+mgc.specific_heat_capacity_ratio = 1.4;  % unitless
+mgc.temperature                  = 273.15;  % K
+mgc.compressibility_factor       = 0.8;  % unitless
+mgc.units                        = 'si';
+
+%% optional global data (that was either provided or computed based on required global data)
+mgc.gas_molar_mass               = 0.01857; % kg/mol
+mgc.R                            = 8.314;  % J/(mol K)
+mgc.base_length                  = 5000;  % m (non-dimensionalization value)
+mgc.base_pressure                = 8101325;  % Pa (non-dimensionalization value)
+mgc.base_flow                    = 604; (non-dimensionalization value)
+mgc.is_per_unit                  = 0;
+mgc.sound_speed                  = 312.8060
 ```
 
 Junction data is defined with the following tabular format
 
 ```
 %% junction data
-%  junction_i type pmin pmax status p
+% id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
 mgc.junction = [
 ...
 ]
 ```
 
-where `junction_i` is the unique identifier of the junction, `type` indicates whether or not the junction can be used as a slack node ('type=1'), `pmin` is the minimum pressure, `pmax` is the maximum pressure, `status` is the 0/1 status of the junction and `p` is a nominal pressure value.
+The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
 Pipeline data is defined with the following tabular format
 
 ```
-%% pipeline data
-% pipeline_i f_junction t_junction diameter length friction_factor status
+%% pipe data
+% id fr_junction to_junction diameter length friction_factor p_min p_max status
 mgc.pipe = [
 ...
 ]
 ```
 
-where `pipeline_i` is the unique identifier of the pipe, `f_junction` is the identifier of the from junction, `t_junction` is the identifier of the to junction, `diameter` is the diameter of the pipe, `length` is the length of the pipe, `friction_factor` is the friction level of the pipe, and `status` is the 0/1 status of the pipe.
+The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
 Compressor data is defined with the following tabular format
 
 ```
 %% compressor data
-% compressor_i f_junction t_junction cmin cmax power_max fmin fmax status
+% id fr_junction to_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality
 mgc.compressor = [
 ...
 ```
 
-where `compressor_i` is the unique identifier of the compressor, `f_junction` is the identifier of the from junction, `t_junction` is the identifier of the to junction, `cmin` is the minimum boost ratio of the compressor, `cmax` is the maximum boost ratio of the compressor, `power_max` is the maximum power for the compressor, `fmin` is the minimum flow through the compressor, `fmax` is the minimum flow through the compressor, and `status` is the 0/1 status of the pipe.
+The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
-Producer data is defined with the following tabular format
+Receipt data is defined with the following tabular format
 
 ```
-%% producer
-% producer_i junction fgmin fgmax fg status dispatchable
-mgc.producer = [
+%% receipt data
+% id junction_id injection_min injection_max injection_nominal is_dispatchable status
+mgc.receipt = [
 ...
 ```
 
-where `producer_i` is the unique identifier of the producer, `junction` is the identifier of the junction, `fgmin` is the minimum production, `fgmax` is the maximum production, `fg` is the normal production, `status` is the 0/1 status of the pipe, and `dispatchable` indicates whether or not the producer can modify its production.
+The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
-Consumer data is defined with the following tabular format
-
+Delivery data is defined with the following tabular format
 
 ```
-%% consumer
-% consumer_i junction fd status dispatchable
-mgc.consumer = [
+%% delivery data
+% id junction_id withdrawal_min withdrawal_max withdrawal_nominal is_dispatchable status
+mgc.delivery = [
 ...
 ```
 
-where `consumer_i` is the unique identifier of the consumer, `junction` is the identifier of the junction, `fd` is the normal consumption, `status` is the 0/1 status of the pipe, and `dispatchable` indicates whether or not the producer can modify its production.
+The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
+
+## Parsing Transient Data 
+To run the transient formulations, apart from parsing the network file [Matgas Format (.m)](@ref), a time-series [Transient Data Format (CSV)](@ref) file has to be parsed. The following method provides a way to do so: 
+
+```@docs 
+parse_files
+```
+
+The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument. 

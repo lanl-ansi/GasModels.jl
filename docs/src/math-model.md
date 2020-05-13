@@ -3,7 +3,7 @@
 As GasModels implements a variety of gas network optimization problems, the implementation is the best reference for precise mathematical formulations.  This section provides a mathematical specification for a prototypical Gas Flow problem, to provide an overview of the typical mathematical models in GasModels.
 
 
-## Gas Flow
+## Steady State Gas Flow
 
 GasModels implements a steady-state model of gas flow based on the Weymouth formulation that uses the 1-D hydrodynamic equations for natural gas flow in a pipe. In the following paragraphs, a derivation of the steady state equations used in GasModels is shown. To that end, we first assume that the flow is steady. Given this assumption, the conservation of momentum equation for the flow of gas in a pipe is given by
 
@@ -107,8 +107,10 @@ SI Units for various parameters
 | $\phi$        | Gas Mass Flux              | kg/m^2/s |
 | $f$           | Gas Mass Flow              | kg/s     |
 | $\lambda$     | Pipe friction factor       | none     |
+| $a$           | Speed of sound             | m/s      |
 
+## Transient Gas Flow
 
-
+The transient gas flow dynamics implements a lumped element reduced-order model presented in [this paper](https://ieeexplore.ieee.org/abstract/document/8412133/) and its ([arxiv version](https://arxiv.org/pdf/1803.07156)). An interested reader is referred to that work for detailed development of the dynamics. 
 
  

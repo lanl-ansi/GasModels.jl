@@ -13,7 +13,7 @@
     end
 
     @testset "check status=false components" begin
-        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.post_ls)
+        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.build_ls)
         @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
         try
@@ -51,7 +51,7 @@
 
         line_count = count(c -> c == '\n', output)
 
-        @test line_count >= 180 && line_count <= 220
+        @test line_count >= 180 && line_count <= 240
         @test occursin("name: gaslib-40", output)
         @test occursin("pipe: 39", output)
         @test occursin("delivery: 29", output)
@@ -69,7 +69,7 @@
         output = sprint(GasModels.summary, result["solution"])
 
         line_count = count(c -> c == '\n', output)
-        @test line_count >= 100 && line_count <= 125
+        @test line_count >= 100 && line_count <= 150
         @test occursin("pipe: 39", output)
         @test occursin("junction: 46", output)
         @test occursin("Table: pipe", output)

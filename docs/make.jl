@@ -10,21 +10,23 @@ makedocs(
         "Manual" => [
             "Getting Started" => "quickguide.md",
             "Input Data Formats" => "data-format.md",
+            "Network Data Format" => "network-data.md",
             "Result Data Format" => "result-data.md",
             "Mathematical Model" => "math-model.md"
         ],
         "Library" => [
             "Network Formulations" => "formulations.md",
-            "Problem Specifications" => "specifications.md",
-            "Modeling Components" => [
-                "GasModel" => "model.md",
-                "Objective" => "objective.md",
-                "Variables" => "variables.md",
-                "Constraints" => "constraints.md"
+            "Steady State Specifications" => [
+                "Problem Specifications" => "ss-specifications.md",
+                "Objective"              => "objective.md",
+                "Variables"              => "variables.md",
+                "Constraints"            => "constraints.md"
             ],
+            "Transient Specifications" => "transient-specifications.md",
             "File IO" => "parser.md"
         ],
-        "Developer" => "developer.md"
+        "Developer" => "developer.md",
+        "Examples" =>  "examples.md"
     ]
 )
 

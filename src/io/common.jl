@@ -32,7 +32,7 @@ end
 """
     correct_network_data!(data::Dict{String,Any})
 
-Data integrity checks 
+Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)

@@ -1,3 +1,28 @@
+# Gas Model
+
+```@meta
+CurrentModule = GasModels
+```
+
+All methods for constructing gasmodels should be defined on the following type:
+
+```@docs
+AbstractGasModel
+```
+
+which utilizes the following (internal) functions:
+
+```@docs
+build_ref
+```
+
+When using the build_ref for transient problem formulations the following ref extension has to be added to populate the fields necessary for formulate the transient optimization problems.
+
+```@docs
+ref_add_transient!
+```
+
+
 # Network Formulations
 
 ## Type Hierarchy
@@ -35,47 +60,14 @@ StandardMyFooForm <: AbstractFooModel
 FooGasModel = AbstractGasModel{StandardFooForm}
 ```
 
-## NLP
+## Supported Formulations
 
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/nlp.jl"]
-Order   = [:function]
-Private  = true
-```
+All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be MIP since valve controls are discrete.
 
-## MINLP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/mi/minlp.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## MISOCP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/mi/misocp.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## MIP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/mip.jl"]
-Order   = [:function]
-Private  = true
-```
-
-## LP
-
-```@autodocs
-Modules = [GasModels]
-Pages   = ["form/lp.jl"]
-Order   = [:function]
-Private  = true
-```
+| Formulation      | Steady-State         | Transient             | Description           |
+| ---------------- | -------------------- | --------------------- | --------------------- |
+| NLP              |       Y              |          N            | Physics is modeled using nonlinear equations. |
+| MINLP            |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| MINLP            |       Y              |          N            | Physics is modeled using second order cone equations. Directionality of flow is modeled using discrete variables |
+| MINLP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
+| LP               |       Y              |          N            | Physics is modeled using linear equations. |

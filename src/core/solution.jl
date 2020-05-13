@@ -1,213 +1,116 @@
-"Build a gas solution"
-function build_solution(gm::AbstractGasModel, solve_time; solution_builder=solution_gf!)
-    sol = _init_solution(gm)
-    data = Dict{String,Any}("name" => haskey(gm.data, "name") ? gm.data["name"] : "none")
+function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
+    solution["is_per_unit"] = gm.data["is_per_unit"]
+    solution["multinetwork"] = ismultinetwork(gm.data)
+    solution["base_pressure"] = gm.ref[:base_pressure]
+    solution["base_flow"] = gm.ref[:base_flow]
+    solution["base_time"] = gm.ref[:base_time]
+    solution["base_length"] = gm.ref[:base_length]
+    solution["base_density"] = gm.ref[:base_density]
+end
 
-    if gm.data["multinetwork"]
-        sol_nws = sol["nw"] = Dict{String,Any}()
-        data_nws = data["nw"] = Dict{String,Any}()
 
-        for (n,nw_data) in gm.data["nw"]
-            sol_nw = sol_nws[n] = Dict{String,Any}()
-            gm.cnw = parse(Int, n)
-            solution_builder(gm, sol_nw)
-            data_nws[n] = Dict(
-                "name" => nw_data["name"],
-                "junction_count" => length(nw_data["junction"]),
-                "pipe_count" => haskey(nw_data, "pipe") ? length(nw_data["pipe"]) : 0,
-                "short_pipe_count" => haskey(nw_data, "short_pipe") ? length(nw_data["short_pipe"]) : 0,
-                "compressor_count" => haskey(nw_data, "compressor") ? length(nw_data["compressor"]) : 0,
-                "valve_count" => haskey(nw_data, "valve") ? length(nw_data["valve"]) : 0,
-                "regulator_count" => haskey(nw_data, "regulator") ? length(nw_data["regulator"]) : 0,
-                "resistor_count" => haskey(nw_data, "resistor") ? length(nw_data["resistor"]) : 0
-            )
-        end
+
+function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution, "nw")
+        nws_data = solution["nw"]
     else
-        solution_builder(gm, sol)
-        data["junction_count"] = length(gm.data["junction"])
-        data["pipe_count"] = haskey(gm.data, "pipe") ? length(gm.data["pipe"]) : 0
-        data["compressor_count"] = haskey(gm.data, "compressor") ? length(gm.data["compressor"]) : 0
-        data["valve_count"] = haskey(gm.data, "valve") ? length(gm.data["valve"]) : 0
-        data["regulator_count"] = haskey(gm.data, "regulator") ? length(gm.data["regulator"]) : 0
-        data["resistor_count"] = haskey(gm.data, "resistor") ? length(gm.data["resistor"]) : 0
-        data["short_pipe_count"] = haskey(gm.data, "short_pipe") ? length(gm.data["short_pipe"]) : 0
+        nws_data = Dict("0" => solution)
     end
 
-    solution = Dict{String,Any}(
-        "optimizer" => string(typeof(gm.model.moi_backend.optimizer)),
-        "termination_status" => JuMP.termination_status(gm.model),
-        "primal_status" => JuMP.primal_status(gm.model),
-        "dual_status" => _guard_dual_status(gm.model),
-        "objective" => _guard_objective_value(gm.model),
-        "objective_lb" => _guard_objective_bound(gm.model),
-        "objective_gap" => abs((_guard_objective_value(gm.model) - _guard_objective_bound(gm.model)) / _guard_objective_value(gm.model)) * 100,
-        "solve_time" => solve_time,
-        "solution" => sol,
-        "machine" => Dict(
-            "cpu" => Sys.cpu_info()[1].model,
-            "memory" => string(Sys.total_memory()/2^30, " Gb")
-            ),
-        "data" => data
-        )
-
-    return solution
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "junction")
+            for (i,junction) in nw_data["junction"]
+                if haskey(junction, "psqr")
+                    junction["p"] = sqrt(junction["psqr"])
+                end
+            end
+        end
+    end
 end
 
 
-""
-function _init_solution(gm::AbstractGasModel)
-    data_keys = ["is_per_unit", "base_pressure", "base_flow", "multinetwork"]
-    return Dict{String,Any}(key => gm.data[key] for key in data_keys)
-end
-
-
-"Get all the solution values"
-function solution_gf!(gm::AbstractGasModel,sol::Dict{String,Any})
-    add_junction_pressure_setpoint!(sol, gm)
-    add_connection_flow_setpoint!(sol, gm)
-    add_compressor_ratio_setpoint!(sol, gm)
-end
-
-
-"Get the pressure solutions"
-function add_junction_pressure_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "junction", "p", :p; scale = (x,item) -> sqrt(JuMP.value(x)))
-end
-
-
-"Get the pressure squared solutions"
-function add_junction_pressure_sqr_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "junction", "psqr", :p)
-end
-
-
-"Get the load mass flow solutions"
-function add_load_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "delivery", "fl", :fl; default_value = (item) -> 0)
-end
-
-
-"Get the production mass flow set point"
-function add_production_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "receipt", "fg", :fg; default_value = (item) -> 0)
-end
-
-"Get the transfer mass flow set point"
-function add_transfer_mass_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "transfer", "ft", :ft; default_value = (item) -> 0)
-end
-
-"Get the load volume solutions"
-function add_load_volume_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "delivery", "ql", :fl; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
-end
-
-
-"Get the production volume set point"
-function add_production_volume_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "receipt", "qg", :fg; scale = (x,item) -> JuMP.value(x) / gm.data["standard_density"], default_value = (item) -> 0)
-end
-
-
-"Get the direction set points"
-function add_direction_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "pipe", "y", :y_pipe)
-    add_setpoint!(sol, gm, "compressor", "y", :y_compressor)
-    add_setpoint!(sol, gm, "valve", "y", :y_valve)
-    add_setpoint!(sol, gm, "regulator", "y", :y_regulator)
-    add_setpoint!(sol, gm, "resistor", "y", :y_resistor)
-    add_setpoint!(sol, gm, "short_pipe", "y", :y_short_pipe)
-end
-
-
-"Get the valve solutions"
-function add_valve_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "valve", "v", :v_valve)
-    add_setpoint!(sol, gm, "regulator", "v", :v_regulator)
-end
-
-
-"Add the flow solutions"
-function add_connection_flow_setpoint!(sol, gm::AbstractGasModel)
-    add_setpoint!(sol, gm, "pipe", "f", :f_pipe)
-    add_setpoint!(sol, gm, "compressor", "f", :f_compressor)
-    add_setpoint!(sol, gm, "regulator", "f", :f_regulator)
-    add_setpoint!(sol, gm, "valve", "f", :f_valve)
-    add_setpoint!(sol, gm, "resistor", "f", :f_resistor)
-    add_setpoint!(sol, gm, "short_pipe", "f", :f_short_pipe)
-end
-
-
-"Add the compressor solutions"
-function add_compressor_ratio_setpoint!(sol, gm::AbstractGasModel; default_value = (item) -> 1)
-    add_setpoint!(sol, gm, "compressor", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
-    add_setpoint!(sol, gm, "regulator", "ratio", :p; scale = (x,item) -> sqrt(JuMP.value(x[2])) / sqrt(JuMP.value(x[1])), extract_var = (var,idx,item) -> [var[item["fr_junction"]],var[item["to_junction"]]]   )
-end
-
-
-""
-function add_setpoint!(sol, gm::AbstractGasModel, dict_name, param_name, variable_symbol; index_name = nothing, default_value = (item) -> NaN, scale = (x,item) -> JuMP.value(x), extract_var = (var,idx,item) -> var[idx])
-    sol_dict = get(sol, dict_name, Dict{String,Any}())
-
-    if gm.data["multinetwork"]
-        data_dict = haskey(gm.data["nw"]["$(gm.cnw)"], dict_name) ? gm.data["nw"]["$(gm.cnw)"][dict_name] : Dict()
+function sol_rsqr_to_r!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution, "nw")
+        nws_data = solution["nw"]
     else
-        data_dict = haskey(gm.data, dict_name) ? gm.data[dict_name] : Dict()
+        nws_data = Dict("0" => solution)
     end
 
-    if length(data_dict) > 0
-        sol[dict_name] = sol_dict
-    end
-
-    for (i,item) in data_dict
-        idx = parse(Int64,i)
-        if index_name != nothing
-            idx = Int(item[index_name])
-        end
-        sol_item = sol_dict[i] = get(sol_dict, i, Dict{String,Any}())
-        sol_item[param_name] = default_value(item)
-        try
-            variable = extract_var(var(gm, variable_symbol), idx, item)
-            sol_item[param_name] = scale(variable, item)
-        catch e
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "compressor")
+            for (i,compressor) in nw_data["compressor"]
+                if haskey(compressor, "rsqr")
+                    compressor["r"] = sqrt(compressor["rsqr"])
+                end
+            end
         end
     end
 end
 
 
-""
-function _guard_objective_value(model)
-    obj_val = NaN
-
-    try
-        obj_val = JuMP.objective_value(model)
-    catch
+function sol_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution, "nw")
+        nws_data = solution["nw"]
+    else
+        nws_data = Dict("0" => solution)
     end
 
-    return obj_val
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "compressor")
+            for (k,compressor) in nw_data["compressor"]
+                i = ref(gm,:compressor,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
+                j = ref(gm,:compressor,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
+                f = compressor["f"]
+                pi = nw_data["junction"][string(i)]["psqr"]
+                pj = nw_data["junction"][string(j)]["psqr"]
+
+                compressor["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
+            end
+        end
+    end
 end
 
 
-""
-function _guard_objective_bound(model)
-    obj_lb = -Inf
-
-    try
-        obj_lb = JuMP.objective_bound(model)
-    catch
+function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution, "nw")
+        nws_data = solution["nw"]
+    else
+        nws_data = Dict("0" => solution)
     end
 
-    return obj_lb
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "ne_compressor")
+            for (k,compressor) in nw_data["ne_compressor"]
+                i = ref(gm,:ne_compressor,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
+                j = ref(gm,:ne_compressor,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
+                f = compressor["f"]
+                pi = nw_data["junction"][string(i)]["psqr"]
+                pj = nw_data["junction"][string(j)]["psqr"]
+
+                compressor["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
+            end
+        end
+    end
 end
 
-""
-function _guard_dual_status(model)
-    dual_status = NaN
-
-    try
-        dual_status = JuMP.dual_status(model)
-    catch
+function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution, "nw")
+        nws_data = solution["nw"]
+    else
+        nws_data = Dict("0" => solution)
     end
 
-    return dual_status
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "regulator")
+            for (k,regulator) in nw_data["regulator"]
+                i = ref(gm,:regulator,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
+                j = ref(gm,:regulator,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
+                f = regulator["f"]
+                pi = nw_data["junction"][string(i)]["psqr"]
+                pj = nw_data["junction"][string(j)]["psqr"]
+
+                regulator["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
+            end
+        end
+    end
 end

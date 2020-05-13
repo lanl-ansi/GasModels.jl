@@ -14,14 +14,22 @@
 @inline get_temperature(data::Dict{String, Any}) = get(data, "temperature", 288.7060)
 @inline get_sound_speed(data::Dict{String, Any}) = get(data, "sound_speed", 371.6643)
 @inline get_molecular_mass_of_air() = 0.02896
-@inline get_one_atm_in_pascal() = 101.325 
-@inline get_one_atm_in_psi() = pascal_to_psi(101.325)
+@inline get_one_atm_in_pascal() = 101325.0
+@inline get_one_atm_in_psi() = pascal_to_psi(101325)
+
+"""
+Convering mmsfcd to kgps (standard volumetric flow rate to mass flow rate)
+"""
 
 function get_mmscfd_to_kgps_conversion_factor(data::Dict{String, Any})::Number 
-    atm = get_one_atm_in_pascal()
+    standard_pressure = get_one_atm_in_pascal()
     R = get_universal_R(data)
-    T = get_temperature(data)
-    return 1000.0 * 0.02832 / 86400.0 * (atm / (R * T) * 1e6) * get_gas_specific_gravity() * get_molecular_mass_of_air()
+    standard_temperature = get_temperature(data)
+    cubic_ft_to_cubic_m = 0.02832
+    volumetric_flow_rate_in_si = cubic_ft_to_cubic_m * 1e6 / 86400.0
+    molecular_mass_of_gas = get_gas_specific_gravity(data) * get_molecular_mass_of_air()
+    density_at_standard_conditions = standard_pressure * molecular_mass_of_gas / standard_temperature / R 
+    return density_at_standard_conditions * volumetric_flow_rate_in_si 
 end 
 
 get_kgps_to_mmscfd_conversion_factor(data::Dict{String, Any})::Number = 1/get_mmscfd_to_kgps_conversion_factor(data)

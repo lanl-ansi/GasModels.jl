@@ -132,8 +132,8 @@ end
 "Constraint: Constraints which define pressure drop across a pipe when there are on/off direction variables"
 function constraint_pipe_pressure(gm::AbstractMIModels, n::Int, k, i, j, pd_min, pd_max)
     y = var(gm,n,:y_pipe,k)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :on_off_pressure_drop1, k, JuMP.@constraint(gm.model, (1-y) * pd_min <= pi - pj))
     _add_constraint!(gm, n, :on_off_pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max))
 end
@@ -157,8 +157,8 @@ end
 "Constraint: constraints on pressure drop across an expansion pipe with on/off direction variables"
 function constraint_pipe_pressure_ne(gm::AbstractMIModels, n::Int, k, i, j, pd_min, pd_max)
     y = var(gm,n,:y_ne_pipe,k)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-y) * pd_min <= pi - pj))
     _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max))
 end
@@ -207,8 +207,8 @@ end
 "Constraint: enforces pressure changes bounds that obey compression ratios for a compressor with on/off direction variables"
 function constraint_compressor_ratios(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
     y  = var(gm,n,:y_compressor,k)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
     _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(i_pmax^2)))
     _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
@@ -229,8 +229,8 @@ end
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables"
 function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
     y = var(gm,n,:y_ne_compressor,k)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     zc = var(gm,n,:zc,k)
 
     # TODO these are modeled as bi directinal.  Need to be one direction
@@ -277,8 +277,8 @@ end
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables"
 function constraint_on_off_regulator_pressure(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
     y  = var(gm,n,:y_regulator,k)
-    pi = var(gm,n,:p,i)
-    pj = var(gm,n,:p,j)
+    pi = var(gm,n,:psqr,i)
+    pj = var(gm,n,:psqr,j)
     v  = var(gm,n,:v_regulator,k)
     _add_constraint!(gm, n, :on_off_regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
     _add_constraint!(gm, n, :on_off_regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))

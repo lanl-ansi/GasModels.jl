@@ -2,56 +2,80 @@
 
 ## The Network Data Dictionary
 
-Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. The default I/O for GasModels utilizes this serialization as a text file. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.
+Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. GasModels can utilize this serialization as a text file, however GasModels does not support backwards compatibility for such serializations. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.
 
 The network data dictionary structure is roughly as follows:
 
 ```json
 {
-"name":<string>,                   # a name for the model
-"temperature":<float>,             # gas temperature. SI units are kelvin
-"multinetwork":<boolean>,          # flag for whether or not this is multiple networks
-"gas_molar_mass":<float>,          # molecular mass of the gas. SI units are kg/mol
-"standard_density":<float>,        # Standard (nominal) density of the gas. SI units are kg/m^3
-"per_unit":<boolean>,              # Whether or not the file is in per unit (non dimensional units) or SI units.  Note that the only quantities that are non-dimensionalized are pressure and flux.
-"compressibility_factor":<float>,  # Gas compressability. Non-dimensional.
-"baseQ":<float>,                   # Base for non-dimensionalizing volumetric flow at standard density. SI units are m^3/s
-"baseP":<float>,                   # Base for non-dimensionalizing pressure. SI units are pascal.
+"name":<string>,                         # a name for the model
+"temperature":<float>,                   # gas temperature. SI units are kelvin
+"is_per_units":<int>,                    # Whether or not the file is in per unit (non dimensional units) or SI units.
+"is_english_units":<int>,                # Whether or not the file is in english units
+"gas_molar_mass":<float>,                # molecular mass of the gas. SI units are kg/mol
+"gas_specific_gravity":<float>,          # the specific gravity of the gas. Non-dimensional.
+"multinetwork":<boolean>,                # flag for whether or not this is multiple networks
+"base_length":<float>,                   # Base for non-dimensionalizing space (length). Si units are m
+"base_flow":<float>,                     # Base for non-dimensionalizing mass flow. SI units are kg/s
+"base_pressure":<float>,                 # Base for non-dimensionalizing pressure. SI units are pascal
+"base_time":<float>,                     # Base for non-dimensionalizing time. SI units are s
+"compressibility_factor":<float>,        # Gas compressability. Non-dimensional.
+"specific_heat_capacity_ratio":<float>,  # Gas compressability. Non-dimensional.
+"sound_speed":<float>,                   # Speed of sound through the gas. SI units are m/s.
+"R":<float>,                             # Universal Gas constant. SI units are J/mol/K.
 "junction":{
     "1":{
-      "pmax": <float>,    # maximum pressure. SI units are pascals
-      "pmin": <float>,    # minimum pressure. SI units are pascals
+      "p_max": <float>,    # maximum pressure. SI units are pascals
+      "p_min": <float>,    # minimum pressure. SI units are pascals
+      "p_nominal": <float>,  # nominal pressure. SI units are pascals
       "status": <int>,    # status of the component (0 = off, 1 = on). Default is 1.
-      "latitude":<float>, # latitude position of the junction (optional)
-      "longitude":<float>, # latitude position of the junction (optional)
+      "lat":<float>, # latitude position of the junction (optional)
+      "lon":<float>, # latitude position of the junction (optional)
        ...
     },
     "2":{...},
     ...
 },
-"consumer":{
+"delivery":{
     "1":{
-      "ql_junc": <float>,  # junction id
-      "qlmax": <float>,  # the maximum volumetric gas demand at standard density. SI units are m^3/s.
-      "qlmin": <float>,  # the minimum volumetric gas demand gas demand at standard density. SI units are m^3/s.
-      "ql": <float>, # nominal volumetric gas demand gas demand at standard density. SI units are m^3/s.
+      "junction_id": <float>,  # junction id
+      "withdrawal_max": <float>,  # the maximum mass flow demand. SI units are kg/s.
+      "withdrawal_min": <float>,  # the minimum mass flow demand. SI units are kg/s.
+      "withdrawal_nominal": <float>, # nominal mass flow demand. SI units are kg/s.
       "priority": <float>, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
-      "dispatchable": <int>,  # whether or not the unit is dispatchable (0 = consumer should produce qg, 1 = consumer can produce between qlmin and qlmax).
+      "bid_price": <float>, # price for buying gas at the delivery.
+      "is_dispatchable": <int>,  # whether or not the unit is dispatchable (0 = delivery should consume withdrawl_nominal, 1 = delivery can consume between withdrawal_min and withdrawal_max).
       "status": <int>,   # status of the component (0 = off, 1 = on). Default is 1.
        ...
     },
     "2":{...},
     ...
 },
-"producer":{
+"receipt":{
     "1":{
-      "qg_junc": <float>,     # junction id
-      "qgmin": <float>,       # the minimum volumetric gas production at standard density. SI units are m^3/s.
-      "qgmax": <float>,       # the maximum volumetric gas production at standard density. SI units are m^3/s.
-      "qg": <float>,          # nominal volumetric gas production at standard density. SI units are m^3/s.
-      "dispatchable": <int>,  # whether or not the unit is dispatchable (0 = producer should produce qg, 1 = producer can produce between qgmin and qgmax).
-      "status": <int>,        # status of the component (0 = off, 1 = on). Default is 1.
+      "junction_id": <float>,         # junction id
+      "injection_min": <float>,       # the minimum mass flow gas production. SI units are kg/s.
+      "injection_max": <float>,       # the maximum mass flow gas production. SI units are kg/s.
+      "injection_nominal": <float>,   # nominal mass flow production at standard density. SI units are kg/s.
+      "dispatchable": <int>,          # whether or not the unit is dispatchable (0 = receipt should produce injection_nominal, 1 = receipt can produce between injection_min and injection_max).
+      "offer_price": <float>,         # price for selling gas at the receipt.
+      "status": <int>,                # status of the component (0 = off, 1 = on). Default is 1.
        ...
+    },
+    "2":{...},
+    ...
+},
+"transfer":{
+    "1":{
+        "junction_id": <float>,         # junction id
+        "withdrawal_max": <float>,      # the maximum mass flow demand. SI units are kg/s.
+        "withdrawal_min": <float>,      # the minimum mass flow demand. SI units are kg/s. (can be negative, in which case it is gas injection)
+        "withdrawal_nominal": <float>,  # nominal mass flow demand. SI units are kg/s.
+        "offer_price": <float>,         # price for selling gas at the receipt.
+        "bid_price": <float>,           # price for buying gas at the delivery.
+        "is_dispatchable": <int>,       # whether or not the unit is dispatchable (0 = transfer should consume withdrawl_nominal, 1 = transfer can consume between withdrawal_min and withdrawal_max).
+        "status": <int>,                # status of the component (0 = off, 1 = on). Default is 1.
+        ...
     },
     "2":{...},
     ...
@@ -59,12 +83,14 @@ The network data dictionary structure is roughly as follows:
 "pipe":{
     "1":{
       "length": <float>,            # the length of the connection. SI units are m.
-      "f_junction": <int>,          # the "from" side junction id
-      "t_junction": <int>,          # the "to" side junction id
+      "fr_junction": <int>,         # the "from" side junction id
+      "to_junction": <int>,         # the "to" side junction id
       "friction_factor": <float>,   # the friction component of the resistance term of the pipe. Non dimensional.
       "diameter": <float>,          # the diameter of the connection. SI units are m.
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "p_max": <float>,             # maximum pressure. SI units are pascals
+      "p_min": <float>,             # minimum pressure. SI units are pascals
+      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
@@ -72,12 +98,14 @@ The network data dictionary structure is roughly as follows:
 },
 "compressor":{
     "1":{
-      "f_junction": <int>,          # the "from" side junction id
-      "t_junction": <int>,          # the "to" side junction id
+      "fr_junction": <int>,         # the "from" side junction id
+      "to_junction": <int>,         # the "to" side junction id
       "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "operating_cost": <float>,    # The cost per W of running the compressor
+      "power_max": <float>,         # Maximum power consumed by the compressor. SI units is W
+      "type": <int>,                # type of the compressor (two way compression or not, one way flow or not, etc.)
         ...
     },
     "2":{...},
@@ -85,10 +113,10 @@ The network data dictionary structure is roughly as follows:
 }
 "short_pipe":{
     "1":{
-      "f_junction": <int>,          # the "from" side junction id
-      "t_junction": <int>,          # the "to" side junction id
+      "fr_junction": <int>,         # the "from" side junction id
+      "to_junction": <int>,         # the "to" side junction id
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
@@ -96,22 +124,23 @@ The network data dictionary structure is roughly as follows:
 }
 "valve":{
     "1":{
-      "f_junction": <int>,          # the "from" side junction id
-      "t_junction": <int>,          # the "to" side junction id
-      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "fr_junction": <int>,             # the "from" side junction id
+      "to_junction": <int>,             # the "to" side junction id
+      "status": <int>,                  # status of the component (0 = off, 1 = on). Default is 1.
+      "is_bidirectional": <int>,        # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
     ...
 }
-"control_valve":{
+"regulator":{
     "1":{
-      "f_junction": <int>,          # the "from" side junction id
-      "c_ratio_min": <float>,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "c_ratio_max": <float>,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
-      "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "fr_junction": <int>,             # the "from" side junction id
+      "to_junction": <int>,             # the "to" side junction id
+      "reduction_factor_min": <float>,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "reduction_factor_max": <float>,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      "status": <int>,                  # status of the component (0 = off, 1 = on). Default is 1.
+      "is_bidirectional": <int>,        # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},
@@ -119,11 +148,26 @@ The network data dictionary structure is roughly as follows:
 }
 "resistor":{
     "1":{
-      "f_junction": <int>,          # the "from" side junction id
-      "t_junction": <int>,          # the "to" side junction id
+      "fr_junction": <int>,          # the "from" side junction id
+      "to_junction": <int>,          # the "to" side junction id
       "drag": <float>,              # the drag factor of resistors. Non dimensional.
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
-      "directed": <int>,            # direction of the component (1 = f_junction -> t_junction, 0 = undirected, -1 = t_junction -> f_junction). Default is 0.
+      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    "2":{...},
+    ...
+}
+"storage":{
+    "1":{
+        "junction_id": <float>,                 # id of the junction in which storage is located
+        "pressure_nomial": <float>,             # nominal pressure inside the storage 
+        "flow_injection_rate_min": <float>,     # minimum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_injection_rate_max": <float>,     # maximum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_withdrawal_rate_min": <float>,    # minimum flow rate at which gas can be withdrawn from storage. SI units is kg/s
+        "flow_withdrawal_rate_max": <float>,    # maxium flow rate at which gas can be withdrawn storage. SI units is kg/s  
+        "capacity": <float>,                    # capacity of storage in kg 
+        "status": <int>,                        # status of the component (0 = off, 1 = on). Default is 1.
         ...
     },
     "2":{...},

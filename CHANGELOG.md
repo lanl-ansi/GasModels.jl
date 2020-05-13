@@ -5,6 +5,17 @@
 - Implement constraints on compressor power
 - Implement a multi-network test
 
+## v0.7
+
+- Update to InfrastructureModels solution building (breaking)
+- Add support for Memento v0.13, v1.0
+- Introduce transient optimal gas flow formulation (transient_ogf)
+- Support for transient optimization problem restricted to component types: junction, pipe, compressor, receipt, delivery, and transfers; objective support: load shed, compressor power, and linear combination of both.
+- Add multi-network and transient_ogf unit tests
+- Fixed bug in area computation .
+- Fixed bug in sound speed computation and other parameters
+- Fixed bugs in matgas parser by merging parses-fixes branch by @pseudocubic
+
 ## v0.6
 
 - Introduced matgas format (breaking) (#147)

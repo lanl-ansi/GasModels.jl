@@ -3,10 +3,9 @@ using JSON
 
 include("old_matlab.jl")
 
-
 file = ARGS[1]
 
-json_out_file = split(file, ".")[1] * "_matgas.json"
+json_out_file = split(file, ".")[1] * ".json"
 matgas_out_file = split(file, ".")[1] * "_matgas.m"
 
 
