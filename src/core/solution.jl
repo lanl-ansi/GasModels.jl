@@ -21,7 +21,7 @@ function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
         if haskey(nw_data, "junction")
             for (i,junction) in nw_data["junction"]
                 if haskey(junction, "psqr")
-                    junction["p"] = sqrt(junction["psqr"])
+                    junction["p"] = sqrt(abs(junction["psqr"]))
                 end
             end
         end
@@ -40,7 +40,7 @@ function sol_rsqr_to_r!(gm::AbstractGasModel, solution::Dict)
         if haskey(nw_data, "compressor")
             for (i,compressor) in nw_data["compressor"]
                 if haskey(compressor, "rsqr")
-                    compressor["r"] = sqrt(compressor["rsqr"])
+                    compressor["r"] = sqrt(abs(compressor["rsqr"]))
                 end
             end
         end
@@ -61,8 +61,8 @@ function sol_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
                 i = ref(gm,:compressor,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
                 j = ref(gm,:compressor,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
                 f = compressor["f"]
-                pi = nw_data["junction"][string(i)]["psqr"]
-                pj = nw_data["junction"][string(j)]["psqr"]
+                pi = abs(nw_data["junction"][string(i)]["psqr"])
+                pj = abs(nw_data["junction"][string(j)]["psqr"])
 
                 compressor["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
             end
@@ -84,8 +84,8 @@ function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
                 i = ref(gm,:ne_compressor,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
                 j = ref(gm,:ne_compressor,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
                 f = compressor["f"]
-                pi = nw_data["junction"][string(i)]["psqr"]
-                pj = nw_data["junction"][string(j)]["psqr"]
+                pi = abs(nw_data["junction"][string(i)]["psqr"])
+                pj = abs(nw_data["junction"][string(j)]["psqr"])
 
                 compressor["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
             end
@@ -106,8 +106,8 @@ function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
                 i = ref(gm,:regulator,parse(Int64,k); nw=parse(Int64, n))["fr_junction"]
                 j = ref(gm,:regulator,parse(Int64,k); nw=parse(Int64, n))["to_junction"]
                 f = regulator["f"]
-                pi = nw_data["junction"][string(i)]["psqr"]
-                pj = nw_data["junction"][string(j)]["psqr"]
+                pi = abs(nw_data["junction"][string(i)]["psqr"])
+                pj = abs(nw_data["junction"][string(j)]["psqr"])
 
                 regulator["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
             end
