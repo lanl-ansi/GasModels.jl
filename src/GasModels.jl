@@ -45,6 +45,7 @@ module GasModels
 
     include("io/json.jl")
     include("io/common.jl")
+    include("io/gaslib.jl")
     include("io/grail.jl")
     include("io/matgas.jl")
     include("io/transient.jl")
