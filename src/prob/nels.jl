@@ -78,21 +78,6 @@ function build_nels(gm::AbstractGasModel)
         constraint_on_off_regulator_mass_flow(gm, i)
         constraint_on_off_regulator_pressure(gm, i)
     end
-
-    exclusive = Dict()
-    for (idx, pipe) in gm.ref[:nw][gm.cnw][:ne_pipe]
-        i = min(pipe["fr_junction"],pipe["to_junction"])
-        j = max(pipe["fr_junction"],pipe["to_junction"])
-
-        if haskey(exclusive, i) == false
-            exclusive[i] = Dict()
-        end
-
-        if haskey(exclusive[i], j) == false
-            constraint_exclusive_new_pipes(gm, i, j)
-            exclusive[i][j] = true
-        end
-    end
 end
 
 
@@ -118,7 +103,7 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_mass_flow_balance_ne(gm, i)
     end
 
-    for i in ids(gm,:undirected_pipe)
+    for i in ids(gm,:pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)
         constraint_pipe_weymouth(gm,i)
@@ -128,12 +113,6 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_resistor_pressure(gm, i)
         constraint_resistor_mass_flow(gm,i)
         constraint_resistor_weymouth(gm,i)
-    end
-
-    for i in ids(gm,:directed_pipe)
-        constraint_pipe_pressure_directed(gm, i)
-        constraint_pipe_mass_flow_directed(gm, i)
-        constraint_pipe_weymouth_directed(gm, i)
     end
 
     for i in ids(gm,:directed_resistor)
@@ -201,20 +180,5 @@ function build_nels_directed(gm::AbstractGasModel)
     for i in ids(gm, :directed_regulator)
         constraint_on_off_regulator_mass_flow_directed(gm, i)
         constraint_on_off_regulator_pressure_directed(gm, i)
-    end
-
-    exclusive = Dict()
-    for (idx, pipe) in gm.ref[:nw][gm.cnw][:ne_pipe]
-        i = min(pipe["fr_junction"],pipe["to_junction"])
-        j = max(pipe["fr_junction"],pipe["to_junction"])
-
-        if haskey(exclusive, i) == false
-            exclusive[i] = Dict()
-        end
-
-        if haskey(exclusive[i], j) == false
-            constraint_exclusive_new_pipes(gm, i, j)
-            exclusive[i][j] = true
-        end
     end
 end
