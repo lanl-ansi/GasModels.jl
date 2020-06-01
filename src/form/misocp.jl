@@ -9,10 +9,10 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, nw, :default_compressor), resistor=ref(gm, nw, :undirected_resistor), short_pipe=ref(gm, nw, :undirected_short_pipe), valve=ref(gm, nw, :valve), regulator=ref(gm, nw, :undirected_regulator))
+function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, nw, :default_compressor), short_pipe=ref(gm, nw, :undirected_short_pipe), valve=ref(gm, nw, :valve), regulator=ref(gm, nw, :undirected_regulator))
     variable_pressure_difference(gm, nw; bounded=bounded, report=report)
     variable_mass_flow(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction(gm, nw; compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, regulator=regulator, report=report)
+    variable_connection_direction(gm, nw; compressor=compressor, short_pipe=short_pipe, valve=valve, regulator=regulator, report=report)
 end
 
 
@@ -121,23 +121,6 @@ function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, 
 
    _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
    _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
-end
-
-
-"Weymouth equation with a resistor with one way flow"
-function constraint_resistor_weymouth_directed(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    l  = var(gm, n, :l_resistor, k)
-    f  = var(gm, n, :f_resistor, k)
-
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
-    _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
-    if (direction == 1)
-        _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f))
-    else
-        _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f))
-    end
 end
 
 

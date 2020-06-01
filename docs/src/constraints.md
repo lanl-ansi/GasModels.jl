@@ -79,7 +79,6 @@ The primary constraints related to resistor ensure that that pressure drop and f
 
 ```@docs
 constraint_resistor_weymouth
-constraint_resistor_weymouth_directed
 ```
 
 ### Mass flow and pressure drop constraints

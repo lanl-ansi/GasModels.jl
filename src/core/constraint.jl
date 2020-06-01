@@ -23,27 +23,8 @@ function constraint_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_
 end
 
 
-"Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_resistor_pressure_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm,n,:psqr,i)
-    pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
-    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
-end
-
-
 "Constraint: Constraint on mass flow across the resistor"
 function constraint_resistor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_resistor,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
-end
-
-
-"Constraint: constraint on flow across the resistor where direction is constrained"
-function constraint_resistor_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f  = var(gm,n,:f_resistor,k)
     lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
     ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max

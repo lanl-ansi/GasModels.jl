@@ -16,17 +16,6 @@ function constraint_resistor_weymouth(gm::AbstractMIPModel, n::Int, k, i, j, f_m
 end
 
 
-"Constraint: Weymouth equation with one way direction--not applicable for MIP models"
-function constraint_resistor_weymouth_directed(gm::AbstractMIPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    #TODO we could think about putting a polyhendra around the weymouth
-end
-
-
-"Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_resistor_pressure_directed(gm::AbstractMIPModel, n::Int, k, i, j, pd_min, pd_max)
-end
-
-
 "Constraint: Constraint on pressure drop across a short pipe--not applicable for MIP models"
 function constraint_short_pipe_pressure(gm::AbstractMIPModel, n::Int, k, i, j)
 end
