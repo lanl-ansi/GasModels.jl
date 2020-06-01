@@ -147,7 +147,7 @@ end
 for i in ids(gm,:ne_pipe)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_pipe_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)

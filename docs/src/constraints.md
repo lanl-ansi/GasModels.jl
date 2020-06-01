@@ -42,7 +42,6 @@ The primary constraints related to pipes ensure that that pressure drop and flow
 ```@docs
 constraint_pipe_weymouth
 constraint_pipe_weymouth_ne
-constraint_pipe_weymouth_directed
 constraint_pipe_weymouth_ne_directed
 ```
 

@@ -25,22 +25,6 @@ end
 
 
 "Weymouth equation with one way direction"
-function constraint_pipe_weymouth_directed(gm::AbstractNLPModel, n::Int, k, i, j, w, f_min, f_max, directed)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    f  = var(gm, n, :f_pipe, k)
-
-    if directed == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
-    else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
-    end
-end
-
-
-"Weymouth equation with one way direction"
 function constraint_resistor_weymouth_directed(gm::AbstractNLPModel, n::Int, k, i, j, w, f_min, f_max, directed)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
