@@ -234,12 +234,6 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractGasModel, k; n::Int=gm
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     w              = ref(gm,n,:ne_pipe,k)["resistance"]
-#    direction      = pipe["directed"]
-#    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-#    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
-#    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
-#    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
-
     direction      = 1
     pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
     pd_min         = max(0,ref(gm,n,:ne_pipe,k)["pd_min"])
@@ -358,26 +352,21 @@ end
 
 "Constraint: constraints on flow across a short pipe"
 function constraint_short_pipe_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe    = ref(gm,n,:short_pipe,k)
-    f_min   = ref(gm,n,:short_pipe,k)["flow_min"]
-    f_max   = ref(gm,n,:short_pipe,k)["flow_max"]
+    pipe             = ref(gm,n,:short_pipe,k)
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min = max(0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0, f_max)
+    end
+
     constraint_short_pipe_mass_flow(gm, n, k, f_min, f_max)
-end
-
-
-"Template: Constraint on flow across a short pipe when the flow direction is constrained in one direction"
-function constraint_short_pipe_mass_flow_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe      = ref(gm,n,:short_pipe,k)
-    i         = pipe["fr_junction"]
-    j         = pipe["to_junction"]
-#    direction = pipe["directed"]
-#    f_min     = (direction == 1) ? 0 : ref(gm,n,:short_pipe,k)["flow_min"]
-#    f_max     = (direction == 1) ? ref(gm,n,:short_pipe,k)["flow_max"] : 0
-
-    f_min     = max(0,ref(gm,n,:short_pipe,k)["flow_min"])
-    f_max     = ref(gm,n,:short_pipe,k)["flow_max"]
-
-    constraint_short_pipe_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
 

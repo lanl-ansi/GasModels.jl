@@ -90,10 +90,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         ref[:max_mass_flow] = _calc_max_mass_flow(ref)
 
         # create references to directed and undirected edges
-        ref[:directed_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
         ref[:directed_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
 
-        ref[:undirected_short_pipe] = Dict(x for x in ref[:short_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
         ref[:undirected_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
 
         # compressor types

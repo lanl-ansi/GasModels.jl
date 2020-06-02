@@ -114,16 +114,6 @@ function constraint_short_pipe_mass_flow(gm::AbstractGasModel, n::Int, k, f_min,
 end
 
 
-"Constraint: Constraints on flow across a short pipe where direction of flow is constrained"
-function constraint_short_pipe_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_short_pipe,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
-end
-
-
 #################################################################################################
 # Constraints associated with vakves
 #################################################################################################

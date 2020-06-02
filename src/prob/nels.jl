@@ -129,14 +129,9 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_pipe_weymouth_ne_directed(gm, i)
     end
 
-    for i in ids(gm, :undirected_short_pipe)
+    for i in ids(gm, :short_pipe)
         constraint_short_pipe_pressure(gm, i)
         constraint_short_pipe_mass_flow(gm, i)
-    end
-
-    for i in ids(gm, :directed_short_pipe)
-        constraint_short_pipe_pressure(gm, i)
-        constraint_short_pipe_mass_flow_directed(gm, i)
     end
 
     for i in ids(gm,:default_compressor)

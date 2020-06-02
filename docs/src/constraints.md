@@ -180,7 +180,6 @@ Short pipes are used to model frictionless connections between junctions.  The p
 ```@docs
 constraint_short_pipe_pressure
 constraint_short_pipe_mass_flow
-constraint_short_pipe_mass_flow_directed
 ```
 
 ### Direction On/off Constraints
