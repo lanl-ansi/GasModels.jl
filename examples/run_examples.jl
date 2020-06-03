@@ -17,7 +17,10 @@ using AmplNLWriter
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6, "print_level" => 0, "sb" => "yes")
 cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0), "mip_solver" => cbc_solver, "log_levels" => [])
-gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
+
+env = Gurobi.Env()
+gurobi_solver = JuMP.optimizer_with_attributes(() -> Gurobi.Optimizer(env))
+#gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer)
 ecos_solver = JuMP.optimizer_with_attributes(ECOS.Optimizer, "verbose" => false, "maxit" => 10000)
 scs_solver = JuMP.optimizer_with_attributes(SCS.Optimizer)

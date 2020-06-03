@@ -8,9 +8,9 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, n, :default_compressor), resistor=ref(gm, n, :undirected_resistor), short_pipe=ref(gm, n, :undirected_short_pipe), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
+function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, n, :default_compressor), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
     variable_mass_flow(gm, n; bounded=bounded, report=report)
-    variable_connection_direction(gm, n; compressor=compressor, resistor=resistor, short_pipe=short_pipe, valve=valve, regulator=regulator, report=report)
+    variable_connection_direction(gm, n; compressor=compressor, valve=valve, regulator=regulator, report=report)
 end
 
 
@@ -63,22 +63,6 @@ function constraint_resistor_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
     _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - y*2*f_max^2))
     _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
-end
-
-
-"Weymouth equation with one way direction"
-function constraint_resistor_weymouth_directed(gm::AbstractMINLPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    f  = var(gm, n, :f_resistor, k)
-
-    if direction == 1
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2))
-        _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
-    else
-        _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2))
-        _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
-    end
 end
 
 

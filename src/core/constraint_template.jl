@@ -16,77 +16,70 @@
 
 "Template: Constraint on mass flow across a pipe"
 function constraint_resistor_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm,n,:resistor,k)
-    f_min          = ref(gm,n,:resistor,k)["flow_min"]
-    f_max          = ref(gm,n,:resistor,k)["flow_max"]
+    pipe             = ref(gm,n,:resistor,k)
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min = max(0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0, f_max)
+    end
+
     constraint_resistor_mass_flow(gm, n, k, f_min, f_max)
-end
-
-
-"Template: Constraint on flow across a resistor where the flow is constrained to one direction as defined by data attribute directed"
-function constraint_resistor_mass_flow_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm,n,:resistor,k)
-#    direction      = pipe["directed"]
-#    f_min          = (direction == 1) ? 0 : ref(gm,n,:resistor,k)["flow_min"]
-#    f_max          = (direction == 1) ? ref(gm,n,:resistor,k)["flow_max"] : 0
-    f_min          = max(0,ref(gm,n,:resistor,k)["flow_min"])
-    f_max          = ref(gm,n,:resistor,k)["flow_max"]
-    constraint_resistor_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
 
 "Template: Pressure drop across resistor with on/off direction variables"
 function constraint_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm, n,:resistor, k)
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-    pd_max         = ref(gm,n,:resistor)[k]["pd_max"]
-    pd_min         = ref(gm,n,:resistor)[k]["pd_min"]
+    pipe             = ref(gm, n,:resistor, k)
+    i                = pipe["fr_junction"]
+    j                = pipe["to_junction"]
+    pd_max           = pipe["pd_max"]
+    pd_min           = pipe["pd_min"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0, pd_min)
+    end
+
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+    end
+
     constraint_resistor_pressure(gm, n, k, i, j, pd_min, pd_max)
-end
-
-
-"Template: Constraint on pressure drop across a resistor where the flow is constrained to one direction as defined by data attribute directed"
-function constraint_resistor_pressure_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm, n,:resistor, k)
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-#    direction      = pipe["directed"]
-#    pd_max         = (direction == 1) ? ref(gm,n,:resistor,k)["pd_max"] : min(0, ref(gm,n,:resistor,k)["pd_max"])
-#    pd_min         = (direction == 1) ? max(0, ref(gm,n,:resistor,k)["pd_min"]) : ref(gm,n,:resistor,k)["pd_min"]
-    pd_max         = ref(gm,n,:resistor,k)["pd_max"]
-    pd_min         = max(0, ref(gm,n,:resistor,k)["pd_min"])
-    constraint_resistor_pressure_directed(gm, n, k, i, j, pd_min, pd_max)
 end
 
 
 "Template: Weymouth equation for defining the relationship between pressure drop and flow across a resistor"
 function constraint_resistor_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe    = ref(gm,n,:resistor,k)
-    i       = pipe["fr_junction"]
-    j       = pipe["to_junction"]
-    w       = ref(gm,n,:resistor,k)["resistance"]
-    pd_max  = ref(gm,n,:resistor,k)["pd_max"]
-    pd_min  = ref(gm,n,:resistor,k)["pd_min"]
-    f_min   = ref(gm,n,:resistor,k)["flow_min"]
-    f_max   = ref(gm,n,:resistor,k)["flow_max"]
+    pipe             = ref(gm,n,:resistor,k)
+    i                = pipe["fr_junction"]
+    j                = pipe["to_junction"]
+    w                = pipe["resistance"]
+    pd_max           = pipe["pd_max"]
+    pd_min           = pipe["pd_min"]
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0, pd_min)
+        f_min  = max(0,f_min)
+    end
+
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+        f_max  = min(0, f_max)
+    end
+
     constraint_resistor_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
-end
-
-
-"Template: Weymouth equation for defining the relationship between pressure drop and flow across a resistor where flow is constrained in one direction"
-function constraint_resistor_weymouth_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe      = ref(gm,n,:resistor,k)
-    i         = pipe["fr_junction"]
-    j         = pipe["to_junction"]
-    w         = ref(gm,n,:resistor,k)["resistance"]
-#    direction = pipe["directed"]
-#    f_min     = ref(gm,n,:resistor,k)["flow_min"]
-#    f_max     = ref(gm,n,:resistor,k)["flow_max"]
-    direction = 1
-    f_min     = max(0,ref(gm,n,:resistor,k)["flow_min"])
-    f_max     = ref(gm,n,:resistor,k)["flow_max"]
-    constraint_resistor_weymouth_directed(gm, n, k, i, j, w, f_min, f_max, direction)
 end
 
 
@@ -153,8 +146,8 @@ function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe,k)
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
-    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
+    pd_max         = pipe["pd_max"]
+    pd_min         = pipe["pd_min"]
     constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min, pd_max)
 end
 
@@ -241,12 +234,6 @@ function constraint_pipe_weymouth_ne_directed(gm::AbstractGasModel, k; n::Int=gm
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     w              = ref(gm,n,:ne_pipe,k)["resistance"]
-#    direction      = pipe["directed"]
-#    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-#    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
-#    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
-#    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
-
     direction      = 1
     pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
     pd_min         = max(0,ref(gm,n,:ne_pipe,k)["pd_min"])
@@ -365,26 +352,21 @@ end
 
 "Constraint: constraints on flow across a short pipe"
 function constraint_short_pipe_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe    = ref(gm,n,:short_pipe,k)
-    f_min   = ref(gm,n,:short_pipe,k)["flow_min"]
-    f_max   = ref(gm,n,:short_pipe,k)["flow_max"]
+    pipe             = ref(gm,n,:short_pipe,k)
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min = max(0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0, f_max)
+    end
+
     constraint_short_pipe_mass_flow(gm, n, k, f_min, f_max)
-end
-
-
-"Template: Constraint on flow across a short pipe when the flow direction is constrained in one direction"
-function constraint_short_pipe_mass_flow_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe      = ref(gm,n,:short_pipe,k)
-    i         = pipe["fr_junction"]
-    j         = pipe["to_junction"]
-#    direction = pipe["directed"]
-#    f_min     = (direction == 1) ? 0 : ref(gm,n,:short_pipe,k)["flow_min"]
-#    f_max     = (direction == 1) ? ref(gm,n,:short_pipe,k)["flow_max"] : 0
-
-    f_min     = max(0,ref(gm,n,:short_pipe,k)["flow_min"])
-    f_max     = ref(gm,n,:short_pipe,k)["flow_max"]
-
-    constraint_short_pipe_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
 
@@ -405,24 +387,21 @@ end
 
 "Template: constraints on flow across valves modeled with on/off direction variables"
 function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    valve = ref(gm,n,:valve,k)
-    f_min = ref(gm,n,:valve,k)["flow_min"]
-    f_max = ref(gm,n,:valve,k)["flow_max"]
+    valve            = ref(gm,n,:valve,k)
+    f_min            = valve["flow_min"]
+    f_max            = valve["flow_max"]
+    is_bidirectional = get(valve, "is_bidirectional", 1)
+    flow_direction   = get(valve, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min = max(0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0, f_max)
+    end
+
     constraint_on_off_valve_mass_flow(gm, n, k, f_min, f_max)
-end
-
-
-"Template: Constraints on flow across a valve when flow is restricted in one direction and the valve may be turned on or off"
-function constraint_on_off_valve_mass_flow_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    valve     = ref(gm,n,:valve,k)
-#    direction = valve["directed"]
-#    f_min     = (direction == 1) ? 0 : ref(gm,n,:valve,k)["flow_min"]
-#    f_max     = (direction == 1) ? ref(gm,n,:valve,k)["flow_max"] : 0
-
-    f_min     = max(0,ref(gm,n,:valve,k)["flow_min"])
-    f_max     = ref(gm,n,:valve,k)["flow_max"]
-
-    constraint_on_off_valve_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
 
@@ -459,7 +438,6 @@ function constraint_compressor_ratios_directed(gm::AbstractGasModel, k; n::Int=g
     j              = compressor["to_junction"]
     max_ratio      = compressor["c_ratio_max"]
     min_ratio      = compressor["c_ratio_min"]
-#    direction      = compressor["directed"]
     direction      = 1
     constraint_compressor_ratios_directed(gm, n, k, i, j, min_ratio, max_ratio, direction)
 end
@@ -490,10 +468,6 @@ function constraint_compressor_mass_flow_directed(gm::AbstractGasModel, k; n::In
     compressor = ref(gm, n, :compressor, k)
     i          = compressor["fr_junction"]
     j          = compressor["to_junction"]
-#    direction  = compressor["directed"]
-#    f_min      = (direction == 1) ? 0 : ref(gm,n,:compressor,k)["flow_min"]
-#    f_max      = (direction == 1) ? ref(gm,n,:compressor,k)["flow_max"] : 0
-
     f_min      = max(0, ref(gm,n,:compressor,k)["flow_min"])
     f_max      = ref(gm,n,:compressor,k)["flow_max"]
 
@@ -540,11 +514,6 @@ function constraint_compressor_mass_flow_ne_directed(gm::AbstractGasModel, k; n:
     i          = compressor["fr_junction"]
     j          = compressor["to_junction"]
     mf         = ref(gm,n,:max_mass_flow)
-#    direction  = compressor["directed"]
-#    f_min     = (direction == 1) ? 0 : ref(gm,n,:ne_compressor,k)["flow_min"]
-#    f_max     = (direction == 1) ? ref(gm,n,:ne_compressor,k)["flow_max"] : 0
-
-
     f_min     = max(0,ref(gm,n,:ne_compressor,k)["flow_min"])
     f_max     = ref(gm,n,:ne_compressor,k)["flow_max"]
 
@@ -593,10 +562,6 @@ function constraint_on_off_regulator_mass_flow_directed(gm::AbstractGasModel, k;
     valve      = ref(gm,n,:regulator,k)
     i          = valve["fr_junction"]
     j          = valve["to_junction"]
-#    direction  = valve["directed"]
-#    f_min = (direction == 1) ? 0 : ref(gm,n,:regulator,k)["flow_min"]
-#    f_max = (direction == 1) ? ref(gm,n,:regulator,k)["flow_max"] : 0
-
     f_min = max(0,ref(gm,n,:regulator,k)["flow_min"])
     f_max = ref(gm,n,:regulator,k)["flow_max"]
 

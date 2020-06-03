@@ -1,10 +1,11 @@
 #Check the second order code model
 @testset "test misocp gf" begin
     @testset "gaslib 582 case" begin
-        println("gaslib 582 - MISCOP")
+        println("gaslib 582 - MISOCP")
         result = run_gf("../test/data/matgas/gaslib-582.m", MISOCPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
+        GC.gc()
     end
 end
 

@@ -43,17 +43,6 @@ function constraint_resistor_weymouth(gm::AbstractLPModel, n::Int, k, i, j, f_mi
 end
 
 
-"Constraint: Weymouth equation with one way direction--not applicable for LP models"
-function constraint_resistor_weymouth_directed(gm::AbstractLPModel, n::Int, k, i, j, w, f_min, f_max, direction)
-    #TODO we could think about putting a polyhendra around the weymouth
-end
-
-
-"Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_resistor_pressure_directed(gm::AbstractLPModel, n::Int, k, i, j, pd_min, pd_max)
-end
-
-
 "Constraint: Constraint on pressure drop across a short pipe--not applicable for LP models"
 function constraint_short_pipe_pressure(gm::AbstractLPModel, n::Int, k, i, j)
 end
