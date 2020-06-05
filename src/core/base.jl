@@ -89,17 +89,11 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         # compute the maximum flow
         ref[:max_mass_flow] = _calc_max_mass_flow(ref)
 
-        # create references to directed and undirected edges
-        ref[:directed_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
-
-        ref[:undirected_regulator] = Dict(x for x in ref[:regulator] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
-
         # compressor types
         # default allows compression with uncompressed flow reversals
         ref[:default_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 2)
         ref[:bidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 0)
         ref[:unidirectional_compressor] = Dict(x for x in ref[:compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 1)
-
 
         # dispatchable tranfers, receipts, and deliveries
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)

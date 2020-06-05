@@ -8,9 +8,9 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, n, :default_compressor), valve=ref(gm, n, :valve), regulator=ref(gm, n, :undirected_regulator))
+function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, n, :default_compressor))
     variable_mass_flow(gm, n; bounded=bounded, report=report)
-    variable_connection_direction(gm, n; compressor=compressor, valve=valve, regulator=regulator, report=report)
+    variable_connection_direction(gm, n; compressor=compressor, report=report)
 end
 
 

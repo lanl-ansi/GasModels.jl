@@ -161,13 +161,9 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_on_off_valve_pressure(gm, i)
     end
 
-    for i in ids(gm, :undirected_regulator)
+    for i in ids(gm, :regulator)
         constraint_on_off_regulator_mass_flow(gm, i)
         constraint_on_off_regulator_pressure(gm, i)
     end
 
-    for i in ids(gm, :directed_regulator)
-        constraint_on_off_regulator_mass_flow_directed(gm, i)
-        constraint_on_off_regulator_pressure_directed(gm, i)
-    end
 end

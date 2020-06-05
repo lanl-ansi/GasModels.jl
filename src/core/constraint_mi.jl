@@ -270,20 +270,19 @@ function constraint_on_off_regulator_mass_flow(gm::AbstractMIModels, n::Int, k, 
     _add_constraint!(gm, n, :on_off_regulator_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max*v))
 
     constraint_regulator_parallel_flow(gm, k; n=n)
-#    constraint_parallel_flow(gm, k; n=n)
 end
 
 
 "Constraint: Constraints on pressure drop across control valves that have on/off direction variables"
-function constraint_on_off_regulator_pressure(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
+function constraint_on_off_regulator_pressure(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
     y  = var(gm,n,:y_regulator,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
     v  = var(gm,n,:v_regulator,k)
-    _add_constraint!(gm, n, :on_off_regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
-    _add_constraint!(gm, n, :on_off_regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))
-    _add_constraint!(gm, n, :on_off_regulator_pressure_drop3, k, JuMP.@constraint(gm.model,  pj - pi <= (1 + y - v)*j_pmax^2))
-    _add_constraint!(gm, n, :on_off_regulator_pressure_drop4, k, JuMP.@constraint(gm.model,  pi - pj <= (1 + y - v)*i_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model,  pj - pi <= (1 + y - v)*j_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop4, k, JuMP.@constraint(gm.model,  pi - pj <= (1 + y - v)*i_pmax^2))
 end
 
 

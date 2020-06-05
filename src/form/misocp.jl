@@ -9,10 +9,10 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, nw, :default_compressor), valve=ref(gm, nw, :valve), regulator=ref(gm, nw, :undirected_regulator))
+function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, nw, :default_compressor))
     variable_pressure_difference(gm, nw; bounded=bounded, report=report)
     variable_mass_flow(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction(gm, nw; compressor=compressor, valve=valve, regulator=regulator, report=report)
+    variable_connection_direction(gm, nw; compressor=compressor, report=report)
 end
 
 

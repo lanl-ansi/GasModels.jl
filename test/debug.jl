@@ -623,7 +623,7 @@
     # - p[2600217] + 0.505201772924194 yp[585]   + 0.505201772924194 v[585]   <= 1.010403545848389
     # 0_p[2600217] - 0_p[217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     # 0_p[217] - 0_p[2600217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
-    ref = gm.con[:nw][gm.cnw][:on_off_regulator_pressure_drop2][585]
+    ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop2][585]
     var_ref = [gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
     coeff = [-1.0, 0.505201772924194, 0.505201772924194]
 
@@ -640,7 +640,7 @@
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_regulator_pressure_drop4][585]
+    ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop4][585]
     var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
     coeff = [1.0, -1.0, -0.505201772924194, 0.505201772924196]
 
@@ -657,7 +657,7 @@
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_regulator_pressure_drop1][585]
+    ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop1][585]
     var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
     coeff = [-1.0, 1.0, 0.505201772924194, 0.505201772924194]
 
@@ -674,7 +674,7 @@
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_regulator_pressure_drop3][585]
+    ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop3][585]
     var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
     coeff = [-1.0, 1.0, -0.505201772924194, 0.505201772924194]
 
