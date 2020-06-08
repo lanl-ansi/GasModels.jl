@@ -169,11 +169,12 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
+function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
+    z  = var(gm,n,:zp,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, pd_min  <= pi - pj))
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * pd_min_M + z * pd_min  <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= z * pd_max + (1-z) * pd_max_M))
 end
 
 
@@ -196,27 +197,6 @@ function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_min, f_
     JuMP.set_upper_bound(f, ub)
 end
 
-
-"Constraint: Pressure drop across an expansion pipe when direction is constrained"
-function constraint_pipe_pressure_ne_directed(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max, direction)
-    pi = var(gm,n,:psqr,i)
-    pj = var(gm,n,:psqr,j)
-    z  = var(gm,n,:zp,k)
-
-    if direction == 1
-        _add_constraint!(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj >= (1-z)*pd_max))
-    else
-        _add_constraint!(gm, n, :pressure_drop_ne, k, JuMP.@constraint(gm.model, pi - pj <= (1-z)*pd_min))
-    end
-end
-
-
-"Constraint: Flow across an expansion pipe when direction is constrained"
-function constraint_pipe_mass_flow_ne_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_ne_pipe,k)
-    _add_constraint!(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f >= f_min))
-    _add_constraint!(gm, n, :pipe_flow, k, JuMP.@constraint(gm.model, f <= f_max))
-end
 
 #################################################################################################
 # Constraints associated with compressors

@@ -5,7 +5,7 @@
 #################################################################################################
 
 "continous relaxation of variables associated with operating valves"
-function variable_valve_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_valve_on_off_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::Bool=true)
     v_valve = gm.var[:nw][nw][:v_valve] = JuMP.@variable(gm.model,
         [l in keys(gm.ref[:nw][nw][:valve])],
         upper_bound=1.0,
@@ -14,6 +14,11 @@ function variable_valve_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::B
         start=comp_start_value(gm.ref[:nw][nw][:valve], l, "v_start", 1.0)
     )
 
+    report && _IM.sol_component_value(gm, nw, :valve, :v, ids(gm, nw, :valve), v_valve)
+end
+
+"continous relaxation of variables associated with operating regulators"
+function variable_on_off_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::Bool=true)
     v_regulator = gm.var[:nw][nw][:v_regulator] = JuMP.@variable(gm.model,
         [l in keys(gm.ref[:nw][nw][:regulator])],
         upper_bound=1.0,
@@ -22,7 +27,6 @@ function variable_valve_operation(gm::AbstractLPModel, nw::Int=gm.cnw; report::B
         start=comp_start_value(gm.ref[:nw][nw][:regulator], l, "v_start", 1.0)
     )
 
-    report && _IM.sol_component_value(gm, nw, :valve, :v, ids(gm, nw, :valve), v_valve)
     report && _IM.sol_component_value(gm, nw, :regulator, :v, ids(gm, nw, :regulator), v_regulator)
 end
 
@@ -83,11 +87,6 @@ function constraint_resistor_pressure_drop_ne_directed(gm::AbstractLPModel, n::I
 end
 
 
-"Constraint: Weymouth equation--not applicable for MIP models--not applicable for LP models"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractLPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-end
-
-
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for LP models"
 function constraint_compressor_ratios_ne(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
 end
@@ -109,7 +108,7 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min, pd_max)
+function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
 end
 
 

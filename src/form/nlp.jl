@@ -28,23 +28,6 @@ end
 ## Constraints for modeling flow across a new pipe
 ############################################################################################################
 
-"Weymouth equation for directed expansion pipes"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractNLPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    zp = var(gm, n, :zp, k)
-    f  = var(gm, n, :f_ne_pipe, k)
-
-    # The big M needs to be the min and max pressure difference in either direction multiplied by w (referenced by i to j or j to i)
-    if direction == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp) * w * pd_max))
-    else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp) * w * pd_max))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp) * w * pd_min))
-    end
-end
-
 
 "Weymouth equation for an undirected expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractNLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)

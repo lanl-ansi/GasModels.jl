@@ -155,12 +155,13 @@ end
 ############################################################################################################
 
 "Constraint: constraints on pressure drop across an expansion pipe with on/off direction variables"
-function constraint_pipe_pressure_ne(gm::AbstractMIModels, n::Int, k, i, j, pd_min, pd_max)
+function constraint_pipe_pressure_ne(gm::AbstractMIModels, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
     y = var(gm,n,:y_ne_pipe,k)
+    z = var(gm,n,:zp,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-y) * pd_min <= pi - pj))
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * pd_min_M + (1-y) * pd_min <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max + (1-z) * pd_max_M))
 end
 
 

@@ -131,12 +131,23 @@ end
 
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe = ref(gm,n,:ne_pipe, k)
-    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
-    w              = ref(gm,n,:ne_pipe,k)["resistance"]
-    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
+    pipe             = ref(gm,n,:ne_pipe, k)
+    pd_max           = pipe["pd_max"]
+    pd_min           = pipe["pd_min"]
+    w                = pipe["resistance"]
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min  = max(0,f_min)
+    end
+
+    if flow_direction == -1
+        f_max  = min(0, f_max)
+    end
+
     constraint_pipe_mass_flow_ne(gm, n, k, f_min, f_max)
 end
 
@@ -144,36 +155,24 @@ end
 "Template: Constraints on pressure drop across pipes"
 function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe,k)
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
-    constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min, pd_max)
-end
+    i                = pipe["fr_junction"]
+    j                = pipe["to_junction"]
+    pd_max           = pipe["pd_max"]
+    pd_min           = pipe["pd_min"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+    pd_min_M         = pd_min
+    pd_max_M         = pd_max
 
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0, pd_min)
+    end
 
-"Template: Constraint on pressure drop across an expansion pipe where the flow is constrained to one direction as defined by data attribute directed"
-function constraint_pipe_pressure_ne_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm,n,:ne_pipe,k)
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-    direction      = 1
-    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-    pd_min         = max(0,ref(gm,n,:ne_pipe,k)["pd_min"])
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+    end
 
-    constraint_pipe_pressure_ne_directed(gm, n, k, i, j, pd_min, pd_max, direction)
-end
-
-
-"Template: Constraints on flow across an expansion pipe where the flow is constrained to one direction"
-function constraint_pipe_mass_flow_ne_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = ref(gm,n,:ne_pipe, k)
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-    f_min          = max(0,ref(gm,n,:ne_pipe,k)["flow_min"])
-    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
-
-    constraint_pipe_mass_flow_ne_directed(gm, n, k, f_min, f_max)
+    constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
 end
 
 
@@ -219,28 +218,15 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe           = gm.ref[:nw][n][:ne_pipe][k]
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
-    w              = ref(gm,n,:ne_pipe,k)["resistance"]
-    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-    pd_min         = ref(gm,n,:ne_pipe,k)["pd_min"]
-    f_min          = ref(gm,n,:ne_pipe,k)["flow_min"]
-    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
+    w              = pipe["resistance"]
+    pd_max         = pipe["pd_max"]
+    pd_min         = pipe["pd_min"]
+    f_min          = pipe["flow_min"]
+    f_max          = pipe["flow_max"]
+
+    # These all get used as big M's....
+
     constraint_pipe_weymouth_ne(gm, n, k, i, j, w, f_min, f_max, pd_min, pd_max)
-end
-
-
-"Template: Weymouth equation for expansion pipes where flow is restricted to one direction"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe           = gm.ref[:nw][n][:ne_pipe][k]
-    i              = pipe["fr_junction"]
-    j              = pipe["to_junction"]
-    w              = ref(gm,n,:ne_pipe,k)["resistance"]
-    direction      = 1
-    pd_max         = ref(gm,n,:ne_pipe,k)["pd_max"]
-    pd_min         = max(0,ref(gm,n,:ne_pipe,k)["pd_min"])
-    f_min          = max(0,ref(gm,n,:ne_pipe,k)["flow_min"])
-    f_max          = ref(gm,n,:ne_pipe,k)["flow_max"]
-
-    constraint_pipe_weymouth_ne_directed(gm, n, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
 end
 
 

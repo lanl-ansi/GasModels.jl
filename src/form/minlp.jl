@@ -96,21 +96,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractMINLPModel,  n::Int, k, i, j, w
 end
 
 
-"Weymouth equation for directed expansion pipes"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractMINLPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    zp = var(gm, n, :zp, k)
-    f  = var(gm, n, :f_ne_pipe, k)
 
-    if direction == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp) * w * pd_max))
-    else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp) * w * pd_max))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp) * w * pd_min))
-    end
-end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"

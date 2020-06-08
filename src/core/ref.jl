@@ -111,7 +111,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
         for (i, pipe) in get(nw_ref, :original_pipe, [])
             pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
-        end 
+        end
         arcs_from = [
             (i, pipe["fr_junction"], pipe["to_junction"], false)
             for (i, pipe) in nw_ref[:pipe]
@@ -173,4 +173,3 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
 end
-

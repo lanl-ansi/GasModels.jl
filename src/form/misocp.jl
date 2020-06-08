@@ -31,15 +31,26 @@ function variable_flow_ne_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; boun
     variable_connection_direction_ne(gm, nw; ne_pipe=ne_pipe, ne_compressor=ne_compressor, report=report)
 end
 
-
 ""
-function variable_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pipe_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:pipe])],
         base_name="$(nw)_l_pipe",
         start=comp_start_value(gm.ref[:nw][nw][:pipe], i, "l_start", 0)
     )
 
+    if bounded
+        for (i, pipe) in ref(gm, nw, :pipe)
+            JuMP.set_lower_bound(l_pipe[i], 0.0)
+            JuMP.set_upper_bound(l_pipe[i], max(abs(ref(gm, nw, :pipe, i)["pd_min"]), abs(ref(gm, nw, :pipe, i)["pd_max"])))
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :pipe, :l, ids(gm, nw, :pipe), l_pipe)
+end
+
+""
+function variable_resistor_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:resistor])],
         base_name="$(nw)_l_resistor",
@@ -47,19 +58,19 @@ function variable_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; b
     )
 
     if bounded
-        for (i, pipe) in ref(gm, nw, :pipe)
-            JuMP.set_lower_bound(l_pipe[i], 0.0)
-            JuMP.set_upper_bound(l_pipe[i], max(abs(ref(gm, nw, :pipe, i)["pd_min"]), abs(ref(gm, nw, :pipe, i)["pd_max"])))
-    end
-
         for (i, resistor) in ref(gm, nw, :resistor)
             JuMP.set_lower_bound(l_resistor[i], 0.0)
             JuMP.set_upper_bound(l_resistor[i], max(abs(ref(gm, nw, :resistor, i)["pd_min"]), abs(ref(gm, nw, :resistor, i)["pd_max"])))
-end
+        end
     end
 
-    report && _IM.sol_component_value(gm, nw, :pipe, :l, ids(gm, nw, :pipe), l_pipe)
     report && _IM.sol_component_value(gm, nw, :resistor, :l, ids(gm, nw, :resistor), l_resistor)
+end
+
+""
+function variable_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    variable_pipe_pressure_difference(gm, nw; bounded=bounded, report=report)
+    variable_resistor_pressure_difference(gm, nw; bounded=bounded, report=report)
 end
 
 
@@ -141,24 +152,6 @@ function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w
 
     _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2) + (1-zp) * (abs(f_min*f_max) + f_min^2)))
     _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2) + (1-zp) * (abs(f_min*f_max) + f_max^2)))
-end
-
-
-"Weymouth equation for expansion pipes with undirected expansion pipes"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractMISOCPModel, n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    zp = var(gm, n, :zp, k)
-    l  = var(gm, n, :l_ne_pipe, k)
-    f  = var(gm, n, :f_ne_pipe, k)
-
-    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, l == direction * (pi - pj)))
-    _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
-    if (direction == 1)
-        _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-zp) * (abs(f_min*f_max) + f_min^2)))
-    else
-        _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + (1-zp) * (abs(f_min*f_max) + f_max^2)))
-    end
 end
 
 

@@ -16,7 +16,7 @@ end
 function build_nels(gm::AbstractGasModel)
     variable_flow(gm)
     variable_pressure_sqr(gm)
-    variable_valve_operation(gm)
+    variable_on_off_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
@@ -85,7 +85,7 @@ end
 function build_nels_directed(gm::AbstractGasModel)
     variable_flow_directed(gm)
     variable_pressure_sqr(gm)
-    variable_valve_operation(gm)
+    variable_on_off_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
@@ -123,10 +123,10 @@ function build_nels_directed(gm::AbstractGasModel)
     end
 
     for i in ids(gm,:directed_ne_pipe)
-        constraint_pipe_pressure_ne_directed(gm, i)
-        constraint_pipe_mass_flow_ne_directed(gm, i)
+        constraint_pipe_pressure_ne(gm, i)
+        constraint_pipe_mass_flow_ne(gm, i)
         constraint_pipe_ne(gm, i)
-        constraint_pipe_weymouth_ne_directed(gm, i)
+        constraint_pipe_weymouth_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
