@@ -499,7 +499,9 @@ end
 
 
 "variables associated with direction of flow on new pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_pipe=gm.ref[:nw][nw][:ne_pipe],report::Bool=true)
+function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+    ne_pipe = Dict(x for x in ref(gm,nw,:ne_pipe) if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+
     y_ne_pipe_var = JuMP.@variable(gm.model,
         [l in keys(ne_pipe)],
         binary=true,
@@ -510,6 +512,15 @@ function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_pip
     y_ne_pipe = gm.var[:nw][nw][:y_ne_pipe] = Dict()
     for l in keys(ne_pipe)
         y_ne_pipe[l] = y_ne_pipe_var[l]
+    end
+
+    for (i,pipe) in ref(gm,nw,:ne_pipe)
+        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1
+            y_ne_pipe[i] = 1
+        end
+        if get(pipe, "flow_direction", 0) == -1
+            y_ne_pipe[i] = 0
+        end
     end
 
     report && _IM.sol_component_value(gm, nw, :ne_pipe, :y, keys(ne_pipe), y_ne_pipe_var)
@@ -534,8 +545,8 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 end
 
 "variables associated with direction of flow on new connections. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_pipe=gm.ref[:nw][nw][:ne_pipe], ne_compressor=gm.ref[:nw][nw][:ne_compressor], report::Bool=true)
-    variable_pipe_direction_ne(gm, nw; ne_pipe=ne_pipe, report=report)
+function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_compressor=gm.ref[:nw][nw][:ne_compressor], report::Bool=true)
+    variable_pipe_direction_ne(gm, nw; report=report)
     variable_compressor_direction_ne(gm, nw; ne_compressor=ne_compressor, report=report)
 end
 

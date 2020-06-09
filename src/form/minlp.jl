@@ -22,9 +22,9 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_pipe=ref(gm, n, :undirected_ne_pipe), ne_compressor=ref(gm, n, :default_compressor))
+function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_compressor=ref(gm, n, :default_compressor))
     variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
-    variable_connection_direction_ne(gm, n; ne_pipe=ne_pipe, ne_compressor=ne_compressor, report=report)
+    variable_connection_direction_ne(gm, n;  ne_compressor=ne_compressor, report=report)
 end
 
 

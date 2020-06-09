@@ -154,7 +154,7 @@ end
 
 "Template: Constraints on pressure drop across pipes"
 function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe = ref(gm,n,:ne_pipe,k)
+    pipe             = ref(gm,n,:ne_pipe,k)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
     pd_max           = pipe["pd_max"]
@@ -205,10 +205,21 @@ end
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    pipe   = gm.ref[:nw][n][:ne_pipe][k]
-    w      = ref(gm,n,:ne_pipe,k)["resistance"]
-    f_min  = ref(gm,n,:ne_pipe,k)["flow_min"]
-    f_max  = ref(gm,n,:ne_pipe,k)["flow_max"]
+    pipe             = gm.ref[:nw][n][:ne_pipe][k]
+    w                = pipe["resistance"]
+    f_min            = pipe["flow_min"]
+    f_max            = pipe["flow_max"]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min  = max(0,f_min)
+    end
+
+    if flow_direction == -1
+        f_max  = min(0, f_max)
+    end
+
     constraint_pipe_ne(gm, n, k, w, f_min, f_max)
 end
 

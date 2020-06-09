@@ -124,8 +124,8 @@ function build_nels_directed(gm::AbstractGasModel)
 
     for i in ids(gm,:directed_ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
-        constraint_pipe_mass_flow_ne(gm, i)
         constraint_pipe_ne(gm, i)
+        constraint_pipe_mass_flow_ne(gm, i)
         constraint_pipe_weymouth_ne(gm, i)
     end
 
