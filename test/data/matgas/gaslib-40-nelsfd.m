@@ -247,7 +247,7 @@ mgc.ne_pipe = [
 ];
 
 %% pipe data (extended)
-%column_names% directed
+%column_names% flow_direction
 mgc.pipe_data = [
 	1
 	1
@@ -291,7 +291,7 @@ mgc.pipe_data = [
 ];
 
 %% compressor data (extended)
-%column_names% directed
+%column_names% flow_direction
 mgc.compressor_data = [
 	1
 	1
@@ -308,7 +308,7 @@ mgc.compressor_data = [
 ];
 
 %% ne_pipe data (extended)
-%column_names% directed
+%column_names% flow_direction
 mgc.ne_pipe_data = [
 	1
 	1

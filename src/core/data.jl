@@ -982,7 +982,8 @@ end
 function _apply_mass_flow_cuts(yp, branches)
     is_disjunction = true
     for k in branches
-        is_disjunction &= isassigned(yp, k)
+#        is_disjunction &= isassigned(yp, k)
+        is_disjunction &= haskey(yp, k)
     end
     return is_disjunction
 end
