@@ -22,7 +22,7 @@ end
 
 
 "Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_compressor=ref(gm, n, :default_compressor))
+function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_compressor=ref(gm, n, :default_ne_compressor))
     variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
     variable_connection_direction_ne(gm, n;  ne_compressor=ne_compressor, report=report)
 end
@@ -94,9 +94,6 @@ function constraint_pipe_weymouth_ne(gm::AbstractMINLPModel,  n::Int, k, i, j, w
     _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp)*w*pd_max - y*2*f_max^2))
     _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp)*w*pd_min) )
 end
-
-
-
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"

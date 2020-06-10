@@ -201,6 +201,7 @@ function constraint_compressor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min,
     f = var(gm,n,:f_compressor,k)
     _add_constraint!(gm, n, :on_off_compressor_flow_direction1, k, JuMP.@constraint(gm.model, (1-y)*f_min <= f))
     _add_constraint!(gm, n, :on_off_compressor_flow_direction2, k, JuMP.@constraint(gm.model, f <= y*f_max))
+
     constraint_compressor_parallel_flow(gm, k; n=n)
 end
 
@@ -495,7 +496,7 @@ function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_c
     y_resistor      = var(gm,n,:y_resistor)
     y_short_pipe    = var(gm,n,:y_short_pipe)
     y_valve         = var(gm,n,:y_valve)
-    y_regulator = var(gm,n,:y_regulator)
+    y_regulator     = var(gm,n,:y_regulator)
     y_ne_pipe       = var(gm,n,:y_ne_pipe)
     y_ne_compressor = var(gm,n,:y_ne_compressor)
     y_k             = y_ne_pipe[k]

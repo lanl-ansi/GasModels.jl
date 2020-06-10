@@ -137,7 +137,7 @@ end
 
 "Weymouth equation for an undirected expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-    y = var(gm, n, :y_ne_pipe, k)
+    y  = var(gm, n, :y_ne_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)

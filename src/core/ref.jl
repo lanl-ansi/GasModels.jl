@@ -9,9 +9,6 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressur
         ref[:ne_pipe]       = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
 
-        ref[:directed_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] == 0)
-        ref[:undirected_ne_pipe]       = Dict(x for x in ref[:ne_pipe] if haskey(x.second, "is_bidirectional") && x.second["is_bidirectional"] != 0)
-
         # compressor types
         # default allows compression with uncompressed flow reversals
         ref[:default_ne_compressor] = Dict(x for x in ref[:ne_compressor] if haskey(x.second, "directionality") && x.second["directionality"] == 2)
