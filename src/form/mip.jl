@@ -37,27 +37,12 @@ end
 
 
 "constraints on pressure drop across control valves that are undirected--not applicable for MIP models"
-function constraint_on_off_regulator_pressure(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
-end
-
-
-"Constraint: Pressure drop across a control valves when directions is constrained--not applicable for MIP models"
-function constraint_on_off_regulator_pressure_directed(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn)
+function constraint_on_off_regulator_pressure(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
 end
 
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
 function constraint_pipe_weymouth_ne(gm::AbstractMIPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-end
-
-
-"Constraint: Pressure drop across an expansion pipe when direction is constrained--not applicable for MIP models"
-function constraint_pipe_pressure_ne_directed(gm::AbstractMIPModel, n::Int, k, i, j, yp, yn)
-end
-
-
-"Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractMIPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
 end
 
 
@@ -82,7 +67,7 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractMIPModel, n::Int, k, i, j, pd_min, pd_max)
+function constraint_pipe_pressure_ne(gm::AbstractMIPModel, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
 end
 
 

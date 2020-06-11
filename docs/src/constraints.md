@@ -140,8 +140,6 @@ The primary constraints related to regulator ensure that that the valves operate
 ```@docs
 constraint_on_off_regulator_mass_flow
 constraint_on_off_regulator_pressure
-constraint_on_off_regulator_mass_flow_directed
-constraint_on_off_regulator_pressure_directed
 ```
 
 ### Direction On/off Constraints

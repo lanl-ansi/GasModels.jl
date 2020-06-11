@@ -2,8 +2,12 @@
 
 ## Pending
 
-- Implement constraints on compressor power
-- Implement a multi-network test
+
+
+## v0.8
+
+- renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
+- removed explict direction function calls. These are now handled automatically based on data
 
 ## v0.7
 
@@ -15,6 +19,8 @@
 - Fixed bug in area computation .
 - Fixed bug in sound speed computation and other parameters
 - Fixed bugs in matgas parser by merging parses-fixes branch by @pseudocubic
+- Implemented constraints on compressor power
+- Implemented a multi-network test
 
 ## v0.6
 

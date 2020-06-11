@@ -28,23 +28,6 @@ end
 ## Constraints for modeling flow across a new pipe
 ############################################################################################################
 
-"Weymouth equation for directed expansion pipes"
-function constraint_pipe_weymouth_ne_directed(gm::AbstractNLPModel,  n::Int, k, i, j, w, pd_min, pd_max, f_min, f_max, direction)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    zp = var(gm, n, :zp, k)
-    f  = var(gm, n, :f_ne_pipe, k)
-
-    # The big M needs to be the min and max pressure difference in either direction multiplied by w (referenced by i to j or j to i)
-    if direction == 1
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp) * w * pd_min))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp) * w * pd_max))
-    else
-        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp) * w * pd_max))
-        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp) * w * pd_min))
-    end
-end
-
 
 "Weymouth equation for an undirected expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractNLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
@@ -99,17 +82,35 @@ end
 ##########################################################################################################
 
 "constraints on pressure drop across control valves that are undirected"
-function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
+function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v  = var(gm, n, :v_regulator, k)
     f  = var(gm, n, :f_regulator, k)
 
-    M = abs(max(i_pmax, j_pmax)) - abs(min(i_pmin, j_pmin))
-    #TODO this constraint is only valid if max_ratio = 1
-    _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
-    _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
-    _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model, f * (pi - pj) >= 0))
+    if max_ratio == 1
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
+        _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model, f * (pi - pj) >= 0))
+    elseif f_min >= 0
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
+    else
+        # There condition implies a disjunction when flow is reversed
+        if !haskey(gm.var[:nw][n],:y_valve_nlp)
+            gm.var[:nw][n][:y_valve_nlp] = Dict()
+        end
+        y = gm.var[:nw][n][:y_valve_nlp][k] = JuMP.@variable(gm.model,
+            k,
+            base_name="$(n)_y_nlp",
+            start=comp_start_value(valve, k, "y_start", 1)
+        )
+        _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model,  pj - pi <= (1 + y - v)*j_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop4, k, JuMP.@constraint(gm.model,  pi - pj <= (1 + y - v)*i_pmax^2))
+        _add_constraint!(gm, n, :regulator_pressure_drop5, k, JuMP.@constraint(gm.model,  y == y^2))
+    end
 end
 
 
