@@ -29,6 +29,7 @@ end
         result = run_ne("../examples/data/matgas/A3.m", MISOCPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1781; atol = 1e-1)
+        GC.gc()
     end
 
 end
@@ -40,6 +41,7 @@ end
         result = run_ne("../examples/data/matgas/A3.m", LPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0.0; atol = 1e-1)
+        GC.gc()
     end
 
 end
@@ -52,6 +54,7 @@ end
         result = run_ne("../examples/data/matgas/A3.m", MIPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0.0; atol = 1e-1)
+        GC.gc()
     end
 
 end

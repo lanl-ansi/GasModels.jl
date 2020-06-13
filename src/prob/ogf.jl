@@ -22,7 +22,7 @@ end
 function build_ogf(gm::AbstractGasModel)
     variable_pressure_sqr(gm)
     variable_flow(gm)
-    variable_valve_operation(gm)
+    variable_on_off_operation(gm)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)

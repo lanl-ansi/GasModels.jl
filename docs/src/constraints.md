@@ -42,7 +42,6 @@ The primary constraints related to pipes ensure that that pressure drop and flow
 ```@docs
 constraint_pipe_weymouth
 constraint_pipe_weymouth_ne
-constraint_pipe_weymouth_directed
 constraint_pipe_weymouth_ne_directed
 ```
 
@@ -80,7 +79,6 @@ The primary constraints related to resistor ensure that that pressure drop and f
 
 ```@docs
 constraint_resistor_weymouth
-constraint_resistor_weymouth_directed
 ```
 
 ### Mass flow and pressure drop constraints
@@ -142,8 +140,6 @@ The primary constraints related to regulator ensure that that the valves operate
 ```@docs
 constraint_on_off_regulator_mass_flow
 constraint_on_off_regulator_pressure
-constraint_on_off_regulator_mass_flow_directed
-constraint_on_off_regulator_pressure_directed
 ```
 
 ### Direction On/off Constraints
@@ -182,7 +178,6 @@ Short pipes are used to model frictionless connections between junctions.  The p
 ```@docs
 constraint_short_pipe_pressure
 constraint_short_pipe_mass_flow
-constraint_short_pipe_mass_flow_directed
 ```
 
 ### Direction On/off Constraints

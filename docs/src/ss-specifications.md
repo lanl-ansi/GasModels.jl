@@ -6,7 +6,7 @@
 ```julia
 variable_pressure_sqr(gm)
 variable_flow(gm)
-variable_valve_operation(gm)
+variable_on_off_operation(gm)
 ```
 
 ### Constraints
@@ -56,7 +56,7 @@ end
 ```julia
 variable_flow(gm)
 variable_pressure_sqr(gm)
-variable_valve_operation(gm)
+variable_on_off_operation(gm)
 variable_load_mass_flow(gm)
 variable_production_mass_flow(gm)
 ```
@@ -115,7 +115,7 @@ end
 variable_pressure_sqr(gm)
 variable_flow(gm)
 variable_flow_ne(gm)
-variable_valve_operation(gm)
+variable_on_off_operation(gm)
 variable_pipe_ne(gm)
 variable_compressor_ne(gm)
 ```
@@ -147,7 +147,7 @@ end
 for i in ids(gm,:ne_pipe)
     constraint_pipe_pressure(gm, i)
     constraint_pipe_mass_flow(gm,i)
-    constraint_weymouth(gm,i)
+    constraint_pipe_weymouth(gm,i)
 end
 
 for i in ids(gm, :short_pipe)
