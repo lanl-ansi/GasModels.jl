@@ -130,10 +130,10 @@ function _get_junction_entry(junction)
     p_min = parse(Float64, junction["pressureMin"][:value]) * 1.0e5
     p_max = parse(Float64, junction["pressureMax"][:value]) * 1.0e5
 
-    return Dict("lat"=>lat, "lon"=>lon, "p_min"=>p_min, "p_max"=>p_max,
-                "is_dispatchable"=>0, "is_per_unit"=>0, "status"=>1, "junction_type"=>0,
-                "is_si_units"=>1, "is_english_units"=>0, "edi_id"=>junction[:id],
-                "id"=>junction[:id], "index"=>junction[:id], "pipeline_id"=>"")
+    return Dict{String,Any}("lat"=>lat, "lon"=>lon, "p_min"=>p_min, "p_max"=>p_max,
+        "is_dispatchable"=>0, "is_per_unit"=>0, "status"=>1, "junction_type"=>0,
+        "is_si_units"=>1, "is_english_units"=>0, "edi_id"=>junction[:id],
+        "id"=>junction[:id], "index"=>junction[:id], "pipeline_id"=>"")
 end
 
 function _get_pipe_entry(pipe)
@@ -159,37 +159,37 @@ end
 
 function _get_gaslib_compressors(topology, compressor_stations)
     compressors = topology["network"]["connections"]["compressorStation"]
-    compressors = Dict(x[:id] => x for x in compressors)
+    compressors = Dict{String,Any}(x[:id] => x for x in compressors)
     stations = compressor_stations["compressorStations"]["compressorStation"]
-    return Dict(i => _get_compressor_entry(x, stations) for (i, x) in compressors)
+    return Dict{String,Any}(i => _get_compressor_entry(x, stations) for (i, x) in compressors)
 end
 
 function _get_gaslib_deliveries(topology, nomination)
     ids = [x[:id] for x in topology["network"]["nodes"]["sink"]]
     scenario = nomination["boundaryValue"]["scenario"]
-    deliveries = Dict(x[:id] => x for x in scenario["node"] if x[:id] in ids)
-    return Dict(i => _get_delivery_entry(x) for (i, x) in deliveries)
+    deliveries = Dict{String,Any}(x[:id] => x for x in scenario["node"] if x[:id] in ids)
+    return Dict{String,Any}(i => _get_delivery_entry(x) for (i, x) in deliveries)
 end
 
 function _get_gaslib_junctions(topology)
     nodes = topology["network"]["nodes"]["innode"]
     nodes = vcat(nodes, topology["network"]["nodes"]["sink"])
     nodes = vcat(nodes, topology["network"]["nodes"]["source"])
-    junctions = Dict(x[:id] => x for x in nodes)
-    return Dict(i => _get_junction_entry(x) for (i, x) in junctions)
+    junctions = Dict{String,Any}(x[:id] => x for x in nodes)
+    return Dict{String,Any}(i => _get_junction_entry(x) for (i, x) in junctions)
 end
 
 function _get_gaslib_pipes(topology)
     pipes = topology["network"]["connections"]["pipe"]
-    pipes = Dict(x[:id] => x for x in pipes)
-    return Dict(i => _get_pipe_entry(x) for (i, x) in pipes)
+    pipes = Dict{String,Any}(x[:id] => x for x in pipes)
+    return Dict{String,Any}(i => _get_pipe_entry(x) for (i, x) in pipes)
 end
 
 function _get_gaslib_receipts(topology, nomination)
     ids = [x[:id] for x in topology["network"]["nodes"]["source"]]
     scenario = nomination["boundaryValue"]["scenario"]
-    receipts = Dict(x[:id] => x for x in scenario["node"] if x[:id] in ids)
-    return Dict(i => _get_receipt_entry(x) for (i, x) in receipts)
+    receipts = Dict{String,Any}(x[:id] => x for x in scenario["node"] if x[:id] in ids)
+    return Dict{String,Any}(i => _get_receipt_entry(x) for (i, x) in receipts)
 end
 
 function parse_gaslib(zip_path::Union{IO, String})
@@ -217,5 +217,6 @@ function parse_gaslib(zip_path::Union{IO, String})
     # Assign nodal IDs in place of string IDs.
     data = _correct_ids(data)
 
+    # Return the dictionary.
     return data
 end

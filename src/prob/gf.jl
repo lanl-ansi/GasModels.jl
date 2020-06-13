@@ -27,6 +27,8 @@ function build_gf(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
 
+    objective_gf(gm)
+
     for i in ids(gm, :junction)
         constraint_mass_flow_balance(gm, i)
     end
@@ -42,7 +44,6 @@ function build_gf(gm::AbstractGasModel)
         constraint_resistor_mass_flow(gm,i)
         constraint_resistor_weymouth(gm,i)
     end
-
 
     for i in ids(gm, :short_pipe)
         constraint_short_pipe_pressure(gm, i)
