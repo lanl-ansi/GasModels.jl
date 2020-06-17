@@ -1,16 +1,70 @@
 import XMLDict
 import ZipFile
 
-function _read_gaslib_file(zip_reader, extension::String)
-    index = findfirst(x -> occursin(extension, x.name), zip_reader.files)
+"Parses GasLib data appearing in a compressed ZIP directory."
+function parse_gaslib(zip_path::Union{IO,String})
+    # Read in the compressed directory and obtain file paths.
+    zip_reader = ZipFile.Reader(zip_path)
+    file_paths = [x.name for x in zip_reader.files]
 
-    if index != nothing
-        subdata_xml = ZipFile.read(zip_reader.files[index], String)
-        subdata_xml = replace(subdata_xml, "\n\n"=>"\n")
-        return XMLDict.parse_xml(subdata_xml)
-    else
-        return Dict{String,Any}()
+    # Parse the topology XML file.
+    fid = findfirst(x -> occursin(".net", x), file_paths)
+    topology_xml = _parse_xml_file(zip_reader, fid)
+
+    # Parse the compressor XML file.
+    fid = findfirst(x -> occursin(".cs", x), file_paths)
+    compressor_xml = fid != nothing ? _parse_xml_file(zip_reader, fid) : Dict()
+
+    # Parse the nomination XML file(s).
+    fids = findall(x -> occursin(".scn", x), file_paths)
+
+    if length(fids) > 1 # If multiple scenarios are defined.
+        # Parse and use the last nominations file when sorted by name.
+        nomination_path = sort(file_paths[fids])[end]
+        fid = findfirst(x -> occursin(nomination_path, x), file_paths)
+        nomination_xml = _parse_xml_file(zip_reader, fid)
+
+        # Print a warning message stating that the above file is being used.
+        Memento.warn(_LOGGER, "Multiple nomination file paths found " *
+                     "in GasLib data. Selecting last nomination file " *
+                     "(i.e., \"$(file_paths[fid])\") " *
+                     "after sorting by name.")
+    else # If only one nominations scenario is defined...
+        # Parse and use the only nominations file available.
+        nomination_xml = _parse_xml_file(zip_reader, fids[end])
     end
+
+    # Create a dictionary for all components.
+    junctions = _read_gaslib_junctions(topology_xml)
+    pipes = _read_gaslib_pipes(topology_xml)
+    regulators = _read_gaslib_regulators(topology_xml)
+    resistors = _read_gaslib_resistors(topology_xml)
+    short_pipes = _read_gaslib_short_pipes(topology_xml)
+    valves = _read_gaslib_valves(topology_xml)
+    compressors = _read_gaslib_compressors(topology_xml, compressor_xml)
+    deliveries = _read_gaslib_deliveries(topology_xml, nomination_xml)
+    receipts = _read_gaslib_receipts(topology_xml, nomination_xml)
+
+    # Add auxiliary nodes for bidirectional compressors.
+    _add_auxiliary_junctions!(junctions, compressors, regulators)
+
+    # TODO: What is a general "sound_speed" that should be used?
+    data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
+        "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes,
+        "regulator"=>regulators, "resistor"=>resistors,
+        "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>true,
+        "per_unit"=>false, "sound_speed"=>312.8060)
+
+    # Assign nodal IDs in place of string IDs.
+    data = _correct_ids(data)
+
+    # Return the dictionary.
+    return data
+end
+
+function _parse_xml_file(zip_reader, path_index)
+    xml_str = ZipFile.read(zip_reader.files[path_index], String)
+    return XMLDict.parse_xml(xml_str)
 end
 
 function _correct_ids(data::Dict{String,<:Any})
@@ -95,7 +149,7 @@ function _add_auxiliary_junctions!(junctions, compressors, regulators)
     regulators = _IM.update_data!(regulators, new_regulators)
 end
 
-function _get_component_array(data)
+function _get_component_dict(data)
     return data isa Array ? Dict{String,Any}(x[:id] => x for x in data) :
         Dict{String,Any}(x[:id] => x for x in [data])
 end
@@ -283,9 +337,9 @@ function _get_regulator_entry(regulator)
         "reduction_factor_min"=>reduction_factor_min, "reduction_factor_max"=>reduction_factor_max)
 end
 
-function _get_gaslib_compressors(topology, compressor_stations)
+function _read_gaslib_compressors(topology, compressor_stations)
     if "compressorStation" in keys(topology["connections"])
-        compressors = _get_component_array(topology["connections"]["compressorStation"])
+        compressors = _get_component_dict(topology["connections"]["compressorStation"])
         stations = "compressorStation" in keys(compressor_stations) ? compressor_stations["compressorStation"] : nothing
         return Dict{String,Any}(i => _get_compressor_entry(x, stations) for (i, x) in compressors)
     else
@@ -293,116 +347,47 @@ function _get_gaslib_compressors(topology, compressor_stations)
     end
 end
 
-function _get_gaslib_deliveries(topology, nomination)
-    if "sink" in keys(topology["nodes"])
-        ids = [x[:id] for x in topology["nodes"]["sink"]]
-        scenario = nomination["scenario"]
-        deliveries = Dict{String,Any}(x[:id] => x for x in scenario["node"] if x[:id] in ids)
-        return Dict{String,Any}(i => _get_delivery_entry(x) for (i, x) in deliveries)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_deliveries(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement)
+    ids = [x[:id] for x in get(topology["nodes"], "sink", [])]
+    node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
+    delivery_xml = filter((k, v) -> v[:id] in ids, node_xml)
+    return Dict{String,Any}(i => _get_delivery_entry(x) for (i, x) in delivery_xml)
 end
 
-function _get_gaslib_junctions(topology)
-    if any(x -> x in keys(topology["nodes"]), ["innode", "sink", "source"])
-        nodes = vcat(topology["nodes"]["innode"], topology["nodes"]["sink"], topology["nodes"]["source"])
-        junctions = Dict{String,Any}(x[:id] => x for x in nodes)
-        return Dict{String,Any}(i => _get_junction_entry(x) for (i, x) in junctions)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_junctions(topology::XMLDict.XMLDictElement)
+    node_types = ["innode", "sink", "source"]
+    node_xml = vcat([get(topology["nodes"], x, []) for x in node_types]...)
+    return Dict{String,Any}(x[:id] => _get_junction_entry(x) for x in node_xml)
 end
 
-function _get_gaslib_short_pipes(topology)
-    if "shortPipe" in keys(topology["connections"])
-        short_pipes = _get_component_array(topology["connections"]["shortPipe"])
-        return Dict{String,Any}(i => _get_short_pipe_entry(x) for (i, x) in short_pipes)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_pipes(topology::XMLDict.XMLDictElement)
+    pipe_xml = _get_component_dict(get(topology["connections"], "pipe", []))
+    return Dict{String,Any}(i => _get_pipe_entry(x) for (i, x) in pipe_xml)
 end
 
-function _get_gaslib_pipes(topology)
-    if "pipe" in keys(topology["connections"])
-        pipes = _get_component_array(topology["connections"]["pipe"])
-        return Dict{String,Any}(i => _get_pipe_entry(x) for (i, x) in pipes)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement)
+    ids = [x[:id] for x in get(topology["nodes"], "source", [])]
+    node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
+    receipt_xml = filter((k, v) -> v[:id] in ids, node_xml)
+    return Dict{String,Any}(i => _get_receipt_entry(x) for (i, x) in receipt_xml)
 end
 
-function _get_gaslib_receipts(topology, nomination)
-    if "source" in keys(topology["nodes"])
-        ids = [x[:id] for x in topology["nodes"]["source"]]
-        scenario = nomination["scenario"]
-        receipts = Dict{String,Any}(x[:id] => x for x in scenario["node"] if x[:id] in ids)
-        return Dict{String,Any}(i => _get_receipt_entry(x) for (i, x) in receipts)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_regulators(topology::XMLDict.XMLDictElement)
+    regulator_xml = _get_component_dict(get(topology["connections"], "controlValve", []))
+    return Dict{String,Any}(i => _get_regulator_entry(x) for (i, x) in regulator_xml)
 end
 
-function _get_gaslib_regulators(topology)
-    if "controlValve" in keys(topology["connections"])
-        regulators = _get_component_array(topology["connections"]["controlValve"])
-        return Dict{String,Any}(i => _get_regulator_entry(x) for (i, x) in regulators)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_resistors(topology::XMLDict.XMLDictElement)
+    resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
+    return Dict{String,Any}(i => _get_resistor_entry(x) for (i, x) in resistor_xml)
 end
 
-function _get_gaslib_resistors(topology)
-    if "resistor" in keys(topology["connections"])
-        resistors = _get_component_array(topology["connections"]["resistor"])
-        return Dict{String,Any}(i => _get_resistor_entry(x) for (i, x) in resistors)
-    else
-        return Dict{String,Any}()
-    end
+function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement)
+    short_pipe_xml = _get_component_dict(get(topology["connections"], "shortPipe", []))
+    return Dict{String,Any}(i => _get_short_pipe_entry(x) for (i, x) in short_pipe_xml)
 end
 
-function _get_gaslib_valves(topology)
-    if "valve" in keys(topology["connections"])
-        valves = _get_component_array(topology["connections"]["valve"])
-        return Dict{String,Any}(i => _get_valve_entry(x) for (i, x) in valves)
-    else
-        return Dict{String,Any}()
-    end
-end
-
-function parse_gaslib(zip_reader::Union{IO,String})
-    # Read in the relevant data files as dictionaries.
-    zip_reader = ZipFile.Reader(zip_reader)
-    file_paths = [x.name for x in zip_reader.files]
-    gaslib_file_exts = Set([split(x, ".")[end] for x in file_paths])
-
-    topology = _read_gaslib_file(zip_reader, ".net")
-    nominations = _read_gaslib_file(zip_reader, ".scn")
-    compressor_stations = _read_gaslib_file(zip_reader, ".cs")
-
-    # Create a dictionary for all components.
-    junctions = _get_gaslib_junctions(topology)
-    pipes = _get_gaslib_pipes(topology)
-    regulators = _get_gaslib_regulators(topology)
-    resistors = _get_gaslib_resistors(topology)
-    short_pipes = _get_gaslib_short_pipes(topology)
-    valves = _get_gaslib_valves(topology)
-    compressors = _get_gaslib_compressors(topology, compressor_stations)
-    deliveries = _get_gaslib_deliveries(topology, nominations)
-    receipts = _get_gaslib_receipts(topology, nominations)
-
-    # Add auxiliary nodes for bidirectional compressors.
-    _add_auxiliary_junctions!(junctions, compressors, regulators)
-
-    # TODO: What is a general "sound_speed" that should be used?
-    data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
-        "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes, "regulator"=>regulators,
-        "resistor"=>resistors, "short_pipe"=>short_pipes, "valve"=>valves,
-        "is_si_units"=>true, "per_unit"=>false, "sound_speed"=>312.8060)
-
-    # Assign nodal IDs in place of string IDs.
-    data = _correct_ids(data)
-
-    # Return the dictionary.
-    return data
+function _read_gaslib_valves(topology::XMLDict.XMLDictElement)
+    valve_xml = _get_component_dict(get(topology["connections"], "valve", []))
+    return Dict{String,Any}(i => _get_valve_entry(x) for (i, x) in valve_xml)
 end
