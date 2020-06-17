@@ -1,11 +1,11 @@
 import XMLDict
 import ZipFile
 
-function _read_gaslib_file(gaslib_zip, extension::String)
-    index = findfirst(x -> occursin(extension, x.name), gaslib_zip.files)
+function _read_gaslib_file(zip_reader, extension::String)
+    index = findfirst(x -> occursin(extension, x.name), zip_reader.files)
 
     if index != nothing
-        subdata_xml = ZipFile.read(gaslib_zip.files[index], String)
+        subdata_xml = ZipFile.read(zip_reader.files[index], String)
         subdata_xml = replace(subdata_xml, "\n\n"=>"\n")
         return XMLDict.parse_xml(subdata_xml)
     else
@@ -126,14 +126,14 @@ function _get_compressor_entry(compressor, stations)
     if "diameterIn" in keys(compressor) && "diameterOut" in keys(compressor)
         diameter_in = parse(Float64, compressor["diameterIn"][:value]) * 1.0e-3
         diameter_out = parse(Float64, compressor["diameterOut"][:value]) * 1.0e-3
-        diameter = 0.5 * (diameter_in + diameter_out) # TODO: Can we assume this?
+        diameter = max(diameter_in, diameter_out) # TODO: Can we assume this?
     else
-        diameter = 0.0 # TODO: What should be done, here?
+        diameter = 10.0 # TODO: What should be done, here?
     end
 
     c_ratio_min, c_ratio_max = 1.0, 5.0 # TODO: Can we derive better bounds?
     operating_cost = 10.0 # TODO: Is this derivable?
-    power_max = 0.0 # Assume a pump's maximum power is zero to begin.
+    power_max = 1.0e9 # Assume a pump's maximum power is large to begin.
 
     if stations != nothing
         station = stations[findfirst(x -> compressor[:id] == x[:id], stations)]
@@ -147,8 +147,6 @@ function _get_compressor_entry(compressor, stations)
                 power_max += abs(_get_max_drive_power(comp) * 1.0e3)
             end
         end
-    else
-        power_max = 1.0e9
     end
 
     return Dict{String,Any}("is_per_unit"=>false, "fr_junction"=>fr_junction,
@@ -189,6 +187,9 @@ function _get_junction_entry(junction)
         lon = parse(Float64, junction[:y])
     end
 
+    height = parse(Float64, junction["height"][:value])
+    p_0 = height * 9.80665 * 0.785
+
     p_min = parse(Float64, junction["pressureMin"][:value]) * 1.0e5
     p_max = parse(Float64, junction["pressureMax"][:value]) * 1.0e5
 
@@ -204,7 +205,7 @@ function _get_pipe_entry(pipe)
     if "pressureMax" in keys(pipe)
         p_max = parse(Float64, pipe["pressureMax"][:value]) * 1.0e5
     else
-        p_max = 1.0e6
+        p_max = 1.0e9
     end
 
     if pipe["diameter"][:unit] == "m"
@@ -369,24 +370,23 @@ function _get_gaslib_valves(topology)
     end
 end
 
-function parse_gaslib(zip_path::Union{IO,String})
+function parse_gaslib(zip_reader::Union{IO,String})
     # Read in the relevant data files as dictionaries.
-    gaslib_zip = ZipFile.Reader(zip_path)
-    gaslib_file_names = [x.name for x in gaslib_zip.files]
-    gaslib_file_exts = Set([split(x, ".")[end] for x in gaslib_file_names])
+    zip_reader = ZipFile.Reader(zip_reader)
+    file_paths = [x.name for x in zip_reader.files]
+    gaslib_file_exts = Set([split(x, ".")[end] for x in file_paths])
 
-    topology = _read_gaslib_file(gaslib_zip, ".net")
-    nominations = _read_gaslib_file(gaslib_zip, ".scn")
-    compressor_stations = _read_gaslib_file(gaslib_zip, ".cs")
+    topology = _read_gaslib_file(zip_reader, ".net")
+    nominations = _read_gaslib_file(zip_reader, ".scn")
+    compressor_stations = _read_gaslib_file(zip_reader, ".cs")
 
-    # Create a dictionary for receipt components.
+    # Create a dictionary for all components.
     junctions = _get_gaslib_junctions(topology)
     pipes = _get_gaslib_pipes(topology)
     regulators = _get_gaslib_regulators(topology)
     resistors = _get_gaslib_resistors(topology)
     short_pipes = _get_gaslib_short_pipes(topology)
     valves = _get_gaslib_valves(topology)
-
     compressors = _get_gaslib_compressors(topology, compressor_stations)
     deliveries = _get_gaslib_deliveries(topology, nominations)
     receipts = _get_gaslib_receipts(topology, nominations)
