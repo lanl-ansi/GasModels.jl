@@ -408,14 +408,18 @@ end
 
 "Template: Compression ratios for a compressor"
 function constraint_compressor_ratios(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    compressor     = ref(gm,n,:compressor,k)
-    i              = compressor["fr_junction"]
-    j              = compressor["to_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    j_pmax         = ref(gm,n,:junction,j)["p_max"]
-    i_pmax         = ref(gm,n,:junction,i)["p_max"]
-    constraint_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
+    compressor       = ref(gm,n,:compressor,k)
+    i                = compressor["fr_junction"]
+    j                = compressor["to_junction"]
+    max_ratio        = compressor["c_ratio_max"]
+    min_ratio        = compressor["c_ratio_min"]
+    j_pmax           = ref(gm,n,:junction,j)["p_max"]
+    i_pmax           = ref(gm,n,:junction,i)["p_max"]
+    j_pmin           = ref(gm,n,:junction,j)["p_min"]
+    i_pmin           = ref(gm,n,:junction,i)["p_min"]
+    type             = get(compressor, "directionality", 0)
+
+    constraint_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 
@@ -428,23 +432,23 @@ function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
 end
 
 
-"Template: Constraints on compressor ratios when flow is restricted to one direction"
-function constraint_compressor_ratios_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    compressor     = ref(gm,n,:compressor,k)
-    i              = compressor["fr_junction"]
-    j              = compressor["to_junction"]
-    max_ratio      = compressor["c_ratio_max"]
-    min_ratio      = compressor["c_ratio_min"]
-    direction      = 1
-    constraint_compressor_ratios_directed(gm, n, k, i, j, min_ratio, max_ratio, direction)
-end
-
-
 "Template: constraints on flow across a compressor"
 function constraint_compressor_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    compressor = ref(gm, n, :compressor, k)
-    f_min      = ref(gm,n,:compressor,k)["flow_min"]
-    f_max      = ref(gm,n,:compressor,k)["flow_max"]
+    compressor       = ref(gm, n, :compressor, k)
+    f_min            = compressor["flow_min"]
+    f_max            = compressor["flow_max"]
+    directionality   = get(compressor, "directionality", 0)
+    flow_direction   = get(compressor, "flow_direction", 0)
+
+    if directionality == 1 || flow_direction == 1
+        f_min = max(0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0, f_max)
+    end
+
+
     constraint_compressor_mass_flow(gm, n, k, f_min, f_max)
 end
 
@@ -457,18 +461,6 @@ function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.c
     f_min          = ref(gm,n,:ne_compressor,k)["flow_min"]
     f_max          = ref(gm,n,:ne_compressor,k)["flow_max"]
     constraint_compressor_mass_flow_ne(gm, n, k, f_min, f_max)
-end
-
-
-"Template: Constraints on flow across a compressor when flow is restricted to one direction"
-function constraint_compressor_mass_flow_directed(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    compressor = ref(gm, n, :compressor, k)
-    i          = compressor["fr_junction"]
-    j          = compressor["to_junction"]
-    f_min      = max(0, ref(gm,n,:compressor,k)["flow_min"])
-    f_max      = ref(gm,n,:compressor,k)["flow_max"]
-
-    constraint_compressor_mass_flow_directed(gm, n, k, f_min, f_max)
 end
 
 

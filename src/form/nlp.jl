@@ -46,15 +46,40 @@ end
 ######################################################################################
 
 "enforces pressure changes bounds that obey compression ratios for an undirected compressor."
-function constraint_compressor_ratios(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
+function constraint_compressor_ratios(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_compressor, k)
 
-    #TODO this constraint is only valid if min_ratio = 1
-    _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
-    _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
-    _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pj) <= 0))
+    # compression in both directions
+    if type == 0
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (pj - pi) >= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, max(pi/pj, pj/pi) <= max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, min_ratio^2 <= max(pi/pj, pj/pi)))
+    # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
+    elseif type == 1
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio = 1
+    elseif min_ratio == 1
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
+        _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pj) <= 0))
+    # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio != 1
+    else
+        if !haskey(gm.var[:nw][n],:y_compressor_nlp)
+            gm.var[:nw][n][:y_compressor_nlp] = Dict()
+        end
+        y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model,k,base_name="$(n)_y_nlp")
+        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y*(j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios5, k, JuMP.@constraint(gm.model, y == y^2))
+    end
+
+
+
 
     _IM.sol_component_value(gm, n, :compressor, :ratio, [k], Dict(k => JuMP.@NLexpression(gm.model, sqrt(pj) / sqrt(pi))))
 end
@@ -97,14 +122,10 @@ function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i
         _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-v)*(min_ratio*i_pmax^2)))
     else
         # There condition implies a disjunction when flow is reversed
-        if !haskey(gm.var[:nw][n],:y_valve_nlp)
-            gm.var[:nw][n][:y_valve_nlp] = Dict()
+        if !haskey(gm.var[:nw][n],:y_regulator_nlp)
+            gm.var[:nw][n][:y_regulator_nlp] = Dict()
         end
-        y = gm.var[:nw][n][:y_valve_nlp][k] = JuMP.@variable(gm.model,
-            k,
-            base_name="$(n)_y_nlp",
-            start=comp_start_value(valve, k, "y_start", 1)
-        )
+        y = gm.var[:nw][n][:y_regulator_nlp][k] = JuMP.@variable(gm.model,k,base_name="$(n)_y_nlp")
         _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-v)*j_pmax^2))
         _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-v)*i_pmax^2))
         _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model,  pj - pi <= (1 + y - v)*j_pmax^2))

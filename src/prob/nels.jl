@@ -115,12 +115,6 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
-
-#    @info(ids(gm,:undirected_ne_pipe))
-#    @info(ids(gm,:directed_ne_pipe))
-#    @info(ids(gm,:ne_pipe))
-#    @info(" ")
-
     for i in ids(gm,:ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
@@ -128,27 +122,14 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_pipe_weymouth_ne(gm, i)
     end
 
-
-#    for i in ids(gm,:directed_ne_pipe)
-#        constraint_pipe_pressure_ne(gm, i)
-#        constraint_pipe_ne(gm, i)
-#        constraint_pipe_mass_flow_ne(gm, i)
-#        constraint_pipe_weymouth_ne(gm, i)
-#    end
-
     for i in ids(gm, :short_pipe)
         constraint_short_pipe_pressure(gm, i)
         constraint_short_pipe_mass_flow(gm, i)
     end
 
-    for i in ids(gm,:default_compressor)
+    for i in ids(gm,:compressor)
         constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
-    end
-
-    for i in ids(gm,:unidirectional_compressor)
-        constraint_compressor_mass_flow_directed(gm, i)
-        constraint_compressor_ratios_directed(gm, i)
     end
 
     for i in ids(gm, :default_ne_compressor)

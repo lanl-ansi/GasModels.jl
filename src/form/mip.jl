@@ -22,12 +22,7 @@ end
 
 
 "Constraint: Compressor ratio constraints on pressure differentials--not applicable for MIP models"
-function constraint_compressor_ratios(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
-end
-
-
-"Constraint: Compressor ratio when the flow direction is constrained--not applicable for MIP models"
-function constraint_compressor_ratios_directed(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, direction)
+function constraint_compressor_ratios(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 
