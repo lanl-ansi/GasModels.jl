@@ -307,7 +307,7 @@ function constraint_source_flow(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipe
                                                                   sum(y_resistor[a] for a in f_resistors) + sum((1-y_resistor[a]) for a in t_resistors) +
                                                                   sum(y_short_pipe[a] for a in f_short_pipes) + sum((1-y_short_pipe[a]) for a in t_short_pipes) +
                                                                   sum(y_valve[a] for a in f_valves) + sum((1-y_valve[a]) for a in t_valves) +
-                                                                  sum(y_control_panel[a] for a in f_regulators) + sum((1-y_regulator[a]) for a in t_regulators)
+                                                                  sum(y_regulator[a] for a in f_regulators) + sum((1-y_regulator[a]) for a in t_regulators)
                                                                   >= 1))
 end
 
