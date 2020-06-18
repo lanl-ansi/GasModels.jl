@@ -128,21 +128,12 @@ function constraint_on_off_valve_pressure(gm::AbstractGasModel, n::Int, k, i, j,
 end
 
 
-"constraints on flow across undirected valves"
+"constraints on flow across valves"
 function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_valve,k)
     v = var(gm,n,:v_valve,k)
     _add_constraint!(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
     _add_constraint!(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
-end
-
-
-"Constraint: constraints on flow across valves when the direction of flow is constrained."
-function constraint_on_off_valve_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f = var(gm,n,:f_valve,k)
-    v = var(gm,n,:v_valve,k)
-    _add_constraint!(gm, n,:valve_flow_direction1, k, JuMP.@constraint(gm.model, f_min*v <= f))
-    _add_constraint!(gm, n,:valve_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
@@ -235,7 +226,7 @@ end
 # Constraints associated with control valves
 #################################################################################################
 
-"constraints on flow across control valves that are undirected"
+"constraints on flow across control valves"
 function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_regulator,k)
     v = var(gm,n,:v_regulator,k)

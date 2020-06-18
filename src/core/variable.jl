@@ -579,21 +579,9 @@ function variable_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true,
 end
 
 
-"Variable Set: Define variables needed for modeling flow across connections where some flows are directionally constrained"
-function variable_flow_directed(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_mass_flow(gm,nw,bounded=bounded,report=report)
-end
-
-
 "Variable Set: Define variables needed for modeling flow across connections that are expansions"
 function variable_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     variable_mass_flow_ne(gm,nw; bounded=bounded,report=report)
-end
-
-
-"Variable Set: Define variables needed for modeling flow across connections that are expansions and some flows are directionally constrained"
-function variable_flow_ne_directed(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_mass_flow_ne(gm,nw,bounded=bounded,report=report)
 end
 
 

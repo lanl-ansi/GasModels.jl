@@ -29,7 +29,7 @@ end
 ############################################################################################################
 
 
-"Weymouth equation for an undirected expansion pipe"
+"Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractNLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -45,7 +45,7 @@ end
 # Constraints associated with flow through a compressor
 ######################################################################################
 
-"enforces pressure changes bounds that obey compression ratios for an undirected compressor."
+"enforces pressure changes bounds that obey compression ratios"
 function constraint_compressor_ratios(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -123,7 +123,7 @@ end
 # Constraints on control valves
 ##########################################################################################################
 
-"constraints on pressure drop across control valves that are undirected"
+"constraints on pressure drop across control valves"
 function constraint_on_off_regulator_pressure(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)

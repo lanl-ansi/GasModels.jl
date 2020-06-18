@@ -7,22 +7,8 @@ function variable_flow(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true
 end
 
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_mass_flow(gm, n; bounded=bounded, report=report)
-    variable_connection_direction(gm, n; report=report)
-end
-
-
 "Variables needed for modeling flow in MI models"
 function variable_flow_ne(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
-    variable_connection_direction_ne(gm, n; report=report)
-end
-
-
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMINLPModel, n::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     variable_mass_flow_ne(gm, n; bounded=bounded, report=report)
     variable_connection_direction_ne(gm, n; report=report)
 end
@@ -66,7 +52,7 @@ function constraint_resistor_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f
 end
 
 
-"Weymouth equation for an undirected expansion pipe"
+"Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractMINLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y = var(gm, n, :y_ne_pipe, k)
 

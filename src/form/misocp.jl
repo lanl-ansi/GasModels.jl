@@ -8,14 +8,6 @@ function variable_flow(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=tr
 end
 
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_pressure_difference(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction(gm, nw; report=report)
-end
-
-
 "Variables needed for modeling flow in MI models"
 function variable_flow_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
@@ -23,13 +15,6 @@ function variable_flow_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool
     variable_connection_direction_ne(gm, nw; report=report)
 end
 
-
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow_ne(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction_ne(gm, nw; report=report)
-end
 
 ""
 function variable_pipe_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
@@ -97,7 +82,7 @@ function variable_pressure_difference_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw
 end
 
 
-"Weymouth equation for an undirected pipe"
+"Weymouth equation for a pipe"
 function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y  = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
@@ -116,7 +101,7 @@ function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_mi
 end
 
 
-"Weymouth equation for an undirected pipe"
+"Weymouth equation for a pipe"
 function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_resistor, k)
     pi = var(gm, n, :psqr, i)
@@ -135,7 +120,7 @@ function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, 
 end
 
 
-"Weymouth equation for an undirected expansion pipe"
+"Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y  = var(gm, n, :y_ne_pipe, k)
     pi = var(gm, n, :psqr, i)

@@ -31,7 +31,7 @@ function constraint_on_off_valve_pressure(gm::AbstractMIPModel, n::Int, k, i, j,
 end
 
 
-"constraints on pressure drop across control valves that are undirected--not applicable for MIP models"
+"constraints on pressure drop across control valves--not applicable for MIP models"
 function constraint_on_off_regulator_pressure(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
 end
 
