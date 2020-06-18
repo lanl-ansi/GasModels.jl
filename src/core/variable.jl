@@ -539,7 +539,9 @@ end
 
 
 "variables associated with direction of flow on new compressors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_compressor=gm.ref[:nw][nw][:ne_compressor], report::Bool=true)
+function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+    ne_compressor     = Dict(x for x in ref(gm,nw,:ne_compressor) if (get(x.second, "directionality", 0) == 0 || get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)
+
     y_ne_compressor_var = JuMP.@variable(gm.model,
         [l in keys(ne_compressor)],
         binary=true,
@@ -552,13 +554,22 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
         y_ne_compressor[l] = y_ne_compressor_var[l]
     end
 
+    for (i,compressor) in ref(gm,nw,:ne_compressor)
+        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1
+            y_compressor[i] = 1
+        end
+        if get(compressor, "flow_direction", 0) == -1
+            y_compressor[i] = 0
+        end
+    end
+
     report && _IM.sol_component_value(gm, nw, :ne_compressor, :y, keys(ne_compressor), y_ne_compressor_var)
 end
 
 "variables associated with direction of flow on new connections. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; ne_compressor=gm.ref[:nw][nw][:ne_compressor], report::Bool=true)
+function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
     variable_pipe_direction_ne(gm, nw; report=report)
-    variable_compressor_direction_ne(gm, nw; ne_compressor=ne_compressor, report=report)
+    variable_compressor_direction_ne(gm, nw; report=report)
 end
 
 

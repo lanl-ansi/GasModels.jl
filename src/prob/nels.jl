@@ -132,16 +132,10 @@ function build_nels_directed(gm::AbstractGasModel)
         constraint_compressor_mass_flow(gm, i)
     end
 
-    for i in ids(gm, :default_ne_compressor)
+    for i in ids(gm, :ne_compressor)
         constraint_compressor_ratios_ne(gm, i)
         constraint_compressor_ne(gm, i)
         constraint_compressor_mass_flow_ne(gm, i)
-    end
-
-    for i in ids(gm, :unidirectional_ne_compressor)
-        constraint_compressor_ne(gm, i)
-        constraint_compressor_mass_flow_ne_directed(gm, i)
-        constraint_compressor_ratios_ne_directed(gm, i)
     end
 
     for i in ids(gm, :valve)

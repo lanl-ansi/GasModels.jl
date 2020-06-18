@@ -107,7 +107,6 @@ The primary constraints related to compressors ensure that that the compressors 
 ```@docs
 constraint_compressor_ratios
 constraint_compressor_ratios_ne
-constraint_compressor_ratios_ne_directed
 constraint_compressor_mass_flow
 constraint_compressor_energy
 ```
