@@ -154,7 +154,6 @@ function _get_compressor_entry(compressor, stations)
     bypass_required = :internalBypassRequired in keys(compressor) ?
         compressor[:internalBypassRequired] : 1
 
-    # If flow_max <= 0, swap from and to nodes and swap signs of flow_max (and flow_min?).
     if flow_max < 0.0
         flow_min, flow_max = -flow_max, -flow_min
         fr_junction_tmp = fr_junction
@@ -162,13 +161,10 @@ function _get_compressor_entry(compressor, stations)
         to_junction = fr_junction_tmp
     end
 
-    # If flow_min >= 0, use directionality of 1.
     if flow_min >= 0.0
         directionality = 1
-    # If flow_min and flow max are different signs AND bypassRequired=1, directionality 2.
     elseif bypass_required == 1 && signof(flow_min) != signof(flow_max)
         directionality = 2
-    # If flow_min and flow max are different signs AND bypassRequired=0, directionality 1.
     elseif bypass_required == 0 && signof(flow_min) != signof(flow_max)
         directionality = 1
     else
