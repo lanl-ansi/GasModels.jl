@@ -37,7 +37,7 @@ function parse_gaslib(zip_path::Union{IO,String})
 
     # Create a dictionary for all components.
     junctions = _read_gaslib_junctions(topology_xml)
-    pipes = _read_gaslib_pipes(topology_xml)
+    pipes = _read_gaslib_pipes(topology_xml, junctions)
     regulators = _read_gaslib_regulators(topology_xml)
     resistors = _read_gaslib_resistors(topology_xml)
     short_pipes = _read_gaslib_short_pipes(topology_xml)
@@ -112,24 +112,7 @@ end
 
 function _add_auxiliary_junctions!(junctions, compressors, regulators)
     new_junctions = Dict{String,Any}()
-    new_compressors = Dict{String,Any}()
     new_regulators = Dict{String,Any}()
-
-    # TODO: Can remove with new directionality branch of GasModels.
-    for (a, compressor) in compressors
-        junction_aux_name = a * "_aux_junction"
-        fr_junction = junctions[compressor["fr_junction"]]
-        to_junction = junctions[compressor["to_junction"]]
-        junction_aux = deepcopy(fr_junction)
-
-        compressor_reverse_name = a * "_reverse"
-        compressor_reverse = deepcopy(compressor)
-        compressor_reverse["fr_junction"] = junction_aux_name
-        compressor["to_junction"] = junction_aux_name
-
-        push!(new_junctions, junction_aux_name=>junction_aux)
-        push!(new_compressors, compressor_reverse_name=>compressor_reverse)
-    end
 
     for (a, regulator) in regulators
         if regulator["flow_min"] < 0.0
@@ -152,29 +135,12 @@ function _add_auxiliary_junctions!(junctions, compressors, regulators)
     end
 
     junctions = _IM.update_data!(junctions, new_junctions)
-    compressors = _IM.update_data!(compressors, new_compressors)
     regulators = _IM.update_data!(regulators, new_regulators)
 end
 
 function _get_component_dict(data)
     return data isa Array ? Dict{String,Any}(x[:id] => x for x in data) :
         Dict{String,Any}(x[:id] => x for x in [data])
-end
-
-function _get_max_drive_power(drive)
-    coeff_dict = filter(x -> occursin("power_fun_coeff", string(x.first)), drive)
-    coeffs = [parse(Float64, coeff_dict["power_fun_coeff_" *
-        string(i)][:value]) for i in 1:length(coeff_dict)]
-
-    if length(coeffs) == 3
-        return 1.0e3 * (coeffs[3] - (coeffs[2]^2 * inv(4.0 * coeffs[1])))
-    elseif length(coeffs) == 9
-        # TODO: Ask Anatoly about the derivation of constraint_compressor_energy constraint.
-        # Use this sort of maximum in the calculation of the below.
-        return 1.0e3 * coeffs[1]
-    else
-        Memento.error(_LOGGER, "Cannot compute maximum compressor power.")
-    end
 end
 
 function _get_compressor_entry(compressor, stations)
@@ -219,22 +185,16 @@ function _get_compressor_entry(compressor, stations)
 
     c_ratio_min, c_ratio_max = 0.0, outlet_p_max * inv(inlet_p_min)
     operating_cost = 10.0 # GasLib files don't contain cost data.
-    power_max = 1.0e9 # Assume a pump's maximum power is large to begin.
 
-    # TODO: Derive power_max from flowMax, only.
-    if stations != nothing
-        station = stations[findfirst(x -> compressor[:id] == x[:id], stations)]
+    # Parameters for pure methane.
+    T = 190.564 # Temperature (Kelvin)
+    R = 0.5182705 # kJ / (kg * K)
+    kappa = 1.304 # Isentropic exponent.
 
-        for (comp_name, comp) in station["drives"]
-            if comp isa Array
-                for drive in comp
-                    power_max += abs(_get_max_drive_power(drive) * 1.0e3)
-                end
-            else
-                power_max += abs(_get_max_drive_power(comp) * 1.0e3)
-            end
-        end
-    end
+    # Calculate the maximum power.
+    exp = kappa * inv(kappa - 1.0)
+    H_max = R * T * 1.0 * exp * ((c_ratio_max)^inv(exp) - 1.0)
+    power_max = H_max * abs(flow_max) * 1.0e3 * inv(0.1)
 
     return Dict{String,Any}("is_per_unit"=>false, "fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "inlet_p_min"=>inlet_p_min,
@@ -283,14 +243,17 @@ function _get_junction_entry(junction)
         "index"=>junction[:id], "pipeline_id"=>"")
 end
 
-function _get_pipe_entry(pipe)
+function _get_pipe_entry(pipe, junctions)
     fr_junction, to_junction = pipe[:from], pipe[:to]
+    p_min = min(junctions[fr_junction]["p_min"], junctions[to_junction]["p_min"])
+    p_max = max(junctions[fr_junction]["p_max"], junctions[to_junction]["p_max"])
+
+    if "pressureMin" in keys(pipe)
+        p_min = max(p_min, parse(Float64, pipe["pressureMin"][:value]) * 1.0e5)
+    end
 
     if "pressureMax" in keys(pipe)
-        p_max = parse(Float64, pipe["pressureMax"][:value]) * 1.0e5
-    else
-        # TODO: Make sure it's bigger than the junctions it's connected to.
-        p_max = 1.0e9
+        p_max = min(p_max, parse(Float64, pipe["pressureMax"][:value]) * 1.0e5)
     end
 
     if pipe["diameter"][:unit] == "m"
@@ -415,9 +378,9 @@ function _read_gaslib_junctions(topology::XMLDict.XMLDictElement)
     return Dict{String,Any}(x[:id] => _get_junction_entry(x) for x in node_xml)
 end
 
-function _read_gaslib_pipes(topology::XMLDict.XMLDictElement)
+function _read_gaslib_pipes(topology::XMLDict.XMLDictElement, junctions::Dict{String,<:Any})
     pipe_xml = _get_component_dict(get(topology["connections"], "pipe", []))
-    return Dict{String,Any}(i => _get_pipe_entry(x) for (i, x) in pipe_xml)
+    return Dict{String,Any}(i => _get_pipe_entry(x, junctions) for (i, x) in pipe_xml)
 end
 
 function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement)
