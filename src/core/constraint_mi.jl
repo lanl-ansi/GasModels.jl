@@ -207,14 +207,28 @@ end
 
 
 "Constraint: enforces pressure changes bounds that obey compression ratios for a compressor with on/off direction variables"
-function constraint_compressor_ratios(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax)
+function constraint_compressor_ratios(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     y  = var(gm,n,:y_compressor,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
-    _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(i_pmax^2)))
-    _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
-    _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y*(j_pmax^2)))
+
+    # compression in both directions
+    if type == 0
+        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(min_ratio^2*i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2*pj <= y*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, min_ratio^2*pj - pi <= y*(min_ratio^2*j_pmax^2)))
+    # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
+    elseif type == 1
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
+    # compression when flow is from i to j.  no compression when flow is from j to i
+    else
+        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(min_ratio^2*i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y*(j_pmax^2)))
+    end
 end
 
 
@@ -229,17 +243,29 @@ end
 
 
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables"
-function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax)
+function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax, type)
     y = var(gm,n,:y_ne_compressor,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
     zc = var(gm,n,:zc,k)
 
-    # TODO these are modeled as bi directinal.  Need to be one direction
-    _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
-    _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
-    _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model,  pi - (max_ratio^2*pj) <= (1+y-zc)*i_pmax^2))
-    _add_constraint!(gm, n, :on_off_compressor_ratios_ne4, k, JuMP.@constraint(gm.model,  (min_ratio^2*pj) - pi <= (1+y-zc)*(min_ratio^2*j_pmax^2)))
+    # compression in both directions
+    if type == 0
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model,  pi - (max_ratio^2*pj) <= (1+y-zc)*i_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne4, k, JuMP.@constraint(gm.model,  (min_ratio^2*pj) - pi <= (1+y-zc)*(min_ratio^2*j_pmax^2)))
+    # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
+    elseif type == 1
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= zc*j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= zc*i_pmax^2*min_ratio^2))
+    # compression when flow is from i to j.  no compression when flow is from j to i
+    else
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= (1+y-zc)*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= (1+y-zc)*(j_pmax^2)))
+    end
 end
 
 
