@@ -845,6 +845,29 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared"
+function _calc_pipe_pd_bounds_sqr(ref::Dict{Symbol,Any}, pipe::Dict{String,Any}, i_idx::Int, j_idx::Int)
+    i    = ref[:junction][i_idx]
+    j    = ref[:junction][j_idx]
+
+    pd_max = i["p_max"]^2 - j["p_min"]^2
+    pd_min = i["p_min"]^2 - j["p_max"]^2
+
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0, pd_min)
+    end
+
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+    end
+
+    return pd_min, pd_max
+end
+
+
+"Calculate the bounds on minimum and maximum pressure difference squared"
 function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
     i = ref[:junction][i_idx]
     j = ref[:junction][j_idx]
@@ -897,22 +920,104 @@ end
 
 "calculates the minimum flow on a pipe"
 function _calc_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
-    mf = ref[:max_mass_flow]
-    pd_min = pipe["pd_min"]
-    w = pipe["resistance"]
-    pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
-    return max(-mf, pf_min)
+    mf               = -ref[:max_mass_flow]
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+    flow_min         = get(pipe,"flow_min",mf)
+    pd_min           = pipe["pd_sqr_min"]
+    w                = pipe["resistance"]
+    pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+
+    if is_bidirectional == 0 || flow_direction == 1
+        return max(mf, pf_min, flow_min, 0)
+    else
+        return max(mf, pf_min, flow_min)
+    end
 end
 
 
 "calculates the maximum flow on a pipe"
 function _calc_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
-    mf = ref[:max_mass_flow]
-    pd_max = pipe["pd_max"]
-    w = pipe["resistance"]
-    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    mf             = ref[:max_mass_flow]
+    flow_direction = get(pipe, "flow_direction", 0)
+    flow_max       = get(pipe,"flow_max",mf)
+    pd_max         = pipe["pd_sqr_max"]
+    w              = pipe["resistance"]
+    pf_max         = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
 
-    return min(mf, pf_max)
+    if flow_direction == -1
+        return min(mf, pf_max, flow_max, 0)
+    else
+        return min(mf, pf_max, flow_max)
+    end
+end
+
+
+"calculates the minimum flow on a ne pipe"
+function _calc_ne_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
+    mf       = -ref[:max_mass_flow]
+    flow_min = get(pipe,"flow_min",mf)
+    pd_min   = pipe["pd_sqr_min"]
+    w        = pipe["resistance"]
+    pf_min   = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+
+    return max(mf, pf_min, flow_min)
+end
+
+
+"calculates the maximum flow on a pipe"
+function _calc_ne_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
+    mf       = ref[:max_mass_flow]
+    flow_max = get(pipe,"flow_max",mf)
+    pd_max   = pipe["pd_sqr_max"]
+    w        = pipe["resistance"]
+    pf_max  = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+
+    return min(mf, pf_max, flow_max)
+end
+
+"calculates the minimum flow on a compressor"
+function _calc_compressor_flow_min(ref::Dict{Symbol,Any}, compressor)
+    mf               = -ref[:max_mass_flow]
+    flow_min         = get(compressor,"flow_min",mf)
+    directionality   = get(compressor, "directionality", 0)
+    flow_direction   = get(compressor, "flow_direction", 0)
+
+    if directionality == 1 || flow_direction == 1
+        return max(mf, flow_min, 0)
+    else
+        return max(mf, flow_min)
+    end
+end
+
+
+"calculates the maximum flow on a pipe"
+function _calc_compressor_flow_max(ref::Dict{Symbol,Any}, compressor)
+    mf               = ref[:max_mass_flow]
+    flow_max         = get(compressor,"flow_max",mf)
+    flow_direction   = get(compressor, "flow_direction", 0)
+
+    if flow_direction == -1
+        return min(mf, flow_max, 0)
+    else
+        return min(mf, flow_max)
+    end
+end
+
+"calculates the minimum flow on a compressor"
+function _calc_ne_compressor_flow_min(ref::Dict{Symbol,Any}, compressor)
+    mf       = -ref[:max_mass_flow]
+    flow_min = get(compressor,"flow_min",mf)
+    return max(mf, flow_min)
+end
+
+
+"calculates the maximum flow on a pipe"
+function _calc_ne_compressor_flow_max(ref::Dict{Symbol,Any}, compressor)
+    mf       = ref[:max_mass_flow]
+    flow_max = get(compressor,"flow_max",mf)
+
+    return min(mf, flow_max)
 end
 
 
@@ -931,7 +1036,7 @@ end
 "calculates the minimum flow on a resistor"
 function _calc_resistor_flow_min(ref::Dict{Symbol,Any}, resistor)
     mf = ref[:max_mass_flow]
-    pd_min = resistor["pd_min"]
+    pd_min = resistor["pd_sqr_min"]
     w = resistor["resistance"]
     pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
     return max(-mf, pf_min)
@@ -941,7 +1046,7 @@ end
 "calculates the maximum flow on a resistor"
 function _calc_resistor_flow_max(ref::Dict{Symbol,Any}, resistor)
     mf = ref[:max_mass_flow]
-    pd_max = resistor["pd_max"]
+    pd_max = resistor["pd_sqr_max"]
     w = resistor["resistance"]
     pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
     return min(mf, pf_max)

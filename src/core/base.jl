@@ -66,7 +66,7 @@ Some of the common keys include:
 * `:valve` -- the set of valves in the system,
 * `:storage` -- the set of storages in the system,
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
-* `"pd_min","pd_max"` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
+* `"pd_sqr_min","pd_sqr_max"` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
     _ref_add_core!(refs[:nw], base_length=refs[:base_length], base_pressure=refs[:base_pressure], base_flow=refs[:base_flow], sound_speed=refs[:sound_speed])
@@ -152,9 +152,9 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
             pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            pipe["pd_min"] = pd_min
-            pipe["pd_max"] = pd_max
+            pd_min, pd_max = _calc_pipe_pd_bounds_sqr(ref, pipe, i, j)
+            pipe["pd_sqr_min"] = pd_min
+            pipe["pd_sqr_max"] = pd_max
             pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
             pipe["flow_min"] = _calc_pipe_flow_min(ref, pipe)
             pipe["flow_max"] = _calc_pipe_flow_max(ref, pipe)
@@ -165,19 +165,19 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            compressor["pd_min"] = pd_min
-            compressor["pd_max"] = pd_max
+            compressor["pd_sqr_min"] = pd_min
+            compressor["pd_sqr_max"] = pd_max
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_pipe_flow_min(ref, compressor)
-            compressor["flow_max"] = _calc_pipe_flow_max(ref, compressor)
+            compressor["flow_min"] = _calc_compressor_flow_min(ref, compressor)
+            compressor["flow_max"] = _calc_compressor_flow_max(ref, compressor)
         end
 
         for (idx, pipe) in ref[:short_pipe]
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            pipe["pd_min"] = pd_min
-            pipe["pd_max"] = pd_max
+            pipe["pd_sqr_min"] = pd_min
+            pipe["pd_sqr_max"] = pd_max
             pipe["flow_min"] = _calc_short_pipe_flow_min(ref, idx)
             pipe["flow_max"] = _calc_short_pipe_flow_max(ref, idx)
         end
@@ -186,8 +186,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = resistor["fr_junction"]
             j = resistor["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            resistor["pd_min"] = pd_min
-            resistor["pd_max"] = pd_max
+            resistor["pd_sqr_min"] = pd_min
+            resistor["pd_sqr_max"] = pd_max
             resistor["resistance"] = _calc_resistor_resistance(resistor)
             resistor["flow_min"] = _calc_resistor_flow_min(ref, resistor)
             resistor["flow_max"] = _calc_resistor_flow_max(ref, resistor)
@@ -197,8 +197,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = valve["fr_junction"]
             j = valve["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            valve["pd_min"] = pd_min
-            valve["pd_max"] = pd_max
+            valve["pd_sqr_min"] = pd_min
+            valve["pd_sqr_max"] = pd_max
             valve["flow_min"] = _calc_valve_flow_min(ref, valve)
             valve["flow_max"] = _calc_valve_flow_max(ref, valve)
         end
@@ -207,8 +207,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = regulator["fr_junction"]
             j = regulator["to_junction"]
             pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            regulator["pd_min"] = pd_min
-            regulator["pd_max"] = pd_max
+            regulator["pd_sqr_min"] = pd_min
+            regulator["pd_sqr_max"] = pd_max
             regulator["flow_min"] = _calc_regulator_flow_min(ref, regulator)
             regulator["flow_max"] = _calc_regulator_flow_max(ref, regulator)
         end

@@ -39,8 +39,8 @@ function constraint_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm, n,:resistor, k)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
 
@@ -62,8 +62,8 @@ function constraint_resistor_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
     w                = pipe["resistance"]
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
     is_bidirectional = get(pipe, "is_bidirectional", 1)
@@ -92,16 +92,6 @@ function constraint_pipe_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:pipe,k)
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_pipe_mass_flow(gm, n, k, f_min, f_max)
 end
@@ -112,18 +102,8 @@ function constraint_pipe_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm, n,:pipe, k)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        pd_min = max(0, pd_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-    end
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
 
     constraint_pipe_pressure(gm, n, k, i, j, pd_min, pd_max)
 end
@@ -132,8 +112,8 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:ne_pipe, k)
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
     w                = pipe["resistance"]
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
@@ -157,8 +137,8 @@ function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:ne_pipe,k)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     pd_min_M         = pd_min
@@ -182,22 +162,10 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
     w                = pipe["resistance"]
-    pd_max           = pipe["pd_max"]
-    pd_min           = pipe["pd_min"]
+    pd_max           = pipe["pd_sqr_max"]
+    pd_min           = pipe["pd_sqr_min"]
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        pd_min = max(0, pd_min)
-        f_min  = max(0,f_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-        f_max  = min(0, f_max)
-    end
 
     constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
 end
@@ -230,8 +198,8 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     w              = pipe["resistance"]
-    pd_max         = pipe["pd_max"]
-    pd_min         = pipe["pd_min"]
+    pd_max         = pipe["pd_sqr_max"]
+    pd_min         = pipe["pd_sqr_min"]
     f_min          = pipe["flow_min"]
     f_max          = pipe["flow_max"]
 
@@ -448,16 +416,6 @@ function constraint_compressor_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
     compressor       = ref(gm, n, :compressor, k)
     f_min            = compressor["flow_min"]
     f_max            = compressor["flow_max"]
-    directionality   = get(compressor, "directionality", 0)
-    flow_direction   = get(compressor, "flow_direction", 0)
-
-    if directionality == 1 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_compressor_mass_flow(gm, n, k, f_min, f_max)
 end
