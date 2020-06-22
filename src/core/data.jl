@@ -868,6 +868,29 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared"
+function _calc_compressor_pd_bounds_sqr(ref::Dict{Symbol,Any}, compressor::Dict{String,Any}, i_idx::Int, j_idx::Int)
+    i    = ref[:junction][i_idx]
+    j    = ref[:junction][j_idx]
+
+    pd_max = i["p_max"]^2 - j["p_min"]^2
+    pd_min = i["p_min"]^2 - j["p_max"]^2
+
+    directionality   = get(compressor, "directionality", 0)
+    flow_direction   = get(compressor, "flow_direction", 0)
+
+    if directionality == 1 || flow_direction == 1
+        pd_min = max(0, pd_min)
+    end
+
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+    end
+
+    return pd_min, pd_max
+end
+
+
+"Calculate the bounds on minimum and maximum pressure difference squared"
 function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
     i = ref[:junction][i_idx]
     j = ref[:junction][j_idx]
@@ -1054,12 +1077,31 @@ end
 
 
 "calculates the minimum flow on a short pipe"
-_calc_short_pipe_flow_min(ref::Dict{Symbol,Any}, short_pipe) = -ref[:max_mass_flow]
+function _calc_short_pipe_flow_min(ref::Dict{Symbol,Any}, short_pipe)
+    mf               = -ref[:max_mass_flow]
+    flow_min         = get(short_pipe, "flow_min",mf)
+    is_bidirectional = get(short_pipe, "is_bidirectional", 1)
+    flow_direction   = get(short_pipe, "flow_direction", 0)
 
+    if is_bidirectional == 0 || flow_direction == 1
+        flow_min = max(0, f_min)
+    end
+
+    return flow_min
+end
 
 "calculates the maximum flow on a short pipe"
-_calc_short_pipe_flow_max(ref::Dict{Symbol,Any}, short_pipe) = ref[:max_mass_flow]
+function _calc_short_pipe_flow_max(ref::Dict{Symbol,Any}, short_pipe)
+    mf               = ref[:max_mass_flow]
+    flow_max         = get(short_pipe,"flow_max",mf)
+    flow_direction   = get(short_pipe, "flow_direction", 0)
 
+    if flow_direction == -1
+        flow_max = min(0, f_max)
+    end
+
+    return flow_max
+end
 
 "calculates the minimum flow on a valve"
 _calc_valve_flow_min(ref::Dict{Symbol,Any}, valve) = -ref[:max_mass_flow]

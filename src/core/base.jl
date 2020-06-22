@@ -164,7 +164,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
+            pd_min, pd_max = _calc_compressor_pd_bounds_sqr(ref, compressor, i, j)
             compressor["pd_sqr_min"] = pd_min
             compressor["pd_sqr_max"] = pd_max
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
@@ -175,11 +175,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, pipe) in ref[:short_pipe]
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            pipe["pd_sqr_min"] = pd_min
-            pipe["pd_sqr_max"] = pd_max
-            pipe["flow_min"] = _calc_short_pipe_flow_min(ref, idx)
-            pipe["flow_max"] = _calc_short_pipe_flow_max(ref, idx)
+            pipe["flow_min"] = _calc_short_pipe_flow_min(ref, pipe)
+            pipe["flow_max"] = _calc_short_pipe_flow_max(ref, pipe)
         end
 
         for (idx, resistor) in ref[:resistor]

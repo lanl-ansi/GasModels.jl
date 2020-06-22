@@ -320,16 +320,6 @@ function constraint_short_pipe_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:short_pipe,k)
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_short_pipe_mass_flow(gm, n, k, f_min, f_max)
 end
