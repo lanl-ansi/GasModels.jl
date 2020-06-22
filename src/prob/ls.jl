@@ -29,6 +29,11 @@ function build_ls(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
+    for i in ids(gm, :prv)
+        constraint_prv_pressure(gm, i)
+        constraint_prv_mass_flow(gm,i)
+    end
+
     for i in ids(gm, :junction)
         constraint_mass_flow_balance(gm, i)
     end

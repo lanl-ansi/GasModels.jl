@@ -10,6 +10,8 @@ function constraint_source_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_compressors    = ref(gm,n,:compressors_to,i)
     f_resistors      = ref(gm,n,:resistors_fr,i)
     t_resistors      = ref(gm,n,:resistors_to,i)
+    f_prvs           = ref(gm,n,:prvs_fr,i)
+    t_prvs           = ref(gm,n,:prvs_to,i)
     f_short_pipes    = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes    = ref(gm,n,:short_pipes_to,i)
     f_valves         = ref(gm,n,:valves_fr,i)
@@ -17,7 +19,7 @@ function constraint_source_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_regulators = ref(gm,n,:regulators_fr,i)
     t_regulators = ref(gm,n,:regulators_to,i)
 
-    constraint_source_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
+    constraint_source_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
 end
 
 
@@ -29,6 +31,8 @@ function constraint_source_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_compressors    = ref(gm,n,:compressors_to,i)
     f_resistors      = ref(gm,n,:resistors_fr,i)
     t_resistors      = ref(gm,n,:resistors_to,i)
+    f_prvs           = ref(gm,n,:prvs_fr,i)
+    t_prvs           = ref(gm,n,:prvs_to,i)
     f_short_pipes    = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes    = ref(gm,n,:short_pipes_to,i)
     f_valves         = ref(gm,n,:valves_fr,i)
@@ -40,7 +44,7 @@ function constraint_source_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     ne_compressors_fr = ref(gm,n,:ne_compressors_fr,i)
     ne_compressors_to = ref(gm,n,:ne_compressors_to,i)
 
-    constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
+    constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 end
 
 
@@ -52,6 +56,8 @@ function constraint_sink_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_compressors    = ref(gm,n,:compressors_to,i)
     f_resistors      = ref(gm,n,:resistors_fr,i)
     t_resistors      = ref(gm,n,:resistors_to,i)
+    f_prvs           = ref(gm,n,:prvs_fr,i)
+    t_prvs           = ref(gm,n,:prvs_to,i)
     f_short_pipes    = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes    = ref(gm,n,:short_pipes_to,i)
     f_valves         = ref(gm,n,:valves_fr,i)
@@ -59,7 +65,7 @@ function constraint_sink_flow(gm::AbstractMIModels, i; n::Int=gm.cnw)
     f_regulators = ref(gm,n,:regulators_fr,i)
     t_regulators = ref(gm,n,:regulators_to,i)
 
-    constraint_sink_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
+    constraint_sink_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
 end
 
 
@@ -71,6 +77,8 @@ function constraint_sink_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     t_compressors    = ref(gm,n,:compressors_to,i)
     f_resistors      = ref(gm,n,:resistors_fr,i)
     t_resistors      = ref(gm,n,:resistors_to,i)
+    f_prvs           = ref(gm,n,:prvs_fr,i)
+    t_prvs           = ref(gm,n,:prvs_to,i)
     f_short_pipes    = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes    = ref(gm,n,:short_pipes_to,i)
     f_valves         = ref(gm,n,:valves_fr,i)
@@ -82,7 +90,7 @@ function constraint_sink_flow_ne(gm::AbstractMIModels, i; n::Int=gm.cnw)
     ne_compressors_fr = ref(gm,n,:ne_compressors_fr,i)
     ne_compressors_to = ref(gm,n,:ne_compressors_to,i)
 
-    constraint_sink_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
+    constraint_sink_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 end
 
 
@@ -94,6 +102,8 @@ function constraint_conserve_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     t_compressors    = Dict(i => ref(gm,n,:compressor,i)["fr_junction"] for i in ref(gm,n,:compressors_to,idx))
     f_resistors      = Dict(i => ref(gm,n,:resistor,i)["to_junction"] for i in ref(gm,n,:resistors_fr,idx))
     t_resistors      = Dict(i => ref(gm,n,:resistor,i)["fr_junction"] for i in ref(gm,n,:resistors_to,idx))
+    f_prvs           = Dict(i => ref(gm,n,:prv,i)["to_junction"] for i in ref(gm,n,:prvs_fr,idx))
+    t_prvs           = Dict(i => ref(gm,n,:prv,i)["fr_junction"] for i in ref(gm,n,:prvs_to,idx))
     f_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["to_junction"] for i in ref(gm,n,:short_pipes_fr,idx))
     t_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["fr_junction"] for i in ref(gm,n,:short_pipes_to,idx))
     f_valves         = Dict(i => ref(gm,n,:valve,i)["to_junction"] for i in ref(gm,n,:valves_fr,idx))
@@ -101,7 +111,7 @@ function constraint_conserve_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     f_regulators = Dict(i => ref(gm,n,:regulator,i)["to_junction"] for i in ref(gm,n,:regulators_fr,idx))
     t_regulators = Dict(i => ref(gm,n,:regulator,i)["fr_junction"] for i in ref(gm,n,:regulators_to,idx))
 
-    constraint_conserve_flow(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
+    constraint_conserve_flow(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
 end
 
 
@@ -113,6 +123,8 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     t_compressors    = Dict(i => ref(gm,n,:compressor,i)["fr_junction"] for i in ref(gm,n,:compressors_to,idx))
     f_resistors      = Dict(i => ref(gm,n,:resistor,i)["to_junction"] for i in ref(gm,n,:resistors_fr,idx))
     t_resistors      = Dict(i => ref(gm,n,:resistor,i)["fr_junction"] for i in ref(gm,n,:resistors_to,idx))
+    f_prvs           = Dict(i => ref(gm,n,:prv,i)["to_junction"] for i in ref(gm,n,:prvs_fr,idx))
+    t_prvs           = Dict(i => ref(gm,n,:prv,i)["fr_junction"] for i in ref(gm,n,:prvs_to,idx))
     f_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["to_junction"] for i in ref(gm,n,:short_pipes_fr,idx))
     t_short_pipes    = Dict(i => ref(gm,n,:short_pipe,i)["fr_junction"] for i in ref(gm,n,:short_pipes_to,idx))
     f_valves         = Dict(i => ref(gm,n,:valve,i)["to_junction"] for i in ref(gm,n,:valves_fr,idx))
@@ -125,7 +137,7 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     ne_compressors_to = Dict(i => ref(gm,n,:ne_compressor,i)["fr_junction"] for i in ref(gm,n,:ne_compressors_to,idx))
 
     constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
-                                    t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators,
+                                    t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators,
                                     t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 
 end
@@ -135,7 +147,8 @@ end
 function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:ne_pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
            _calc_parallel_ne_connections(gm, n, pipe)
 
@@ -144,8 +157,10 @@ function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.c
     end
 
     constraint_ne_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
-                                     aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes,
+                                     aligned_ne_compressors, opposite_ne_compressors)
 end
 
 
@@ -153,7 +168,8 @@ end
 function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     compressor = ref(gm,n,:ne_compressor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors =
            _calc_parallel_ne_connections(gm, n, compressor)
 
@@ -161,8 +177,10 @@ function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, idx; n::In
         return nothing
     end
 
-    constraint_ne_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    constraint_ne_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes,
+                                     aligned_compressors, opposite_compressors,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
 end
 
@@ -171,7 +189,8 @@ end
 function constraint_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, pipe)
 
@@ -180,7 +199,8 @@ function constraint_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     end
 
     constraint_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end
 
@@ -189,7 +209,8 @@ end
 function constraint_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     compressor = ref(gm,n,:compressor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, compressor)
 
@@ -198,7 +219,8 @@ function constraint_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int=g
     end
 
     constraint_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end
 
@@ -207,7 +229,8 @@ end
 function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     pipe = ref(gm,n,:short_pipe, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, pipe)
 
@@ -216,7 +239,8 @@ function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int=g
     end
 
     constraint_short_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end
 
@@ -225,7 +249,8 @@ end
 function constraint_resistor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     resistor = ref(gm,n,:resistor, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, resistor)
 
@@ -234,7 +259,8 @@ function constraint_resistor_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.
     end
 
     constraint_resistor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end
 
@@ -243,7 +269,8 @@ end
 function constraint_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     valve = ref(gm,n,:valve, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, valve)
 
@@ -252,7 +279,8 @@ function constraint_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw
     end
 
     constraint_valve_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end
 
@@ -261,7 +289,8 @@ end
 function constraint_regulator_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm.cnw)
     valve = ref(gm,n,:regulator, idx)
     num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-           aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+           aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+           aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
            aligned_regulators, opposite_regulators =
            _calc_parallel_connections(gm, n, valve)
 
@@ -270,6 +299,7 @@ function constraint_regulator_parallel_flow(gm::AbstractMIModels, idx; n::Int=gm
     end
 
     constraint_regulator_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
-                                     aligned_resistors, opposite_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+                                     aligned_resistors, opposite_resistors, aligned_prvs, opposite_prvs,
+                                     aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
                                      aligned_regulators, opposite_regulators)
 end

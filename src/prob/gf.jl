@@ -45,6 +45,11 @@ function build_gf(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
+    for i in ids(gm, :prv)
+        constraint_prv_pressure(gm, i)
+        constraint_prv_mass_flow(gm,i)
+    end
+
     for i in ids(gm, :short_pipe)
         constraint_short_pipe_pressure(gm, i)
         constraint_short_pipe_mass_flow(gm, i)

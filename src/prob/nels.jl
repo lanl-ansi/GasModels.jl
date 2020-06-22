@@ -40,6 +40,11 @@ function build_nels(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
+    for i in ids(gm, :prv)
+        constraint_prv_pressure(gm, i)
+        constraint_prv_mass_flow(gm, i)
+    end
+
     for i in ids(gm,:ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)

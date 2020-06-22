@@ -83,6 +83,39 @@ function constraint_resistor_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
 end
 
 
+###############################################################################################
+# Templates for constraints associated with prvs
+###############################################################################################
+
+"Template: Constraint on mass flow across a prv"
+function constraint_prv_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
+    prv             = ref(gm,n,:prv,k)
+    f_min            = prv["flow_min"]
+    f_max            = prv["flow_max"]
+    is_bidirectional = get(prv, "is_bidirectional", 1)
+    flow_direction   = get(prv, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        f_min = max(0.0, f_min)
+    end
+
+    if flow_direction == -1
+        f_max = min(0.0, f_max)
+    end
+
+    constraint_prv_mass_flow(gm, n, k, f_min, f_max)
+end
+
+
+"Template: Pressure drop across prv with on/off direction variables"
+function constraint_prv_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
+    prv = ref(gm, n, :prv, k)
+    i, j = prv["fr_junction"], prv["to_junction"]
+    pd = prv["p_loss"]^2
+    constraint_prv_pressure(gm, n, k, i, j, pd)
+end
+
+
 #################################################################################################
 # Templates for constraints associated with pipes
 #################################################################################################
@@ -262,6 +295,8 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int=gm.cnw)
     t_compressors           = ref(gm,n,:compressors_to,i)
     f_resistors             = ref(gm,n,:resistors_fr,i)
     t_resistors             = ref(gm,n,:resistors_to,i)
+    f_prvs                  = ref(gm,n,:prvs_fr,i)
+    t_prvs                  = ref(gm,n,:prvs_to,i)
     f_short_pipes           = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes           = ref(gm,n,:short_pipes_to,i)
     f_valves                = ref(gm,n,:valves_fr,i)
@@ -287,7 +322,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int=gm.cnw)
     flmin                   = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
     flmin                   += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
-    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -300,6 +335,8 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int=gm.cnw)
     t_compressors           = ref(gm,n,:compressors_to,i)
     f_resistors             = ref(gm,n,:resistors_fr,i)
     t_resistors             = ref(gm,n,:resistors_to,i)
+    f_prvs                  = ref(gm,n,:prvs_fr,i)
+    t_prvs                  = ref(gm,n,:prvs_to,i)
     f_short_pipes           = ref(gm,n,:short_pipes_fr,i)
     t_short_pipes           = ref(gm,n,:short_pipes_to,i)
     f_valves                = ref(gm,n,:valves_fr,i)
@@ -330,7 +367,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int=gm.cnw)
     ne_compressors_fr        = ref(gm,n,:ne_compressors_fr,i)
     ne_compressors_to        = ref(gm,n,:ne_compressors_to,i)
 
-    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
 
 

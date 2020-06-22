@@ -42,6 +42,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     resistors = _read_gaslib_resistors(topology_xml)
     short_pipes = _read_gaslib_short_pipes(topology_xml)
     valves = _read_gaslib_valves(topology_xml)
+    prvs = _read_gaslib_prvs(topology_xml)
     compressors = _read_gaslib_compressors(topology_xml, compressor_xml)
     deliveries = _read_gaslib_deliveries(topology_xml, nomination_xml)
     receipts = _read_gaslib_receipts(topology_xml, nomination_xml)
@@ -52,7 +53,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     # TODO: What is a general "sound_speed" that should be used?
     data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
         "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes,
-        "regulator"=>regulators, "resistor"=>resistors,
+        "regulator"=>regulators, "resistor"=>resistors, "prv"=>prvs,
         "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>true,
         "per_unit"=>false, "sound_speed"=>312.8060)
 
@@ -93,7 +94,7 @@ function _correct_ids(data::Dict{String,<:Any})
         end
     end
 
-    for edge_type in ["compressor", "pipe", "resistor", "regulator", "short_pipe", "valve"]
+    for edge_type in ["compressor", "pipe", "resistor", "regulator", "short_pipe", "valve", "prv"]
         edge_id = 1
 
         for (a, edge) in data[edge_type]
@@ -268,6 +269,18 @@ function _get_pipe_entry(pipe, junctions)
         "status"=>1, "is_per_unit"=>0, "is_si_units"=>1, "is_english_units"=>0)
 end
 
+function _get_prv_entry(prv)
+    fr_junction, to_junction = prv[:from], prv[:to]
+    flow_min = parse(Float64, prv["flowMin"][:value]) * inv(3.6)
+    flow_max = parse(Float64, prv["flowMax"][:value]) * inv(3.6)
+    p_loss = parse(Float64, prv["pressureLoss"][:value]) * 1.0e5
+
+    return Dict{String,Any}("fr_junction"=>fr_junction,
+        "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
+        "p_loss"=>p_loss, "is_per_unit"=>0, "status"=>1,
+        "is_si_units"=>1, "is_english_units"=>0, "is_bidirectional"=>1)
+end
+
 function _get_short_pipe_entry(short_pipe)
     fr_junction, to_junction = short_pipe[:from], short_pipe[:to]
 
@@ -296,15 +309,14 @@ end
 
 function _get_resistor_entry(resistor)
     fr_junction, to_junction = resistor[:from], resistor[:to]
+    flow_min = parse(Float64, resistor["flowMin"][:value]) * inv(3.6)
+    flow_max = parse(Float64, resistor["flowMax"][:value]) * inv(3.6)
+    diameter = parse(Float64, resistor["diameter"][:value]) * inv(1000.0)
+    drag = parse(Float64, resistor["dragFactor"][:value])
+    drag = drag > 0.0 ? drag : 0.01
 
-    if "diameter" in keys(resistor) && "drag" in keys(resistor)
-        diameter = parse(Float64, resistor["diameter"][:value]) * inv(1000.0)
-        drag = parse(Float64, resistor["dragFactor"][:value])
-    else
-        diameter, drag = 1.0, 0.01
-    end
-
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
+    return Dict{String,Any}("fr_junction"=>fr_junction,
+        "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
         "drag"=>drag, "diameter"=>diameter, "is_per_unit"=>0, "status"=>1,
         "is_si_units"=>1, "is_english_units"=>0, "is_bidirectional"=>1)
 end
@@ -379,6 +391,12 @@ function _read_gaslib_pipes(topology::XMLDict.XMLDictElement, junctions::Dict{St
     return Dict{String,Any}(i => _get_pipe_entry(x, junctions) for (i, x) in pipe_xml)
 end
 
+function _read_gaslib_prvs(topology::XMLDict.XMLDictElement)
+    prv_xml = _get_component_dict(get(topology["connections"], "resistor", []))
+    prv_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), prv_xml)
+    return Dict{String,Any}(i => _get_prv_entry(x) for (i, x) in prv_xml)
+end
+
 function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement)
     node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
 
@@ -411,6 +429,7 @@ end
 
 function _read_gaslib_resistors(topology::XMLDict.XMLDictElement)
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
+    resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
     return Dict{String,Any}(i => _get_resistor_entry(x) for (i, x) in resistor_xml)
 end
 

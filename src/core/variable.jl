@@ -79,6 +79,24 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
     report && _IM.sol_component_value(gm, nw, :resistor, :f, ids(gm, nw, :resistor), f_resistor)
 end
 
+"variables associated with mass flow in prvs"
+function variable_prv_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    f_prv = gm.var[:nw][nw][:f_prv] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :prv)],
+        base_name="$(nw)_f",
+        start=comp_start_value(gm.ref[:nw][nw][:prv], i, "f_start", 0)
+    )
+
+    if bounded
+        for (i, prv) in ref(gm, nw, :prv)
+            JuMP.set_lower_bound(f_prv[i], prv["flow_min"])
+            JuMP.set_upper_bound(f_prv[i], prv["flow_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :prv, :f, ids(gm, nw, :prv), f_prv)
+end
+
 "variables associated with mass flow in short pipes"
 function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     max_flow = gm.ref[:nw][nw][:max_mass_flow]
@@ -145,6 +163,7 @@ function variable_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=
     variable_pipe_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_compressor_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_resistor_mass_flow(gm, nw; bounded=bounded, report=report)
+    variable_prv_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_short_pipe_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_valve_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_regulator_mass_flow(gm, nw; bounded=bounded, report=report)
@@ -411,6 +430,37 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
 end
 
 
+"variables associated with direction of flow on on prvs. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
+function variable_prv_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+    prv   = Dict(x for x in ref(gm,nw,:prv)   if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+
+    y_prv_var = JuMP.@variable(gm.model,
+        [l in keys(prv)],
+        binary=true,
+        base_name="$(nw)_y",
+        start=comp_start_value(prv, l, "y_start", 1)
+    )
+
+    y_prv = gm.var[:nw][nw][:y_prv] = Dict()
+
+    for l in keys(prv)
+        y_prv[l] = y_prv_var[l]
+    end
+
+    for (i,prv) in ref(gm,nw,:prv)
+        if get(prv, "is_bidirectional", 1) == 0 || get(prv, "flow_direction", 0) == 1
+            y_prv[l] = 1
+        end
+
+        if get(prv, "flow_direction", 0) == -1
+            y_prv[l] = 0
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :prv, :y, keys(prv), y_prv_var)
+end
+
+
 "variables associated with direction of flow on short pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
     short_pipe = Dict(x for x in ref(gm,nw,:short_pipe) if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
@@ -503,6 +553,7 @@ function variable_connection_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
     variable_pipe_direction(gm, nw; report=report)
     variable_compressor_direction(gm, nw; report=report)
     variable_resistor_direction(gm, nw; report=report)
+    variable_prv_direction(gm, nw; report=report)
     variable_short_pipe_direction(gm, nw; report=report)
     variable_valve_direction(gm, nw; report=report)
     variable_regulator_direction(gm, nw; report=report)
