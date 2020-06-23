@@ -37,17 +37,17 @@ constraint_conserve_flow_ne
 
 ### Weymouth's law constraints
 
-The primary constraints related to pipes ensure that that pressure drop and flow across a pipe is related through the Weymouth relationships. Here, the naming convention `ne` is used to denote the form of the constraint used for expansion pipes and `directed` is used to denote the form of the constraint used when the direction of flow is constrained.
+The primary constraints related to pipes ensure that that pressure drop and flow across a pipe is related through the Weymouth relationships. Here, the naming convention `ne` is used to denote the form of the constraint used for expansion pipes.
 
 ```@docs
 constraint_pipe_weymouth
 constraint_pipe_weymouth_ne
-constraint_pipe_weymouth_ne_directed
+constraint_pipe_weymouth_ne
 ```
 
 ### Mass flow and pressure drop constraints
 
-Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the `ne` and `directed` naming conventions.
+Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the `ne` and naming conventions.
 
 ```@docs
 constraint_pipe_mass_flow
@@ -75,7 +75,7 @@ constraint_ne_pipe_parallel_flow
 
 ### Weymouth's law constraints
 
-The primary constraints related to resistor ensure that that pressure drop and flow across a resistor is related through the Weymouth relationships. Here, `directed` is used to denote the form of the constraint used when the direction of flow is constrained.
+The primary constraints related to resistor ensure that that pressure drop and flow across a resistor is related through the Weymouth relationships.
 
 ```@docs
 constraint_resistor_weymouth
@@ -83,7 +83,7 @@ constraint_resistor_weymouth
 
 ### Mass flow and pressure drop constraints
 
-Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes. These constraints also use the `directed` naming conventions.
+Secondarily, there are constraints associated with limits on pressure drop or mass flow across pipes.
 
 ```@docs
 constraint_resistor_mass_flow
@@ -102,13 +102,11 @@ constraint_resistor_parallel_flow
 
 ### Operations Constraints
 
-The primary constraints related to compressors ensure that that the compressors operate within the limits of their capability (boost ratio, energy consumption, etc.). These constraints use the `ne` and `directed` naming conventions to denote constraints where the compressor is an expansion option or direction of flow is fixed, respectively.
+The primary constraints related to compressors ensure that that the compressors operate within the limits of their capability (boost ratio, energy consumption, etc.). These constraints use the `ne` naming conventions to denote constraints where the compressor is an expansion option.
 
 ```@docs
 constraint_compressor_ratios
-constraint_compressor_ratios_directed
 constraint_compressor_ratios_ne
-constraint_compressor_ratios_ne_directed
 constraint_compressor_mass_flow
 constraint_compressor_energy
 ```
@@ -134,7 +132,7 @@ constraint_compressor_ne
 
 ### Operations Constraints
 
-The primary constraints related to regulator ensure that that the valves operate within the limits of their capability (pressure reduction). These constraints use the `directed` naming conventions to denote constraints where the regulator direction of flow is fixed.  The control valve also has an open/close variable to determine whether or not flow is allowed through the valve
+The primary constraints related to regulator ensure that that the valves operate within the limits of their capability (pressure reduction).  The control valve also has an open/close variable to determine whether or not flow is allowed through the valve
 
 
 ```@docs
@@ -154,7 +152,7 @@ constraint_regulator_parallel_flow
 
 ### Operations Constraints
 
-The primary function of a valve is to open or close a pipe. These constraints use the `directed` naming conventions to denote constraints where the valve direction of flow is fixed.
+The primary function of a valve is to open or close a pipe.
 
 ```@docs
 constraint_on_off_valve_mass_flow
@@ -173,7 +171,7 @@ constraint_valve_parallel_flow
 
 ### Pressure Constraints
 
-Short pipes are used to model frictionless connections between junctions.  The primary constraint ensures the pressure on both sides of the short pipe are the same. These constraints use the `directed` naming conventions to denote constraints where the control valve direction of flow is fixed.
+Short pipes are used to model frictionless connections between junctions.  The primary constraint ensures the pressure on both sides of the short pipe are the same. 
 
 ```@docs
 constraint_short_pipe_pressure

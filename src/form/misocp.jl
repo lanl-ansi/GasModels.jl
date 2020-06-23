@@ -8,14 +8,6 @@ function variable_flow(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=tr
 end
 
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressor=ref(gm, nw, :default_compressor))
-    variable_pressure_difference(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction(gm, nw; compressor=compressor, report=report)
-end
-
-
 "Variables needed for modeling flow in MI models"
 function variable_flow_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
@@ -24,14 +16,7 @@ function variable_flow_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool
 end
 
 
-"Variables needed for modeling flow in MI models when some edges are directed"
-function variable_flow_ne_directed(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, ne_compressor=ref(gm, nw, :default_ne_compressor))
-    variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow_ne(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction_ne(gm, nw; ne_compressor=ne_compressor, report=report)
-end
-
-""
+"Variables needed for modeling pipe difference in the lifted MISOCP space"
 function variable_pipe_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(gm.model,
         [i in keys(gm.ref[:nw][nw][:pipe])],
@@ -42,7 +27,7 @@ function variable_pipe_pressure_difference(gm::AbstractMISOCPModel, nw::Int=gm.c
     if bounded
         for (i, pipe) in ref(gm, nw, :pipe)
             JuMP.set_lower_bound(l_pipe[i], 0.0)
-            JuMP.set_upper_bound(l_pipe[i], max(abs(ref(gm, nw, :pipe, i)["pd_min"]), abs(ref(gm, nw, :pipe, i)["pd_max"])))
+            JuMP.set_upper_bound(l_pipe[i], max(abs(ref(gm, nw, :pipe, i)["pd_sqr_min"]), abs(ref(gm, nw, :pipe, i)["pd_sqr_max"])))
         end
     end
 
@@ -60,7 +45,7 @@ function variable_resistor_pressure_difference(gm::AbstractMISOCPModel, nw::Int=
     if bounded
         for (i, resistor) in ref(gm, nw, :resistor)
             JuMP.set_lower_bound(l_resistor[i], 0.0)
-            JuMP.set_upper_bound(l_resistor[i], max(abs(ref(gm, nw, :resistor, i)["pd_min"]), abs(ref(gm, nw, :resistor, i)["pd_max"])))
+            JuMP.set_upper_bound(l_resistor[i], max(abs(ref(gm, nw, :resistor, i)["pd_sqr_min"]), abs(ref(gm, nw, :resistor, i)["pd_sqr_max"])))
         end
     end
 
@@ -86,7 +71,7 @@ function variable_pressure_difference_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw
 
     if bounded
         for (i, ne_pipe) in ref(gm, nw, :ne_pipe)
-            pd_abs_max = max(abs(ref(gm, nw, :ne_pipe, i)["pd_min"]), abs(ref(gm, nw, :ne_pipe, i)["pd_max"]))
+            pd_abs_max = max(abs(ref(gm, nw, :ne_pipe, i)["pd_sqr_min"]), abs(ref(gm, nw, :ne_pipe, i)["pd_sqr_max"]))
             ub = min(pd_abs_max, inv(ref(gm, nw, :ne_pipe, i)["resistance"]) * max_flow^2)
             JuMP.set_lower_bound(l_ne_pipe[i], 0.0)
             JuMP.set_upper_bound(l_ne_pipe[i], ub)
@@ -97,7 +82,7 @@ function variable_pressure_difference_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw
 end
 
 
-"Weymouth equation for an undirected pipe"
+"Weymouth equation for a pipe"
 function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y  = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
@@ -116,7 +101,7 @@ function constraint_pipe_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_mi
 end
 
 
-"Weymouth equation for an undirected pipe"
+"Weymouth equation for a pipe"
 function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_resistor, k)
     pi = var(gm, n, :psqr, i)
@@ -135,7 +120,7 @@ function constraint_resistor_weymouth(gm::AbstractMISOCPModel, n::Int, k, i, j, 
 end
 
 
-"Weymouth equation for an undirected expansion pipe"
+"Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractMISOCPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y  = var(gm, n, :y_ne_pipe, k)
     pi = var(gm, n, :psqr, i)

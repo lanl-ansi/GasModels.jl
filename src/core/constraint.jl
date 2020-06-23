@@ -128,21 +128,12 @@ function constraint_on_off_valve_pressure(gm::AbstractGasModel, n::Int, k, i, j,
 end
 
 
-"constraints on flow across undirected valves"
+"constraints on flow across valves"
 function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_valve,k)
     v = var(gm,n,:v_valve,k)
     _add_constraint!(gm, n,:on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min*v <= f))
     _add_constraint!(gm, n,:on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max*v))
-end
-
-
-"Constraint: constraints on flow across valves when the direction of flow is constrained."
-function constraint_on_off_valve_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f = var(gm,n,:f_valve,k)
-    v = var(gm,n,:v_valve,k)
-    _add_constraint!(gm, n,:valve_flow_direction1, k, JuMP.@constraint(gm.model, f_min*v <= f))
-    _add_constraint!(gm, n,:valve_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max*v))
 end
 
 
@@ -231,60 +222,11 @@ function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_m
 end
 
 
-"Constraint: flow across a compressor when flow is restricted to one direction"
-function constraint_compressor_mass_flow_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_compressor,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
-end
-
-
-"Constraint: Compressor ratio when the flow direction is constrained"
-function constraint_compressor_ratios_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, direction)
-    pi = var(gm,n,:psqr,i)
-    pj = var(gm,n,:psqr,j)
-
-    if direction == 1
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
-        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
-    else
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj == pi))
-    end
-end
-
-
-"Constraint: flow across expansion compressors when the direction is constrained"
-function constraint_compressor_mass_flow_ne_directed(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_ne_compressor,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
-end
-
-
-"Constraint: Pressure drop across an expansion compressor when direction is constrained"
-function constraint_compressor_ratios_ne_directed(gm::AbstractGasModel, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, direction)
-    pi = var(gm,n,:psqr,i)
-    pj = var(gm,n,:psqr,j)
-    zc = var(gm,n,:zc,k)
-
-    if direction == 1
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
-        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
-    else
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (1-pj/pi) <= (1-zc) * mf * (1-j_pmax^2/i_pmin^2)))
-    end
-end
-
-
 #################################################################################################
 # Constraints associated with control valves
 #################################################################################################
 
-"constraints on flow across control valves that are undirected"
+"constraints on flow across control valves"
 function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm,n,:f_regulator,k)
     v = var(gm,n,:v_regulator,k)

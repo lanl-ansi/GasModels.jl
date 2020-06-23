@@ -5,7 +5,6 @@
 ### Suffixes
 
 - `_ne`: used to denote a concept specific to network expansion problems
-- `_directed`: used to denote a concept specific to implementations where direction of flow is pre-determined.
 - `_ls`: used to denote a concept specific to implementations where production and consumption are variables.
 - `_on_off`: used to denote a concept where there are either-or choices, such is valve operations or binary direction choices.
 
@@ -31,7 +30,7 @@ A long term development plan is to largely unify the declaration of variables an
 
 A basic version of the transient optimal gas flow problem is supported with the current version of `GasModels`. It uses the multi-network feature to formulate the problem. The entry point to create and prepare the transient data is the function `parse_files()` given below:
 
-```@docs 
+```@docs
 parse_files
 ```
 
