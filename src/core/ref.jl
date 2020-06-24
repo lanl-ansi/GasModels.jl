@@ -40,9 +40,6 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressur
         for (idx,compressor) in ref[:ne_compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            compressor["pd_sqr_min"] = pd_min
-            compressor["pd_sqr_max"] = pd_max
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
             compressor["flow_min"] = _calc_ne_compressor_flow_min(ref, compressor)
             compressor["flow_max"] = _calc_ne_compressor_flow_max(ref, compressor)

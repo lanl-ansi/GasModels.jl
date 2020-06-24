@@ -19,16 +19,6 @@ function constraint_resistor_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:resistor,k)
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_resistor_mass_flow(gm, n, k, f_min, f_max)
 end
@@ -66,18 +56,6 @@ function constraint_resistor_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pd_min           = pipe["pd_sqr_min"]
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        pd_min = max(0, pd_min)
-        f_min  = max(0,f_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-        f_max  = min(0, f_max)
-    end
 
     constraint_resistor_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
 end
@@ -345,16 +323,6 @@ function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cn
     valve            = ref(gm,n,:valve,k)
     f_min            = valve["flow_min"]
     f_max            = valve["flow_max"]
-    is_bidirectional = get(valve, "is_bidirectional", 1)
-    flow_direction   = get(valve, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_on_off_valve_mass_flow(gm, n, k, f_min, f_max)
 end
@@ -386,16 +354,6 @@ function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     compressor       = gm.ref[:nw][n][:ne_compressor][k]
     f_min            = compressor["flow_min"]
     f_max            = compressor["flow_max"]
-    directionality   = get(compressor, "directionality", 0)
-    flow_direction   = get(compressor, "flow_direction", 0)
-
-    if directionality == 1 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_compressor_ne(gm, n, k, f_min, f_max)
 end
@@ -418,16 +376,6 @@ function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.c
     j              = compressor["to_junction"]
     f_min          = compressor["flow_min"]
     f_max          = compressor["flow_max"]
-    directionality = get(compressor, "directionality", 0)
-    flow_direction = get(compressor, "flow_direction", 0)
-
-    if directionality == 1 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_compressor_mass_flow_ne(gm, n, k, f_min, f_max)
 end
@@ -444,10 +392,9 @@ function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     j_pmin         = ref(gm,n,:junction,j)["p_min"]
     i_pmax         = ref(gm,n,:junction,i)["p_max"]
     i_pmin         = ref(gm,n,:junction,i)["p_min"]
-    f_max          = compressor["flow_max"]
     type           = get(compressor, "directionality", 0)
 
-    constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax, type)
+    constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 
@@ -483,16 +430,6 @@ function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, k; n::Int=g
     valve            = ref(gm,n,:regulator,k)
     f_min            = valve["flow_min"]
     f_max            = valve["flow_max"]
-    is_bidirectional = get(valve, "is_bidirectional", 1)
-    flow_direction   = get(valve, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0, f_max)
-    end
 
     constraint_on_off_regulator_mass_flow(gm, n, k, f_min, f_max)
 end
@@ -500,7 +437,7 @@ end
 
 "Constraint Enforces pressure changes bounds that obey decompression ratios for"
 function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    regulator = ref(gm,n,:regulator,k)
+    regulator        = ref(gm,n,:regulator,k)
     i                = regulator["fr_junction"]
     j                = regulator["to_junction"]
     max_ratio        = regulator["reduction_factor_max"]
@@ -510,12 +447,6 @@ function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int=gm
     i_pmax           = ref(gm,n,:junction,i)["p_max"]
     i_pmin           = ref(gm,n,:junction,i)["p_min"]
     f_min            = regulator["flow_min"]
-    is_bidirectional = get(regulator, "is_bidirectional", 1)
-    flow_direction   = get(regulator, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0, f_min)
-    end
 
     constraint_on_off_regulator_pressure(gm, n, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
 end

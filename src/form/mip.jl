@@ -42,7 +42,7 @@ end
 
 
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for MIP models"
-function constraint_compressor_ratios_ne(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax, type)
+function constraint_compressor_ratios_ne(gm::AbstractMIPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 

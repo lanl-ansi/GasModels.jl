@@ -182,7 +182,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, resistor) in ref[:resistor]
             i = resistor["fr_junction"]
             j = resistor["to_junction"]
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
+            pd_min, pd_max = _calc_resistor_pd_bounds_sqr(ref, resistor, i, j)
             resistor["pd_sqr_min"] = pd_min
             resistor["pd_sqr_max"] = pd_max
             resistor["resistance"] = _calc_resistor_resistance(resistor)
@@ -193,9 +193,6 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, valve) in ref[:valve]
             i = valve["fr_junction"]
             j = valve["to_junction"]
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            valve["pd_sqr_min"] = pd_min
-            valve["pd_sqr_max"] = pd_max
             valve["flow_min"] = _calc_valve_flow_min(ref, valve)
             valve["flow_max"] = _calc_valve_flow_max(ref, valve)
         end
@@ -203,9 +200,6 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         for (idx, regulator) in ref[:regulator]
             i = regulator["fr_junction"]
             j = regulator["to_junction"]
-            pd_min, pd_max = _calc_pd_bounds_sqr(ref, i, j)
-            regulator["pd_sqr_min"] = pd_min
-            regulator["pd_sqr_max"] = pd_max
             regulator["flow_min"] = _calc_regulator_flow_min(ref, regulator)
             regulator["flow_max"] = _calc_regulator_flow_max(ref, regulator)
         end
