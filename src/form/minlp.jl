@@ -21,17 +21,29 @@ function constraint_pipe_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f_min
     pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_pipe, k)
 
-    # when y = 1, the first two equations say w*(pi - pj) == f^2.
-    # This implies the third equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
-    # Given that flow is from i -> j, the largest value is f_max^2. This will make the RHS <= 0.  To then go sufficently below 0
-    # we then need to subtract out pd_min
-    # The fourth equation staets -f^2 <= f^2 which is always true.
+    # Constraint weymouth1
+    # This constraint should be active when flow goes from i to j. Pressure needs to decrease from i to j. y = 1 models this condition
+    # When y = 1, this constraint becomes w*(pi - pj) >= f^2, which is only true when pi >= pj
+    # When y = 0, we have w*(pi - pj) >= f^2 - f_min^2 + w*pd_min. By definition, w*(pi - pj) <= 0.  The lower bound on w*(pi - pj) is
+    # w*pd_min. Since flow is reversed in this situation, f^2 is bounded by f_min^2. Thus f^2 - f_min^2 only further decreases the rhs.
+    # Thus, this constraint is always true (inactive when y = 0)
 
-    # when y = 0, the last two equations say w*(pj - pi) == f^2.
-    # This implies the first equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
-    # Given that flow is from j -> i, the largest value is f_min^2. This will make the RHS <= 0.  To then go sufficently below 0
-    # we then need to subtract out pd_max
-    # The second equation staets -f^2 <= f^2 which is always true.
+    # Constraint weymouth2
+    # When y = 1, w(pi - pj) >= 0 this constraint needs to be active, so should be upper bounded by f^2 to get equality when combined with weymouth1
+    # When y = 0, w(pi - pj) <= 0, making this constraint always true (inactive when y = 0)
+
+    # Constraint weymouth3
+    # This constraint should be active when flow goes from j to i. Pressure needs to decrease from j to i. y = 0 models this condition
+    # When y = 0, this constraint becomes w*(pj - pi) >= f^2, which is only true when pj >= pi
+    # When y = 1, we have w*(pj - pi) >= f^2 - f_max^2 - w*pd_max. By definition, w*(pj - pi) <= 0.  The lower bound on w*(pi - pj) is
+    # -w*pd_max (sign flip on pi amnd pj). Since flow is forward in this situation, f^2 is bounded by f_max^2. Thus f^2 - f_max^2 only further decreases the rhs.
+    # Thus, this constraint is always true (inactive when y = 1)
+
+    # Constraint weymouth4
+    # When y = 0, w(pj - pi) >= 0 this constraint needs to be active, so should be upper bounded by f^2 to get equality when combined with weymouth3
+    # When y = 1, w(pj - pi) <= 0, making this constraint always true (inactive when y = 1)
+    # note the sign flip between pi and pj
+
 
     _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 - (1-y) * (f_min^2 - w*pd_min)))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
@@ -47,11 +59,30 @@ function constraint_resistor_weymouth(gm::AbstractMINLPModel, n::Int, k, i, j, f
     pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_resistor, k)
 
-    # when y = 1, first two constraints hold with equality. By definition, LHS of constraint 4 is negative, so it will always be true when y = 1
-    # In order to deactivaate constraint 3, we need to cancel out f^2 (f_max^2) and then go sufficiently below 0 so that w(pj-pi) is always bigger (-pd_max)
-    # when y = 0, first two constraints need to be deactivated with large enough big M. By definition, w*(pi-pj) <= 0,
-    # so second constraint is deactivated. To deactive constraint 1, we need to big enough to get rid of f^2 and always be less than w(pi-pj).
-    # The last two constraints hold with equality
+    # Constraint weymouth1
+    # This constraint should be active when flow goes from i to j. Pressure needs to decrease from i to j. y = 1 models this condition
+    # When y = 1, this constraint becomes w*(pi - pj) >= f^2, which is only true when pi >= pj
+    # When y = 0, we have w*(pi - pj) >= f^2 - f_min^2 + w*pd_min. By definition, w*(pi - pj) <= 0.  The lower bound on w*(pi - pj) is
+    # w*pd_min. Since flow is reversed in this situation, f^2 is bounded by f_min^2. Thus f^2 - f_min^2 only further decreases the rhs.
+    # Thus, this constraint is always true (inactive when y = 0)
+
+    # Constraint weymouth2
+    # When y = 1, w(pi - pj) >= 0 this constraint needs to be active, so should be upper bounded by f^2 to get equality when combined with weymouth1
+    # When y = 0, w(pi - pj) <= 0, making this constraint always true (inactive when y = 0)
+
+    # Constraint weymouth3
+    # This constraint should be active when flow goes from j to i. Pressure needs to decrease from j to i. y = 0 models this condition
+    # When y = 0, this constraint becomes w*(pj - pi) >= f^2, which is only true when pj >= pi
+    # When y = 1, we have w*(pj - pi) >= f^2 - f_max^2 - w*pd_max. By definition, w*(pj - pi) <= 0.  The lower bound on w*(pi - pj) is
+    # -w*pd_max (sign flip on pi amnd pj). Since flow is forward in this situation, f^2 is bounded by f_max^2. Thus f^2 - f_max^2 only further decreases the rhs.
+    # Thus, this constraint is always true (inactive when y = 1)
+
+    # Constraint weymouth4
+    # When y = 0, w(pj - pi) >= 0 this constraint needs to be active, so should be upper bounded by f^2 to get equality when combined with weymouth3
+    # When y = 1, w(pj - pi) <= 0, making this constraint always true (inactive when y = 1)
+    # note the sign flip between pi and pj
+
+
     _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 - (1-y) * (f_min^2 - w*pd_min)))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
     _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - y * (f_max^2 + w*pd_max)))
@@ -68,24 +99,33 @@ function constraint_pipe_weymouth_ne(gm::AbstractMINLPModel,  n::Int, k, i, j, w
     zp = var(gm, n, :zp, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
-    # when zp = 0, then f = 0 and pd_min and pd_max provide sufficiently large bounds (constraints 2 and 4)
-    # when zp = 1, then we have two euqations of the form w*(pi - pj) = +/- f^2 and w*(pj - pj) = -f^2
+    # Constraint weymouth1
+    # When zp = 1, this constraint reduces to constraint weymouth1 in constraint_pipe_weymouth, which is what we want (i.e. an active constraint)
+    # When zp = 0, we want this constraint to be in active AND any y value should be valid.  In this case, since f^2 = 0 (there is no flow) the constraint becomes
+    # w*(pi - pj) >= -(1-y) * (f_min^2 - w*pd_min) - abs(w*pd_min). When y = 1, we have w*(pi - pj) >= -abs(w*pd_min). Since pd_min is the lower bound on pi - pj,
+    # this is always true.  When y = 0, we have w*(pi - pj) >= -f_min^2 + w*pd_min - abs(w*pd_min). Which is always true. w*pd_min is the lower bound on w*pi - pj
+    # and the other two terms just drive the lower bound further down.
 
-    # when y = 1, the first two equations say w*(pi - pj) == f^2.
-    # This implies the third equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
-    # Given that flow is from i -> j, the largest value is f_max^2. Thus 2*f_max^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
-    # The fourth equation staets -f^2 <= f^2 which is always true.
+    # Constraint weymouth2
+    # When zp = 1, this constraint reduces to constraint weymouth2 in constraint_pipe_weymouth, which is what we want (i.e. an active constraint)
+    # When zp = 0, we have w*(pi - pj) <= f^2 + w*pd_max.  Since w*pd_max is the upper bound on w*(pi-pj), this is always true.
 
-    # when y = 0, the last two equations say w*(pj - pi) == f^2.
-    # This implies the first equation is -f^2 >= f^2 + sufficiently large M to drop the rhs below the smallest valye of -f^2.
-    # Given that flow is from j -> i, the largest value is f_min^2. Thus 2*f_min^2 is sufficient to subtract enough from f^2 to get a value < -f^2.
-    # The second equation staets -f^2 <= f^2 which is always true.
+    # Constraint weymouth3
+    # When zp = 1, this constraint reduces to constraint weymouth3 in constraint_pipe_weymouth, which is what we want (i.e. an active constraint)
+    # When zp = 0, we want this constraint to be in active AND any y value should be valid.  In this case, since f^2 = 0 (there is no flow) the constraint becomes
+    # w*(pj - pi) >= - y * (f_max^2 + w*pd_max) - abs(w*pd_max). When y = 0, we have w*(pj - pi) >= -abs(w*pd_max). Since -pd_max is the lower bound on pj - pi
+    # note reversal of pressure sign, this is always true.  When y = 1, we have w*(pj - pi) >= -f_max^2 - w*pd_max - abs(w*pd_max). Which is always true.
+    # -w*pd_max is the lower bound on w*(pj - pi) (note the sign flip). The other two terms just drive the lower bound further down.
+
+    # Constraint weymouth4
+    # When zp = 1, this constraint reduces to constraint weymouth4 in constraint_pipe_weymouth, which is what we want (i.e. an active constraint)
+    # When zp = 0, we have (pj - pi) <= f^2 - w*pd_min).  Since -w*pd_min is the upper bound on w*(pj-pi)--the pi and pj are flipped, this is always true.
 
 
-    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 + (1-zp)*w*pd_min - (1-y)*2*f_min^2))
-    _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp)*w*pd_max) )
-    _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - (1-zp)*w*pd_max - y*2*f_max^2))
-    _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp)*w*pd_min) )
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 - (1-y) * (f_min^2 - w*pd_min) - (1-zp)*abs(w*pd_min) ))
+    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2 + (1-zp)*w*pd_max))
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - y * (f_max^2 + w*pd_max) - (1-zp)*abs(w*pd_max) ))
+    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2 - (1-zp)*w*pd_min))
 end
 
 
