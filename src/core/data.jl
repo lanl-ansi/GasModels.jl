@@ -1041,8 +1041,14 @@ function _calc_ne_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
     pd_min   = pipe["pd_sqr_min"]
     w        = pipe["resistance"]
     pf_min   = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
 
-    return max(mf, pf_min, flow_min)
+    if is_bidirectional == 0 || flow_direction == 1
+        return max(mf, pf_min, flow_min, 0)
+    else
+        return max(mf, pf_min, flow_min)
+    end
 end
 
 
@@ -1053,8 +1059,13 @@ function _calc_ne_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
     pd_max   = pipe["pd_sqr_max"]
     w        = pipe["resistance"]
     pf_max  = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    flow_direction = get(pipe,"flow_direction", 0)
 
-    return min(mf, pf_max, flow_max)
+    if flow_direction == -1
+        return min(mf, pf_max, flow_max, 0)
+    else
+        return min(mf, pf_max, flow_max)
+    end
 end
 
 "calculates the minimum flow on a compressor"
