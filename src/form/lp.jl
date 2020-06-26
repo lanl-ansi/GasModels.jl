@@ -88,7 +88,7 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
+function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
 end
 
 

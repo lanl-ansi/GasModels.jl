@@ -844,7 +844,7 @@ function _calc_max_mass_flow(ref::Dict{Symbol,Any})
 end
 
 
-"Calculate the bounds on minimum and maximum pressure difference squared"
+"Calculate the bounds on minimum and maximum pressure difference squared for a pipe"
 function _calc_pipe_pd_bounds_sqr(ref::Dict{Symbol,Any}, pipe::Dict{String,Any}, i_idx::Int, j_idx::Int)
     i    = ref[:junction][i_idx]
     j    = ref[:junction][j_idx]
@@ -867,7 +867,7 @@ function _calc_pipe_pd_bounds_sqr(ref::Dict{Symbol,Any}, pipe::Dict{String,Any},
 end
 
 
-"Calculate the bounds on minimum and maximum pressure difference squared"
+"Calculate the bounds on minimum and maximum pressure difference squared for a resistor"
 function _calc_resistor_pd_bounds_sqr(ref::Dict{Symbol,Any}, resistor::Dict{String,Any}, i_idx::Int, j_idx::Int)
     i    = ref[:junction][i_idx]
     j    = ref[:junction][j_idx]
@@ -890,38 +890,26 @@ function _calc_resistor_pd_bounds_sqr(ref::Dict{Symbol,Any}, resistor::Dict{Stri
 end
 
 
-"Calculate the bounds on minimum and maximum pressure difference squared"
-function _calc_compressor_pd_bounds_sqr(ref::Dict{Symbol,Any}, compressor::Dict{String,Any}, i_idx::Int, j_idx::Int)
-    i    = ref[:junction][i_idx]
-    j    = ref[:junction][j_idx]
-
-    pd_max = i["p_max"]^2 - j["p_min"]^2
-    pd_min = i["p_min"]^2 - j["p_max"]^2
-
-    directionality   = get(compressor, "directionality", 0)
-    flow_direction   = get(compressor, "flow_direction", 0)
-
-    if directionality == 1 || flow_direction == 1
-        pd_min = max(0, pd_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-    end
-
-    return pd_min, pd_max
-end
-
-
-"Calculate the bounds on minimum and maximum pressure difference squared"
-function _calc_pd_bounds_sqr(ref::Dict{Symbol,Any}, i_idx::Int, j_idx::Int)
+"Calculate the bounds on minimum and maximum pressure difference squared for a ne pipe, which is different dependeing on whether or not the pipe is present"
+function _calc_ne_pipe_pd_bounds_sqr(ref::Dict{Symbol,Any}, pipe::Dict{String,Any}, i_idx::Int, j_idx::Int)
     i = ref[:junction][i_idx]
     j = ref[:junction][j_idx]
 
-    pd_max = i["p_max"]^2 - j["p_min"]^2
-    pd_min = i["p_min"]^2 - j["p_max"]^2
+    pd_max_on = pd_max_off = i["p_max"]^2 - j["p_min"]^2
+    pd_min_on = pd_min_off = i["p_min"]^2 - j["p_max"]^2
 
-    return pd_min, pd_max
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min_on = max(0, pd_min_on)
+    end
+
+    if flow_direction == -1
+        pd_max_on = min(0, pd_max_on)
+    end
+
+    return pd_min_on, pd_max_on, pd_min_off, pd_max_off
 end
 
 
@@ -1038,7 +1026,7 @@ end
 function _calc_ne_pipe_flow_min(ref::Dict{Symbol,Any}, pipe)
     mf       = -ref[:max_mass_flow]
     flow_min = get(pipe,"flow_min",mf)
-    pd_min   = pipe["pd_sqr_min"]
+    pd_min   = pipe["pd_sqr_min_on"]
     w        = pipe["resistance"]
     pf_min   = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
     is_bidirectional = get(pipe, "is_bidirectional", 1)
@@ -1056,7 +1044,7 @@ end
 function _calc_ne_pipe_flow_max(ref::Dict{Symbol,Any}, pipe)
     mf       = ref[:max_mass_flow]
     flow_max = min(mf,get(pipe,"flow_max",mf))
-    pd_max   = pipe["pd_sqr_max"]
+    pd_max   = pipe["pd_sqr_max_on"]
     w        = pipe["resistance"]
     pf_max  = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
     flow_direction = get(pipe,"flow_direction", 0)

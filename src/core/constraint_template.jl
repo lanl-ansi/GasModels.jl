@@ -90,8 +90,6 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:ne_pipe, k)
-    pd_max           = pipe["pd_sqr_max"]
-    pd_min           = pipe["pd_sqr_min"]
     w                = pipe["resistance"]
     f_min            = pipe["flow_min"]
     f_max            = pipe["flow_max"]
@@ -105,22 +103,12 @@ function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     pipe             = ref(gm,n,:ne_pipe,k)
     i                = pipe["fr_junction"]
     j                = pipe["to_junction"]
-    pd_max           = pipe["pd_sqr_max"]
-    pd_min           = pipe["pd_sqr_min"]
-    is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-    pd_min_M         = pd_min
-    pd_max_M         = pd_max
+    pd_max_on        = pipe["pd_sqr_max_on"]
+    pd_min_on        = pipe["pd_sqr_min_on"]
+    pd_max_off       = pipe["pd_sqr_max_off"]
+    pd_min_off       = pipe["pd_sqr_min_off"]
 
-    if is_bidirectional == 0 || flow_direction == 1
-        pd_min = max(0, pd_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-    end
-
-    constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
+    constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
 end
 
 
@@ -156,13 +144,11 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     i              = pipe["fr_junction"]
     j              = pipe["to_junction"]
     w              = pipe["resistance"]
-    pd_max         = pipe["pd_sqr_max"]
-    pd_min         = pipe["pd_sqr_min"]
+    pd_max         = pipe["pd_sqr_max_off"]
+    pd_min         = pipe["pd_sqr_min_off"]
     f_min          = pipe["flow_min"]
     f_max          = pipe["flow_max"]
-
-    # These all get used as big M's....
-
+    
     constraint_pipe_weymouth_ne(gm, n, k, i, j, w, f_min, f_max, pd_min, pd_max)
 end
 

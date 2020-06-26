@@ -160,12 +160,12 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
+function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
     z  = var(gm,n,:zp,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * pd_min_M + z * pd_min  <= pi - pj))
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= z * pd_max + (1-z) * pd_max_M))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * pd_min_off + z * pd_min_on  <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= z * pd_max_on + (1-z) * pd_max_off))
 end
 
 
