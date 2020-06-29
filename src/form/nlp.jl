@@ -36,6 +36,8 @@ function constraint_pipe_weymouth_ne(gm::AbstractNLPModel,  n::Int, k, i, j, w, 
     zp = var(gm, n, :zp, k)
     f  = var(gm, n, :f_ne_pipe, k)
 
+    # when z = 1, constraint is active
+    # when z = 0 f is also 0.  Therefore, the big M we need is just w * the smallest and largest pressure difference that is possible
     _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) >= f * abs(f) + (1-zp) * w * pd_min))
     _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@NLconstraint(gm.model, w*(pi - pj) <= f * abs(f) + (1-zp) * w * pd_max))
 end
@@ -81,13 +83,12 @@ end
 
 
 "constraints on pressure drop across a compressor"
-function constraint_compressor_ratios_ne(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax, type)
+function constraint_compressor_ratios_ne(gm::AbstractNLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zc = var(gm, n, :zc, k)
     f  = var(gm, n, :f_ne_compressor, k)
 
-    M  = abs(max(i_pmax^2,j_pmax^2)) - abs(min(i_pmin^2,j_pmin^2))
     MR = max(i_pmax^2,j_pmax^2) / min(i_pmin^2,j_pmin^2)
 
     # compression in both directions
@@ -103,7 +104,9 @@ function constraint_compressor_ratios_ne(gm::AbstractNLPModel, n::Int, k, i, j, 
     elseif min_ratio == 1
         _add_constraint!(gm, n, :compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-zc)*j_pmax^2))
         _add_constraint!(gm, n, :compressor_ratios_ne2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-zc)*(min_ratio*i_pmax^2)))
-        _add_constraint!(gm, n, :compressor_ratios_ne3, k, JuMP.@constraint(gm.model, f * (pi - pj) <= (1-zc) * f_max * M))
+        # z_c = 0 implies f = 0 (constraint_compressor_ne), so 0 <= 1. So constraint is off
+        # z_c = 1 implies f * (pi - pj) <= 0, which is the constraint we want when the edge is actve
+        _add_constraint!(gm, n, :compressor_ratios_ne3, k, JuMP.@constraint(gm.model, f * (pi - pj) <= (1-zc)))
     # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio != 1. This is a disjunctive model
     else
         if !haskey(gm.var[:nw][n],:y_compressor_nlp)

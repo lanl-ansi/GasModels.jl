@@ -236,7 +236,7 @@
     set = constraint.set
 
     @test isa(set, MOI.GreaterThan{Float64})
-    @test isapprox(set.lower, -2.0; atol = 1e-4)
+    @test isapprox(set.lower, -2.1698633598; atol = 1e-4)
     @test length(func.terms) == 1
     # c = gm.model.nlp_data.nlconstr[ref.index.value]
     # @test JuMP._sense(c) == :>=
