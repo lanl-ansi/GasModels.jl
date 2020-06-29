@@ -1137,26 +1137,6 @@ function _calc_resistor_resistance(resistor::Dict{String,Any})
 end
 
 
-"calculates the minimum flow on a resistor"
-function _calc_resistor_flow_min(ref::Dict{Symbol,Any}, resistor)
-    mf = ref[:max_mass_flow]
-    pd_min = resistor["pd_sqr_min"]
-    w = resistor["resistance"]
-    pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
-    return max(-mf, pf_min)
-end
-
-
-"calculates the maximum flow on a resistor"
-function _calc_resistor_flow_max(ref::Dict{Symbol,Any}, resistor)
-    mf = ref[:max_mass_flow]
-    pd_max = resistor["pd_sqr_max"]
-    w = resistor["resistance"]
-    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
-    return min(mf, pf_max)
-end
-
-
 "calculates the minimum flow on a prv"
 function _calc_prv_flow_min(ref::Dict{Symbol,Any}, prv)
     mf = ref[:max_mass_flow]
