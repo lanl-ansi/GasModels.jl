@@ -67,7 +67,7 @@ end
 
 "Template: Constraint on mass flow across a prv"
 function constraint_prv_mass_flow(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    prv             = ref(gm,n,:prv,k)
+    prv              = ref(gm, n, :prv, k)
     f_min            = prv["flow_min"]
     f_max            = prv["flow_max"]
     is_bidirectional = get(prv, "is_bidirectional", 1)

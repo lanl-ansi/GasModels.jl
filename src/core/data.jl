@@ -1139,8 +1139,8 @@ end
 
 "calculates the minimum flow on a prv"
 function _calc_prv_flow_min(ref::Dict{Symbol,Any}, prv)
-    mf = ref[:max_mass_flow]
-    return max(-mf, prv["flow_min"])
+    mf = -ref[:max_mass_flow]
+    return max(mf, prv["flow_min"])
 end
 
 

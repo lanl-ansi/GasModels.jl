@@ -153,7 +153,7 @@ end
 function _compute_node_temperature(node::XMLDict.XMLDictElement)
     if uppercase(node["gasTemperature"][:unit]) == "CELSIUS"
         return 273.15 + parse(Float64, node["gasTemperature"][:value])
-    elseif uppercase(node["gasTemperature"][:unit]) == "KELVIN"
+    elseif uppercase(node["gasTemperature"][:unit]) == "K"
         return parse(Float64, node["gasTemperature"][:value])
     end
 end
@@ -206,13 +206,13 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     end
 
     if flow_min >= 0.0
-        directionality = 1
+        directionality, is_bidirectional = 1, 0
     elseif bypass_required == 1 && signof(flow_min) != signof(flow_max)
-        directionality = 2
+        directionality, is_bidirectional = 2, 1
     elseif bypass_required == 0 && signof(flow_min) != signof(flow_max)
-        directionality = 1
+        directionality, is_bidirectional = 1, 1
     else
-        directionality = 0
+        directionality, is_bidirectional = 0, 1
     end
 
     if "diameterIn" in keys(compressor) && "diameterOut" in keys(compressor)
@@ -228,7 +228,7 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
 
     # Calculate the maximum power.
     exp = kappa * inv(kappa - 1.0)
-    H_max = R * T * 1.0 * exp * ((c_ratio_max)^inv(exp) - 1.0)
+    H_max = R * T * 1.0 * exp * (c_ratio_max^inv(exp) - 1.0)
 
     # Assume a worst-case efficiency of 0.1 in the computation of power_max.
     power_max = H_max * abs(flow_max) * inv(0.1)
@@ -238,6 +238,7 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
         "inlet_p_max"=>inlet_p_max, "outlet_p_min"=>outlet_p_min,
         "outlet_p_max"=>outlet_p_max, "flow_min"=>flow_min,
         "flow_max"=>flow_max, "diameter"=>diameter,
+        "is_bidirectional"=>is_bidirectional,
         "is_per_unit"=>0, "directionality"=>directionality,
         "status"=>1, "is_si_units"=>1, "is_english_units"=>0,
         "c_ratio_min"=>c_ratio_min, "c_ratio_max"=>c_ratio_max,
@@ -255,7 +256,7 @@ function _get_delivery_entry(delivery, density::Float64)
         withdrawal_max = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
     end
 
-    is_dispatchable = withdrawal_min == withdrawal_max ? 0 : 1
+    is_dispatchable = withdrawal_min != withdrawal_max
 
     return Dict{String,Any}("withdrawal_min"=>withdrawal_min,
         "withdrawal_max"=>withdrawal_max, "withdrawal_nominal"=>withdrawal_max,
@@ -301,11 +302,11 @@ function _get_pipe_entry(pipe, junctions)
 
     roughness = parse(Float64, pipe["roughness"][:value]) * inv(1000.0)
     length = parse(Float64, pipe["length"][:value]) * 1000.0
-    friction_factor = (2.0 * log(3.7 * diameter / roughness))^(-2)
+    friction_factor = (2.0 * log(3.7 * diameter * inv(roughness)))^(-2)
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "diameter"=>diameter, "length"=>length,
-        "p_min"=>0.0, "p_max"=>p_max, "friction_factor"=>friction_factor,
+        "p_min"=>p_min, "p_max"=>p_max, "friction_factor"=>friction_factor,
         "status"=>1, "is_per_unit"=>0, "is_si_units"=>1, "is_english_units"=>0)
 end
 
@@ -324,9 +325,9 @@ end
 function _get_short_pipe_entry(short_pipe)
     fr_junction, to_junction = short_pipe[:from], short_pipe[:to]
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
-        "is_bidirectional"=>1, "is_per_unit"=>0, "status"=>1, "is_si_units"=>1,
-        "is_english_units"=>0)
+    return Dict{String,Any}("fr_junction"=>fr_junction,
+        "to_junction"=>to_junction, "is_bidirectional"=>1, "is_per_unit"=>0,
+        "status"=>1, "is_si_units"=>1, "is_english_units"=>0)
 end
 
 function _get_receipt_entry(receipt, density::Float64)
@@ -340,7 +341,7 @@ function _get_receipt_entry(receipt, density::Float64)
         injection_max = density * parse(Float64, receipt["flow"][:value]) * inv(3.6)
     end
 
-    is_dispatchable = injection_min == injection_max ? 0 : 1
+    is_dispatchable = injection_min != injection_max
 
     return Dict{String,Any}("injection_min"=>injection_min, "injection_max"=>injection_max,
         "injection_nominal"=>injection_max, "is_dispatchable"=>is_dispatchable, "is_per_unit"=>0,
@@ -375,8 +376,9 @@ function _get_regulator_entry(regulator, density::Float64)
     flow_min = density * parse(Float64, regulator["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, regulator["flowMax"][:value]) * inv(3.6)
     reduction_factor_min, reduction_factor_max = 0.0, 1.0
+    flow_min = flow_min < 0.0 ? -abs(flow_max) : flow_min
     is_bidirectional = flow_min < 0.0 ? 1 : 0
-   
+
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "is_si_units"=>1,
         "flow_max"=>flow_max, "reduction_factor_min"=>reduction_factor_min,
@@ -481,7 +483,7 @@ function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement)
     # Resistors with drag equal to zero should also be considered short pipes.
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
-    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) == 0.0, resistor_xml)
+    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
     resistors = Dict{String,Any}(i => _get_short_pipe_entry(x) for (i, x) in resistor_xml)
 
     # Return the merged dictionary of short pipes and resistors.
