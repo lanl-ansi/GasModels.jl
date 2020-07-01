@@ -91,10 +91,10 @@ end
         result = run_ne("../examples/data/matgas/gaslib-135-75.m", MISOCPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 
-        # unstable problem
+        # The gas expansion planning paper reported a lower bound (MISOCP) solution of 451.5.  Subsequent
+        # tightenings of the relaxation have improved the lower bound
         @test result["objective"] <= 491.0
         @test result["objective"] >= 451.5
-#        @test isapprox(result["objective"], 451.5; atol = 1e-2)
         GC.gc()
     end
 
@@ -103,10 +103,10 @@ end
         result = run_ne("../examples/data/matgas/gaslib-135-100.m", MISOCPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 
-        # unstable problem
+        # The gas expansion planning paper reported a lower bound (MISOCP) solution of 1234.2.  Subsequent
+        # tightenings of the relaxation have improved the lower bound
         @test result["objective"] <= 1261
         @test result["objective"] >= 1234.2
-#        @test isapprox(result["objective"], 1234.2; atol = 1e-2)
         GC.gc()
     end
 

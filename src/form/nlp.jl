@@ -55,29 +55,61 @@ function constraint_compressor_ratios(gm::AbstractNLPModel, n::Int, k, i, j, min
 
     # compression in both directions
     if type == 0
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (pj - pi) >= 0))
-        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, max(pi/pj, pj/pi) <= max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, min_ratio^2 <= max(pi/pj, pj/pi)))
+        if (min_ratio <= 1.0 && max_ratio >= 1)
+            pk = JuMP.@variable(gm.model)
+            _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pk - max_ratio^2*pi <= 0))
+            _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pk <= 0))
+            _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pk) <= 0))
+            _add_constraint!(gm, n, :compressor_ratios4, k, JuMP.@constraint(gm.model, pk - max_ratio^2*pj <= 0))
+            _add_constraint!(gm, n, :compressor_ratios5, k, JuMP.@constraint(gm.model, min_ratio^2*pj - pk <= 0))
+            _add_constraint!(gm, n, :compressor_ratios6, k, JuMP.@constraint(gm.model, -f*(pj - pk) <= 0))
+        # There is a disjunction, so we have to use a binary variable for this one
+        else
+            y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model, binary=true)
+            _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(min_ratio^2*i_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2*pj <= y*(i_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, min_ratio^2*pj - pi <= y*(min_ratio^2*j_pmax^2)))
+        end
+
+
+#        if (min_ratio == 1.0)
+#            _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, f * (pj - pi) >= 0))
+#            _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@NLconstraint(gm.model, pi/pj <= max_ratio^2))
+#            _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@NLconstraint(gm.model, pj/pi <= max_ratio^2))
+#        else
+#            if !haskey(gm.var[:nw][n],:y_compressor_nlp)
+#                gm.var[:nw][n][:y_compressor_nlp] = Dict()
+#            end
+#            y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model)
+#            JuMP.set_lower_bound(y, 0)
+#            JuMP.set_upper_bound(y, 1)
+
+#            _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+#            _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(min_ratio^2*i_pmax^2)))
+#            _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2*pj <= y*(i_pmax^2)))
+#            _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, min_ratio^2*pj - pi <= y*(min_ratio^2*j_pmax^2)))
+#            _add_constraint!(gm, n, :on_off_compressor_ratios5, k, JuMP.@constraint(gm.model, y == y^2))
+#        end
+
     # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
     elseif type == 1
         _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
         _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
     # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio = 1
-    elseif min_ratio == 1
-        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
-        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
-        _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pj) <= 0))
-    # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio != 1. This is a disjunctive model
-    else
-        if !haskey(gm.var[:nw][n],:y_compressor_nlp)
-            gm.var[:nw][n][:y_compressor_nlp] = Dict()
+    else # type 2
+        if min_ratio == 1
+            _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= 0))
+            _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= 0))
+            _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f*(pi - pj) <= 0))
+        # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio != 1. This is a disjunctive model
+        else
+            y = JuMP.@variable(gm.model, binary = true)
+            _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(i_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
+            _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y*(j_pmax^2)))
         end
-        y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model,k,base_name="$(n)_y_nlp")
-        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(i_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y*(i_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y*(j_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios5, k, JuMP.@constraint(gm.model, y == y^2))
     end
 end
 
