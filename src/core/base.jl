@@ -33,8 +33,10 @@ end
 
 
 function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
-    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
+    gm = _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
+    return gm
 end
+
 
 """
 Builds the ref dictionary from the data dictionary. Additionally the ref

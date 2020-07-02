@@ -20,7 +20,6 @@ juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" =
 
 env = Gurobi.Env()
 gurobi_solver = JuMP.optimizer_with_attributes(() -> Gurobi.Optimizer(env))
-#gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer)
 ecos_solver = JuMP.optimizer_with_attributes(ECOS.Optimizer, "verbose" => false, "maxit" => 10000)
 scs_solver = JuMP.optimizer_with_attributes(SCS.Optimizer)
