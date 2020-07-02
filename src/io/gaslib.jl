@@ -52,7 +52,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     resistors = _read_gaslib_resistors(topology_xml, density)
     short_pipes = _read_gaslib_short_pipes(topology_xml)
     valves = _read_gaslib_valves(topology_xml, density)
-    prvs = _read_gaslib_prvs(topology_xml, density)
+    loss_resistors = _read_gaslib_loss_resistors(topology_xml, density)
     compressors = _read_gaslib_compressors(topology_xml, compressor_xml,
         temperature, 8.314 * inv(molar_mass), isentropic_exponent, density)
     deliveries = _read_gaslib_deliveries(topology_xml, nomination_xml, density)
@@ -64,7 +64,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     # Build the master data dictionary.
     data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
         "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes,
-        "regulator"=>regulators, "resistor"=>resistors, "prv"=>prvs,
+        "regulator"=>regulators, "resistor"=>resistors, "loss_resistor"=>loss_resistors,
         "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>true,
         "per_unit"=>false, "sound_speed"=>sound_speed)
 
@@ -105,7 +105,7 @@ function _correct_ids(data::Dict{String,<:Any})
         end
     end
 
-    for edge_type in ["compressor", "pipe", "resistor", "regulator", "short_pipe", "valve", "prv"]
+    for edge_type in ["compressor", "pipe", "resistor", "regulator", "short_pipe", "valve", "loss_resistor"]
         edge_id = 1
 
         for (a, edge) in data[edge_type]
@@ -310,11 +310,11 @@ function _get_pipe_entry(pipe, junctions)
         "status"=>1, "is_per_unit"=>0, "is_si_units"=>1, "is_english_units"=>0)
 end
 
-function _get_prv_entry(prv, density::Float64)
-    fr_junction, to_junction = prv[:from], prv[:to]
-    flow_min = density * parse(Float64, prv["flowMin"][:value]) * inv(3.6)
-    flow_max = density * parse(Float64, prv["flowMax"][:value]) * inv(3.6)
-    p_loss = parse(Float64, prv["pressureLoss"][:value]) * 1.0e5
+function _get_loss_resistor_entry(loss_resistor, density::Float64)
+    fr_junction, to_junction = loss_resistor[:from], loss_resistor[:to]
+    flow_min = density * parse(Float64, loss_resistor["flowMin"][:value]) * inv(3.6)
+    flow_max = density * parse(Float64, loss_resistor["flowMax"][:value]) * inv(3.6)
+    p_loss = parse(Float64, loss_resistor["pressureLoss"][:value]) * 1.0e5
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
@@ -432,10 +432,10 @@ function _read_gaslib_pipes(topology::XMLDict.XMLDictElement, junctions::Dict{St
     return Dict{String,Any}(i => _get_pipe_entry(x, junctions) for (i, x) in pipe_xml)
 end
 
-function _read_gaslib_prvs(topology::XMLDict.XMLDictElement, density::Float64)
-    prv_xml = _get_component_dict(get(topology["connections"], "resistor", []))
-    prv_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), prv_xml)
-    return Dict{String,Any}(i => _get_prv_entry(x, density) for (i, x) in prv_xml)
+function _read_gaslib_loss_resistors(topology::XMLDict.XMLDictElement, density::Float64)
+    loss_resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
+    loss_resistor_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
+    return Dict{String,Any}(i => _get_loss_resistor_entry(x, density) for (i, x) in loss_resistor_xml)
 end
 
 function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement, density::Float64)

@@ -59,7 +59,7 @@ Some of the common keys include:
 * `:compressor` -- the set of compressors in the system,
 * `:short_pipe` -- the set of short pipe in the system,
 * `:resistor` -- the set of resistors in the system,
-* `:prv` -- the set of prvs in the system,
+* `:loss_resistor` -- the set of loss_resistors in the system,
 * `:transfer` -- the set of transfer points in the system,
 * `:receipt` -- the set of receipt points in the system,
 * `:delivery` -- the set of delivery points in the system,
@@ -80,7 +80,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         ref[:compressor] = haskey(ref, :compressor) ? Dict(x for x in ref[:compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:resistor] = haskey(ref, :resistor) ? Dict(x for x in ref[:resistor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
-        ref[:prv] = haskey(ref, :prv) ? Dict(x for x in ref[:prv] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:loss_resistor] = haskey(ref, :loss_resistor) ? Dict(x for x in ref[:loss_resistor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:transfer] = haskey(ref, :transfer) ? Dict(x for x in ref[:transfer] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
         ref[:receipt] = haskey(ref, :receipt) ? Dict(x for x in ref[:receipt] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
         ref[:delivery] = haskey(ref, :delivery) ? Dict(x for x in ref[:delivery] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
@@ -120,14 +120,14 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         ref[:parallel_compressors] = Dict()
         ref[:parallel_short_pipes] = Dict()
         ref[:parallel_resistors] = Dict()
-        ref[:parallel_prvs] = Dict()
+        ref[:parallel_loss_resistors] = Dict()
         ref[:parallel_regulators] = Dict()
         ref[:parallel_valves] = Dict()
         _add_parallel_edges!(ref[:parallel_pipes], ref[:pipe])
         _add_parallel_edges!(ref[:parallel_compressors], ref[:compressor])
         _add_parallel_edges!(ref[:parallel_short_pipes], ref[:short_pipe])
         _add_parallel_edges!(ref[:parallel_resistors], ref[:resistor])
-        _add_parallel_edges!(ref[:parallel_prvs], ref[:prv])
+        _add_parallel_edges!(ref[:parallel_loss_resistors], ref[:loss_resistor])
         _add_parallel_edges!(ref[:parallel_regulators], ref[:regulator])
         _add_parallel_edges!(ref[:parallel_valves], ref[:valve])
 
@@ -139,8 +139,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         ref[:short_pipes_to] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:resistors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:resistors_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:prvs_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:prvs_to] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:loss_resistors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:loss_resistors_to] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:regulators_fr] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:regulators_to] = Dict(i => [] for (i,junction) in ref[:junction])
         ref[:valves_fr] = Dict(i => [] for (i,junction) in ref[:junction])
@@ -149,7 +149,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         _add_edges_to_junction_map!(ref[:compressors_fr], ref[:compressors_to], ref[:compressor])
         _add_edges_to_junction_map!(ref[:short_pipes_fr], ref[:short_pipes_to], ref[:short_pipe])
         _add_edges_to_junction_map!(ref[:resistors_fr], ref[:resistors_to], ref[:resistor])
-        _add_edges_to_junction_map!(ref[:prvs_fr], ref[:prvs_to], ref[:prv])
+        _add_edges_to_junction_map!(ref[:loss_resistors_fr], ref[:loss_resistors_to], ref[:loss_resistor])
         _add_edges_to_junction_map!(ref[:regulators_fr], ref[:regulators_to], ref[:regulator])
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
@@ -194,11 +194,11 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             resistor["flow_max"] = _calc_resistor_flow_max(ref, resistor)
         end
 
-        for (idx, prv) in ref[:prv]
-            i = prv["fr_junction"]
-            j = prv["to_junction"]
-            prv["flow_min"] = _calc_prv_flow_min(ref, prv)
-            prv["flow_max"] = _calc_prv_flow_max(ref, prv)
+        for (idx, loss_resistor) in ref[:loss_resistor]
+            i = loss_resistor["fr_junction"]
+            j = loss_resistor["to_junction"]
+            loss_resistor["flow_min"] = _calc_loss_resistor_flow_min(ref, loss_resistor)
+            loss_resistor["flow_max"] = _calc_loss_resistor_flow_max(ref, loss_resistor)
         end
 
         for (idx, valve) in ref[:valve]
@@ -260,7 +260,7 @@ function ref_degree!(ref::Dict{Symbol,Any})
     for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_prvs]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_regulators]) push!(connections, (i,j)) end

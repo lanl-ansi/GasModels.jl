@@ -37,9 +37,9 @@ function build_ne(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
-    for i in ids(gm, :prv)
-        constraint_prv_pressure(gm, i)
-        constraint_prv_mass_flow(gm, i)
+    for i in ids(gm, :loss_resistor)
+        constraint_loss_resistor_pressure(gm, i)
+        constraint_loss_resistor_mass_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)

@@ -33,20 +33,20 @@ function constraint_resistor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f
 end
 
 #################################################################################################
-# Constraints associated with prvs
+# Constraints associated with loss_resistors
 #################################################################################################
 
-"Constraint: Constraints which define pressure drop across a prv"
-function constraint_prv_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd)
+"Constraint: Constraints which define pressure drop across a loss_resistor"
+function constraint_loss_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     _add_constraint!(gm, n, :pressure_drop, k, JuMP.@constraint(gm.model, pd == pi - pj))
 end
 
 
-"Constraint: Constraint on mass flow across the prv"
-function constraint_prv_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm, n, :f_prv, k)
+"Constraint: Constraint on mass flow across the loss_resistor"
+function constraint_loss_resistor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
+    f  = var(gm, n, :f_loss_resistor, k)
     lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
     ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
     JuMP.set_lower_bound(f, lb)
@@ -67,11 +67,11 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
-    f_prv           = var(gm,n,:f_prv)
+    f_loss_resistor = var(gm,n,:f_loss_resistor)
     f_short_pipe    = var(gm,n,:f_short_pipe)
     f_valve         = var(gm,n,:f_valve)
     f_regulator     = var(gm,n,:f_regulator)
@@ -82,7 +82,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
                                                                             sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                             sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
-                                                                            sum(f_prv[a] for a in f_prvs) - sum(f_prv[a] for a in t_prvs) +
+                                                                            sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
                                                                             sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                             sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
                                                                             sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators)
@@ -91,11 +91,11 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_prvs, t_prvs, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
+function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe          = var(gm,n,:f_pipe)
     f_compressor    = var(gm,n,:f_compressor)
     f_resistor      = var(gm,n,:f_resistor)
-    f_prv           = var(gm,n,:f_prv)
+    f_loss_resistor = var(gm,n,:f_loss_resistor)
     f_short_pipe    = var(gm,n,:f_short_pipe)
     f_valve         = var(gm,n,:f_valve)
     f_regulator     = var(gm,n,:f_regulator)
@@ -107,7 +107,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipe
                                                                                       sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                                       sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                                       sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
-                                                                                      sum(f_prv[a] for a in f_prvs) - sum(f_prv[a] for a in t_prvs) +
+                                                                                      sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
                                                                                       sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                                       sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
                                                                                       sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +

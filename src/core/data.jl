@@ -213,7 +213,7 @@ const _params_for_unit_conversions = Dict(
         "flow_withdrawal_rate_max",
         "capacity",
     ],
-    "prv" => [
+    "loss_resistor" => [
         "p_loss",
         "flow_min",
         "flow_max"
@@ -714,7 +714,7 @@ const _gm_component_types = [
     "regulator",
     "short_pipe",
     "resistor",
-    "prv",
+    "loss_resistor",
     "ne_pipe",
     "ne_compressor",
     "junction",
@@ -731,7 +731,7 @@ const _gm_edge_types = [
     "regulator",
     "short_pipe",
     "resistor",
-    "prv",
+    "loss_resistor",
     "ne_pipe",
     "ne_compressor",
 ]
@@ -1137,17 +1137,17 @@ function _calc_resistor_resistance(resistor::Dict{String,Any})
 end
 
 
-"calculates the minimum flow on a prv"
-function _calc_prv_flow_min(ref::Dict{Symbol,Any}, prv)
+"calculates the minimum flow on a loss_resistor"
+function _calc_loss_resistor_flow_min(ref::Dict{Symbol,Any}, loss_resistor)
     mf = -ref[:max_mass_flow]
-    return max(mf, prv["flow_min"])
+    return max(mf, loss_resistor["flow_min"])
 end
 
 
-"calculates the maximum flow on a prv"
-function _calc_prv_flow_max(ref::Dict{Symbol,Any}, prv)
+"calculates the maximum flow on a loss_resistor"
+function _calc_loss_resistor_flow_max(ref::Dict{Symbol,Any}, loss_resistor)
     mf = ref[:max_mass_flow]
-    return min(mf, prv["flow_max"])
+    return min(mf, loss_resistor["flow_max"])
 end
 
 
@@ -1272,8 +1272,8 @@ function _calc_parallel_connections(
         ref(gm, n, :parallel_short_pipes, (i, j)) : []
     parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ?
         ref(gm, n, :parallel_resistors, (i, j)) : []
-    parallel_prvs = haskey(ref(gm, n, :parallel_prvs), (i, j)) ?
-        ref(gm, n, :parallel_prvs, (i, j)) : []
+    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ?
+        ref(gm, n, :parallel_loss_resistors, (i, j)) : []
     parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ?
         ref(gm, n, :parallel_valves, (i, j)) : []
     parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ?
@@ -1284,14 +1284,14 @@ function _calc_parallel_connections(
         length(parallel_compressors) +
         length(parallel_short_pipes) +
         length(parallel_resistors) +
-        length(parallel_prvs) +
+        length(parallel_loss_resistors) +
         length(parallel_valves) +
         length(parallel_regulators)
 
     pipes = ref(gm, n, :pipe)
     compressors = ref(gm, n, :compressor)
     resistors = ref(gm, n, :resistor)
-    prvs = ref(gm, n, :prv)
+    loss_resistors = ref(gm, n, :loss_resistor)
     short_pipes = ref(gm, n, :short_pipe)
     valves = ref(gm, n, :valve)
     regulators = ref(gm, n, :regulator)
@@ -1316,13 +1316,13 @@ function _calc_parallel_connections(
         i -> resistors[i]["fr_junction"] != connection["fr_junction"],
         parallel_resistors,
     )
-    aligned_prvs = filter(
-        i -> prvs[i]["fr_junction"] == connection["fr_junction"],
-        parallel_prvs,
+    aligned_loss_resistors = filter(
+        i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"],
+        parallel_loss_resistors,
     )
-    opposite_prvs = filter(
-        i -> prvs[i]["fr_junction"] != connection["fr_junction"],
-        parallel_prvs,
+    opposite_loss_resistors = filter(
+        i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"],
+        parallel_loss_resistors,
     )
     aligned_short_pipes = filter(
         i -> short_pipes[i]["fr_junction"] == connection["fr_junction"],
@@ -1352,8 +1352,8 @@ function _calc_parallel_connections(
     opposite_compressors,
     aligned_resistors,
     opposite_resistors,
-    aligned_prvs,
-    opposite_prvs,
+    aligned_loss_resistors,
+    opposite_loss_resistors,
     aligned_short_pipes,
     opposite_short_pipes,
     aligned_valves,
@@ -1381,8 +1381,8 @@ function _calc_parallel_ne_connections(
         ref(gm, n, :parallel_short_pipes, (i, j)) : []
     parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ?
         ref(gm, n, :parallel_resistors, (i, j)) : []
-    parallel_prvs = haskey(ref(gm, n, :parallel_prvs), (i, j)) ?
-        ref(gm, n, :parallel_prvs, (i, j)) : []
+    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ?
+        ref(gm, n, :parallel_loss_resistors, (i, j)) : []
     parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ?
         ref(gm, n, :parallel_valves, (i, j)) : []
     parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ?
@@ -1397,7 +1397,7 @@ function _calc_parallel_ne_connections(
         length(parallel_compressors) +
         length(parallel_short_pipes) +
         length(parallel_resistors) +
-        length(parallel_prvs) +
+        length(parallel_loss_resistors) +
         length(parallel_valves) +
         length(parallel_regulators) +
         length(parallel_ne_pipes) +
@@ -1406,7 +1406,7 @@ function _calc_parallel_ne_connections(
     pipes = ref(gm, n, :pipe)
     compressors = ref(gm, n, :compressor)
     resistors = ref(gm, n, :resistor)
-    prvs = ref(gm, n, :prv)
+    loss_resistors = ref(gm, n, :loss_resistor)
     short_pipes = ref(gm, n, :short_pipe)
     valves = ref(gm, n, :valve)
     regulators = ref(gm, n, :regulator)
@@ -1433,13 +1433,13 @@ function _calc_parallel_ne_connections(
         i -> resistors[i]["fr_junction"] != connection["fr_junction"],
         parallel_resistors,
     )
-    aligned_prvs = filter(
-        i -> prvs[i]["fr_junction"] == connection["fr_junction"],
-        parallel_prvs,
+    aligned_loss_resistors = filter(
+        i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"],
+        parallel_loss_resistors,
     )
-    opposite_prvs = filter(
-        i -> prvs[i]["fr_junction"] != connection["fr_junction"],
-        parallel_prvs,
+    opposite_loss_resistors = filter(
+        i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"],
+        parallel_loss_resistors,
     )
     aligned_short_pipes = filter(
         i -> short_pipes[i]["fr_junction"] == connection["fr_junction"],
@@ -1485,8 +1485,8 @@ function _calc_parallel_ne_connections(
     opposite_compressors,
     aligned_resistors,
     opposite_resistors,
-    aligned_prvs,
-    opposite_prvs,
+    aligned_loss_resistors,
+    opposite_loss_resistors,
     aligned_short_pipes,
     opposite_short_pipes,
     aligned_valves,
@@ -1520,7 +1520,7 @@ const _gm_component_types_order = Dict(
     "regulator" => 9.0,
     "valve" => 10.0,
     "storage" => 11.0,
-    "prv" => 12.0,
+    "loss_resistor" => 12.0,
 )
 
 
