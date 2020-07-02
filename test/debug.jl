@@ -1,15 +1,15 @@
 @testset "test gaslib 582 minlp gf" begin
     data = GasModels.parse_file("../test/data/matgas/gaslib-582.m")
     gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
-    @test length(gm.var[:nw][gm.cnw][:psqr])  == 610
+    @test length(gm.var[:nw][gm.cnw][:psqr])  == 605
     @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
-    @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 10
+    @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 5
     @test length(gm.var[:nw][gm.cnw][:f_short_pipe])  == 269
     @test length(gm.var[:nw][gm.cnw][:f_resistor])  == 8
     @test length(gm.var[:nw][gm.cnw][:f_valve])  == 26
     @test length(gm.var[:nw][gm.cnw][:f_regulator])  == 46
     @test length(gm.var[:nw][gm.cnw][:y_pipe]) == 278
-    @test length(gm.var[:nw][gm.cnw][:y_compressor]) == 10
+    @test length(gm.var[:nw][gm.cnw][:y_compressor]) == 5
     @test length(gm.var[:nw][gm.cnw][:y_short_pipe]) == 269
     @test length(gm.var[:nw][gm.cnw][:y_resistor]) == 8
     @test length(gm.var[:nw][gm.cnw][:y_valve]) == 26
@@ -236,7 +236,7 @@
     set = constraint.set
 
     @test isa(set, MOI.GreaterThan{Float64})
-    @test isapprox(set.lower, -2.0; atol = 1e-4)
+    @test isapprox(set.lower, -2.1698633598; atol = 1e-4)
     @test length(func.terms) == 1
     # c = gm.model.nlp_data.nlconstr[ref.index.value]
     # @test JuMP._sense(c) == :>=
@@ -366,12 +366,12 @@
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
-    # p[2200560] - p[560] + 0.4831288389273021 yn[551] <= 0.4831288389273021
-    # p[2200560] - 25 p[560] + 0.4831288389273021 yp[551] <= 0.4831288389273021
-    # p[560] - p[2200560] + 0.34436018196723495 yp[551] <= 0.34436018196723495
-    # p[560] - p[2200560] + 0.34436018196723495 yn[551] <= 0.34436018196723495
+    # p[561] - p[560] + 0.4831288389273021 y[551] <= 0.4831288389273021
+    # p[561] - 25 p[560] + 0.4831288389273021 y[551] <= 0.4831288389273021
+    # p[560] - 25 p[561] + 0.34436018196723495 y[551] <= 0.34436018196723495
+    # p[560] - p[561] + 0.34436018196723495 y[551] <= 0.34436018196723495
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios4][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][2200560], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
     coeff = [1.0, -1.0, -0.4831288389273021]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -388,7 +388,7 @@
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios1][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][2200560], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
     coeff = [1.0, -25.0, 0.4831288389273021]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -405,8 +405,8 @@
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios3][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][2200560], gm.var[:nw][gm.cnw][:y_compressor][551]]
-    coeff = [1.0, -1.0, -0.34436018196723495]
+    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    coeff = [1.0, -25.0, -0.34436018196723495]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
@@ -423,7 +423,7 @@
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios2][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][2200560], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:y_compressor][551]]
     coeff = [1.0, -1.0, 0.34436018196723495]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)

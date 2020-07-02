@@ -327,7 +327,10 @@ end
 
 "variables associated with direction of flow on on pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    pipe       = Dict(x for x in ref(gm,nw,:pipe)       if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    pipe       = Dict(x for x in ref(gm,nw,:pipe)       if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                           get(x.second, "flow_direction", 0) == 0 &&
+                                                           get(x.second, "flow_max", 0) >= 0 &&
+                                                           get(x.second, "flow_main", 0) <= 0)
 
     y_pipe_var =  JuMP.@variable(gm.model,
         [l in keys(pipe)],
@@ -342,10 +345,10 @@ function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::B
     end
 
     for (i,pipe) in ref(gm,nw,:pipe)
-        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1
+        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1 || get(pipe, "flow_min", 0) > 0
             y_pipe[i] = 1
         end
-        if get(pipe, "flow_direction", 0) == -1
+        if get(pipe, "flow_direction", 0) == -1 || get(pipe, "flow_max", 0) < 0
             y_pipe[i] = 0
         end
     end
@@ -356,7 +359,11 @@ end
 
 "variables associated with direction of flow on a compressor. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_compressor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    compressor     = Dict(x for x in ref(gm,nw,:compressor) if (get(x.second, "directionality", 0) == 0 || get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)
+    compressor     = Dict(x for x in ref(gm,nw,:compressor) if ((get(x.second, "directionality", 0) == 0 ||
+                                                               (get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)) &&
+                                                               get(x.second, "flow_min", 0) <= 0 &&
+                                                               get(x.second, "flow_max", 0) >= 0
+                                                            )
 
     y_compressor_var = JuMP.@variable(gm.model,
         [l in keys(compressor)],
@@ -370,10 +377,10 @@ function variable_compressor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
     end
 
     for (i,compressor) in ref(gm,nw,:compressor)
-        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1
+        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1 || get(compressor, "flow_min", 0) > 0
             y_compressor[i] = 1
         end
-        if get(compressor, "flow_direction", 0) == -1
+        if get(compressor, "flow_direction", 0) == -1 || get(compressor, "flow_max", 0) < 0
             y_compressor[i] = 0
         end
     end
@@ -384,7 +391,10 @@ end
 
 "variables associated with direction of flow on on resistors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    resistor   = Dict(x for x in ref(gm,nw,:resistor)   if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    resistor   = Dict(x for x in ref(gm,nw,:resistor)   if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                           get(x.second, "flow_direction", 0) == 0 &&
+                                                           get(x.second, "flow_max", 0) >= 0 &&
+                                                           get(x.second, "flow_main", 0) <= 0)
 
     y_resistor_var = JuMP.@variable(gm.model,
         [l in keys(resistor)],
@@ -399,10 +409,10 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
     end
 
     for (i,resistor) in ref(gm,nw,:resistor)
-        if get(resistor, "is_bidirectional", 1) == 0 || get(resistor, "flow_direction", 0) == 1
+        if get(resistor, "is_bidirectional", 1) == 0 || get(resistor, "flow_direction", 0) == 1 || get(resistor, "flow_min", 0) > 0
             y_resistor[l] = 1
         end
-        if get(resistor, "flow_direction", 0) == -1
+        if get(resistor, "flow_direction", 0) == -1 || get(resistor, "flow_max", 0) < 0
             y_resistor[l] = 0
         end
     end
@@ -413,7 +423,10 @@ end
 
 "variables associated with direction of flow on short pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    short_pipe = Dict(x for x in ref(gm,nw,:short_pipe) if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    short_pipe = Dict(x for x in ref(gm,nw,:short_pipe) if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                           get(x.second, "flow_direction", 0) == 0 &&
+                                                           get(x.second, "flow_max", 0) >= 0 &&
+                                                           get(x.second, "flow_main", 0) <= 0)
 
     y_short_pipe_var = JuMP.@variable(gm.model,
         [l in keys(short_pipe)],
@@ -428,10 +441,10 @@ function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
     end
 
     for (i,pipe) in ref(gm,nw,:short_pipe)
-        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1
+        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1 || get(pipe, "flow_min", 0) > 0
             y_short_pipe[i] = 1
         end
-        if get(pipe, "flow_direction", 0) == -1
+        if get(pipe, "flow_direction", 0) == -1 || get(pipe, "flow_max", 0) < 0
             y_short_pipe[i] = 0
         end
     end
@@ -442,7 +455,10 @@ end
 
 "variables associated with direction of flow on valves. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    valve      = Dict(x for x in ref(gm,nw,:valve)      if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    valve      = Dict(x for x in ref(gm,nw,:valve)      if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                           get(x.second, "flow_direction", 0) == 0 &&
+                                                           get(x.second, "flow_max", 0) >= 0 &&
+                                                           get(x.second, "flow_main", 0) <= 0)
 
     y_valve_var = JuMP.@variable(gm.model,
         [l in keys(valve)],
@@ -457,10 +473,10 @@ function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::
     end
 
     for (i,valve) in ref(gm,nw,:valve)
-        if get(valve, "is_bidirectional", 1) == 0 || get(valve, "flow_direction", 0) == 1
+        if get(valve, "is_bidirectional", 1) == 0 || get(valve, "flow_direction", 0) == 1 || get(valve, "flow_min", 0) > 0
             y_valve[i] = 1
         end
-        if get(valve, "flow_direction", 0) == -1
+        if get(valve, "flow_direction", 0) == -1 || get(valve, "flow_max", 0) < 0
             y_valve[i] = 0
         end
     end
@@ -471,7 +487,10 @@ end
 
 "variables associated with direction of flow on regulators. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    regulator  = Dict(x for x in ref(gm,nw,:regulator)  if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    regulator  = Dict(x for x in ref(gm,nw,:regulator)  if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                           get(x.second, "flow_direction", 0) == 0 &&
+                                                           get(x.second, "flow_max", 0) >= 0 &&
+                                                           get(x.second, "flow_main", 0) <= 0)
 
     y_regulator_var = JuMP.@variable(gm.model,
         [l in keys(regulator)],
@@ -486,10 +505,10 @@ function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repo
     end
 
     for (i,regulator) in ref(gm,nw,:regulator)
-        if get(regulator, "is_bidirectional", 1) == 0 || get(regulator, "flow_direction", 0) == 1
+        if get(regulator, "is_bidirectional", 1) == 0 || get(regulator, "flow_direction", 0) == 1 || get(regulator, "flow_min", 0) > 0
             y_regulator[i] = 1
         end
-        if get(regulator, "flow_direction", 0) == -1
+        if get(regulator, "flow_direction", 0) == -1 || get(regulator, "flow_max", 0) < 0
             y_regulator[i] = 0
         end
     end
@@ -511,7 +530,10 @@ end
 
 "variables associated with direction of flow on new pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    ne_pipe = Dict(x for x in ref(gm,nw,:ne_pipe) if get(x.second, "is_bidirectional", 1) == 1 && get(x.second, "flow_direction", 0) == 0)
+    ne_pipe = Dict(x for x in ref(gm,nw,:ne_pipe) if get(x.second, "is_bidirectional", 1) == 1 &&
+                                                     get(x.second, "flow_direction", 0) == 0 &&
+                                                     get(x.second, "flow_max", 0) >= 0 &&
+                                                     get(x.second, "flow_main", 0) <= 0)
 
     y_ne_pipe_var = JuMP.@variable(gm.model,
         [l in keys(ne_pipe)],
@@ -526,10 +548,10 @@ function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report
     end
 
     for (i,pipe) in ref(gm,nw,:ne_pipe)
-        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1
+        if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1 || get(pipe, "flow_min", 0) > 0
             y_ne_pipe[i] = 1
         end
-        if get(pipe, "flow_direction", 0) == -1
+        if get(pipe, "flow_direction", 0) == -1 || get(pipe, "flow_max", 0) < 0
             y_ne_pipe[i] = 0
         end
     end
@@ -540,8 +562,11 @@ end
 
 "variables associated with direction of flow on new compressors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
 function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    ne_compressor     = Dict(x for x in ref(gm,nw,:ne_compressor) if (get(x.second, "directionality", 0) == 0 || get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)
-
+    ne_compressor     = Dict(x for x in ref(gm,nw,:ne_compressor) if ((get(x.second, "directionality", 0) == 0 ||
+                                                                     (get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)) &&
+                                                                      get(x.second, "flow_min", 0) <= 0 &&
+                                                                      get(x.second, "flow_max", 0) >= 0
+                                                                     )
     y_ne_compressor_var = JuMP.@variable(gm.model,
         [l in keys(ne_compressor)],
         binary=true,
@@ -555,10 +580,10 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
     end
 
     for (i,compressor) in ref(gm,nw,:ne_compressor)
-        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1
+        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1 || get(compressor, "flow_min", 0) > 0
             y_compressor[i] = 1
         end
-        if get(compressor, "flow_direction", 0) == -1
+        if get(compressor, "flow_direction", 0) == -1 || get(compressor, "flow_max", 0) < 0
             y_compressor[i] = 0
         end
     end

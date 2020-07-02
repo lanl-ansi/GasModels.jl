@@ -55,7 +55,7 @@
         @test occursin("name: gaslib-40", output)
         @test occursin("pipe: 39", output)
         @test occursin("delivery: 29", output)
-        @test occursin("junction: 46", output)
+        @test occursin("junction: 40", output)
         @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
         @test occursin("injection_nominal: 0.333", output)
@@ -71,7 +71,7 @@
         line_count = count(c -> c == '\n', output)
         @test line_count >= 100 && line_count <= 150
         @test occursin("pipe: 39", output)
-        @test occursin("junction: 46", output)
+        @test occursin("junction: 40", output)
         @test occursin("Table: pipe", output)
         @test occursin("Table: junction", output)
     end

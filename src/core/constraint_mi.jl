@@ -155,13 +155,14 @@ end
 ############################################################################################################
 
 "Constraint: constraints on pressure drop across an expansion pipe with on/off direction variables"
-function constraint_pipe_pressure_ne(gm::AbstractMIModels, n::Int, k, i, j, pd_min, pd_max, pd_min_M, pd_max_M)
+function constraint_pipe_pressure_ne(gm::AbstractMIModels, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
     y = var(gm,n,:y_ne_pipe,k)
     z = var(gm,n,:zp,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * pd_min_M + (1-y) * pd_min <= pi - pj))
-    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max + (1-z) * pd_max_M))
+    # abs is used to account for potential sign flipping and make sure any value for y is valid when z = 0
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1-z) * (pd_min_off - abs(pd_min_on)) + (1-y) * pd_min_on <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max_on + (1-z) * (pd_max_off+abs(pd_max_on))))
 end
 
 
@@ -243,7 +244,7 @@ end
 
 
 "Constraint: constraints on pressure drop across expansion compressors with on/off decision variables"
-function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, f_max, i_pmin, i_pmax, j_pmin, j_pmax, type)
+function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     y = var(gm,n,:y_ne_compressor,k)
     pi = var(gm,n,:psqr,i)
     pj = var(gm,n,:psqr,j)
@@ -263,8 +264,8 @@ function constraint_compressor_ratios_ne(gm::AbstractMIModels, n::Int, k, i, j, 
     else
         _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
         _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= (1+y-zc)*(i_pmax^2)))
-        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= (1+y-zc)*(j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model, pi - pj <= (1+y-zc)*(i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne4, k, JuMP.@constraint(gm.model, pj - pi <= (1+y-zc)*(j_pmax^2)))
     end
 end
 
