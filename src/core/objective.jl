@@ -2,10 +2,6 @@
 # The purpose of this file is to define commonly used and created objective functions used in gas models
 ##########################################################################################################
 
-"Feasibility-only objective for the gas flow problem."
-function objective_gf(gm::AbstractGasModel)
-    JuMP.@objective(gm.model, MOI.FEASIBILITY_SENSE, 0.0)
-end
 
 "function for costing expansion of pipes and compressors: ``\\sum_{i \\in ne\\_pipe} c_izp_i  +  \\sum_{i \\in ne\\_compressor} c_izc_i``"
 function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])

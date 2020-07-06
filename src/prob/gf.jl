@@ -28,8 +28,6 @@ function build_gf(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
 
-    objective_gf(gm)
-
     for i in ids(gm, :junction)
         constraint_mass_flow_balance(gm, i)
     end
