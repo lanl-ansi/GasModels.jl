@@ -28,12 +28,18 @@ end
 ## Constraints for modeling nonsquared pressure variables across loss resistors
 ############################################################################################################
 
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractNLPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
+    f = var(gm, n, :f_loss_resistor, k)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    p_i_sqr, p_j_sqr = var(gm, n, :psqr, i), var(gm, n, :psqr, j)
 
-"Constraint: Relate nonsquared pressure variable to squared pressure variable"
-function constraint_pressure_squared(gm::AbstractNLPModel, n::Int, i::Int)
-    p_i, p_i_sqr = var(gm, n, :p, i), var(gm, n, :psqr, i)
-    c = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
-    _add_constraint!(gm, n, :p_sqr, i, c)
+    c_1 = JuMP.@constraint(gm.model, f * (p_i - p_j) == f * pd)
+    _add_constraint!(gm, n, :pressure_drop_2, k, c_1)
+    c_2 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :pressure_drop_3, k, c_2)
+    c_3 = JuMP.@constraint(gm.model, p_j^2 == p_j_sqr)
+    _add_constraint!(gm, n, :pressure_drop_4, k, c_3)
 end
 
 

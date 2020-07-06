@@ -39,10 +39,6 @@ function build_ogf(gm::AbstractGasModel)
        end
     end
 
-    for i in ids(gm, :loss_resistor_junction)
-        constraint_pressure_squared(gm, i)
-    end
-
     for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm,i)

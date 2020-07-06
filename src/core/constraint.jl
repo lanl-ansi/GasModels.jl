@@ -32,17 +32,10 @@ function constraint_resistor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f
     JuMP.set_upper_bound(f, ub)
 end
 
-#################################################################################################
-# Constraints associated with loss_resistors
-#################################################################################################
 
-
-"Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(gm::AbstractGasModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
-    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
-    c = JuMP.@constraint(gm.model, pd == p_i - p_j)
-    _add_constraint!(gm, n, :pressure_drop, k, c)
-end
+#################################################################################################
+# Constraints associated with loss resistors
+#################################################################################################
 
 
 "Constraint: Constraint on mass flow across the loss_resistor"

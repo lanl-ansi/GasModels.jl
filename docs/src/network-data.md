@@ -164,6 +164,7 @@ The network data dictionary structure is roughly as follows:
       "to_junction": <int>,         # the "to" side junction id
       "p_loss": <float>,            # constant pressure loss along the edge
       "status": <int>,              # status of the component (0 = off, 1 = on). Default is 1.
+      "is_bidirectional": <int>,    # flag for whether or not flow can go in both directions
         ...
     },
     "2":{...},

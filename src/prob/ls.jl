@@ -39,10 +39,6 @@ function build_ls(gm::AbstractGasModel)
         constraint_mass_flow_balance(gm, i)
     end
 
-    for i in ids(gm, :loss_resistor_junction)
-        constraint_pressure_squared(gm, i)
-    end
-
     for i in ids(gm, :short_pipe)
         constraint_short_pipe_pressure(gm, i)
         constraint_short_pipe_mass_flow(gm, i)

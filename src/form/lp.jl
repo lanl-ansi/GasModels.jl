@@ -87,13 +87,13 @@ function constraint_resistor_pressure(gm::AbstractLPModel, n::Int, k, i, j, pd_m
 end
 
 
-"Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractLPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
 end
 
 
-"Constraint: Relate nonsquared pressure variable to squared pressure variable"
-function constraint_pressure_squared(gm::AbstractLPModel, n::Int, i::Int)
+"Constraint: constraints on pressure drop across an expansion pipe"
+function constraint_pipe_pressure_ne(gm::AbstractLPModel, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
 end
 
 

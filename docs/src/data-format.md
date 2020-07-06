@@ -117,6 +117,7 @@ These components model constant pressure drops along edges.
 | to_junction      | Int     | To Junction id    |                     |                               | Y | Unique id of the junction on the to side                 |
 | p_loss           | Float64 | Pressure loss     | Pascal              | PSI                           | Y | Constant pressure loss across the loss resistor |
 | status           | Int     | Loss resistor status   |                     |                               | Y | Determines if the component is active in the model       |
+| is_bidirectional | Int     | Bi-directionality |                     |                               |                    | Specifies whether the loss resistor supports bi-directional flow  |
 
 ## Regulators (mgc.regulator)
 

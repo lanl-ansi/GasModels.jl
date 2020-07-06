@@ -85,12 +85,6 @@ function constraint_loss_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cn
 end
 
 
-"Template: Relate nonsquared pressure variables to squared pressure variables"
-function constraint_pressure_squared(gm::AbstractGasModel, i::Int; n::Int=gm.cnw)
-    constraint_pressure_squared(gm, n, i)
-end
-
-
 #################################################################################################
 # Templates for constraints associated with pipes
 #################################################################################################

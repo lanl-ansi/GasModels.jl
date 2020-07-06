@@ -61,8 +61,8 @@ function constraint_pipe_pressure_ne(gm::AbstractMIPModel, n::Int, k, i, j, pd_m
 end
 
 
-"Constraint: Relate nonsquared pressure variable to squared pressure variable"
-function constraint_pressure_squared(gm::AbstractMIPModel, n::Int, i::Int)
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractMIPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
 end
 
 

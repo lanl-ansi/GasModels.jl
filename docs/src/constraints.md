@@ -110,12 +110,6 @@ constraint_loss_resistor_mass_flow
 constraint_loss_resistor_pressure
 ```
 
-### Squared pressure constraints
-
-```@docs
-constraint_pressure_squared
-```
-
 
 ## Compressor Constraints
 

@@ -315,11 +315,13 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
     flow_min = density * parse(Float64, loss_resistor["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, loss_resistor["flowMax"][:value]) * inv(3.6)
     p_loss = parse(Float64, loss_resistor["pressureLoss"][:value]) * 1.0e5
+    is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
         "p_loss"=>p_loss, "is_per_unit"=>0, "status"=>1,
-        "is_si_units"=>1, "is_english_units"=>0)
+        "is_si_units"=>1, "is_english_units"=>0,
+        "is_bidirectional"=>is_bidirectional)
 end
 
 function _get_short_pipe_entry(short_pipe)
