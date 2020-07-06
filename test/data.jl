@@ -1,6 +1,6 @@
 @testset "test data handling and parsing" begin
-    @testset "gaslib40 parsing from gaslib zip" begin
-        data = GasModels.parse_file("../test/data/gaslib/GasLib-40.zip")
+    @testset "GasLib-Integration parsing from zip" begin
+        data = GasModels.parse_file("../test/data/gaslib/GasLib-Integration.zip")
         @test length(data["delivery"]) == 29
         @test length(data["receipt"]) == 3
     end
