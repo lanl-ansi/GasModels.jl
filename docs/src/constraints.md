@@ -98,6 +98,25 @@ The disjunctive forms of problems (where directions are controlled by on/off var
 constraint_resistor_parallel_flow
 ```
 
+
+## Loss Resistor Constraints
+
+The primary constraints related to loss resistors ensure that the pressure drop is constant along each edge. They also ensure that squared pressure variables are somehow related to (nonsquared) pressure variables.
+
+### Mass flow and pressure drop constraints
+
+```@docs
+constraint_loss_resistor_mass_flow
+constraint_loss_resistor_pressure
+```
+
+### Squared pressure constraints
+
+```@docs
+constraint_pressure_squared
+```
+
+
 ## Compressor Constraints
 
 ### Operations Constraints

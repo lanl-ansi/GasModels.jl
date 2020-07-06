@@ -319,7 +319,7 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
         "p_loss"=>p_loss, "is_per_unit"=>0, "status"=>1,
-        "is_si_units"=>1, "is_english_units"=>0, "is_bidirectional"=>1)
+        "is_si_units"=>1, "is_english_units"=>0)
 end
 
 function _get_short_pipe_entry(short_pipe)

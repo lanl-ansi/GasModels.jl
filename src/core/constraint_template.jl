@@ -79,7 +79,7 @@ end
 function constraint_loss_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
     loss_resistor = ref(gm, n, :loss_resistor, k)
     i, j = loss_resistor["fr_junction"], loss_resistor["to_junction"]
-    pd = loss_resistor["p_loss"]^2
+    pd = loss_resistor["p_loss"]
 
     constraint_loss_resistor_pressure(gm, n, k, i, j, pd)
 end

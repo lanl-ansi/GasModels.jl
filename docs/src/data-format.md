@@ -106,6 +106,18 @@ These components model pressure drops for which no other data or models are avai
 | is_bidirectional | Int     | Bi-directionality |                     |                               |                    | Specifies whether the pipe supports bi-directional flow  |
 | pipeline_name    | String  | Pipeline Name     |                     |                               |                    | Name of the pipeline to which this pipe belongs          |
 
+## Loss Resistors (mgc.loss_resistor)
+
+These components model constant pressure drops along edges.
+
+| Variable         | Type    | Name              | Standard Units (SI) | United States Customary Units | Required           | Description                                              |
+| ---------------- | ------- | ----------------- | ------------------- | ----------------------------- | ------------------ | -------------------------------------------------------- |
+| id               | Int     | Loss resistor id       |                     |                               | Y | Unique id for resistor                                   |
+| fr_junction      | Int     | From Junction id  |                     |                               | Y | Unique id of the junction on the from side               |
+| to_junction      | Int     | To Junction id    |                     |                               | Y | Unique id of the junction on the to side                 |
+| p_loss           | Float64 | Pressure loss     | Pascal              | PSI                           | Y | Constant pressure loss across the loss resistor |
+| status           | Int     | Loss resistor status   |                     |                               | Y | Determines if the component is active in the model       |
+
 ## Regulators (mgc.regulator)
 
 These components model pressure reducing valves.
