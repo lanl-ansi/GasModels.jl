@@ -1136,17 +1136,32 @@ function _calc_resistor_resistance(resistor::Dict{String,Any})
 end
 
 
-"calculates the minimum flow on a loss_resistor"
+"calculates the minimum flow on a loss resistor"
 function _calc_loss_resistor_flow_min(ref::Dict{Symbol,Any}, loss_resistor)
-    mf = -ref[:max_mass_flow]
-    return max(mf, loss_resistor["flow_min"])
+    mf               = -ref[:max_mass_flow]
+    is_bidirectional = get(loss_resistor, "is_bidirectional", 1)
+    flow_direction   = get(loss_resistor, "flow_direction", 0)
+    flow_min         = get(loss_resistor, "flow_min", mf)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        return max(mf, flow_min, 0.0)
+    else
+        return max(mf, flow_min)
+    end
 end
 
 
-"calculates the maximum flow on a loss_resistor"
+"calculates the maximum flow on a loss resistor"
 function _calc_loss_resistor_flow_max(ref::Dict{Symbol,Any}, loss_resistor)
-    mf = ref[:max_mass_flow]
-    return min(mf, loss_resistor["flow_max"])
+    mf             = ref[:max_mass_flow]
+    flow_direction = get(loss_resistor, "flow_direction", 0)
+    flow_max       = get(loss_resistor, "flow_max", mf)
+
+    if flow_direction == -1
+        return min(mf, flow_max, 0.0)
+    else
+        return min(mf, flow_max)
+    end
 end
 
 
