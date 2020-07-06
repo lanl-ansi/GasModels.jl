@@ -36,11 +36,12 @@ end
 # Constraints associated with loss_resistors
 #################################################################################################
 
-"Constraint: Constraints which define pressure drop across a loss_resistor"
-function constraint_loss_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    _add_constraint!(gm, n, :pressure_drop, k, JuMP.@constraint(gm.model, pd == pi - pj))
+
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractGasModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    c = JuMP.@constraint(gm.model, pd == p_i - p_j)
+    _add_constraint!(gm, n, :pressure_drop, k, c)
 end
 
 
@@ -60,7 +61,7 @@ end
 
 " Constraint: standard flow balance equation where demand and production are variables "
 function constraint_pressure(gm::AbstractGasModel, n::Int, i, p_nom)
-    p  = var(gm,n,:psqr,i)
+    p = var(gm, n, :psqr, i)
     JuMP.set_lower_bound(p, p_nom)
     JuMP.set_upper_bound(p, p_nom)
 end

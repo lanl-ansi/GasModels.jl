@@ -20,6 +20,7 @@ end
 
 "construct the ogf problem"
 function build_ogf(gm::AbstractGasModel)
+    variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_on_off_operation(gm)
@@ -31,10 +32,15 @@ function build_ogf(gm::AbstractGasModel)
     objective_min_economic_costs(gm)
 
     for (i,junction) in ref(gm, :junction)
-        constraint_mass_flow_balance(gm, i)
+       constraint_mass_flow_balance(gm, i)
+
        if (junction["junction_type"] == 1)
-           constraint_pressure(gm,i)
+           constraint_pressure(gm, i)
        end
+    end
+
+    for i in ids(gm, :loss_resistor_junction)
+        constraint_pressure_squared(gm, i)
     end
 
     for i in ids(gm, :pipe)

@@ -139,6 +139,14 @@ function constraint_compressor_ratio_value(gm::AbstractMINLPModel, n::Int, k, i,
 end
 
 
+"Constraint: Relate nonsquared pressure variable to squared pressure variable"
+function constraint_pressure_squared(gm::AbstractMINLPModel, n::Int, i::Int)
+    p_i, p_i_sqr = var(gm, n, :p, i), var(gm, n, :psqr, i)
+    c = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :p_sqr, i, c)
+end
+
+
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy(gm::AbstractMINLPModel, n::Int, k, power_max, work)
 end

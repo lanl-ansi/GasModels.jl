@@ -2,6 +2,26 @@
 # The purpose of this file is to define commonly used and created variables used in gas flow models
 ##########################################################################################################
 
+
+"variables associated with (nonsquared) pressure"
+function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    indices = ids(gm, nw, :loss_resistor_junction)
+
+    p = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model, [i in indices],
+        base_name="$(nw)_p_nonsq", start=comp_start_value(gm.ref[:nw][nw][:junction],
+        i, "p_start", gm.ref[:nw][nw][:junction][i]["p_min"]))
+
+    if bounded
+        for i in indices
+            JuMP.set_lower_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_min"])
+            JuMP.set_upper_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :junction, :p, indices, p)
+end
+
+
 "variables associated with pressure squared"
 function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     psqr = gm.var[:nw][nw][:psqr] = JuMP.@variable(gm.model,

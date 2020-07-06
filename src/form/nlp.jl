@@ -25,6 +25,19 @@ end
 
 
 #############################################################################################################
+## Constraints for modeling nonsquared pressure variables across loss resistors
+############################################################################################################
+
+
+"Constraint: Relate nonsquared pressure variable to squared pressure variable"
+function constraint_pressure_squared(gm::AbstractNLPModel, n::Int, i::Int)
+    p_i, p_i_sqr = var(gm, n, :p, i), var(gm, n, :psqr, i)
+    c = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :p_sqr, i, c)
+end
+
+
+#############################################################################################################
 ## Constraints for modeling flow across a new pipe
 ############################################################################################################
 

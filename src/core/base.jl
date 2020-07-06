@@ -155,6 +155,12 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         _add_edges_to_junction_map!(ref[:regulators_fr], ref[:regulators_to], ref[:regulator])
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
+        # Set to be used in the construction of pressures along loss resistors.
+        fr_ids = [x["fr_junction"] for (i, x) in ref[:loss_resistor]]
+        to_ids = [x["to_junction"] for (i, x) in ref[:loss_resistor]]
+        ids = Set(vcat(fr_ids, to_ids)) # Junctions connected to loss resistors.
+        ref[:loss_resistor_junction] = filter(x -> x.second["index"] in ids, ref[:junction])
+
         ref_degree!(ref)
 
         for (idx, pipe) in ref[:pipe]

@@ -70,16 +70,6 @@ function constraint_loss_resistor_mass_flow(gm::AbstractGasModel, k; n::Int=gm.c
     loss_resistor    = ref(gm, n, :loss_resistor, k)
     f_min            = loss_resistor["flow_min"]
     f_max            = loss_resistor["flow_max"]
-    is_bidirectional = get(loss_resistor, "is_bidirectional", 1)
-    flow_direction   = get(loss_resistor, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        f_min = max(0.0, f_min)
-    end
-
-    if flow_direction == -1
-        f_max = min(0.0, f_max)
-    end
 
     constraint_loss_resistor_mass_flow(gm, n, k, f_min, f_max)
 end
@@ -90,7 +80,14 @@ function constraint_loss_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cn
     loss_resistor = ref(gm, n, :loss_resistor, k)
     i, j = loss_resistor["fr_junction"], loss_resistor["to_junction"]
     pd = loss_resistor["p_loss"]^2
+
     constraint_loss_resistor_pressure(gm, n, k, i, j, pd)
+end
+
+
+"Template: Relate nonsquared pressure variables to squared pressure variables"
+function constraint_pressure_squared(gm::AbstractGasModel, i::Int; n::Int=gm.cnw)
+    constraint_pressure_squared(gm, n, i)
 end
 
 

@@ -61,6 +61,11 @@ function constraint_pipe_pressure_ne(gm::AbstractMIPModel, n::Int, k, i, j, pd_m
 end
 
 
+"Constraint: Relate nonsquared pressure variable to squared pressure variable"
+function constraint_pressure_squared(gm::AbstractMIPModel, n::Int, i::Int)
+end
+
+
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractMIPModel, n::Int, k, i, j)
 end

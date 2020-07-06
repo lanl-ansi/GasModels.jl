@@ -8,6 +8,7 @@ end
 
 "construct the gas flow feasbility problem"
 function build_ne(gm::AbstractGasModel)
+    variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -23,6 +24,10 @@ function build_ne(gm::AbstractGasModel)
 
     for i in ids(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)
+    end
+
+    for i in ids(gm, :loss_resistor_junction)
+        constraint_pressure_squared(gm, i)
     end
 
     for i in ids(gm,:pipe)

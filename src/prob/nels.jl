@@ -9,6 +9,7 @@ end
 "construct the gas flow expansion problem to maximize load"
 function build_nels(gm::AbstractGasModel)
     variable_flow(gm)
+    variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_on_off_operation(gm)
     variable_load_mass_flow(gm)
@@ -26,6 +27,10 @@ function build_nels(gm::AbstractGasModel)
 
     for i in ids(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)
+    end
+
+    for i in ids(gm, :loss_resistor_junction)
+        constraint_pressure_squared(gm, i)
     end
 
     for i in ids(gm,:pipe)
