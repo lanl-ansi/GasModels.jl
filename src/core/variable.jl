@@ -5,20 +5,23 @@
 
 "variables associated with (nonsquared) pressure"
 function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    indices = ids(gm, nw, :loss_resistor_junction)
+    # Set to be used in the construction of pressures along loss resistors.
+    fr_ids = [x["fr_junction"] for (i, x) in ref(gm, nw, :loss_resistor)]
+    to_ids = [x["to_junction"] for (i, x) in ref(gm, nw, :loss_resistor)]
+    ids = Set(vcat(fr_ids, to_ids)) # Junctions connected to loss resistors.
 
-    p = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model, [i in indices],
+    p = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model, [i in ids],
         base_name="$(nw)_p_nonsq", start=comp_start_value(gm.ref[:nw][nw][:junction],
         i, "p_start", gm.ref[:nw][nw][:junction][i]["p_min"]))
 
     if bounded
-        for i in indices
+        for i in ids
             JuMP.set_lower_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_min"])
             JuMP.set_upper_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_max"])
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :junction, :p, indices, p)
+    report && _IM.sol_component_value(gm, nw, :junction, :p, ids, p)
 end
 
 
