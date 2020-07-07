@@ -26,9 +26,6 @@ using Test
 cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 cvx_solver = ipopt_solver
-#abs_minlp_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
-#    "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-12, "print_level" => 0, "sb" => "yes"),
-#    "mip_solver" => cbc_solver, "log_levels" => [])
 
 include("common.jl")
 
