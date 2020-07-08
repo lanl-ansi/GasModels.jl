@@ -14,7 +14,7 @@ mgc.base_pressure                = 8000000;  % Pa
 mgc.base_length                  = 5000;  % m
 mgc.is_per_unit                  = 0;
 mgc.sound_speed                  = 317.353652234;
-mgc.base_flow                    = 535.85648148148;
+mgc.base_flow                    = 550;
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon
@@ -84,11 +84,11 @@ mgc.pipe = [
 %% compressor data
 % id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	operating_cost	directionality
 mgc.compressor = [
-6	      5	  51	1.0	2.0	1000000000	-550	550	0	7700000	0	7700000	1	10	0
-9	      4	  41	1.0	2.0	1000000000	-550	550	0	8000000	0	8000000	1	10	0
-10	    8	  81	1.0	2.0	1000000000	-550	550	0	6620000	0	6620000	1	10	0
-11	    8	  81	1.0	2.0	1000000000	-550	550	0	6620000	0	6620000	1	10	0
-22	    17	171	1.0	2.0	1000000000	-550	550	0	6620000	0	6620000	1	10	0
+6	      5	  51	1.0	2.0	1000000000	-600	600	0	7700000	0	7700000	1	10	0
+9	      4	  41	1.0	2.0	1000000000	-600	600	0	8000000	0	8000000	1	10	0
+10	    8	  81	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
+11	    8	  81	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
+22	    17	171	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
 ];
 
 %% receipt data
@@ -131,8 +131,8 @@ mgc.ne_pipe = [
 %% ne_compressor data
 % id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	construction_cost operating_cost	directionality
 mgc.ne_compressor = [
-26	211	21	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	1500.0 10	0
-30	24	241	1.0	2.0	1000000000	0	535856481481.48	1400000	7000000	1400000	7000000	1	1500.0 10	0
+26	211	21	1.0	2.0	1000000000	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
+30	24	241	1.0	2.0	1000000000	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
 ];
 
 end
