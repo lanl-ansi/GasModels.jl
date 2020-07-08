@@ -36,7 +36,7 @@ function constraint_loss_resistor_pressure(gm::AbstractNLPModel, n::Int, k::Int,
 
     c_1 = JuMP.@constraint(gm.model, f * (p_i - p_j) >= 0.0)
     _add_constraint!(gm, n, :pressure_drop_1, k, c_1)
-    c_2 = JuMP.@constraint(gm.model, abs(p_i - p_j) == pd)
+    c_2 = JuMP.@constraint(gm.model, (p_i - p_j)^2 == pd^2)
     _add_constraint!(gm, n, :pressure_drop_2, k, c_2)
     c_3 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
     _add_constraint!(gm, n, :pressure_drop_3, k, c_3)
