@@ -34,12 +34,14 @@ function constraint_loss_resistor_pressure(gm::AbstractNLPModel, n::Int, k::Int,
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
     p_i_sqr, p_j_sqr = var(gm, n, :psqr, i), var(gm, n, :psqr, j)
 
-    c_1 = JuMP.@constraint(gm.model, f * (p_i - p_j) == f * pd)
-    _add_constraint!(gm, n, :pressure_drop_2, k, c_1)
-    c_2 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
-    _add_constraint!(gm, n, :pressure_drop_3, k, c_2)
-    c_3 = JuMP.@constraint(gm.model, p_j^2 == p_j_sqr)
-    _add_constraint!(gm, n, :pressure_drop_4, k, c_3)
+    c_1 = JuMP.@constraint(gm.model, f * (p_i - p_j) >= 0.0)
+    _add_constraint!(gm, n, :pressure_drop_1, k, c_1)
+    c_2 = JuMP.@constraint(gm.model, abs(p_i - p_j) == pd)
+    _add_constraint!(gm, n, :pressure_drop_2, k, c_2)
+    c_3 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :pressure_drop_3, k, c_3)
+    c_4 = JuMP.@constraint(gm.model, p_j^2 == p_j_sqr)
+    _add_constraint!(gm, n, :pressure_drop_4, k, c_4)
 end
 
 
