@@ -2,7 +2,7 @@
 @testset "test misocp gf" begin
     @testset "gaslib 582 case" begin
         println("gaslib 582 - MISOCP")
-        result = run_gf("../test/data/matgas/gaslib-582.m", MISOCPGasModel, misocp_solver)
+        result = run_gf("../test/data/matgas/gaslib-582-G.m", MISOCPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
         GC.gc()
@@ -13,7 +13,7 @@ end
 @testset "test minlp gf" begin
         @testset "gaslib 40 case" begin
             println("gaslib 40 - MINLP")
-            result = run_gf("../test/data/matgas/gaslib-40.m", MINLPGasModel, minlp_solver)
+            result = run_gf("../test/data/matgas/gaslib-40-E.m", MINLPGasModel, minlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
@@ -30,7 +30,7 @@ end
 @testset "test nlp gf" begin
         @testset "gaslib 40 case" begin
             println("gaslib 40 - NLP")
-            result = run_gf("../test/data/matgas/gaslib-40.m", NLPGasModel, minlp_solver)
+            result = run_gf("../test/data/matgas/gaslib-40-E.m", NLPGasModel, minlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end

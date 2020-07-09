@@ -6,7 +6,7 @@
     end
 
     @testset "gaslib40 summary from dict" begin
-        data = GasModels.parse_file("../test/data/matgas/gaslib-40.m")
+        data = GasModels.parse_file("../test/data/matgas/gaslib-40-E.m")
         output = sprint(GasModels.summary, data)
 
         line_count = count(c -> c == '\n', output)
@@ -50,7 +50,7 @@
     end
 
     @testset "check data summary" begin
-        gas_file = "../test/data/matgas/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
 
         output = sprint(GasModels.summary, gas_data)
@@ -68,7 +68,7 @@
     end
 
     @testset "check solution summary" begin
-        gas_file = "../test/data/matgas/gaslib-40.m"
+        gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
         result = run_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
 
