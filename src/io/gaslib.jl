@@ -51,7 +51,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     pipes = _read_gaslib_pipes(topology_xml, junctions, density)
     regulators = _read_gaslib_regulators(topology_xml, density)
     resistors = _read_gaslib_resistors(topology_xml, density)
-    short_pipes = _read_gaslib_short_pipes(topology_xml)
+    short_pipes = _read_gaslib_short_pipes(topology_xml, density)
     valves = _read_gaslib_valves(topology_xml, density)
     loss_resistors = _read_gaslib_loss_resistors(topology_xml, density)
     compressors = _read_gaslib_compressors(topology_xml, compressor_xml,
@@ -206,20 +206,18 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     flow_min = density * parse(Float64, compressor["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, compressor["flowMax"][:value]) * inv(3.6)
     bypass_required = :internalBypassRequired in keys(compressor) ?
-        compressor[:internalBypassRequired] : 1
+        parse(Int, compressor[:internalBypassRequired]) : 1
 
-    if flow_max < 0.0
+    if flow_max <= 0.0
         flow_min, flow_max = -flow_max, -flow_min
-        fr_junction_tmp = fr_junction
-        fr_junction = to_junction
-        to_junction = fr_junction_tmp
+        fr_junction, to_junction = to_junction, fr_junction
     end
 
     if flow_min >= 0.0
         directionality, is_bidirectional = 1, 0
-    elseif bypass_required == 1 && signof(flow_min) != signof(flow_max)
+    elseif bypass_required == 1 && sign(flow_min) != sign(flow_max)
         directionality, is_bidirectional = 2, 1
-    elseif bypass_required == 0 && signof(flow_min) != signof(flow_max)
+    elseif bypass_required == 0 && sign(flow_min) != sign(flow_max)
         directionality, is_bidirectional = 1, 1
     else
         directionality, is_bidirectional = 0, 1
@@ -324,6 +322,12 @@ function _get_pipe_entry(pipe, junctions, density::Float64)
     # Determine bidirectionality.
     flow_min = density * parse(Float64, pipe["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, pipe["flowMax"][:value]) * inv(3.6)
+
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
     is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
@@ -338,22 +342,36 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
     fr_junction, to_junction = loss_resistor[:from], loss_resistor[:to]
     flow_min = density * parse(Float64, loss_resistor["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, loss_resistor["flowMax"][:value]) * inv(3.6)
+
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
     p_loss = parse(Float64, loss_resistor["pressureLoss"][:value]) * 1.0e5
     is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
-        "p_loss"=>p_loss, "is_per_unit"=>0, "status"=>1,
-        "is_si_units"=>1, "is_english_units"=>0,
-        "is_bidirectional"=>is_bidirectional)
+        "p_loss"=>p_loss, "is_per_unit"=>0, "status"=>1, "is_si_units"=>1,
+        "is_english_units"=>0, "is_bidirectional"=>is_bidirectional)
 end
 
 
-function _get_short_pipe_entry(short_pipe)
+function _get_short_pipe_entry(short_pipe, density::Float64)
     fr_junction, to_junction = short_pipe[:from], short_pipe[:to]
+    flow_min = density * parse(Float64, short_pipe["flowMin"][:value]) * inv(3.6)
+    flow_max = density * parse(Float64, short_pipe["flowMax"][:value]) * inv(3.6)
+
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
+    is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
-        "to_junction"=>to_junction, "is_bidirectional"=>1, "is_per_unit"=>0,
+        "to_junction"=>to_junction, "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0,
         "status"=>1, "is_si_units"=>1, "is_english_units"=>0)
 end
 
@@ -381,13 +399,20 @@ function _get_resistor_entry(resistor, density::Float64)
     fr_junction, to_junction = resistor[:from], resistor[:to]
     flow_min = density * parse(Float64, resistor["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, resistor["flowMax"][:value]) * inv(3.6)
+
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
     diameter = _parse_gaslib_length(resistor["diameter"])
     drag = parse(Float64, resistor["dragFactor"][:value])
+    is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
         "drag"=>drag, "diameter"=>diameter, "is_per_unit"=>0, "status"=>1,
-        "is_si_units"=>1, "is_english_units"=>0, "is_bidirectional"=>1)
+        "is_si_units"=>1, "is_english_units"=>0, "is_bidirectional"=>is_bidirectional)
 end
 
 
@@ -396,17 +421,32 @@ function _get_valve_entry(valve, density::Float64)
     flow_min = density * parse(Float64, valve["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, valve["flowMax"][:value]) * inv(3.6)
 
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max,
         "status"=>1, "directionality"=>1, "is_per_unit"=>0, "is_si_units"=>1)
 end
 
+
 function _get_regulator_entry(regulator, density::Float64)
     fr_junction, to_junction = regulator[:from], regulator[:to]
     flow_min = density * parse(Float64, regulator["flowMin"][:value]) * inv(3.6)
     flow_max = density * parse(Float64, regulator["flowMax"][:value]) * inv(3.6)
+
+    if flow_max <= 0.0
+        flow_min, flow_max = -flow_max, -flow_min
+        fr_junction, to_junction = to_junction, fr_junction
+    end
+
+    bypass_required = :internalBypassRequired in keys(regulator) ?
+        parse(Int, regulator[:internalBypassRequired]) : 1
+
+    flow_min = bypass_required == 1 ? -flow_max : flow_min
     reduction_factor_min, reduction_factor_max = 0.0, 1.0
-    flow_min = flow_min < 0.0 ? -abs(flow_max) : flow_min
     is_bidirectional = flow_min < 0.0 ? 1 : 0
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
@@ -415,6 +455,7 @@ function _get_regulator_entry(regulator, density::Float64)
         "reduction_factor_max"=>reduction_factor_max, "status"=>1,
         "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0)
 end
+
 
 function _read_gaslib_compressors(topology, compressor_stations, T::Float64, R::Float64, kappa::Float64, density::Float64)
     if "compressorStation" in keys(topology["connections"])
@@ -425,6 +466,7 @@ function _read_gaslib_compressors(topology, compressor_stations, T::Float64, R::
         return Dict{String,Any}()
     end
 end
+
 
 function _read_gaslib_deliveries(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement, density::Float64)
     node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
@@ -451,22 +493,26 @@ function _read_gaslib_deliveries(topology::XMLDict.XMLDictElement, nominations::
     return merge(source_data, sink_data)
 end
 
+
 function _read_gaslib_junctions(topology::XMLDict.XMLDictElement)
     node_types = ["innode", "sink", "source"]
     node_xml = vcat([get(topology["nodes"], x, []) for x in node_types]...)
     return Dict{String,Any}(x[:id] => _get_junction_entry(x) for x in node_xml)
 end
 
+
 function _read_gaslib_pipes(topology::XMLDict.XMLDictElement, junctions::Dict{String,<:Any}, density::Float64)
     pipe_xml = _get_component_dict(get(topology["connections"], "pipe", []))
     return Dict{String,Any}(i => _get_pipe_entry(x, junctions, density::Float64) for (i, x) in pipe_xml)
 end
+
 
 function _read_gaslib_loss_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     loss_resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     loss_resistor_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
     return Dict{String,Any}(i => _get_loss_resistor_entry(x, density) for (i, x) in loss_resistor_xml)
 end
+
 
 function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement, density::Float64)
     node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
@@ -493,10 +539,12 @@ function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XM
     return merge(source_data, sink_data)
 end
 
+
 function _read_gaslib_regulators(topology::XMLDict.XMLDictElement, density::Float64)
     regulator_xml = _get_component_dict(get(topology["connections"], "controlValve", []))
     return Dict{String,Any}(i => _get_regulator_entry(x, density) for (i, x) in regulator_xml)
 end
+
 
 function _read_gaslib_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
@@ -505,20 +553,22 @@ function _read_gaslib_resistors(topology::XMLDict.XMLDictElement, density::Float
     return Dict{String,Any}(i => _get_resistor_entry(x, density) for (i, x) in resistor_xml)
 end
 
-function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement)
+
+function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement, density::Float64)
     # Parse all short pipes in the network.
     short_pipe_xml = _get_component_dict(get(topology["connections"], "shortPipe", []))
-    short_pipes = Dict{String,Any}(i => _get_short_pipe_entry(x) for (i, x) in short_pipe_xml)
+    short_pipes = Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in short_pipe_xml)
 
     # Resistors with drag equal to zero should also be considered short pipes.
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
     resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
-    resistors = Dict{String,Any}(i => _get_short_pipe_entry(x) for (i, x) in resistor_xml)
+    resistors = Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in resistor_xml)
 
     # Return the merged dictionary of short pipes and resistors.
     return merge(short_pipes, resistors)
 end
+
 
 function _read_gaslib_valves(topology::XMLDict.XMLDictElement, density::Float64)
     valve_xml = _get_component_dict(get(topology["connections"], "valve", []))
