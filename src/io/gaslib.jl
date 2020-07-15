@@ -131,7 +131,7 @@ function _add_auxiliary_junctions!(junctions, compressors, regulators)
     new_regulators = Dict{String,Any}()
 
     for (a, regulator) in regulators
-        if regulator["flow_min"] < 0.0
+        if regulator["bypass_required"] == 1
             fr_junction = junctions[regulator["fr_junction"]]
             to_junction = junctions[regulator["to_junction"]]
 
@@ -289,6 +289,7 @@ function _get_junction_entry(junction)
         "id"=>junction[:id], "index"=>junction[:id], "pipeline_id"=>"")
 end
 
+
 function _parse_gaslib_length(entry)
     if entry[:unit] == "m"
         return parse(Float64, entry[:value])
@@ -298,6 +299,7 @@ function _parse_gaslib_length(entry)
         return parse(Float64, entry[:value]) * inv(1000.0)
     end
 end
+
 
 function _get_pipe_entry(pipe, junctions, density::Float64)
     fr_junction, to_junction = pipe[:from], pipe[:to]
@@ -446,12 +448,14 @@ function _get_regulator_entry(regulator, density::Float64)
     flow_min = bypass_required == 1 ? -flow_max : flow_min
     reduction_factor_min, reduction_factor_max = 0.0, 1.0
     is_bidirectional = flow_min < 0.0 ? 1 : 0
+    bypass_required = bypass_required
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "is_si_units"=>1,
         "flow_max"=>flow_max, "reduction_factor_min"=>reduction_factor_min,
         "reduction_factor_max"=>reduction_factor_max, "status"=>1,
-        "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0)
+        "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0,
+        "bypass_required"=>bypass_required)
 end
 
 
