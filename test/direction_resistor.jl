@@ -1,4 +1,4 @@
-@testset "Direction of Edges" begin
+@testset "Direction of Resistors" begin
     @testset "Base Model" begin
         @info "Testing base model"
         result = run_gf("../test/data/matgas/direction.m", MISOCPGasModel, cvx_minlp_solver)

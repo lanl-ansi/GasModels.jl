@@ -15,6 +15,8 @@ mgc.is_per_unit                  = 0;
 mgc.economic_weighting           = 0.95;
 mgc.gas_molar_mass               = 0.0185674; % kg/mol
 mgc.sound_speed                  = 371.6643;
+mgc.base_flow                    = 60;
+
 
 %% junction data
 % id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
