@@ -410,10 +410,10 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
 
     for (i,resistor) in ref(gm,nw,:resistor)
         if get(resistor, "is_bidirectional", 1) == 0 || get(resistor, "flow_direction", 0) == 1 || get(resistor, "flow_min", 0) > 0
-            y_resistor[l] = 1
+            y_resistor[i] = 1
         end
         if get(resistor, "flow_direction", 0) == -1 || get(resistor, "flow_max", 0) < 0
-            y_resistor[l] = 0
+            y_resistor[i] = 0
         end
     end
 

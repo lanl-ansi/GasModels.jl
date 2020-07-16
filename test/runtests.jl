@@ -46,5 +46,10 @@ include("common.jl")
 
     include("debug.jl")  # test gaslib-582 minlp gf
 
-    include("direction.jl")
+    include("direction_pipe.jl")
+    include("direction_short_pipe.jl")
+    include("direction_resistor.jl")
+    include("direction_valve.jl")
+    include("direction_regulator.jl")
+    include("direction_compressor.jl")
 end
