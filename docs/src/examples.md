@@ -7,14 +7,14 @@ Many of the examples can be run using the `run_examples.jl` script which execute
 Long term, the plan is to move the examples out of the `GasModels` repository and maintain a special `GasModelsLib` repository specifically for warehousing models developed in the literature.
 
 
-| Problems          | Source               |
-| ----------------- | -------------------- |
-| 24-pipe-benchmark | [1]                  |
-| A3                | [2]                  |
-| case-30           | [1]                  |
-| gaslib-40-*       | [2]                  |
-| gaslib-135-*      | [2]                  |
-| gaslib-582-*      | [2]                  |
+| Problems            | Source               |
+| -----------------   | -------------------- |
+| 24-pipe-benchmark   | [1]                  |
+| A3                  | [2]                  |
+| case-30             | [1]                  |
+| gaslib-40-E-*       | [2]                  |
+| gaslib-135-F-*      | [2]                  |
+| gaslib-582-G-*      | [2]                  |
 
 ## Sources
 

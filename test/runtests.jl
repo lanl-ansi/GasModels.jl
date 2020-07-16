@@ -26,9 +26,6 @@ using Test
 cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 cvx_solver = ipopt_solver
-#abs_minlp_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
-#    "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-12, "print_level" => 0, "sb" => "yes"),
-#    "mip_solver" => cbc_solver, "log_levels" => [])
 
 include("common.jl")
 
@@ -49,5 +46,10 @@ include("common.jl")
 
     include("debug.jl")  # test gaslib-582 minlp gf
 
-    include("direction.jl")
+    include("direction_pipe.jl")
+    include("direction_short_pipe.jl")
+    include("direction_resistor.jl")
+    include("direction_valve.jl")
+    include("direction_regulator.jl")
+    include("direction_compressor.jl")
 end
