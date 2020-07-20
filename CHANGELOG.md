@@ -1,7 +1,7 @@
 # GasModels.jl Change Log
 
 ## Pending
-
+- bug fix for storage 
 
 
 ## v0.8
