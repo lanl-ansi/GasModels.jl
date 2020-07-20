@@ -330,7 +330,7 @@ function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::B
     pipe       = Dict(x for x in ref(gm,nw,:pipe)       if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_pipe_var =  JuMP.@variable(gm.model,
         [l in keys(pipe)],
@@ -394,7 +394,7 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
     resistor   = Dict(x for x in ref(gm,nw,:resistor)   if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_resistor_var = JuMP.@variable(gm.model,
         [l in keys(resistor)],
@@ -426,7 +426,7 @@ function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
     short_pipe = Dict(x for x in ref(gm,nw,:short_pipe) if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_short_pipe_var = JuMP.@variable(gm.model,
         [l in keys(short_pipe)],
@@ -458,7 +458,7 @@ function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::
     valve      = Dict(x for x in ref(gm,nw,:valve)      if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_valve_var = JuMP.@variable(gm.model,
         [l in keys(valve)],
@@ -490,7 +490,7 @@ function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repo
     regulator  = Dict(x for x in ref(gm,nw,:regulator)  if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_regulator_var = JuMP.@variable(gm.model,
         [l in keys(regulator)],
@@ -533,7 +533,7 @@ function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report
     ne_pipe = Dict(x for x in ref(gm,nw,:ne_pipe) if get(x.second, "is_bidirectional", 1) == 1 &&
                                                      get(x.second, "flow_direction", 0) == 0 &&
                                                      get(x.second, "flow_max", 0) >= 0 &&
-                                                     get(x.second, "flow_main", 0) <= 0)
+                                                     get(x.second, "flow_min", 0) <= 0)
 
     y_ne_pipe_var = JuMP.@variable(gm.model,
         [l in keys(ne_pipe)],

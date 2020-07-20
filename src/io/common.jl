@@ -37,6 +37,7 @@ Data integrity checks
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)
     correct_p_mins!(data)
+    correct_f_bounds!(data)
 
     per_unit_data_field_check!(data)
     add_compressor_fields!(data)

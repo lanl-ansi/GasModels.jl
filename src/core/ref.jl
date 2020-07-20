@@ -26,25 +26,22 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressur
 
         ref_degree_ne!(ref)
 
+        mf = ref[:max_mass_flow]
+
         for (idx, pipe) in ref[:ne_pipe]
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
-            pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(ref, pipe, i, j)
-            pipe["pd_sqr_min_on"] = pd_min_on
-            pipe["pd_sqr_max_on"] = pd_max_on
-            pipe["pd_sqr_min_off"] = pd_min_off
-            pipe["pd_sqr_max_off"] = pd_max_off
             pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-            pipe["flow_min"] = _calc_ne_pipe_flow_min(ref, pipe)
-            pipe["flow_max"] = _calc_ne_pipe_flow_max(ref, pipe)
+            pipe["flow_min"] = _calc_ne_pipe_flow_min(-mf, pipe, ref[:junction][i], ref[:junction][j])
+            pipe["flow_max"] = _calc_ne_pipe_flow_max(mf, pipe, ref[:junction][i], ref[:junction][j])
         end
 
         for (idx,compressor) in ref[:ne_compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_ne_compressor_flow_min(ref, compressor)
-            compressor["flow_max"] = _calc_ne_compressor_flow_max(ref, compressor)
+            compressor["flow_min"] = _calc_ne_compressor_flow_min(-mf, compressor)
+            compressor["flow_max"] = _calc_ne_compressor_flow_max(mf, compressor)
         end
     end
 end

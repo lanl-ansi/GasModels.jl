@@ -68,7 +68,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
     f_resistor       = var(gm,n,:f_resistor)
     f_short_pipe     = var(gm,n,:f_short_pipe)
     f_valve          = var(gm,n,:f_valve)
-    f_regulator  = var(gm,n,:f_regulator)
+    f_regulator      = var(gm,n,:f_regulator)
     f_ne_pipe        = var(gm,n,:f_ne_pipe)
     f_ne_compressor  = var(gm,n,:f_ne_compressor)
     fg               = var(gm,n,:fg)
