@@ -549,7 +549,7 @@ function parse_m_string(data_string::String)
             storage_data["is_si_units"] = case["is_si_units"]
             storage_data["is_english_units"] = case["is_english_units"]
             storage_data["is_per_unit"] = case["is_per_unit"]
-            push!(storage, storage_data)
+            push!(storages, storage_data)
         end
         case["storage"] = storages
     end
