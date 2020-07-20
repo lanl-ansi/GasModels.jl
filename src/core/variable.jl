@@ -372,7 +372,7 @@ function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::B
     pipe       = Dict(x for x in ref(gm,nw,:pipe)       if get(x.second, "is_bidirectional", 1) == 1 &&
                                                            get(x.second, "flow_direction", 0) == 0 &&
                                                            get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_main", 0) <= 0)
+                                                           get(x.second, "flow_min", 0) <= 0)
 
     y_pipe_var =  JuMP.@variable(gm.model,
         [l in keys(pipe)],

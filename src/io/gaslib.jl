@@ -328,7 +328,7 @@ function _get_pipe_entry(pipe, junctions, density::Float64)
         fr_junction, to_junction = to_junction, fr_junction
     end
 
-    is_bidirectional = flow_min < 0.0 ? 1 : 0
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
         "diameter"=>diameter, "length"=>length, "p_min"=>p_min, "p_max"=>p_max,
@@ -348,7 +348,7 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
     end
 
     p_loss = parse(Float64, loss_resistor["pressureLoss"][:value]) * 1.0e5
-    is_bidirectional = flow_min < 0.0 ? 1 : 0
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
         "flow_min"=>flow_min, "flow_max"=>flow_max, "p_loss"=>p_loss, "is_per_unit"=>0,
@@ -367,7 +367,7 @@ function _get_short_pipe_entry(short_pipe, density::Float64)
         fr_junction, to_junction = to_junction, fr_junction
     end
 
-    is_bidirectional = flow_min < 0.0 ? 1 : 0
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
         "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0, "status"=>1,
@@ -407,7 +407,7 @@ function _get_resistor_entry(resistor, density::Float64)
 
     diameter = _parse_gaslib_length(resistor["diameter"])
     drag = parse(Float64, resistor["dragFactor"][:value])
-    is_bidirectional = flow_min < 0.0 ? 1 : 0
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
         "flow_min"=>flow_min, "flow_max"=>flow_max, "drag"=>drag, "diameter"=>diameter,
@@ -447,7 +447,7 @@ function _get_regulator_entry(regulator, density::Float64)
 
     flow_min = bypass_required == 1 ? -flow_max : flow_min
     reduction_factor_min, reduction_factor_max = 0.0, 1.0
-    is_bidirectional = flow_min < 0.0 ? 1 : 0
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
     bypass_required = bypass_required
 
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
