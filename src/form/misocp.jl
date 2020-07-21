@@ -80,7 +80,6 @@ function variable_pressure_difference_ne(gm::AbstractMISOCPModel, nw::Int=gm.cnw
         for (k, ne_pipe) in ref(gm, nw, :ne_pipe)
             pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(ne_pipe, ref(gm, nw, :junction, ne_pipe["fr_junction"]), ref(gm, nw, :junction, ne_pipe["to_junction"]))
             pd_abs_max = max(abs(pd_min_off), abs(pd_max_off))
-        #    ub = min(pd_abs_max, inv(ref(gm, nw, :ne_pipe, k)["resistance"]) * max_flow^2)
             JuMP.set_lower_bound(l_ne_pipe[k], 0.0)
             JuMP.set_upper_bound(l_ne_pipe[k], pd_abs_max)
         end

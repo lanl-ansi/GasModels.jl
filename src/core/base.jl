@@ -153,47 +153,12 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
             pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
-            pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-            pipe["flow_min"] = _calc_pipe_flow_min(-mf, pipe, ref[:junction][i], ref[:junction][j])
-            pipe["flow_max"] = _calc_pipe_flow_max(mf, pipe, ref[:junction][i], ref[:junction][j])
         end
 
         for (idx, compressor) in ref[:compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
-            compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_compressor_flow_min(-mf, compressor)
-            compressor["flow_max"] = _calc_compressor_flow_max(mf, compressor)
-        end
-
-        for (idx, pipe) in ref[:short_pipe]
-            i = pipe["fr_junction"]
-            j = pipe["to_junction"]
-            pipe["flow_min"] = _calc_short_pipe_flow_min(-mf, pipe)
-            pipe["flow_max"] = _calc_short_pipe_flow_max(mf, pipe)
-        end
-
-        for (idx, resistor) in ref[:resistor]
-            i = resistor["fr_junction"]
-            j = resistor["to_junction"]
-            resistor["resistance"] = _calc_resistor_resistance(resistor)
-            resistor["flow_min"] = _calc_resistor_flow_min(-mf, resistor, ref[:junction][i], ref[:junction][j])
-            resistor["flow_max"] = _calc_resistor_flow_max(mf, resistor, ref[:junction][i], ref[:junction][j])
-        end
-
-        for (idx, valve) in ref[:valve]
-            i = valve["fr_junction"]
-            j = valve["to_junction"]
-            valve["flow_min"] = _calc_valve_flow_min(-mf, valve)
-            valve["flow_max"] = _calc_valve_flow_max(mf, valve)
-        end
-
-        for (idx, regulator) in ref[:regulator]
-            i = regulator["fr_junction"]
-            j = regulator["to_junction"]
-            regulator["flow_min"] = _calc_regulator_flow_min(-mf, regulator)
-            regulator["flow_max"] = _calc_regulator_flow_max(mf, regulator)
         end
     end
 

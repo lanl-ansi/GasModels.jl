@@ -1,10 +1,10 @@
 
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _ref_add_ne!(refs[:nw]; base_length=refs[:base_length], base_pressure=refs[:base_pressure], base_flow=refs[:base_flow], sound_speed=refs[:sound_speed])
+    _ref_add_ne!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
 end
 
 
-function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressure=1.0, base_flow=1.0/371.6643, sound_speed=371.6643)
+function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
     for (nw, ref) in nw_refs
         ref[:ne_pipe]       = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -25,24 +25,6 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressur
         _add_edges_to_junction_map!(ref[:ne_compressors_fr], ref[:ne_compressors_to], ref[:ne_compressor])
 
         ref_degree_ne!(ref)
-
-        mf = ref[:max_mass_flow]
-
-        for (idx, pipe) in ref[:ne_pipe]
-            i = pipe["fr_junction"]
-            j = pipe["to_junction"]
-            pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-            pipe["flow_min"] = _calc_ne_pipe_flow_min(-mf, pipe, ref[:junction][i], ref[:junction][j])
-            pipe["flow_max"] = _calc_ne_pipe_flow_max(mf, pipe, ref[:junction][i], ref[:junction][j])
-        end
-
-        for (idx,compressor) in ref[:ne_compressor]
-            i = compressor["fr_junction"]
-            j = compressor["to_junction"]
-            compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_ne_compressor_flow_min(-mf, compressor)
-            compressor["flow_max"] = _calc_ne_compressor_flow_max(mf, compressor)
-        end
     end
 end
 
@@ -83,17 +65,15 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref = ref[:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            pipe["resistance"] =
-                pipe["friction_factor"] * pipe["length"] * ref[:base_length] /
-                pipe["diameter"]
+            resistance =  _calc_pipe_resistance_rho_phi_space(pipe, ref[:base_length])
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]
             fr_p_max = fr_junction["p_max"]
             to_p_min = to_junction["p_min"]
             to_p_max = to_junction["p_max"]
-            pipe["flux_min"] = -sqrt((to_p_max^2 - fr_p_min^2) / pipe["resistance"])
-            pipe["flux_max"] = sqrt((fr_p_max^2 - to_p_min^2) / pipe["resistance"])
+            pipe["flux_min"] = -sqrt((to_p_max^2 - fr_p_min^2) / resistance)
+            pipe["flux_max"] = sqrt((fr_p_max^2 - to_p_min^2) / resistance)
         end
 
         for (i, pipe) in get(nw_ref, :original_pipe, [])
