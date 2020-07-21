@@ -61,8 +61,6 @@ end
 
 "variables associated with mass flow in resistors"
 function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_resistor = gm.var[:nw][nw][:f_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:resistor)],
         base_name="$(nw)_f",
@@ -71,8 +69,8 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
 
     if bounded
         for (i, resistor) in ref(gm, nw, :resistor)
-            JuMP.set_lower_bound(f_resistor[i], -max_flow)
-            JuMP.set_upper_bound(f_resistor[i],  max_flow)
+            JuMP.set_lower_bound(f_resistor[i], resistor["flow_min"])
+            JuMP.set_upper_bound(f_resistor[i], resistor["flow_max"])
         end
     end
 
@@ -81,8 +79,6 @@ end
 
 "variables associated with mass flow in short pipes"
 function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_short_pipe = gm.var[:nw][nw][:f_short_pipe] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:short_pipe)],
         base_name="$(nw)_f",
@@ -91,8 +87,8 @@ function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 
     if bounded
         for (i, short_pipe) in ref(gm, nw, :short_pipe)
-            JuMP.set_lower_bound(f_short_pipe[i], -max_flow)
-            JuMP.set_upper_bound(f_short_pipe[i],  max_flow)
+            JuMP.set_lower_bound(f_short_pipe[i], short_pipe["flow_min"])
+            JuMP.set_upper_bound(f_short_pipe[i], short_pipe["flow_max"])
         end
     end
 
@@ -102,8 +98,6 @@ end
 
 "variables associated with mass flow in valves"
 function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_valve = gm.var[:nw][nw][:f_valve] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:valve)],
         base_name="$(nw)_f",
@@ -112,8 +106,8 @@ function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded:
 
     if bounded
         for (i, valve) in ref(gm, nw, :valve)
-            JuMP.set_lower_bound(f_valve[i], -max_flow)
-            JuMP.set_upper_bound(f_valve[i],  max_flow)
+            JuMP.set_lower_bound(f_valve[i], valve["flow_min"])
+            JuMP.set_upper_bound(f_valve[i], valve["flow_max"])
         end
     end
 
@@ -122,8 +116,6 @@ end
 
 "variables associated with mass flow in regulators"
 function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_regulator = gm.var[:nw][nw][:f_regulator] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:regulator)],
         base_name="$(nw)_f",
@@ -132,8 +124,8 @@ function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; boun
 
     if bounded
         for (i, regulator) in ref(gm, nw, :regulator)
-            JuMP.set_lower_bound(f_regulator[i], -max_flow)
-            JuMP.set_upper_bound(f_regulator[i],  max_flow)
+            JuMP.set_lower_bound(f_regulator[i], regulator["flow_min"])
+            JuMP.set_upper_bound(f_regulator[i], regulator["flow_max"])
         end
     end
 
@@ -328,28 +320,26 @@ end
 "variables associated with direction of flow on on pipes. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so flow_direction and is_birection cannot be used to replace the constants with variables"
 function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
     pipe       = Dict(x for x in ref(gm,nw,:pipe)       if get(x.second, "is_bidirectional", 1) == 1 &&
-                                                           get(x.second, "flow_direction", 0) == 0 &&
-                                                           get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_min", 0) <= 0)
-
+                                                          get(x.second, "flow_direction", 0) == 0 &&
+                                                          get(x.second, "flow_max", 0) >= 0 &&
+                                                          get(x.second, "flow_min", 0) <= 0)
     y_pipe_var =  JuMP.@variable(gm.model,
-        [l in keys(pipe)],
+        [k in keys(pipe)],
         binary=true,
         base_name="$(nw)_y",
-        start=comp_start_value(pipe, l, "y_start", 1)
+        start=comp_start_value(pipe, k, "y_start", 1)
     )
 
     y_pipe = gm.var[:nw][nw][:y_pipe] = Dict()
-    for l in keys(pipe)
-        y_pipe[l] = y_pipe_var[l]
+    for k in keys(pipe)
+        y_pipe[k] = y_pipe_var[k]
     end
 
-    for (i,pipe) in ref(gm,nw,:pipe)
+    for (k,pipe) in ref(gm,nw,:pipe)
         if get(pipe, "is_bidirectional", 1) == 0 || get(pipe, "flow_direction", 0) == 1 || get(pipe, "flow_min", 0) > 0
-            y_pipe[i] = 1
-        end
-        if get(pipe, "flow_direction", 0) == -1 || get(pipe, "flow_max", 0) < 0
-            y_pipe[i] = 0
+            y_pipe[k] = 1
+        elseif get(pipe, "flow_direction", 0) == -1 || get(pipe, "flow_max", 0) < 0
+            y_pipe[k] = 0
         end
     end
 
