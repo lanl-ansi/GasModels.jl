@@ -1,5 +1,3 @@
-
-
 @testset "test gf" begin
     @testset "test misocp gf" begin
         @testset "gaslib integration misocp gf" begin
@@ -23,7 +21,7 @@
 
     @testset "test mip gf" begin
         @testset "gaslib integration mip gf" begin
-            @info "Testing gaslib integration misocp gf"
+            @info "Testing gaslib integration mip gf"
             result = run_gf("../test/data/gaslib/GasLib-Integration.zip", MIPGasModel, cvx_minlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
