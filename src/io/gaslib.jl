@@ -74,8 +74,8 @@ function parse_gaslib(zip_path::Union{IO,String})
         "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>true,
         "per_unit"=>false, "sound_speed"=>sound_speed, "temperature"=>temperature,
         "name"=>name, "R"=>8.314, "compressibility_factor"=>compressibility_factor,
-        "gas_specific_gravity"=>gas_specific_gravity,
-        "specific_heat_capacity_ratio"=>isentropic_exponent)
+        "gas_specific_gravity"=>gas_specific_gravity, "standard_density"=>density,
+        "specific_heat_capacity_ratio"=>isentropic_exponent, "gas_molar_mass"=>molar_mass)
 
     # Assign nodal IDs in place of string IDs.
     data = _correct_ids(data)
@@ -270,7 +270,7 @@ function _get_delivery_entry(delivery, density::Float64)
         withdrawal_max = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
     end
 
-    is_dispatchable = withdrawal_min != withdrawal_max ? 1.0 : 0.0
+    is_dispatchable = withdrawal_min != withdrawal_max ? 1 : 0
 
     return Dict{String,Any}("withdrawal_min"=>withdrawal_min,
         "withdrawal_max"=>withdrawal_max, "withdrawal_nominal"=>withdrawal_max,
@@ -392,7 +392,7 @@ function _get_receipt_entry(receipt, density::Float64)
         injection_max = density * parse(Float64, receipt["flow"][:value]) * inv(3.6)
     end
 
-    is_dispatchable = injection_min != injection_max ? 1.0 : 0.0
+    is_dispatchable = injection_min != injection_max ? 1 : 0
 
     return Dict{String,Any}("injection_min"=>injection_min, "injection_max"=>injection_max,
         "injection_nominal"=>injection_max, "is_dispatchable"=>is_dispatchable,
