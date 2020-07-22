@@ -216,7 +216,7 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     flow_min = bypass_required == 1 ? -flow_max : flow_min
 
     if flow_min >= 0.0
-        directionality, is_bidirectional = 1, 0
+        directionality, is_bidirectional = 1, 1
     elseif bypass_required == 1 && sign(flow_min) != sign(flow_max)
         directionality, is_bidirectional = 2, 1
     elseif bypass_required == 0 && sign(flow_min) != sign(flow_max)
@@ -426,9 +426,11 @@ function _get_valve_entry(valve, density::Float64)
         fr_junction, to_junction = to_junction, fr_junction
     end
 
+    is_bidirectional = flow_min > 0.0 ? 0 : 1
+
     return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
         "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max, "status"=>1,
-        "directionality"=>1, "is_per_unit"=>0, "is_si_units"=>1)
+        "is_per_unit"=>0, "is_si_units"=>1, "is_bidirectional"=>is_bidirectional)
 end
 
 
