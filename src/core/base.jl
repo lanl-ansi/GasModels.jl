@@ -166,51 +166,8 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
-            compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_compressor_flow_min(ref, compressor)
-            compressor["flow_max"] = _calc_compressor_flow_max(ref, compressor)
-        end
-
-        for (idx, pipe) in ref[:short_pipe]
-            i = pipe["fr_junction"]
-            j = pipe["to_junction"]
-            pipe["flow_min"] = _calc_short_pipe_flow_min(ref, pipe)
-            pipe["flow_max"] = _calc_short_pipe_flow_max(ref, pipe)
-        end
-
-        for (idx, resistor) in ref[:resistor]
-            i = resistor["fr_junction"]
-            j = resistor["to_junction"]
-            pd_min, pd_max = _calc_resistor_pd_bounds_sqr(ref, resistor, i, j)
-            resistor["pd_sqr_min"] = pd_min
-            resistor["pd_sqr_max"] = pd_max
-            resistor["resistance"] = _calc_resistor_resistance(resistor)
-            resistor["flow_min"] = _calc_resistor_flow_min(ref, resistor)
-            resistor["flow_max"] = _calc_resistor_flow_max(ref, resistor)
-        end
-
-        for (idx, loss_resistor) in ref[:loss_resistor]
-            i = loss_resistor["fr_junction"]
-            j = loss_resistor["to_junction"]
-            loss_resistor["flow_min"] = _calc_loss_resistor_flow_min(ref, loss_resistor)
-            loss_resistor["flow_max"] = _calc_loss_resistor_flow_max(ref, loss_resistor)
-        end
-
-        for (idx, valve) in ref[:valve]
-            i = valve["fr_junction"]
-            j = valve["to_junction"]
-            valve["flow_min"] = _calc_valve_flow_min(ref, valve)
-            valve["flow_max"] = _calc_valve_flow_max(ref, valve)
-        end
-
-        for (idx, regulator) in ref[:regulator]
-            i = regulator["fr_junction"]
-            j = regulator["to_junction"]
-            regulator["flow_min"] = _calc_regulator_flow_min(ref, regulator)
-            regulator["flow_max"] = _calc_regulator_flow_max(ref, regulator)
         end
     end
-
 end
 
 function _add_junction_map!(junction_map::Dict, collection::Dict)

@@ -215,14 +215,12 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
 
     flow_min = bypass_required == 1 ? -flow_max : flow_min
 
-    if flow_min > 0.0
-        directionality, is_bidirectional = 1, 0
+    if flow_min >= 0.0
+        directionality = 1
     elseif bypass_required == 1 && sign(flow_min) == -sign(flow_max)
-        directionality, is_bidirectional = 2, 1
-    elseif bypass_required == 0 && sign(flow_min) == -sign(flow_max)
-        directionality, is_bidirectional = 1, 1
+        directionality = 2
     else
-        directionality, is_bidirectional = 0, 1
+        directionality = 0
     end
 
     if "diameterIn" in keys(compressor) && "diameterOut" in keys(compressor)
@@ -246,8 +244,8 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     return Dict{String,Any}("is_per_unit"=>false, "fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "inlet_p_min"=>inlet_p_min, "inlet_p_max"=>inlet_p_max,
         "outlet_p_min"=>outlet_p_min, "outlet_p_max"=>outlet_p_max, "flow_min"=>flow_min,
-        "flow_max"=>flow_max, "diameter"=>diameter, "is_bidirectional"=>is_bidirectional,
-        "is_per_unit"=>0, "directionality"=>directionality, "status"=>1, "is_si_units"=>1,
+        "flow_max"=>flow_max, "diameter"=>diameter, "is_per_unit"=>0,
+        "directionality"=>directionality, "status"=>1, "is_si_units"=>1,
         "is_english_units"=>0, "c_ratio_min"=>c_ratio_min, "c_ratio_max"=>c_ratio_max,
         "power_max"=>power_max, "operating_cost"=>operating_cost)
 end

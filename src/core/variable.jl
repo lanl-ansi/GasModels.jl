@@ -401,11 +401,8 @@ end
 
 "variables associated with direction of flow on a compressor. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so flow_direction and is_birection cannot be used to replace the constants with variables"
 function variable_compressor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    compressor     = Dict(x for x in ref(gm,nw,:compressor) if ((get(x.second, "directionality", 0) == 0 ||
-                                                               (get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)) &&
-                                                               get(x.second, "flow_min", 0) <= 0 &&
-                                                               get(x.second, "flow_max", 0) >= 0
-                                                            )
+    compressor = Dict(x for x in ref(gm,nw,:compressor) if (get(x.second, "flow_min", 0.0) <= 0.0 &&
+                                                            get(x.second, "flow_max", 0.0) >= 0.0))
 
     y_compressor_var = JuMP.@variable(gm.model,
         [l in keys(compressor)],

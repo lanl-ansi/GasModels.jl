@@ -626,6 +626,11 @@ function correct_f_bounds!(data::Dict{String,Any})
         resistor["flow_max"] = _calc_resistor_flow_max(mf, resistor, data["junction"][string(resistor["fr_junction"])], data["junction"][string(resistor["to_junction"])])
     end
 
+    for (idx, loss_resistor) in get(data, "loss_resistor", Dict())
+        loss_resistor["flow_min"] = _calc_loss_resistor_flow_min(-mf, loss_resistor)
+        loss_resistor["flow_max"] = _calc_loss_resistor_flow_max(mf, loss_resistor)
+    end
+
     for (idx, valve) in get(data,"valve",Dict())
         valve["flow_min"] = _calc_valve_flow_min(-mf, valve)
         valve["flow_max"] = _calc_valve_flow_max(mf, valve)
@@ -1166,8 +1171,7 @@ end
 
 
 "calculates the minimum flow on a loss resistor"
-function _calc_loss_resistor_flow_min(ref::Dict{Symbol,Any}, loss_resistor)
-    mf               = -ref[:max_mass_flow]
+function _calc_loss_resistor_flow_min(mf::Float64, loss_resistor::Dict{String,Any})
     is_bidirectional = get(loss_resistor, "is_bidirectional", 1)
     flow_direction   = get(loss_resistor, "flow_direction", 0)
     flow_min         = get(loss_resistor, "flow_min", mf)
@@ -1181,8 +1185,7 @@ end
 
 
 "calculates the maximum flow on a loss resistor"
-function _calc_loss_resistor_flow_max(ref::Dict{Symbol,Any}, loss_resistor)
-    mf             = ref[:max_mass_flow]
+function _calc_loss_resistor_flow_max(mf::Float64, loss_resistor::Dict{String,Any})
     flow_direction = get(loss_resistor, "flow_direction", 0)
     flow_max       = get(loss_resistor, "flow_max", mf)
 
