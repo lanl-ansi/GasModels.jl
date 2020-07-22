@@ -181,11 +181,11 @@ end
 
 "Constraint: constraints on flow across an expansion pipe"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_ne_pipe,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
+#    f  = var(gm,n,:f_ne_pipe,k)
+#    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
+#    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
+#    JuMP.set_lower_bound(f, lb)
+#    JuMP.set_upper_bound(f, ub)
 end
 
 
@@ -212,13 +212,8 @@ function constraint_compressor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min,
 end
 
 
-"Constraint: constraints on flow across compressors with on/off direction variables"
+"Constraint: constraints on flow across compressors"
 function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-#    f  = var(gm,n,:f_ne_compressor,k)
-#    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-#    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-#    JuMP.set_lower_bound(f, lb)
-#    JuMP.set_upper_bound(f, ub)
 end
 
 
