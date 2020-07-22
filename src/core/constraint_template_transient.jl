@@ -39,8 +39,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = g
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance =
-        pipe["friction_factor"] * gm.ref[:base_length] * pipe["length"] / pipe["diameter"]
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:base_length])
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
