@@ -215,11 +215,11 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
 
     flow_min = bypass_required == 1 ? -flow_max : flow_min
 
-    if flow_min >= 0.0
-        directionality, is_bidirectional = 1, 1
-    elseif bypass_required == 1 && sign(flow_min) != sign(flow_max)
+    if flow_min > 0.0
+        directionality, is_bidirectional = 1, 0
+    elseif bypass_required == 1 && sign(flow_min) == -sign(flow_max)
         directionality, is_bidirectional = 2, 1
-    elseif bypass_required == 0 && sign(flow_min) != sign(flow_max)
+    elseif bypass_required == 0 && sign(flow_min) == -sign(flow_max)
         directionality, is_bidirectional = 1, 1
     else
         directionality, is_bidirectional = 0, 1
