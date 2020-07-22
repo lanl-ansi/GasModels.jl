@@ -106,8 +106,12 @@ function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded:
 
     if bounded
         for (i, valve) in ref(gm, nw, :valve)
-            JuMP.set_lower_bound(f_valve[i], valve["flow_min"])
-            JuMP.set_upper_bound(f_valve[i], valve["flow_max"])
+            # since valves have on/off capabilities, zero needs
+            # to be a valid value in the bounds
+            flow_min =  min(valve["flow_min"], 0)
+            flow_max =  max(valve["flow_max"], 0)
+            JuMP.set_lower_bound(f_valve[i], flow_min)
+            JuMP.set_upper_bound(f_valve[i], flow_max)
         end
     end
 
@@ -124,8 +128,12 @@ function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; boun
 
     if bounded
         for (i, regulator) in ref(gm, nw, :regulator)
-            JuMP.set_lower_bound(f_regulator[i], regulator["flow_min"])
-            JuMP.set_upper_bound(f_regulator[i], regulator["flow_max"])
+            # since regulators have on/off capabilities, zero needs
+            # to be a valid value in the bounds
+            flow_min =  min(regulator["flow_min"], 0)
+            flow_max =  max(regulator["flow_max"], 0)
+            JuMP.set_lower_bound(f_regulator[i], flow_min)
+            JuMP.set_upper_bound(f_regulator[i], flow_max)
         end
     end
 
