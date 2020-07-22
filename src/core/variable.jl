@@ -562,11 +562,8 @@ end
 
 "variables associated with direction of flow on new compressors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so flow_direction and is_birection cannot be used to replace the constants with variables"
 function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    ne_compressor     = Dict(x for x in ref(gm,nw,:ne_compressor) if ((get(x.second, "directionality", 0) == 0 ||
-                                                                     (get(x.second, "directionality", 0) == 2) && get(x.second, "flow_direction", 0) == 0)) &&
-                                                                      get(x.second, "flow_min", 0) <= 0 &&
-                                                                      get(x.second, "flow_max", 0) >= 0
-                                                                     )
+    ne_compressor = ref(gm,nw,:ne_compressor)
+
     y_ne_compressor_var = JuMP.@variable(gm.model,
         [l in keys(ne_compressor)],
         binary=true,
@@ -577,15 +574,6 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
     y_ne_compressor = gm.var[:nw][nw][:y_ne_compressor] = Dict()
     for l in keys(ne_compressor)
         y_ne_compressor[l] = y_ne_compressor_var[l]
-    end
-
-    for (i,compressor) in ref(gm,nw,:ne_compressor)
-        if get(compressor, "directionality", 0) == 1 || get(compressor, "flow_direction", 0) == 1 || get(compressor, "flow_min", 0) > 0
-            y_compressor[i] = 1
-        end
-        if get(compressor, "flow_direction", 0) == -1 || get(compressor, "flow_max", 0) < 0
-            y_compressor[i] = 0
-        end
     end
 
     report && _IM.sol_component_value(gm, nw, :ne_compressor, :y, keys(ne_compressor), y_ne_compressor_var)
