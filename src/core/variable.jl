@@ -173,8 +173,6 @@ end
 
 "variables associated with mass flow in compressors in expansion planning"
 function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_ne_compressor = gm.var[:nw][nw][:f_ne_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:ne_compressor)],
         base_name="$(nw)_f_ne",
@@ -182,8 +180,12 @@ function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 
     if bounded
         for (i, ne_compressor) in ref(gm, nw, :ne_compressor)
-            JuMP.set_lower_bound(f_ne_compressor[i], -max_flow)
-            JuMP.set_upper_bound(f_ne_compressor[i],  max_flow)
+            # since regulators have on/off capabilities, zero needs
+            # to be a valid value in the bounds
+            flow_min =  min(ne_compressor["flow_min"], 0)
+            flow_max =  max(ne_compressor["flow_max"], 0)
+            JuMP.set_lower_bound(f_ne_compressor[i], flow_min)
+            JuMP.set_upper_bound(f_ne_compressor[i], flow_max)
         end
     end
 
