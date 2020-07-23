@@ -432,9 +432,6 @@ function parse_m_string(data_string::String)
             push!(compressors, compressor_data)
         end
         case["compressor"] = compressors
-    else
-        Memento.error(_LOGGER, string("no compressor table found in .m file.
-            The file seems to be missing \"mgc.compressor = [...];\""))
     end
 
     if haskey(matlab_data, "mgc.ne_compressor")
