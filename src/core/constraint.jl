@@ -186,13 +186,8 @@ function constraint_compressor_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
 end
 
 
-"Constraint: constraints on flow across a compressor with on/off direction variables"
+"Constraint: constraints on flow across a compressor - handled by variable bounds"
 function constraint_compressor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
-    f  = var(gm,n,:f_compressor,k)
-    lb = JuMP.has_lower_bound(f) ? max(JuMP.lower_bound(f), f_min) : f_min
-    ub = JuMP.has_upper_bound(f) ? min(JuMP.upper_bound(f), f_max) : f_max
-    JuMP.set_lower_bound(f, lb)
-    JuMP.set_upper_bound(f, ub)
 end
 
 

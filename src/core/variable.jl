@@ -41,8 +41,6 @@ end
 
 "variables associated with mass flow in compressors"
 function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    max_flow = gm.ref[:nw][nw][:max_mass_flow]
-
     f_compressor = gm.var[:nw][nw][:f_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:compressor)],
         base_name="$(nw)_f",
@@ -51,8 +49,8 @@ function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 
     if bounded
         for (i, compressor) in ref(gm, nw, :compressor)
-            JuMP.set_lower_bound(f_compressor[i], -max_flow)
-            JuMP.set_upper_bound(f_compressor[i],  max_flow)
+            JuMP.set_lower_bound(f_compressor[i], compressor["flow_min"])
+            JuMP.set_upper_bound(f_compressor[i], compressor["flow_max"])
         end
     end
 
