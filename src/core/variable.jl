@@ -180,7 +180,7 @@ function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 
     if bounded
         for (i, ne_compressor) in ref(gm, nw, :ne_compressor)
-            # since regulators have on/off capabilities, zero needs
+            # since ne compressors have on/off capabilities, zero needs
             # to be a valid value in the bounds
             flow_min =  min(ne_compressor["flow_min"], 0)
             flow_max =  max(ne_compressor["flow_max"], 0)
@@ -445,12 +445,9 @@ function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
 end
 
 
-"variables associated with direction of flow on valves. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so flow_direction and is_birection cannot be used to replace the constants with variables"
+"variables associated with direction of flow on valves. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so valves need to have the freedom to choose a direction when off"
 function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    valve      = Dict(x for x in ref(gm,nw,:valve)      if get(x.second, "is_bidirectional", 1) == 1 &&
-                                                           get(x.second, "flow_direction", 0) == 0 &&
-                                                           get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_min", 0) <= 0)
+    valve = ref(gm,nw,:valve)
 
     y_valve_var = JuMP.@variable(gm.model,
         [l in keys(valve)],
@@ -464,25 +461,13 @@ function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::
         y_valve[l] = y_valve_var[l]
     end
 
-    for (i,valve) in ref(gm,nw,:valve)
-        if get(valve, "is_bidirectional", 1) == 0 || get(valve, "flow_direction", 0) == 1 || get(valve, "flow_min", 0) > 0
-            y_valve[i] = 1
-        end
-        if get(valve, "flow_direction", 0) == -1 || get(valve, "flow_max", 0) < 0
-            y_valve[i] = 0
-        end
-    end
-
     report && _IM.sol_component_value(gm, nw, :valve, :y, keys(valve), y_valve_var)
 end
 
 
-"variables associated with direction of flow on regulators. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1, so flow_direction and is_birection cannot be used to replace the constants with variables"
+"variables associated with direction of flow on regulators. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1,  O flow can have y = 0 or 1, so valves need to have the freedom to choose a direction when off"
 function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    regulator  = Dict(x for x in ref(gm,nw,:regulator)  if get(x.second, "is_bidirectional", 1) == 1 &&
-                                                           get(x.second, "flow_direction", 0) == 0 &&
-                                                           get(x.second, "flow_max", 0) >= 0 &&
-                                                           get(x.second, "flow_min", 0) <= 0)
+    regulator  = ref(gm,nw,:regulator)
 
     y_regulator_var = JuMP.@variable(gm.model,
         [l in keys(regulator)],
@@ -494,15 +479,6 @@ function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repo
     y_regulator = gm.var[:nw][nw][:y_regulator] = Dict()
     for l in keys(regulator)
         y_regulator[l] = y_regulator_var[l]
-    end
-
-    for (i,regulator) in ref(gm,nw,:regulator)
-        if get(regulator, "is_bidirectional", 1) == 0 || get(regulator, "flow_direction", 0) == 1 || get(regulator, "flow_min", 0) > 0
-            y_regulator[i] = 1
-        end
-        if get(regulator, "flow_direction", 0) == -1 || get(regulator, "flow_max", 0) < 0
-            y_regulator[i] = 0
-        end
     end
 
     report && _IM.sol_component_value(gm, nw, :regulator, :y, keys(regulator), y_regulator_var)
