@@ -20,6 +20,16 @@ juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
     "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"),
     "mip_solver" => cbc_solver, "log_levels" => [])
 
+juniper_solver2 = JuMP.optimizer_with_attributes(Juniper.Optimizer,
+        "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0, "sb" => "yes", "max_iter" => 50000),
+        "mip_solver" => cbc_solver, "log_levels" => [])
+
+juniper_solver3 = JuMP.optimizer_with_attributes(Juniper.Optimizer,
+            "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-5, "print_level" => 0, "sb" => "yes"),
+            "mip_solver" => cbc_solver, "log_levels" => [])
+
+
+
 using Test
 
 # default setup for solvers

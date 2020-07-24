@@ -9,7 +9,7 @@
 
         @testset "gaslib 40 misocp gf" begin
             @info "Testing gaslib 40 misocp gf"
-            result = run_gf("../test/data/matgas/gaslib-40-E.m", MISOCPGasModel, cvx_minlp_solver)
+            result = run_gf("../test/data/matgas/gaslib-40-E.m", MISOCPGasModel, juniper_solver3)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
             data = GasModels.parse_file("../test/data/matgas/gaslib-40-E.m")

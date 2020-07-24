@@ -2,19 +2,19 @@
     #Check the second order cone model on load shedding
     @testset "test gaslib 40 misocp ls" begin
         @info "Testing gaslib misocp ls gaslib 40"
-        result = run_ls("../test/data/matgas/gaslib-40-E-ls.m", MISOCPGasModel, cvx_minlp_solver)
+        result = run_ls("../test/data/matgas/gaslib-40-E-ls.m", MISOCPGasModel, juniper_solver2)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         # after relaxation
-        @test isapprox(result["objective"]*result["solution"]["base_flow"], 494.38; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["base_flow"], 495.55; atol = 1e-1)
     end
 
     #Check the second order cone model on load shedding with priorities
     @testset "test gaslib 40 misocp ls priority" begin
         @info "Testing gaslib misocp ls priority gaslib 40"
-        result = run_ls("../test/data/matgas/gaslib-40-E-ls-priority.m", MISOCPGasModel, cvx_minlp_solver)
+        result = run_ls("../test/data/matgas/gaslib-40-E-ls-priority.m", MISOCPGasModel, juniper_solver2)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         # After relaxation
-        @test isapprox(result["objective"]*result["solution"]["base_flow"], 444.82; atol = 1e-1)
+        @test isapprox(result["objective"]*result["solution"]["base_flow"], 446.0; atol = 1e-1)
     end
 
     #Check the mip model on load shedding

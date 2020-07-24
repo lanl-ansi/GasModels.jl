@@ -2,7 +2,7 @@
     @testset "test minlp ne" begin
         @testset "A1 minlp ne" begin
             @info "Testing A1 minlp ne"
-            result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, minlp_solver)
+            result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver2)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 144.4; atol = 1e-1)
         end
@@ -25,7 +25,7 @@
     @testset "test misocp ne" begin
         @testset "A1 miscop ne" begin
             @info "Testing A1 misocp ne"
-            result = run_ne("../test/data/matgas/A1.m", MISOCPGasModel, cvx_minlp_solver)
+            result = run_ne("../test/data/matgas/A1.m", MISOCPGasModel, juniper_solver2)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 144.4; atol = 1e-1)
         end
@@ -76,9 +76,6 @@
         @testset "A1 nlp ne" begin
             @info "Testing A1 nlp ne"
             result = run_ne("../test/data/matgas/A1.m", NLPGasModel, cvx_minlp_solver)
-#            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL)
-#                result = run_ne("../test/data/matgas/A1.m", NLPGasModel, abs_minlp_solver)
-#            end
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 144.4; atol = 1e-1)
         end
@@ -86,9 +83,6 @@
         @testset "A2 nlp ne" begin
             @info "Testing A2 nlp ne"
             result = run_ne("../test/data/matgas/A2.m", NLPGasModel, cvx_minlp_solver)
-#            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL)
-#                result = run_ne("../test/data/matgas/A2.m", NLPGasModel, abs_minlp_solver)
-#            end
             @test isapprox(result["objective"], 1687; atol = 1.0)
 
         end

@@ -168,7 +168,7 @@ end
 "Template: Constraints for fixing pressure at a node"
 function constraint_pressure(gm::AbstractGasModel, i; n::Int=gm.cnw)
     junction       = gm.ref[:nw][n][:junction][i]
-    p              = junction["p_nominal"]^2
+    p              = junction["p_nominal"]
     constraint_pressure(gm, n, i, p)
 end
 
