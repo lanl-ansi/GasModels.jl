@@ -102,8 +102,8 @@
         @testset "A2 nlp ne" begin
             @info "Testing A2 nlp ne"
             result = run_ne("../test/data/matgas/A2.m", NLPGasModel, cvx_minlp_solver)
+            @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 1687; atol = 1.0)
-
         end
     end
 end
