@@ -202,6 +202,9 @@
         data["junction"]["22"]["p_min"] = 3000000
         GasModels.correct_network_data!(data)
         result = run_gf(data, MISOCPGasModel, cvx_minlp_solver)
+        if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL)
+            result = run_gf(data, MISOCPGasModel, juniper_solver2)
+        end
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         result = run_gf(data, MINLPGasModel, cvx_minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
