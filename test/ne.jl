@@ -28,7 +28,6 @@
                 result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver3)
             end
 
-
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 1687; atol = 1.0)
         end
