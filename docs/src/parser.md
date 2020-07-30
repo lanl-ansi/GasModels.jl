@@ -13,9 +13,9 @@ parse_file
 parse_json
 ```
 
-## Matlab Data Files
+## Matgas Data Files
 
-The following method is the main methods for parsing Matlab data files:
+The following method is the main methods for parsing Matgas data files:
 
 ```@docs
 parse_matgas
@@ -111,11 +111,11 @@ mgc.delivery = [
 
 The reader is referred to [Matgas Format (.m)](@ref) for detailed description on each column in the above table.
 
-## Parsing Transient Data 
-To run the transient formulations, apart from parsing the network file [Matgas Format (.m)](@ref), a time-series [Transient Data Format (CSV)](@ref) file has to be parsed. The following method provides a way to do so: 
+## Parsing Transient Data
+To run the transient formulations, apart from parsing the network file [Matgas Format (.m)](@ref), a time-series [Transient Data Format (CSV)](@ref) file has to be parsed. The following method provides a way to do so:
 
-```@docs 
+```@docs
 parse_files
 ```
 
-The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument. 
+The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument.

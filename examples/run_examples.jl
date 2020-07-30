@@ -35,6 +35,8 @@ nlp_solver    = scip_solver
 
 include("gf.jl")
 include("ls.jl")
+include("ne_A1.jl")
+include("ne_A2.jl")
 #include("ne_A3.jl")
 include("ne_gaslib-40.jl")
 include("ne_gaslib-135.jl")
