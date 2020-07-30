@@ -16,7 +16,7 @@ using AmplNLWriter
 
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6, "print_level" => 0, "sb" => "yes")
 cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
-juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0), "mip_solver" => cbc_solver, "log_levels" => [])
+juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => ipopt_solver, "mip_solver" => cbc_solver, "log_levels" => [])
 
 env = Gurobi.Env()
 gurobi_solver = JuMP.optimizer_with_attributes(() -> Gurobi.Optimizer(env))
@@ -29,13 +29,9 @@ bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "bonmin.exe")
 
 misocp_solver = gurobi_solver
 mip_solver    = gurobi_solver
-
-if scip_solver != nothing
-    minlp_solver = scip_solver
-else
-    minlp_solver = couenne_solver
-end
-
+lp_solver     = gurobi_solver
+minlp_solver  = scip_solver
+nlp_solver    = scip_solver
 
 include("gf.jl")
 #include("ne_A3.jl")
