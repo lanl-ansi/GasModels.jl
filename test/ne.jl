@@ -1,15 +1,33 @@
 @testset "test ne" begin
     @testset "test minlp ne" begin
         @testset "A1 minlp ne" begin
+            GC.gc()
             @info "Testing A1 minlp ne"
-            result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver2)
+            result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver)
+            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL) || !isapprox(result["objective"], 144.4; atol = 1e-1)
+                result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver2)
+            end
+
+            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL) || !isapprox(result["objective"], 144.4; atol = 1e-1)
+                result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver3)
+            end
+
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 144.4; atol = 1e-1)
         end
 
         @testset "A2 minlp ne" begin
+            GC.gc()
             @info "Testing A2 minlp ne"
-            result = run_ne("../test/data/matgas/A2.m", MINLPGasModel, minlp_solver)
+            result = run_ne("../test/data/matgas/A2.m", MINLPGasModel, juniper_solver)
+            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL) || !isapprox(result["objective"], 1687; atol = 1.0)
+                result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver2)
+            end
+
+            if !(result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL) || !isapprox(result["objective"], 1687; atol = 1.0)
+                result = run_ne("../test/data/matgas/A1.m", MINLPGasModel, juniper_solver3)
+            end
+
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 1687; atol = 1.0)
         end
@@ -83,8 +101,8 @@
         @testset "A2 nlp ne" begin
             @info "Testing A2 nlp ne"
             result = run_ne("../test/data/matgas/A2.m", NLPGasModel, cvx_minlp_solver)
+            @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 1687; atol = 1.0)
-
         end
     end
 end
