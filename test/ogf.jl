@@ -3,7 +3,7 @@
         @testset "case 6 ogf" begin
             @info "Testing OGF"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
-            result = run_ogf(data, NLPGasModel, ipopt_solver)
+            result = run_ogf(data, NLPGasModel, nlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
@@ -13,7 +13,7 @@
         @testset "case 6 nlp ogf binding energy constraint" begin
             @info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
-            result = run_ogf(data, NLPGasModel, ipopt_solver)
+            result = run_ogf(data, NLPGasModel, nlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -237.816; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
