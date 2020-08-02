@@ -16,18 +16,7 @@ import Juniper
 
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0, "sb" => "yes", "max_iter" => 50000)
 cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
-juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
-    "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"),
-    "mip_solver" => cbc_solver, "log_levels" => [])
-
-juniper_solver2 = JuMP.optimizer_with_attributes(Juniper.Optimizer,
-        "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0, "sb" => "yes", "max_iter" => 50000),
-        "mip_solver" => cbc_solver, "log_levels" => [])
-
-juniper_solver3 = JuMP.optimizer_with_attributes(Juniper.Optimizer,
-            "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-5, "print_level" => 0, "sb" => "yes"),
-            "mip_solver" => cbc_solver, "log_levels" => [])
-
+juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => ipopt_solver, "mip_solver" => cbc_solver, "log_levels" => [])
 
 
 using Test
@@ -36,6 +25,13 @@ using Test
 cvx_minlp_solver = juniper_solver
 minlp_solver = juniper_solver
 cvx_solver = ipopt_solver
+
+misocp_solver = juniper_solver
+mip_solver    = juniper_solver
+lp_solver     = ipopt_solver
+minlp_solver  = juniper_solver
+nlp_solver    = ipopt_solver
+
 
 include("common.jl")
 
@@ -54,7 +50,8 @@ include("common.jl")
 
     include("transient.jl")
 
-    include("debug.jl")  # test gaslib-582 minlp gf
+     # test gaslib-582 minlp gf
+    include("debug.jl")
 
     include("direction_pipe.jl")
     include("direction_short_pipe.jl")
