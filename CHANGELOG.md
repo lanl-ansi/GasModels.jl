@@ -9,6 +9,8 @@
 - renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
 - removed explict direction function calls. These are now handled automatically based on data
 - renamed pd_min, pd_max to be pd_sqr_min and pd_sqr_max (breaking)
+- added pressure slack node constraints to base formulations
+- added compressor energy constraints to base formulations
 
 ## v0.7
 

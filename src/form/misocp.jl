@@ -244,6 +244,7 @@ end
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy(gm::AbstractMISOCPModel, n::Int, k, power_max, m, work)
+    #TODO - convex relaxation
 end
 
 "Constraint: constrains the energy of the compressor"

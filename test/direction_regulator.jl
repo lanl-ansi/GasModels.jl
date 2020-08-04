@@ -76,9 +76,9 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, NLPGasModel, minlp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, MIPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
+        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, LPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 
@@ -132,9 +132,9 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, NLPGasModel, minlp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, MIPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
+        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, LPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
 
