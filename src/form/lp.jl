@@ -65,7 +65,14 @@ end
 function constraint_compressor_ratio_value(gm::AbstractLPModel, n::Int, k, i, j)
 end
 
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
+function constraint_compressor_ratio_value_ne(gm::AbstractLPModel, n::Int, k, i, j)
+end
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractLPModel, n::Int, k, power_max, work)
+function constraint_compressor_energy(gm::AbstractLPModel, n::Int, k, power_max, m, work)
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_energy_ne(gm::AbstractLPModel, n::Int, k, power_max, m, work)
 end

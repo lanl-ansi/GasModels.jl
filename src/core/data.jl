@@ -1584,3 +1584,26 @@ function _dfs(i, neighbors, component_lookup, touched)
         end
     end
 end
+
+"Calculate the work of a compressor"
+function _calc_compressor_work(gamma, G, T, compressor::Dict)
+    magic_num      = 286.76
+    return ((magic_num / G) * T * (gamma/(gamma-1)))
+end
+
+"Calculate the m value of a compressor when the ratios are expressed in terms of its square"
+function _calc_compressor_m_sqr(gamma,compressor::Dict)
+    return ((gamma - 1) / gamma) / 2
+end
+
+"Determine if a compressor is energy bounded"
+function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
+    power_max      = compressor["power_max"]
+    max_ratio      = compressor["c_ratio_max"]
+    f_max          = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+
+    work           = _calc_compressor_work(gamma, G, T, compressor)
+    m              = _calc_compressor_m_sqr(gamma, compressor)
+
+    return f_max * (max_ratio^2^m - 1) > power_max/work
+end

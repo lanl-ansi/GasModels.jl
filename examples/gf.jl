@@ -10,7 +10,7 @@
         end
 
         @testset "gaslib 582 case" begin
-            println("gaslib 582 - MISOCP")
+            println("Testing gaslib 582 misocp gf")
             result = run_gf("../examples/data/matgas/gaslib-582-G.m", MISOCPGasModel, misocp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
@@ -55,23 +55,23 @@
 
     @testset "test minlp gf" begin
             @testset "gaslib 40 case" begin
-                println("gaslib 40 - MINLP")
+                println("Testing gaslib 40 minlp gf")
                 result = run_gf("../examples/data/matgas/gaslib-40-E.m", MINLPGasModel, minlp_solver)
                 @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
                 @test isapprox(result["objective"], 0; atol = 1e-6)
             end
-           @testset "gaslib 135 case" begin
-               println("gaslib 135 - MINLP")
-               result = run_gf("../examples/data/matgas/gaslib-135-F.m", MINLPGasModel, minlp_solver)
-               @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-               @test isapprox(result["objective"], 0; atol = 1e-6)
-           end
+#           @testset "gaslib 135 case" begin
+#               println("Testing gaslib 135 minlp gf")
+#               result = run_gf("../examples/data/matgas/gaslib-135-F.m", MINLPGasModel, minlp_solver)
+#               @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+#               @test isapprox(result["objective"], 0; atol = 1e-6)
+#           end
     end
 
 
     @testset "test nlp gf" begin
             @testset "gaslib 40 case" begin
-                println("gaslib 40 - NLP")
+                println("Testing gaslib 40 nlp gf")
                 result = run_gf("../examples/data/matgas/gaslib-40-E.m", NLPGasModel, nlp_solver)
                 @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
                 @test isapprox(result["objective"], 0; atol = 1e-6)

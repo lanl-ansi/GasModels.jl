@@ -232,6 +232,20 @@ function constraint_compressor_ratio_value(gm::AbstractMISOCPModel, n::Int, k, i
 end
 
 
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
+function constraint_compressor_ratio_value_ne(gm::AbstractMISOCPModel, n::Int, k, i, j)
+    pi    = var(gm, n, :psqr, i)
+    pj    = var(gm, n, :psqr, j)
+    r     = var(gm, n, :rsqr_ne, k)
+
+    _IM.relaxation_product(gm.model, pi, r, pj)
+end
+
+
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractMISOCPModel, n::Int, k, power_max, work)
+function constraint_compressor_energy(gm::AbstractMISOCPModel, n::Int, k, power_max, m, work)
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_energy_ne(gm::AbstractMISOCPModel, n::Int, k, power_max, m, work)
 end

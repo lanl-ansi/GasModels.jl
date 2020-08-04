@@ -19,7 +19,7 @@
     #Check the mip model on load shedding
     @testset "test gaslib 40 mip ls" begin
         @info "Testing gaslib mip ls gaslib 40"
-        result = run_ls("../test/data/matgas/gaslib-40-E-ls.m", MIPGasModel, mip_solver)
+        result = run_ls("../examples/data/matgas/gaslib-40-E-ls.m", MIPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         @test isapprox(result["objective"]*result["solution"]["base_flow"], 838.76; atol = 1e-1)
     end

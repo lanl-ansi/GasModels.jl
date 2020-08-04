@@ -189,9 +189,27 @@ function constraint_compressor_ratio_value(gm::AbstractNLPModel, n::Int, k, i, j
 end
 
 
+"Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
+function constraint_compressor_ratio_value_ne(gm::AbstractNLPModel, n::Int, k, i, j)
+    pi    = var(gm, n, :psqr, i)
+    pj    = var(gm, n, :psqr, j)
+    r     = var(gm, n, :rsqr_ne, k)
+    _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@NLconstraint(gm.model, r * pi <= pj))
+    _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@NLconstraint(gm.model, r * pi >= pj))
+end
+
+
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy(gm::AbstractNLPModel, n::Int, k, power_max, m, work)
     r = var(gm, n, :rsqr, k)
     f = var(gm, n, :f_compressor, k)
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max/work))
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_energy_ne(gm::AbstractNLPModel, n::Int, k, power_max, m, work)
+    r = var(gm, n, :rsqr_ne, k)
+    f = var(gm, n, :f_ne_compressor, k)
+    # when the compressor is not built, f = 0, so this is always true
     _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max/work))
 end

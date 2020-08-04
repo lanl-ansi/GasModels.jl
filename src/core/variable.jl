@@ -555,19 +555,51 @@ end
 
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
     rsqr = gm.var[:nw][nw][:rsqr] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:compressor)],
+        [i in keys(compressors)],
         base_name="$(nw)_r",
         start=comp_start_value(gm.ref[:nw][nw][:compressor], i, "ratio_start", 0.0)
     )
 
     if bounded
-        for (i, compressor) in ref(gm, nw, :compressor)
-            JuMP.set_lower_bound(rsqr[i], ref(gm,nw,:compressor,i)["c_ratio_min"]^2)
-            JuMP.set_upper_bound(rsqr[i], ref(gm,nw,:compressor,i)["c_ratio_max"]^2)
+        for (i, compressor) in compressors
+            # since we have r * pi = pj, we have to allow for bi directional compression here
+            ub = max(compressor["c_ratio_max"]^2, (1/compressor["c_ratio_min"])^2)
+            lb = 1 / ub
+            JuMP.set_lower_bound(rsqr[i], lb)
+            JuMP.set_upper_bound(rsqr[i], ub)
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :compressor, :rsqr, ids(gm, nw, :compressor), rsqr)
+    report && _IM.sol_component_value(gm, nw, :compressor, :rsqr, keys(compressors), rsqr)
+end
+
+"Variable Set: variables associated with compression ratios"
+function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :ne_compressor))
+    rsqr = gm.var[:nw][nw][:rsqr_ne] = JuMP.@variable(gm.model,
+        [k in keys(compressors)],
+        base_name="$(nw)_r",
+        start=comp_start_value(gm.ref[:nw][nw][:ne_compressor], k, "ratio_start", 0.0)
+    )
+
+    if bounded
+        for (k, compressor) in compressors
+            i = ref(gm,nw,:junction,compressor["fr_junction"])
+            j = ref(gm,nw,:junction,compressor["to_junction"])
+
+            pi_max = i["p_max"]
+            pj_max = j["p_max"]
+            pi_min = i["p_min"]
+            pj_min = j["p_min"]
+
+            ub = max(compressor["c_ratio_max"]^2, (1/compressor["c_ratio_min"])^2, max(pj_max,pi_max)^2 / min(pj_min,pi_min)^2)
+            lb = 1 / ub
+
+            JuMP.set_lower_bound(rsqr[k], lb)
+            JuMP.set_upper_bound(rsqr[k], ub)
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
 end

@@ -21,13 +21,13 @@ mgc.base_flow                    = 60;
 %% junction data
 % id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
 mgc.junction = [
-1	  3000000	6000000 4000000 1  1  'direction'  '1'   0.0  0.0
-12	3000000	6000000 4000000 1  1  'direction'  '1'   0.0  0.0
-22	7000000	8000000 7000000 1  1  'direction'  '1'   0.0  0.0
-32	3000000	6000000 4000000 1  1  'direction'  '1'   0.0  0.0
-42	3000000	6000000 4000000 1  1  'direction'  '1'   0.0  0.0
-52	1000000	2000000 1000000 1  1  'direction'  '1'   0.0  0.0
-62	3000000	6000000 4000000 1  1  'direction'  '1'   0.0  0.0
+1	  3000000	6000000 4000000 0  1  'direction'  '1'   0.0  0.0
+12	3000000	6000000 4000000 0  1  'direction'  '1'   0.0  0.0
+22	7000000	8000000 7000000 0  1  'direction'  '1'   0.0  0.0
+32	3000000	6000000 4000000 0  1  'direction'  '1'   0.0  0.0
+42	3000000	6000000 4000000 0  1  'direction'  '1'   0.0  0.0
+52	1000000	2000000 1000000 0  1  'direction'  '1'   0.0  0.0
+62	3000000	6000000 4000000 0  1  'direction'  '1'   0.0  0.0
 ];
 
 %% valve data
@@ -45,7 +45,7 @@ mgc.pipe = [
 %% compressor data
 % id fr_junction to_junction c_ratio_min c_ratio_max power_max flow_min flow_max inlet_p_min inlet_p_max outlet_p_min outlet_p_max status operating_cost directionality compressor_station_name pipeline_name totat_installed_power num_compressor_units compressor_type design_suction_pressure design_discharge_pressure max_compressed_volumne design_fuel_required design_electric_power_required num_units_for_peak_service peak_year
 mgc.compressor = [
-20 1	22	1	1.2   100000000 	-1000	1000  3000000	8000000  3000000	8000000  1  10 2
+20 1	22	1	1.2   1000000000000 	-1000	1000  3000000	8000000  3000000	8000000  1  10 2
 ];
 
 %% short_pipe data

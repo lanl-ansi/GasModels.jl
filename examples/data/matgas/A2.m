@@ -84,11 +84,11 @@ mgc.pipe = [
 %% compressor data
 % id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	operating_cost	directionality
 mgc.compressor = [
-6	      5	  51	1.0	2.0	1000000000	-600	600	0	7700000	0	7700000	1	10	0
-9	      4	  41	1.0	2.0	1000000000	-600	600	0	8000000	0	8000000	1	10	0
-10	    8	  81	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
-11	    8	  81	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
-22	    17	171	1.0	2.0	1000000000	-600	600	0	6620000	0	6620000	1	10	0
+6	      5	  51	1.0	2.0	1e100	-600	600	0	7700000	0	7700000	1	10	0
+9	      4	  41	1.0	2.0	1e100	-600	600	0	8000000	0	8000000	1	10	0
+10	    8	  81	1.0	2.0	1e100	-600	600	0	6620000	0	6620000	1	10	0
+11	    8	  81	1.0	2.0	1e100	-600	600	0	6620000	0	6620000	1	10	0
+22	    17	171	1.0	2.0	1e100	-600	600	0	6620000	0	6620000	1	10	0
 ];
 
 %% receipt data
@@ -131,8 +131,8 @@ mgc.ne_pipe = [
 %% ne_compressor data
 % id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	construction_cost operating_cost	directionality
 mgc.ne_compressor = [
-26	211	21	1.0	2.0	1000000000	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
-30	24	241	1.0	2.0	1000000000	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
+26	211	21	1.0	2.0	1e100	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
+30	24	241	1.0	2.0	1e100	-600	600	1400000	7000000	1400000	7000000	1	1500.0 10	0
 ];
 
 %% pipe data (extended)
