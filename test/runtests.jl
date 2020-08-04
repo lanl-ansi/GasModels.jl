@@ -21,17 +21,11 @@ juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" =
 
 using Test
 
-# default setup for solvers
-cvx_minlp_solver = juniper_solver
-minlp_solver = juniper_solver
-cvx_solver = ipopt_solver
-
 misocp_solver = juniper_solver
 mip_solver    = juniper_solver
 lp_solver     = ipopt_solver
 minlp_solver  = juniper_solver
 nlp_solver    = ipopt_solver
-
 
 include("common.jl")
 
@@ -50,7 +44,7 @@ include("common.jl")
 
     include("transient.jl")
 
-     # test gaslib-582 minlp gf
+     # test gaslib-582 dwp gf
     include("debug.jl")
 
     include("direction_pipe.jl")

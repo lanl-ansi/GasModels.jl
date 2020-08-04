@@ -1,6 +1,6 @@
-@testset "test gaslib 582 minlp gf" begin
+@testset "test gaslib 582 dwp gf" begin
     data = GasModels.parse_file("../test/data/matgas/gaslib-582-G.m")
-    gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
+    gm = GasModels.instantiate_model(data, DWPGasModel, GasModels.build_gf)
     @test length(gm.var[:nw][gm.cnw][:psqr])  == 605
     @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
     @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 5
@@ -238,10 +238,6 @@
     @test isa(set, MOI.GreaterThan{Float64})
     @test isapprox(set.lower, -2.1698633598; atol = 1e-4)
     @test length(func.terms) == 1
-    # c = gm.model.nlp_data.nlconstr[ref.index.value]
-    # @test JuMP._sense(c) == :>=
-    # @test isapprox(c.lb, 0.0; atol = 1e-4)
-    # @test length(c.terms.nd) == 17
 
     ref = gm.con[:nw][gm.cnw][:weymouth2][222]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)

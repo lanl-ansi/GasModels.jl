@@ -1,23 +1,23 @@
-# Define LP implementations of Gas Models
+# Define LRWP implementations of Gas Models
 
 ######################################################################################################
 ## Constraints
 ######################################################################################################
 
-"Constraint: Weymouth equation--not applicable for LP models"
-function constraint_pipe_weymouth(gm::AbstractLPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in nlp.jl
+"Constraint: Weymouth equation--not applicable for LRWP models"
+function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    #TODO Linear convex hull of the weymouth equations in wp.jl
 end
 
 
-"Constraint: Weymouth equation--not applicable for LP models"
-function constraint_resistor_weymouth(gm::AbstractLPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in nlp.jl
+"Constraint: Weymouth equation--not applicable for LRWP models"
+function constraint_resistor_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    #TODO Linear convex hull of the weymouth equations in wp.jl
 end
 
 
-"Constraint: Compressor ratio constraints on pressure differentials--not applicable for LP models"
-function constraint_compressor_ratios(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
+"Constraint: Compressor ratio constraints on pressure differentials--not applicable for LRWP models"
+function constraint_compressor_ratios(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f  = var(gm, n, :f_compressor, k)
@@ -44,7 +44,7 @@ function constraint_compressor_ratios(gm::AbstractLPModel, n::Int, k, i, j, min_
 
         # There is a disjunction, so we have to use a binary variable for this one
         else
-            y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model, binary=true)
+            y = gm.var[:nw][n][:y_compressor_lrwp][k] = JuMP.@variable(gm.model, binary=true)
             _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2*pi <= (1-y)*(j_pmax^2)))
             _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2*pi - pj <= (1-y)*(min_ratio^2*i_pmax^2)))
             _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2*pj <= y*(i_pmax^2)))
@@ -77,8 +77,8 @@ function constraint_compressor_ratios(gm::AbstractLPModel, n::Int, k, i, j, min_
 end
 
 
-"constraints on pressure drop across control valves--not applicable for LP models"
-function constraint_on_off_regulator_pressure(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
+"constraints on pressure drop across control valves--not applicable for LRWP models"
+function constraint_on_off_regulator_pressure(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v  = var(gm, n, :v_regulator, k)
@@ -107,14 +107,14 @@ function constraint_on_off_regulator_pressure(gm::AbstractLPModel, n::Int, k, i,
 end
 
 
-"Constraint: Weymouth equation--not applicable for MIP models--not applicable for LP models"
-function constraint_pipe_weymouth_ne(gm::AbstractLPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-        #TODO Linear convex hull equations in nlp.jl
+"Constraint: Weymouth equation"
+function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
+        #TODO Linear convex hull equations in wp.jl
 end
 
 
-"Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for LP models"
-function constraint_compressor_ratios_ne(gm::AbstractLPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
+"Constraint: compressor ratios on a new compressor"
+function constraint_compressor_ratios_ne(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zc = var(gm, n, :zc, k)
@@ -145,7 +145,7 @@ function constraint_compressor_ratios_ne(gm::AbstractLPModel, n::Int, k, i, j, m
             _IM.relaxation_product(gm.model, f, pjk, fpjk)
         # There is a disjunction, so we have to use a binary variable for this one
         else
-            y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model, binary=true)
+            y = gm.var[:nw][n][:y_compressor_lrwp][k] = JuMP.@variable(gm.model, binary=true)
             _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
             _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
             _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model,  pi - (max_ratio^2*pj) <= (1+y-zc)*i_pmax^2))
@@ -170,7 +170,7 @@ function constraint_compressor_ratios_ne(gm::AbstractLPModel, n::Int, k, i, j, m
             _IM.relaxation_product(gm.model, f, pij, fpij)
         # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio != 1. This is a disjunctive model
         else
-            y = gm.var[:nw][n][:y_compressor_nlp][k] = JuMP.@variable(gm.model, binary = true)
+            y = gm.var[:nw][n][:y_compressor_lrwp][k] = JuMP.@variable(gm.model, binary = true)
             _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model,  pj - (max_ratio^2*pi) <= (2-y-zc)*j_pmax^2))
             _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model,  (min_ratio^2*pi) - pj <= (2-y-zc)*(min_ratio^2*i_pmax^2)))
             _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= (1+y-zc)*(i_pmax^2)))
@@ -180,7 +180,7 @@ function constraint_compressor_ratios_ne(gm::AbstractLPModel, n::Int, k, i, j, m
 end
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractLPModel, n::Int, k, i, j)
+function constraint_compressor_ratio_value(gm::AbstractLRWPModel, n::Int, k, i, j)
     pi    = var(gm, n, :psqr, i)
     pj    = var(gm, n, :psqr, j)
     r     = var(gm, n, :rsqr, k)
@@ -189,7 +189,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractLPModel, n::Int, k, i, j)
+function constraint_compressor_ratio_value_ne(gm::AbstractLRWPModel, n::Int, k, i, j)
     pi    = var(gm, n, :psqr, i)
     pj    = var(gm, n, :psqr, j)
     r     = var(gm, n, :rsqr_ne, k)
@@ -199,12 +199,12 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractLPModel, n::Int, k, power_max, m, work)
-    #TODO Linear convex hull equations in nlp.jl
+function constraint_compressor_energy(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
+    #TODO Linear convex hull equations in wp.jl
 end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractLPModel, n::Int, k, power_max, m, work)
-    #TODO Linear convex hull equations in nlp.jl
+function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
+    #TODO Linear convex hull equations in wp.jl
 end

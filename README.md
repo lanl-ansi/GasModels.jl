@@ -11,7 +11,7 @@ Dev:
 
 GasModels.jl is a Julia/JuMP package for Steady-State Gas Network Optimization.
 It is designed to enable computational evaluation of emerging Gas network formulations and algorithms in a common platform.
-The code is engineered to decouple problem specifications (e.g. Gas Flow, Expansion planning, ...) from the gas network formulations (e.g. MINLP, MISOCP, ...).
+The code is engineered to decouple problem specifications (e.g. Gas Flow, Expansion planning, ...) from the gas network formulations (e.g. DWP, CRDWP, ...).
 This enables the definition of a wide variety of gas network formulations and their comparison on common problem specifications.
 
 **Core Problem Specifications**
@@ -20,11 +20,11 @@ This enables the definition of a wide variety of gas network formulations and th
 * Load Shed (ls)
 
 **Core Network Formulations**
-* MINLP
-* NLP
-* MISOCP
-* MIP
-* LP
+* DWP
+* WP
+* CRDWP
+* LRDWP
+* LRWP
 
 ## Basic Usage
 
@@ -42,7 +42,7 @@ Similarly, an expansion optimizer can be executed with,
 run_ne("foo.m", FooGasModel, FooSolver())
 ```
 
-where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. MINLPGasModel) and FooSolver is the JuMP optimizer you want to use to solve the optimization problem (i.e. IpoptSolver).
+where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. DWPGasModel) and FooSolver is the JuMP optimizer you want to use to solve the optimization problem (i.e. IpoptSolver).
 
 
 ## Acknowledgments

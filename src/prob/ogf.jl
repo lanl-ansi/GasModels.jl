@@ -8,13 +8,13 @@ end
 
 ""
 function run_soc_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MISOCPGasModel, optimizer; kwargs...)
+    return run_ogf(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function run_minlp_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MINLPGasModel, optimizer; kwargs...)
+function run_dwp_ogf(file, optimizer; kwargs...)
+    return run_ogf(file, DWPGasModel, optimizer; kwargs...)
 end
 
 

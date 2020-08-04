@@ -8,7 +8,7 @@ CurrentModule = GasModels
 
 GasModels.jl is a Julia/JuMP package for Gas Network Optimization. It provides utilities for parsing and modifying network data (see [GasModels Network Data Format](@ref) for details), and is designed to enable computational evaluation of emerging gas network formulations and algorithms in a common platform. It includes support for steady-state and transient formulations.
 
-The code is engineered to decouple [Steady State Problem Specifications](@ref) (e.g. Gas Flow, Expansion Planning, ...) from [Network Formulations](@ref) (e.g. MINLP, MISOCP-relaxation, ...). This enables the definition of a wide variety of gas network formulations and their comparison on common problem specifications.
+The code is engineered to decouple [Steady State Problem Specifications](@ref) (e.g. Gas Flow, Expansion Planning, ...) from [Network Formulations](@ref) (e.g. DWP, CRDWP-relaxation, ...). This enables the definition of a wide variety of gas network formulations and their comparison on common problem specifications.
 
 ## Installation
 
