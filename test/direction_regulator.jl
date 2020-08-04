@@ -78,9 +78,8 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, MIPGasModel, mip_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, LPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
@@ -134,9 +133,8 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, MIPGasModel, mip_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-        # These will become infeasible once pressure variables are introduced
         result = run_gf(data, LPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
