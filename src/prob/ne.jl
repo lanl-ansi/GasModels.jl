@@ -8,6 +8,9 @@ end
 
 "construct the gas flow feasbility problem"
 function build_ne(gm::AbstractGasModel)
+    bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+    bounded_compressors_ne = Dict(x for x in ref(gm, :ne_compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -17,12 +20,17 @@ function build_ne(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
+    variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
+    variable_compressor_ratio_sqr_ne(gm;compressors=bounded_compressors_ne)
 
     # expansion cost objective
     objective_min_ne_cost(gm)
 
-    for i in ids(gm, :junction)
+    for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)
+        if (junction["junction_type"] == 1)
+            constraint_pressure(gm,i)
+        end
     end
 
     for i in ids(gm,:pipe)
@@ -54,10 +62,20 @@ function build_ne(gm::AbstractGasModel)
         constraint_compressor_ratios(gm, i)
     end
 
+    for i in keys(bounded_compressors)
+        constraint_compressor_ratio_value(gm, i)
+        constraint_compressor_energy(gm,i)
+    end
+
     for i in ids(gm, :ne_compressor)
         constraint_compressor_ratios_ne(gm, i)
         constraint_compressor_ne(gm, i)
         constraint_compressor_mass_flow_ne(gm, i)
+    end
+
+    for i in keys(bounded_compressors_ne)
+        constraint_compressor_ratio_value_ne(gm, i)
+        constraint_compressor_energy_ne(gm,i)
     end
 
     for i in ids(gm, :valve)

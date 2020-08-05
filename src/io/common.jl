@@ -45,6 +45,9 @@ function correct_network_data!(data::Dict{String,Any})
     add_base_values!(data)
     make_per_unit!(data)
 
+    # assumes everything is in per unit
+    correct_f_bounds!(data)
+
     check_connectivity(data)
     check_status(data)
     check_edge_loops(data)

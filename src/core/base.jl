@@ -68,13 +68,12 @@ Some of the common keys include:
 * `:valve` -- the set of valves in the system,
 * `:storage` -- the set of storages in the system,
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
-* `"pd_sqr_min","pd_sqr_max"` -- the max and min square pressure difference (see `_calc_pd_bounds_sqr`)),
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
-    _ref_add_core!(refs[:nw], base_length=refs[:base_length], base_pressure=refs[:base_pressure], base_flow=refs[:base_flow], sound_speed=refs[:sound_speed])
+    _ref_add_core!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
 end
 
-function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_pressure=1.0,base_flow=1.0/371.6643,sound_speed=371.6643)
+function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
     for (nw, ref) in nw_refs
         ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -89,7 +88,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
         ref[:storage] = haskey(ref, :storage) ? Dict(x for x in ref[:storage] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
-        ref[:max_mass_flow] = _calc_max_mass_flow(ref)
+        mf = ref[:max_mass_flow] = _calc_max_mass_flow(ref[:receipt],ref[:storage],ref[:transfer])
 
         # dispatchable tranfers, receipts, and deliveries
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
@@ -154,53 +153,12 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}; base_length=5000.0, base_press
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
             pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
-            pd_min, pd_max = _calc_pipe_pd_bounds_sqr(ref, pipe, i, j)
-            pipe["pd_sqr_min"] = pd_min
-            pipe["pd_sqr_max"] = pd_max
-            pipe["resistance"] = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-            pipe["flow_min"] = _calc_pipe_flow_min(ref, pipe)
-            pipe["flow_max"] = _calc_pipe_flow_max(ref, pipe)
         end
 
         for (idx, compressor) in ref[:compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
-            compressor["resistance"] = _calc_pipe_resistance(compressor, base_length, base_pressure, base_flow, sound_speed)
-            compressor["flow_min"] = _calc_compressor_flow_min(ref, compressor)
-            compressor["flow_max"] = _calc_compressor_flow_max(ref, compressor)
-        end
-
-        for (idx, pipe) in ref[:short_pipe]
-            i = pipe["fr_junction"]
-            j = pipe["to_junction"]
-            pipe["flow_min"] = _calc_short_pipe_flow_min(ref, pipe)
-            pipe["flow_max"] = _calc_short_pipe_flow_max(ref, pipe)
-        end
-
-        for (idx, resistor) in ref[:resistor]
-            i = resistor["fr_junction"]
-            j = resistor["to_junction"]
-            pd_min, pd_max = _calc_resistor_pd_bounds_sqr(ref, resistor, i, j)
-            resistor["pd_sqr_min"] = pd_min
-            resistor["pd_sqr_max"] = pd_max
-            resistor["resistance"] = _calc_resistor_resistance(resistor)
-            resistor["flow_min"] = _calc_resistor_flow_min(ref, resistor)
-            resistor["flow_max"] = _calc_resistor_flow_max(ref, resistor)
-        end
-
-        for (idx, valve) in ref[:valve]
-            i = valve["fr_junction"]
-            j = valve["to_junction"]
-            valve["flow_min"] = _calc_valve_flow_min(ref, valve)
-            valve["flow_max"] = _calc_valve_flow_max(ref, valve)
-        end
-
-        for (idx, regulator) in ref[:regulator]
-            i = regulator["fr_junction"]
-            j = regulator["to_junction"]
-            regulator["flow_min"] = _calc_regulator_flow_min(ref, regulator)
-            regulator["flow_max"] = _calc_regulator_flow_max(ref, regulator)
         end
     end
 

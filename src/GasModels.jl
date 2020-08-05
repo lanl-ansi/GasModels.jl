@@ -45,7 +45,6 @@ module GasModels
 
     include("io/json.jl")
     include("io/common.jl")
-    include("io/grail.jl")
     include("io/matgas.jl")
     include("io/transient.jl")
 
@@ -66,11 +65,11 @@ module GasModels
     include("core/solution.jl")
     include("core/ref.jl")
 
-    include("form/mip.jl")
-    include("form/lp.jl")
-    include("form/nlp.jl")
-    include("form/minlp.jl")
-    include("form/misocp.jl")
+    include("form/lrdwp.jl")
+    include("form/lrwp.jl")
+    include("form/wp.jl")
+    include("form/dwp.jl")
+    include("form/crdwp.jl")
 
     include("prob/gf.jl")
     include("prob/ne.jl")
