@@ -375,6 +375,17 @@ function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
     constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
+"Template: Constraints on the compressor energy"
+function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
+    compressor     = ref(gm,n,:ne_compressor,k)
+    power_max      = compressor["power_max"]
+    gamma          = gm.data["specific_heat_capacity_ratio"]
+    m              = _calc_compressor_m_sqr(gamma, compressor)
+    T              = gm.data["temperature"]
+    G              = gm.data["gas_specific_gravity"]
+    work           = _calc_compressor_work(gamma, G, T, compressor)
+    constraint_compressor_energy_ne(gm, n, k, power_max, m, work)
+end
 
 "Template: Constraints on the compressor ratio value"
 function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int=gm.cnw)
@@ -384,17 +395,23 @@ function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int=gm.cn
     constraint_compressor_ratio_value(gm, n, k, i, j)
 end
 
+"Template: Constraints on the ne_compressor ratio value"
+function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int=gm.cnw)
+    compressor     = ref(gm,n,:ne_compressor,k)
+    i              = compressor["fr_junction"]
+    j              = compressor["to_junction"]
+    constraint_compressor_ratio_value_ne(gm, n, k, i, j)
+end
 
 "Template: Constraints on the compressor energy"
 function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int=gm.cnw)
     compressor     = ref(gm,n,:compressor,k)
     power_max      = compressor["power_max"]
     gamma          = gm.data["specific_heat_capacity_ratio"]
-    magic_num      = 286.76
-    m              = ((gamma - 1) / gamma) / 2
+    m              = _calc_compressor_m_sqr(gamma, compressor)
     T              = gm.data["temperature"]
     G              = gm.data["gas_specific_gravity"]
-    work           = ((magic_num / G) * T * (gamma/(gamma-1)))
+    work           = _calc_compressor_work(gamma, G, T, compressor)
     constraint_compressor_energy(gm, n, k, power_max, m, work)
 end
 

@@ -1,8 +1,8 @@
 @testset "test data handling and parsing" begin
     @testset "GasLib-Integration parsing from zip" begin
         data = GasModels.parse_file("../test/data/gaslib/GasLib-Integration.zip")
-        @test length(data["delivery"]) == 34
-        @test length(data["receipt"]) == 3
+        @test length(data["delivery"]) == 7
+        @test length(data["receipt"]) == 4
     end
 
     @testset "gaslib40 summary from dict" begin
@@ -19,7 +19,7 @@
     end
 
     @testset "check status=false components" begin
-        gm = instantiate_model("../test/data/status.m",  MISOCPGasModel, GasModels.build_ls)
+        gm = instantiate_model("../test/data/status.m",  CRDWPGasModel, GasModels.build_ls)
         @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
 
         try
@@ -70,7 +70,7 @@
     @testset "check solution summary" begin
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf(gas_file, MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf(gas_file, CRDWPGasModel, misocp_solver)
 
         output = sprint(GasModels.summary, result["solution"])
 

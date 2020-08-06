@@ -26,25 +26,25 @@ ref_add_transient!
 # Network Formulations
 
 ## Type Hierarchy
-We begin with the top of the hierarchy, where we can distinguish between gas flow models. There are currently five formulations supported in GasModels. Two full non convex formulations and three relaxations.
+We begin with the top of the hierarchy, where we can distinguish between the physics of gas flow models. There are currently five formulations supported in GasModels. Two full non convex formulations and three relaxations.
 
 ```julia
-AbstractNLPModel <: AbstractGasModel
-AbstractMINLPModel <: AbstractGasModel
+AbstractWPModel <: AbstractGasModel
+AbstractDWPModel <: AbstractGasModel
 AbstractMISOCPModel <: AbstractGasModel
-AbstractMIPModel <: AbstractGasModel
-AbstractLPModel <: AbstractGasModel
+AbstractLRDWPModel <: AbstractGasModel
+AbstractLRWPModel <: AbstractGasModel
 ```
 
 ## Gas Models
 Each of these forms can be used as the type parameter for a GasModel, i.e.:
 
 ```julia
-NLPGasModel <: AbstractNLPForm
-MINLPGasModel <: AbstractMINLPModel
-MISOCPGasModel <: AbstractMISOCPModel
-MIPGasModel <: AbstractMIPModel
-LPGasModel <: AbstractLPModel
+WPGasModel <: AbstractWPForm
+MIDWPGasModel <: AbstractDWPModel
+CRDWPGasModel <: AbstractMISOCPModel
+LRDWPGasModel <: AbstractLRDWPModel
+LRWPGasModel <: AbstractLRWPModel
 ```
 
 For details on `AbstractGasModel`, see the section on [Gas Model](@ref).
@@ -62,12 +62,12 @@ FooGasModel = AbstractGasModel{StandardFooForm}
 
 ## Supported Formulations
 
-All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be MIP since valve controls are discrete.
+All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LRWP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be mixed integer since valve controls are discrete.
 
 | Formulation      | Steady-State         | Transient             | Description           |
 | ---------------- | -------------------- | --------------------- | --------------------- |
-| NLP              |       Y              |          N            | Physics is modeled using nonlinear equations. |
-| MINLP            |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
-| MINLP            |       Y              |          N            | Physics is modeled using second order cone equations. Directionality of flow is modeled using discrete variables |
-| MINLP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
-| LP               |       Y              |          N            | Physics is modeled using linear equations. |
+| WP               |       Y              |          Y            | Physics is modeled using nonlinear equations. |
+| DWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| CRDWP            |       Y              |          N            | Physics is modeled using convex equations. Directionality of flow is modeled using discrete variables |
+| LRDWP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
+| LRWP             |       Y              |          N            | Physics is modeled using linear equations. |

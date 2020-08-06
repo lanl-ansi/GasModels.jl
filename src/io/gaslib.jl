@@ -59,8 +59,8 @@ function parse_gaslib(zip_path::Union{IO,String})
     deliveries = _read_gaslib_deliveries(topology_xml, nomination_xml, density)
     receipts = _read_gaslib_receipts(topology_xml, nomination_xml, density)
 
-    # Add auxiliary nodes for bidirectional compressors.
-    _add_auxiliary_junctions!(junctions, compressors, regulators)
+    # Add auxiliary nodes for bidirectional regulators.
+    _add_auxiliary_junctions!(junctions, regulators)
 
     # Get additional metadata.
     name = topology_xml["information"]["title"]
@@ -71,8 +71,8 @@ function parse_gaslib(zip_path::Union{IO,String})
     data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
         "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes,
         "regulator"=>regulators, "resistor"=>resistors, "loss_resistor"=>loss_resistors,
-        "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>true,
-        "per_unit"=>false, "sound_speed"=>sound_speed, "temperature"=>temperature,
+        "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>1, "is_english_units"=>0,
+        "is_per_unit"=>0, "sound_speed"=>sound_speed, "temperature"=>temperature,
         "name"=>name, "R"=>8.314, "compressibility_factor"=>compressibility_factor,
         "gas_specific_gravity"=>gas_specific_gravity, "standard_density"=>density,
         "specific_heat_capacity_ratio"=>isentropic_exponent, "gas_molar_mass"=>molar_mass)
@@ -134,7 +134,7 @@ function _correct_ids(data::Dict{String,<:Any})
 end
 
 
-function _add_auxiliary_junctions!(junctions, compressors, regulators)
+function _add_auxiliary_junctions!(junctions, regulators)
     new_junctions = Dict{String,Any}()
     new_regulators = Dict{String,Any}()
 
@@ -249,10 +249,10 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     # Assume a worst-case efficiency of 0.1 in the computation of power_max.
     power_max = H_max * abs(flow_max) * inv(0.1)
 
-    return Dict{String,Any}("is_per_unit"=>false, "fr_junction"=>fr_junction,
+    return Dict{String,Any}("is_per_unit"=>0, "fr_junction"=>fr_junction,
         "to_junction"=>to_junction, "inlet_p_min"=>inlet_p_min, "inlet_p_max"=>inlet_p_max,
         "outlet_p_min"=>outlet_p_min, "outlet_p_max"=>outlet_p_max, "flow_min"=>flow_min,
-        "flow_max"=>flow_max, "diameter"=>diameter, "is_per_unit"=>0,
+        "flow_max"=>flow_max, "diameter"=>diameter,
         "directionality"=>directionality, "status"=>1, "is_si_units"=>1,
         "is_english_units"=>0, "c_ratio_min"=>c_ratio_min, "c_ratio_max"=>c_ratio_max,
         "power_max"=>power_max, "operating_cost"=>operating_cost)

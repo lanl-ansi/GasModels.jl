@@ -1,17 +1,17 @@
 @testset "test gf" begin
 
-    @testset "test misocp gf" begin
-        @testset "gaslib 40 misocp gf" begin
-            @info "Testing gaslib 40 misocp gf"
-            result = run_gf("../examples/data/matgas/gaslib-40-E.m", MISOCPGasModel, misocp_solver)
+    @testset "test crdwp gf" begin
+        @testset "gaslib 40 crdwp gf" begin
+            @info "Testing gaslib 40 crdwp gf"
+            result = run_gf("../examples/data/matgas/gaslib-40-E.m", CRDWPGasModel, misocp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
             GC.gc()
         end
 
         @testset "gaslib 582 case" begin
-            println("gaslib 582 - MISOCP")
-            result = run_gf("../examples/data/matgas/gaslib-582-G.m", MISOCPGasModel, misocp_solver)
+            println("Testing gaslib 582 crdwp gf")
+            result = run_gf("../examples/data/matgas/gaslib-582-G.m", CRDWPGasModel, misocp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
             GC.gc()
@@ -19,67 +19,67 @@
     end
 
 
-    @testset "test mip gf" begin
-        @testset "gaslib 40 mip gf" begin
-            @info "Testing gaslib 40 mip gf"
-            result = run_gf("../examples/data/matgas/gaslib-40-E.m", MIPGasModel, mip_solver)
+    @testset "test lrdwp gf" begin
+        @testset "gaslib 40 lrdwp gf" begin
+            @info "Testing gaslib 40 lrdwp gf"
+            result = run_gf("../examples/data/matgas/gaslib-40-E.m", LRDWPGasModel, mip_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
 
-        @testset "gaslib 135 mip gf" begin
-            @info "Testing gaslib 135 mip gf"
-            result = run_gf("../examples/data/matgas/gaslib-135-F.m", MIPGasModel, mip_solver)
+        @testset "gaslib 135 lrdwp gf" begin
+            @info "Testing gaslib 135 lrdwp gf"
+            result = run_gf("../examples/data/matgas/gaslib-135-F.m", LRDWPGasModel, mip_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
     end
 
 
-    @testset "test lp gf" begin
-        @testset "gaslib 40 lp gf" begin
-            @info "Testing gaslib 40 lp gf"
-            result = run_gf("../examples/data/matgas/gaslib-40-E.m", LPGasModel, lp_solver)
+    @testset "test lrwp gf" begin
+        @testset "gaslib 40 lrwp gf" begin
+            @info "Testing gaslib 40 lrwp gf"
+            result = run_gf("../examples/data/matgas/gaslib-40-E.m", LRWPGasModel, lp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
 
-        @testset "gaslib 135 lp gf" begin
-            @info "Testing gaslib 135 lp gf"
-            result = run_gf("../examples/data/matgas/gaslib-135-F.m", LPGasModel, lp_solver)
+        @testset "gaslib 135 lrwp gf" begin
+            @info "Testing gaslib 135 lrwp gf"
+            result = run_gf("../examples/data/matgas/gaslib-135-F.m", LRWPGasModel, lp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 0; atol = 1e-6)
         end
     end
 
 
-    @testset "test minlp gf" begin
+    @testset "test dwp gf" begin
             @testset "gaslib 40 case" begin
-                println("gaslib 40 - MINLP")
-                result = run_gf("../examples/data/matgas/gaslib-40-E.m", MINLPGasModel, minlp_solver)
+                println("Testing gaslib 40 dwp gf")
+                result = run_gf("../examples/data/matgas/gaslib-40-E.m", DWPGasModel, minlp_solver)
                 @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
                 @test isapprox(result["objective"], 0; atol = 1e-6)
             end
-           @testset "gaslib 135 case" begin
-               println("gaslib 135 - MINLP")
-               result = run_gf("../examples/data/matgas/gaslib-135-F.m", MINLPGasModel, minlp_solver)
-               @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-               @test isapprox(result["objective"], 0; atol = 1e-6)
-           end
+#           @testset "gaslib 135 case" begin
+#               println("Testing gaslib 135 dwp gf")
+#               result = run_gf("../examples/data/matgas/gaslib-135-F.m", DWPGasModel, minlp_solver)
+#               @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+#               @test isapprox(result["objective"], 0; atol = 1e-6)
+#           end
     end
 
 
-    @testset "test nlp gf" begin
+    @testset "test wp gf" begin
             @testset "gaslib 40 case" begin
-                println("gaslib 40 - NLP")
-                result = run_gf("../examples/data/matgas/gaslib-40-E.m", NLPGasModel, nlp_solver)
+                println("Testing gaslib 40 wp gf")
+                result = run_gf("../examples/data/matgas/gaslib-40-E.m", WPGasModel, nlp_solver)
                 @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
                 @test isapprox(result["objective"], 0; atol = 1e-6)
             end
 
-            @testset "gaslib 135 nlp gf" begin
-                @info "Testing gaslib 135 nlp gf"
-                result = run_gf("../examples/data/matgas/gaslib-135-F.m", NLPGasModel, nlp_solver)
+            @testset "gaslib 135 wp gf" begin
+                @info "Testing gaslib 135 wp gf"
+                result = run_gf("../examples/data/matgas/gaslib-135-F.m", WPGasModel, nlp_solver)
                 @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
                 @test isapprox(result["objective"], 0; atol = 1e-6)
             end

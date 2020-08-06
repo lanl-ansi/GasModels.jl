@@ -1,35 +1,35 @@
 @testset "test ne" begin
-    @testset "test minlp ne" begin
-        @info "Testing minlp ne"
-        result = run_ne("../test/data/matgas/case-6-ne.m", MINLPGasModel, minlp_solver)
+    @testset "test dwp ne" begin
+        @info "Testing dwp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", DWPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1476; atol = 1e-1)
     end
 
-    @testset "test misocp ne" begin
-        @info "Testing misocp ne"
-        result = run_ne("../test/data/matgas/case-6-ne.m", MISOCPGasModel, misocp_solver)
+    @testset "test crdwp ne" begin
+        @info "Testing crdwp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1476; atol = 1e-1)
     end
 
-    @testset "test mip ne" begin
-        @info "Testing mip ne"
-        result = run_ne("../test/data/matgas/case-6-ne.m", MIPGasModel, mip_solver)
+    @testset "test lrdwp ne" begin
+        @info "Testing lrdwp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", LRDWPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1476; atol = 1e-1)
     end
 
-    @testset "test lp ne" begin
-        @info "Testing lp ne"
-        result = run_ne("../test/data/matgas/case-6-ne.m", LPGasModel, mip_solver)
+    @testset "test lrwp ne" begin
+        @info "Testing lrwp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", LRWPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1476; atol = 1e-1)
     end
 
-    @testset "test nlp ne" begin
-        @info "Testing nlp ne"
-        result = run_ne("../test/data/matgas/case-6-ne.m", NLPGasModel, minlp_solver)
+    @testset "test wp ne" begin
+        @info "Testing wp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", WPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1476; atol = 1e-1)
     end

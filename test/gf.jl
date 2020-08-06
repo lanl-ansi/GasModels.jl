@@ -1,52 +1,49 @@
 @testset "test gf" begin
-    @testset "test misocp gf" begin
-        @info "Testing misocp gf"
-        result = run_gf("../test/data/matgas/case-6-gf.m", MISOCPGasModel, misocp_solver)
+    @testset "test crdwp gf" begin
+        @info "Testing crdwp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
         data = GasModels.parse_file("../test/data/matgas/case-6-gf.m")
-        gm = GasModels.instantiate_model(data, MINLPGasModel, GasModels.build_gf)
+        gm = GasModels.instantiate_model(data, CRDWPGasModel, GasModels.build_gf)
         check_pressure_status(result["solution"], gm)
         check_compressor_ratio(result["solution"], gm)
 
-        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", MISOCPGasModel, cvx_minlp_solver)
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", CRDWPGasModel, misocp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+    end
+
+    @testset "test lrdwp gf" begin
+        @info "Testing lrdwp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", LRDWPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
 
-    @testset "test mip gf" begin
-        @info "Testing mip gf"
-
-        result = run_gf("../test/data/matgas/case-6-gf.m", MIPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"], 0; atol = 1e-6)
-
-        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", MIPGasModel, mip_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+    @testset "test lrwp gf" begin
+        @info "Testing lrwp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", LRWPGasModel, lp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
 
-    @testset "test nlp gf" begin
-        @info "Testing nlp gf"
-
-        result = run_gf("../test/data/matgas/case-6-gf.m", NLPGasModel, nlp_solver)
+    @testset "test wp gf" begin
+        @info "Testing wp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", WPGasModel, nlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
 
-        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", NLPGasModel, minlp_solver)
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", WPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"], 0; atol = 1e-6)
     end
 
-    @testset "test minlp gf" begin
-        @info "Testing minlp gf"
-
-        result = run_gf("../test/data/matgas/case-6-gf.m", MINLPGasModel, minlp_solver)
+    @testset "test dwp gf" begin
+        @info "Testing dwp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", DWPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
 
-        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", MINLPGasModel, minlp_solver)
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", DWPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-        @test isapprox(result["objective"], 0; atol = 1e-6)
     end
 end

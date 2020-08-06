@@ -47,7 +47,7 @@ mgc.compressor = [
 % id	fr_junction	to_junction	c_ratio_min	c_ratio_max	power_max	flow_min	flow_max	inlet_p_min	inlet_p_max	outlet_p_min	outlet_p_max	status	construction_cost operating_cost	directionality
 mgc.ne_compressor = [
 1	1	5	1	1.40    3000000 	0	1000  3000000	6000000  3000000	6000000  1  1000.0 10 2
-2	2	6	1	1.35	  2000000 	0	1000  3000000	6000000  3000000	6000000  1  2000.0 10 2 
+2	2	6	1	1.35	  2000000 	0	1000  3000000	6000000  3000000	6000000  1  2000.0 10 2
 ]
 
 

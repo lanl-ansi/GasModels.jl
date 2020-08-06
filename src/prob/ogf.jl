@@ -8,18 +8,20 @@ end
 
 ""
 function run_soc_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MISOCPGasModel, optimizer; kwargs...)
+    return run_ogf(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function run_minlp_ogf(file, optimizer; kwargs...)
-    return run_ogf(file, MINLPGasModel, optimizer; kwargs...)
+function run_dwp_ogf(file, optimizer; kwargs...)
+    return run_ogf(file, DWPGasModel, optimizer; kwargs...)
 end
 
 
 "construct the ogf problem"
 function build_ogf(gm::AbstractGasModel)
+    bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+
     variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_flow(gm)
@@ -27,7 +29,7 @@ function build_ogf(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
-    variable_compressor_ratio_sqr(gm)
+    variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
 
     objective_min_economic_costs(gm)
 
@@ -64,8 +66,11 @@ function build_ogf(gm::AbstractGasModel)
     for i in ids(gm, :compressor)
         constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
-        constraint_compressor_ratio_value(gm,i)
-        constraint_compressor_energy(gm,i)
+        constraint_compressor_ratio_value(gm, i)
+    end
+
+    for i in keys(bounded_compressors)
+        constraint_compressor_energy(gm, i)
     end
 
     for i in ids(gm, :valve)

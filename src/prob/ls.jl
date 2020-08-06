@@ -8,6 +8,8 @@ end
 
 "construct the gas flow feasbility problem"
 function build_ls(gm::AbstractGasModel)
+    bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+
     variable_pressure(gm)
     variable_flow(gm)
     variable_pressure_sqr(gm)
@@ -15,6 +17,7 @@ function build_ls(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
+    variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
 
     objective_max_load(gm)
 
@@ -35,8 +38,12 @@ function build_ls(gm::AbstractGasModel)
         constraint_loss_resistor_mass_flow(gm, i)
     end
 
-    for i in ids(gm, :junction)
+    for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
+
+        if (junction["junction_type"] == 1)
+            constraint_pressure(gm,i)
+        end
     end
 
     for i in ids(gm, :short_pipe)
@@ -47,6 +54,11 @@ function build_ls(gm::AbstractGasModel)
     for i in ids(gm, :compressor)
         constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
+    end
+
+    for i in keys(bounded_compressors)
+        constraint_compressor_ratio_value(gm, i)
+        constraint_compressor_energy(gm,i)
     end
 
     for i in ids(gm, :valve)

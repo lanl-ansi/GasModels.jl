@@ -221,6 +221,10 @@ const _params_for_unit_conversions = Dict(
         "flow_min",
         "flow_max"
     ],
+    "valve" => [
+        "flow_min",
+        "flow_max"
+    ],
 )
 
 function _rescale_functions(
@@ -302,24 +306,28 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
+
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(
                     _LOGGER,
                     "the current units of the data/result dictionary unknown",
                 )
             end
+
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 comp["is_per_unit"] = data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_si_units"] == true && comp["is_per_unit"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 0
-                    comp["is_english_units"] = 0
-                    comp["is_per_unit"] = 1
                 end
+
+                comp["is_si_units"] = 0
+                comp["is_english_units"] = 0
+                comp["is_per_unit"] = 1
             end
         end
     end
@@ -663,7 +671,7 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
                 "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from 0",
             )
             (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
-            (data["is_si_units"] == 1) && (junction["p_min"] = english_value)
+            (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
         end
     end
 
@@ -671,7 +679,7 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
         if pipe["p_min"] < 1e-5
             Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
             (data["is_si_units"] == 1) && (pipe["p_min"] = si_value)
-            (data["is_si_units"] == 1) && (pipe["p_min"] = english_value)
+            (data["is_english_units"] == 1) && (pipe["p_min"] = english_value)
         end
     end
 
@@ -682,7 +690,7 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
                 "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from 0",
             )
             (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
-            (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = english_value)
+            (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
         if compressor["outlet_p_min"] < 1e-5
             Memento.warn(
@@ -690,7 +698,7 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
                 "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from 0",
             )
             (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
-            (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = english_value)
+            (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
     end
 
@@ -1659,4 +1667,27 @@ function _dfs(i, neighbors, component_lookup, touched)
             _dfs(j, neighbors, component_lookup, touched)
         end
     end
+end
+
+"Calculate the work of a compressor"
+function _calc_compressor_work(gamma, G, T, compressor::Dict)
+    magic_num      = 286.76
+    return ((magic_num / G) * T * (gamma/(gamma-1)))
+end
+
+"Calculate the m value of a compressor when the ratios are expressed in terms of its square"
+function _calc_compressor_m_sqr(gamma,compressor::Dict)
+    return ((gamma - 1) / gamma) / 2
+end
+
+"Determine if a compressor is energy bounded"
+function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
+    power_max      = compressor["power_max"]
+    max_ratio      = compressor["c_ratio_max"]
+    f_max          = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+
+    work           = _calc_compressor_work(gamma, G, T, compressor)
+    m              = _calc_compressor_m_sqr(gamma, compressor)
+
+    return f_max * (max_ratio^2^m - 1) > power_max/work
 end

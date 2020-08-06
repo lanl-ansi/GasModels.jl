@@ -9,8 +9,11 @@
 - renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
 - removed explict direction function calls. These are now handled automatically based on data
 - renamed pd_min, pd_max to be pd_sqr_min and pd_sqr_max (breaking)
-- Add support for loss resistors, which model constant pressure loss
-- Add support for native GasLib parsing functionality
+- added support for loss resistors, which model constant pressure loss
+- added support for native GasLib parsing functionality
+- added pressure slack node constraints to base formulations
+- added compressor energy constraints to base formulations
+- renamed formulations: NLP -> WP (Weymouth Physics), MINLP -> DWP (Disjunctive Weymouth Physics), MISOCP -> CRDWP (Convex relaxation of the disjunctive weymouth physics), MIP -> LRDWP (Linear relaxation of disjunctive weymouth physics), LP -> LRWP (Linear relaxation of the weymouth physics) (breaking)
 
 ## v0.7
 
