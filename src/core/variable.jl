@@ -672,3 +672,29 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 
     report && _IM.sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
 end
+
+"Support function for getting a one off y direction variable"
+function get_compressor_y(gm::AbstractWPModel, n::Int, k)
+    if !haskey(gm.var[:nw][n],:y_compressor)
+        gm.var[:nw][n][:y_compressor] = Dict()
+    end
+
+    if !haskey(gm.var[:nw][n][:y_compressor],k)
+        gm.var[:nw][n][:y_compressor][k] = JuMP.@variable(gm.model, binary=true)
+    end
+
+    return gm.var[:nw][n][:y_compressor][k]
+end
+
+"Support function for getting a one off y direction variable"
+function get_ne_compressor_y(gm::AbstractWPModel, n::Int, k)
+    if !haskey(gm.var[:nw][n],:y_ne_compressor)
+        gm.var[:nw][n][:y_ne_compressor] = Dict()
+    end
+
+    if !haskey(gm.var[:nw][n][:y_ne_compressor],k)
+        gm.var[:nw][n][:y_ne_compressor][k] = JuMP.@variable(gm.model, binary=true)
+    end
+
+    return gm.var[:nw][n][:y_ne_compressor][k]
+end
