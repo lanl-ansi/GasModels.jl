@@ -564,11 +564,8 @@ function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 
     if bounded
         for (i, compressor) in compressors
-            # since we have r * pi = pj, we have to allow for bi directional compression here
-            ub = max(compressor["c_ratio_max"]^2, (1/compressor["c_ratio_min"])^2)
-            lb = 1 / ub
-            JuMP.set_lower_bound(rsqr[i], lb)
-            JuMP.set_upper_bound(rsqr[i], ub)
+            JuMP.set_lower_bound(rsqr[i], compressor["c_ratio_min"]^2)
+            JuMP.set_upper_bound(rsqr[i], compressor["c_ratio_max"]^2)
         end
     end
 
@@ -593,8 +590,8 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
             pi_min = i["p_min"]
             pj_min = j["p_min"]
 
-            ub = max(compressor["c_ratio_max"]^2, (1/compressor["c_ratio_min"])^2, max(pj_max,pi_max)^2 / min(pj_min,pi_min)^2)
-            lb = 1 / ub
+            ub = max(compressor["c_ratio_max"]^2, max(pj_max,pi_max)^2 / min(pj_min,pi_min)^2)
+            lb = min(compressor["c_ratio_min"]^2, min(pj_min,pi_min)^2 / max(pj_max,pi_max)^2)
 
             JuMP.set_lower_bound(rsqr[k], lb)
             JuMP.set_upper_bound(rsqr[k], ub)
