@@ -392,7 +392,11 @@ function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int=gm.cn
     compressor     = ref(gm,n,:compressor,k)
     i              = compressor["fr_junction"]
     j              = compressor["to_junction"]
-    constraint_compressor_ratio_value(gm, n, k, i, j)
+    i_pmax         = ref(gm,n,:junction,i)["p_max"]
+    j_pmax         = ref(gm,n,:junction,j)["p_max"]
+    type           = get(compressor, "directionality", 0)
+    max_ratio      = compressor["c_ratio_max"]
+    constraint_compressor_ratio_value(gm, n, k, i, j, type, i_pmax, j_pmax, max_ratio)
 end
 
 "Template: Constraints on the ne_compressor ratio value"
@@ -400,7 +404,11 @@ function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int=gm
     compressor     = ref(gm,n,:ne_compressor,k)
     i              = compressor["fr_junction"]
     j              = compressor["to_junction"]
-    constraint_compressor_ratio_value_ne(gm, n, k, i, j)
+    type           = get(compressor, "directionality", 0)
+    max_ratio      = compressor["c_ratio_max"]
+    i_pmax         = ref(gm,n,:junction,i)["p_max"]
+    j_pmax         = ref(gm,n,:junction,j)["p_max"]
+    constraint_compressor_ratio_value_ne(gm, n, k, i, j, type, i_pmax, j_pmax, max_ratio)
 end
 
 "Template: Constraints on the compressor energy"
