@@ -10,6 +10,7 @@ end
 function build_ls(gm::AbstractGasModel)
     bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
 
+    variable_pressure(gm)
     variable_flow(gm)
     variable_pressure_sqr(gm)
     variable_on_off_operation(gm)
@@ -32,8 +33,14 @@ function build_ls(gm::AbstractGasModel)
         constraint_resistor_weymouth(gm,i)
     end
 
+    for i in ids(gm, :loss_resistor)
+        constraint_loss_resistor_pressure(gm, i)
+        constraint_loss_resistor_mass_flow(gm, i)
+    end
+
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
+
         if (junction["junction_type"] == 1)
             constraint_pressure(gm,i)
         end

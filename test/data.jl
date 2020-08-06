@@ -1,4 +1,10 @@
 @testset "test data handling and parsing" begin
+    @testset "GasLib-Integration parsing from zip" begin
+        data = GasModels.parse_file("../test/data/gaslib/GasLib-Integration.zip")
+        @test length(data["delivery"]) == 7
+        @test length(data["receipt"]) == 4
+    end
+
     @testset "gaslib40 summary from dict" begin
         data = GasModels.parse_file("../test/data/matgas/gaslib-40-E.m")
         output = sprint(GasModels.summary, data)

@@ -39,6 +39,10 @@ function constraint_resistor_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_
     #TODO Linear convex hull of the weymouth equations in wp.jl
 end
 
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
+end
+
 
 "Constraint: Compressor ratio constraints on pressure differentials--not applicable for LRWP models"
 function constraint_compressor_ratios(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)

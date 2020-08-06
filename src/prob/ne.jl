@@ -11,6 +11,7 @@ function build_ne(gm::AbstractGasModel)
     bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
     bounded_compressors_ne = Dict(x for x in ref(gm, :ne_compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
 
+    variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_flow(gm)
     variable_flow_ne(gm)
@@ -43,6 +44,11 @@ function build_ne(gm::AbstractGasModel)
         constraint_resistor_pressure(gm, i)
         constraint_resistor_mass_flow(gm,i)
         constraint_resistor_weymouth(gm,i)
+    end
+
+    for i in ids(gm, :loss_resistor)
+        constraint_loss_resistor_pressure(gm, i)
+        constraint_loss_resistor_mass_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)

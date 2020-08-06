@@ -2,6 +2,29 @@
 # The purpose of this file is to define commonly used and created variables used in gas flow models
 ##########################################################################################################
 
+
+"variables associated with (nonsquared) pressure"
+function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    # Set to be used in the construction of pressures along loss resistors.
+    fr_ids = [x["fr_junction"] for (i, x) in ref(gm, nw, :loss_resistor)]
+    to_ids = [x["to_junction"] for (i, x) in ref(gm, nw, :loss_resistor)]
+    ids = Set(vcat(fr_ids, to_ids)) # Junctions connected to loss resistors.
+
+    p = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model, [i in ids],
+        base_name="$(nw)_p_nonsq", start=comp_start_value(gm.ref[:nw][nw][:junction],
+        i, "p_start", gm.ref[:nw][nw][:junction][i]["p_min"]))
+
+    if bounded
+        for i in ids
+            JuMP.set_lower_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_min"])
+            JuMP.set_upper_bound(p[i], gm.ref[:nw][nw][:junction][i]["p_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :junction, :p, ids, p)
+end
+
+
 "variables associated with pressure squared"
 function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     psqr = gm.var[:nw][nw][:psqr] = JuMP.@variable(gm.model,
@@ -73,6 +96,24 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
     report && _IM.sol_component_value(gm, nw, :resistor, :f, ids(gm, nw, :resistor), f_resistor)
 end
 
+"variables associated with mass flow in loss_resistors"
+function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+    f_loss_resistor = gm.var[:nw][nw][:f_loss_resistor] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :loss_resistor)],
+        base_name="$(nw)_f",
+        start=comp_start_value(gm.ref[:nw][nw][:loss_resistor], i, "f_start", 0)
+    )
+
+    if bounded
+        for (i, loss_resistor) in ref(gm, nw, :loss_resistor)
+            JuMP.set_lower_bound(f_loss_resistor[i], loss_resistor["flow_min"])
+            JuMP.set_upper_bound(f_loss_resistor[i], loss_resistor["flow_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :loss_resistor, :f, ids(gm, nw, :loss_resistor), f_loss_resistor)
+end
+
 "variables associated with mass flow in short pipes"
 function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
     f_short_pipe = gm.var[:nw][nw][:f_short_pipe] = JuMP.@variable(gm.model,
@@ -141,6 +182,7 @@ function variable_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=
     variable_pipe_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_compressor_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_resistor_mass_flow(gm, nw; bounded=bounded, report=report)
+    variable_loss_resistor_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_short_pipe_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_valve_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_regulator_mass_flow(gm, nw; bounded=bounded, report=report)
@@ -411,6 +453,35 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
 end
 
 
+"variables associated with direction of flow on on loss_resistors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
+function variable_loss_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+    loss_resistor = Dict(x for x in ref(gm,nw,:loss_resistor) if x.second["flow_max"] >= 0 && x.second["flow_min"] <= 0)
+
+    y_loss_resistor_var = JuMP.@variable(gm.model,
+        [l in keys(loss_resistor)],
+        binary=true,
+        base_name="$(nw)_y",
+        start=comp_start_value(loss_resistor, l, "y_start", 1)
+    )
+
+    y_loss_resistor = gm.var[:nw][nw][:y_loss_resistor] = Dict()
+
+    for l in keys(loss_resistor)
+        y_loss_resistor[l] = y_loss_resistor_var[l]
+    end
+
+    for (i, loss_resistor) in ref(gm, nw, :loss_resistor)
+        if loss_resistor["flow_min"] > 0.0
+            y_loss_resistor[i] = 1.0
+        elseif loss_resistor["flow_max"] < 0.0
+            y_loss_resistor[i] = 0.0
+        end
+    end
+
+    report && _IM.sol_component_value(gm, nw, :loss_resistor, :y, keys(loss_resistor), y_loss_resistor_var)
+end
+
+
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
 function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
@@ -488,6 +559,7 @@ function variable_connection_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
     variable_pipe_direction(gm, nw; report=report)
     variable_compressor_direction(gm, nw; report=report)
     variable_resistor_direction(gm, nw; report=report)
+    variable_loss_resistor_direction(gm, nw; report=report)
     variable_short_pipe_direction(gm, nw; report=report)
     variable_valve_direction(gm, nw; report=report)
     variable_regulator_direction(gm, nw; report=report)
@@ -559,7 +631,7 @@ function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bou
     rsqr = gm.var[:nw][nw][:rsqr] = JuMP.@variable(gm.model,
         [i in keys(compressors)],
         base_name="$(nw)_r",
-        start=comp_start_value(gm.ref[:nw][nw][:compressor], i, "ratio_start", 0.0)
+        start=comp_start_value(gm.ref[:nw][nw][:compressor], i, "ratio_start", 1.0)
     )
 
     if bounded
@@ -577,7 +649,7 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
     rsqr = gm.var[:nw][nw][:rsqr_ne] = JuMP.@variable(gm.model,
         [k in keys(compressors)],
         base_name="$(nw)_r",
-        start=comp_start_value(gm.ref[:nw][nw][:ne_compressor], k, "ratio_start", 0.0)
+        start=comp_start_value(gm.ref[:nw][nw][:ne_compressor], k, "ratio_start", 1.0)
     )
 
     if bounded

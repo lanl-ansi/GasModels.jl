@@ -29,6 +29,10 @@ function constraint_resistor_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f
     #TODO Linear convex hull of the weymouth equations in crdwp.jl
 end
 
+"Constraint: Constraints which define pressure drop across a loss resistor"
+function constraint_loss_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
+end
+
 
 "Constraint: Weymouth equation"
 function constraint_pipe_weymouth_ne(gm::AbstractLRDWPModel,  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
