@@ -27,7 +27,8 @@ ga('send', 'pageview', {'page': location.pathname + location.search + location.h
 &quot;pipe_count&quot;:&lt;int&gt;,             # the number of pipe edges in the network data structure
 &quot;valve_count&quot;:&lt;int&gt;,            # the number of valve edges in the network data structure
 &quot;resistor_count&quot;:&lt;int&gt;,         # the number of resistor edges in the network data structure
-&quot;regulator_count&quot;:&lt;int&gt;,    # the number of valve edges in the network data structure
+&quot;loss_resistor_count&quot;:&lt;int&gt;,    # the number of loss resistor edges in the network data structure
+&quot;regulator_count&quot;:&lt;int&gt;,        # the number of valve edges in the network data structure
 &quot;short_pipe_count&quot;:&lt;int&gt;,       # the number of short pipe edges in the network data structure
 &quot;compressor_count&quot;:&lt;int&gt;        # the number of compressor edges in the network data structure
 }</code></pre><h3 id="Solution-Data"><a class="docs-heading-anchor" href="#Solution-Data">Solution Data</a><a id="Solution-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Solution-Data" title="Permalink"></a></h3><p>The solution object provides detailed information about the solution produced by the run command.  The solution is organized similarly to <a href="../network-data/#The-Network-Data-Dictionary">The Network Data Dictionary</a> with the same nested structure and parameter names, when available.  A network solution most often only includes a small subset of the data included in the network data.</p><p>For example the data for a junction, <code>data[&quot;junction&quot;][&quot;1&quot;]</code> is structured as follows,</p><pre><code class="language-none">{
@@ -75,6 +76,14 @@ ga('send', 'pageview', {'page': location.pathname + location.search + location.h
       &quot;f&quot;: &lt;float&gt;,                 # mass flow through the resistor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       &quot;yp&quot;: &lt;int&gt;,                  # 1 if flux flows from f_junction. 0 otherwise
       &quot;yn&quot;: &lt;int&gt;,                  # 1 if flux flows from t_junction. 0 otherwise
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;loss_resistor&quot;:{
+    &quot;1&quot;:{
+      &quot;f&quot;: &lt;float&gt;,                 # mass flow through the loss resistor. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
         ...
     },
     &quot;2&quot;:{...},
@@ -148,4 +157,4 @@ ga('send', 'pageview', {'page': location.pathname + location.search + location.h
     &quot;2&quot;:{...},
     ...
 }
-}</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../network-data/">« Network Data Format</a><a class="docs-footer-nextpage" href="../math-model/">Mathematical Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 5 August 2020 17:25">Wednesday 5 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+}</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../network-data/">« Network Data Format</a><a class="docs-footer-nextpage" href="../math-model/">Mathematical Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 7 August 2020 16:33">Friday 7 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
