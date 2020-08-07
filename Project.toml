@@ -10,9 +10,11 @@ Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+XMLDict = "228000da-037f-5747-90a9-8195ccbf91a5"
 
 [compat]
 Cbc = ">= 0.4"
@@ -24,6 +26,8 @@ JuMP = "~0.20, ~0.21"
 Juniper = ">= 0.4"
 MathOptInterface = "~0.8.4, ~0.9"
 Memento = "~0.10, ~0.11, ~0.12, ~0.13, ~1.0, ~1.1"
+XMLDict = "~0.4"
+ZipFile = "~0.8"
 julia = "^1"
 
 [extras]

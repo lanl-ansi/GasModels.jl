@@ -8,6 +8,8 @@ function parse_file(io::IO; filetype::AbstractString="m", skip_correct::Bool=fal
         pmd_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
         pmd_data = GasModels.parse_json(io)
+    elseif filetype == "zip"
+        pmd_data = GasModels.parse_gaslib(io)
     else
         Memento.error(_LOGGER, "only .m and .json files are supported")
     end
@@ -25,6 +27,7 @@ function parse_file(file::String; skip_correct::Bool=false)
     pmd_data = open(file) do io
         parse_file(io; filetype=split(lowercase(file), '.')[end], skip_correct=skip_correct)
     end
+
     return pmd_data
 end
 

@@ -40,6 +40,7 @@ function ref_degree_ne!(ref::Dict{Symbol,Any})
     for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
+    for (i,j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
     for (i,j) in keys(ref[:parallel_regulators]) push!(connections, (i,j)) end

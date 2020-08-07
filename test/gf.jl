@@ -1,5 +1,3 @@
-
-
 @testset "test gf" begin
     @testset "test crdwp gf" begin
         @info "Testing crdwp gf"
@@ -10,6 +8,9 @@
         gm = GasModels.instantiate_model(data, CRDWPGasModel, GasModels.build_gf)
         check_pressure_status(result["solution"], gm)
         check_compressor_ratio(result["solution"], gm)
+
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", CRDWPGasModel, misocp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     end
 
     @testset "test lrdwp gf" begin
@@ -31,6 +32,9 @@
         result = run_gf("../test/data/matgas/case-6-gf.m", WPGasModel, nlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
+
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", WPGasModel, minlp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     end
 
     @testset "test dwp gf" begin
@@ -38,6 +42,8 @@
         result = run_gf("../test/data/matgas/case-6-gf.m", DWPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
-    end
 
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", DWPGasModel, minlp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+    end
 end

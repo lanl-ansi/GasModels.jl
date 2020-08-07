@@ -12,6 +12,7 @@ function build_nels(gm::AbstractGasModel)
     bounded_compressors_ne = Dict(x for x in ref(gm, :ne_compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
 
     variable_flow(gm)
+    variable_pressure(gm)
     variable_pressure_sqr(gm)
     variable_on_off_operation(gm)
     variable_load_mass_flow(gm)
@@ -19,7 +20,6 @@ function build_nels(gm::AbstractGasModel)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
     variable_compressor_ratio_sqr_ne(gm;compressors=bounded_compressors_ne)
-
 
     # expansion variables
     variable_pipe_ne(gm)
@@ -32,6 +32,7 @@ function build_nels(gm::AbstractGasModel)
 
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)
+
         if (junction["junction_type"] == 1)
             constraint_pressure(gm,i)
         end
@@ -47,6 +48,11 @@ function build_nels(gm::AbstractGasModel)
         constraint_resistor_pressure(gm, i)
         constraint_resistor_mass_flow(gm,i)
         constraint_resistor_weymouth(gm,i)
+    end
+
+    for i in ids(gm, :loss_resistor)
+        constraint_loss_resistor_pressure(gm, i)
+        constraint_loss_resistor_mass_flow(gm, i)
     end
 
     for i in ids(gm,:ne_pipe)

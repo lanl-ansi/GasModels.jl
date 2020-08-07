@@ -4,6 +4,7 @@
 
 ### Variables
 ```julia
+variable_pressure(gm)
 variable_pressure_sqr(gm)
 variable_flow(gm)
 variable_on_off_operation(gm)
@@ -25,6 +26,11 @@ for i in ids(gm, :resistor)
     constraint_resistor_pressure(gm, i)
     constraint_resistor_mass_flow(gm,i)
     constraint_resistor_weymouth(gm,i)
+end
+
+for i in ids(gm, :loss_resistor)
+    constraint_loss_resistor_pressure(gm, i)
+    constraint_loss_resistor_mass_flow(gm, i)
 end
 
 for i in ids(gm, :short_pipe)
@@ -55,6 +61,7 @@ end
 
 ```julia
 variable_flow(gm)
+variable_pressure(gm)
 variable_pressure_sqr(gm)
 variable_on_off_operation(gm)
 variable_load_mass_flow(gm)
@@ -80,6 +87,11 @@ for i in ids(gm,:resistor)
     constraint_resistor_pressure(gm, i)
     constraint_resistor_mass_flow(gm,i)
     constraint_resistor_weymouth(gm,i)
+end
+
+for i in ids(gm, :loss_resistor)
+    constraint_loss_resistor_pressure(gm, i)
+    constraint_loss_resistor_mass_flow(gm, i)
 end
 
 for i in ids(gm, :junction)
@@ -112,6 +124,7 @@ end
 
 ### Variables
 ```julia
+variable_pressure(gm)
 variable_pressure_sqr(gm)
 variable_flow(gm)
 variable_flow_ne(gm)
@@ -142,6 +155,11 @@ for i in ids(gm,:resistor)
     constraint_resistor_pressure(gm, i)
     constraint_resistor_mass_flow(gm,i)
     constraint_resistor_weymouth(gm,i)
+end
+
+for i in ids(gm, :loss_resistor)
+    constraint_loss_resistor_pressure(gm, i)
+    constraint_loss_resistor_mass_flow(gm, i)
 end
 
 for i in ids(gm,:ne_pipe)

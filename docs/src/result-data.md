@@ -47,7 +47,8 @@ used when the run command was called.
 "pipe_count":<int>,             # the number of pipe edges in the network data structure
 "valve_count":<int>,            # the number of valve edges in the network data structure
 "resistor_count":<int>,         # the number of resistor edges in the network data structure
-"regulator_count":<int>,    # the number of valve edges in the network data structure
+"loss_resistor_count":<int>,    # the number of loss resistor edges in the network data structure
+"regulator_count":<int>,        # the number of valve edges in the network data structure
 "short_pipe_count":<int>,       # the number of short pipe edges in the network data structure
 "compressor_count":<int>        # the number of compressor edges in the network data structure
 }
@@ -129,6 +130,14 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
       "f": <float>,                 # mass flow through the resistor.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
+        ...
+    },
+    "2":{...},
+    ...
+},
+"loss_resistor":{
+    "1":{
+      "f": <float>,                 # mass flow through the loss resistor. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
         ...
     },
     "2":{...},
