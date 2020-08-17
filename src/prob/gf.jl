@@ -29,7 +29,7 @@ function build_gf(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
-    variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
+    variable_compressor_ratio_sqr(gm; compressors=bounded_compressors)
 
     for (i,junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
