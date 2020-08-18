@@ -3,10 +3,8 @@
 ##########################################################################################################
 
 
-"function for costing expansion of pipes and compressors: ``\\sum_{i \\in ne\\_pipe} c_izp_i  +  \\sum_{i \\in ne\\_compressor} c_izc_i``"
+"function for costing expansion of pipes and compressors: ``\\sum_{k \\in ne\\_pipe} c_k zp_k  +  \\sum_{k \\in ne\\_compressor} c_k zc_k``"
 function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
-    normalization = get(gm.data, "objective_normalization", 1.0)
-
     zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)
     zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)
 
@@ -15,9 +13,9 @@ function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
         Min,
         sum(
             sum(
-                gm.ref[:nw][n][:ne_pipe][i]["construction_cost"] / normalization * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])
+                gm.ref[:nw][n][:ne_pipe][i]["construction_cost"] * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])
             ) + sum(
-                gm.ref[:nw][n][:ne_compressor][i]["construction_cost"] / normalization *
+                gm.ref[:nw][n][:ne_compressor][i]["construction_cost"] *
                 zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor])
             ) for n in nws
         )
@@ -25,7 +23,7 @@ function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
 end
 
 
-"function for maximizing load"
+"function for maximizing prioritzed load: ``\\max \\sum_{i \\in {\\cal D }} \\omega_i \\boldsymbol{d}_i``"
 function objective_max_load(gm::AbstractGasModel, nws = [gm.cnw])
     load_set = Dict(
         n => collect(keys(Dict(
@@ -73,7 +71,8 @@ function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
 end
 
 
-"function for minimizing economic costs"
+"function for minimizing economic costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j -
+    \\sum_{ijk \\in {\\cal C}} \\boldsymbol{f}_{ijk} (\\boldsymbol{\\alpha}_{ijk}^m - 1)``"
 function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
