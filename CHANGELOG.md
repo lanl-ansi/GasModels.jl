@@ -1,9 +1,10 @@
 # GasModels.jl Change Log
 
 ## Pending
-- bug fix for storage 
-- compressors are made optional components
 
+- bug fix for storage
+- compressors are made optional components
+- fixed bug in `calc_connected_components`
 
 ## v0.8
 

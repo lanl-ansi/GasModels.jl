@@ -1626,7 +1626,7 @@ function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_ty
 
     active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
     active_junction_ids =
-        Set{Int64}([junction["junction_i"] for (i, junction) in active_junction])
+        Set{Int64}([junction["id"] for (i, junction) in active_junction])
 
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
