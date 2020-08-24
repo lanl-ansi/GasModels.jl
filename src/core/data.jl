@@ -9,6 +9,7 @@
 @inline get_base_flux(data::Dict{String,Any}) = data["base_flux"]
 @inline get_base_time(data::Dict{String,Any}) = data["base_time"]
 @inline get_base_diameter(data::Dict{String,Any}) = data["base_diameter"]
+@inline get_base_volume(data::Dict{String,Any}) = data["base_volume"]
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
@@ -80,6 +81,7 @@ function add_base_values!(data::Dict{String,Any})
     data["base_diameter"] = 1.0
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
     (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
+    (get(data, "base_volume", false) == false) && (data["base_volume"] = data["base_length"])
 end
 
 "make transient data to si units"
@@ -104,6 +106,7 @@ function make_si_units!(
         "design_inlet_pressure",
         "design_outlet_pressure",
         "pressure_nominal",
+        "reservoir_p_max"
     ]
     flow_params = [
         "f",
@@ -205,12 +208,15 @@ const _params_for_unit_conversions = Dict(
         "f",
     ],
     "storage" => [
-        "pressure_nominal",
+        "well_depth",
+        "reservoir_p_max",
         "flow_injection_rate_min",
         "flow_injection_rate_max",
         "flow_withdrawal_rate_min",
         "flow_withdrawal_rate_max",
-        "capacity",
+        "base_gas_capacity",
+        "total_field_capacity",
+        "reservoir_volume"
     ],
     "loss_resistor" => [
         "p_loss",
@@ -251,8 +257,11 @@ function _rescale_functions(
         "design_inlet_pressure" => rescale_pressure,
         "design_outlet_pressure" => rescale_pressure,
         "pressure_nominal" => rescale_pressure,
+        "reservoir_p_max" => rescale_pressure,
         "length" => rescale_length,
+        "well_depth" => rescale_length,
         "diameter" => rescale_diameter,
+        "well_diameter" => rescale_diameter,
         "f" => rescale_flow,
         "flow_min" => rescale_flow,
         "flow_max" => rescale_flow,
@@ -277,7 +286,8 @@ function _rescale_functions(
         "flow_injection_rate_max" => rescale_flow,
         "flow_withdrawal_rate_min" => rescale_flow,
         "flow_withdrawal_rate_max" => rescale_flow,
-        "capacity" => rescale_mass,
+        "base_gas_capacity" => rescale_mass,
+        "total_field_capacity" => rescale_mass,
         "bid_price" => rescale_inv_flow,
         "offer_price" => rescale_inv_flow,
     )
