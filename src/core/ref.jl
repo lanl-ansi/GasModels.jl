@@ -28,7 +28,6 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base
     end
 end
 
-
 "Add reference information for the degree of junction with expansion edges"
 function ref_degree_ne!(ref::Dict{Symbol,Any})
     ref[:degree_ne] = Dict()
