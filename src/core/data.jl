@@ -83,6 +83,7 @@ function add_base_values!(data::Dict{String,Any})
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
     (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
     (get(data, "base_volume", false) == false) && (data["base_volume"] = data["base_length"])
+    (get(data, "base_mass", false) == false) && (data["base_mass"] = data["base_density"] * data["base_volume"])
 end
 
 "make transient data to si units"

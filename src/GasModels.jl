@@ -38,7 +38,7 @@ module GasModels
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
         "temperature", "sound_speed", "compressibility_factor", "R",
         "base_pressure", "base_length", "base_flow", "base_time",
-        "base_flux", "base_density", "base_diameter",
+        "base_flux", "base_density", "base_diameter", "base_volume", "base_mass",
         "units", "is_per_unit", "is_english_units", "is_si_units",
         "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
         "economic_weighting"])

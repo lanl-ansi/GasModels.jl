@@ -155,6 +155,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
         ref_degree!(ref)
+        ref_storage!(ref)
 
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
@@ -167,6 +168,10 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
             j = compressor["to_junction"]
             compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
         end
+
+        for (idx, storage) in ref[:storage]
+            storage["well_area"] = pi * storage["well_diameter"] * storage["well_diameter"] / 4.0
+        end 
     end
 end
 
@@ -222,3 +227,16 @@ function ref_degree!(ref::Dict{Symbol,Any})
         ref[:degree][j] = ref[:degree][j] + 1
     end
 end
+
+
+"Add reference information for storage facilities"
+function ref_storage!(ref::Dict{Symbol,Any})
+    for (i, storage) in ref[:storage]
+        storage["reservoir_density_max"] = storage["reservoir_p_max"]
+        storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"] 
+        storage["reservoir_p_min"] = storage["base_gas_capacity"] / storage["total_field_capacity"] * storage["reservoir_p_max"]
+        storage["reservoir_rho_min"] = storage["reservoir_p_min"]
+        storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
+        storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
+    end 
+end 
