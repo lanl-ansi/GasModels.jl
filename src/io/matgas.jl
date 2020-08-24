@@ -210,19 +210,21 @@ const _mg_valve_columns = Vector{Tuple{String,Type}}([
 const _mg_storage_columns = Vector{Tuple{String,Type}}([
     ("id", Int),
     ("junction_id", Int),
-    ("pressure_nominal", Float64),
-    ("flow_injection_rate_min", Float64), ("flow_injection_rate_max", Float64),
-    ("flow_withdrawal_rate_min", Float64), ("flow_withdrawal_rate_max", Float64),
-    ("capacity", Float64),
+    ("well_diameter", Float64),
+    ("well_length", Float64),
+    ("well_friction_factor", Float64),
+    ("reservoir_pressure_max", Float64),
+    ("base_gas_capacity", Float64),
+    ("total_field_capacity", Float64),
+    ("initial_field_capacity_percent", Float64),
     ("status", Int),
     ("name", Union{String, SubString{String}}),
     ("owner_name", Union{String, SubString{String}}),
     ("storage_type", Union{String, SubString{String}}),
+    ("flow_injection_rate_min", Float64), ("flow_injection_rate_max", Float64),
+    ("flow_withdrawal_rate_min", Float64), ("flow_withdrawal_rate_max", Float64),
     ("daily_withdrawal_max", Float64),
     ("seasonal_withdrawal_max", Float64),
-    ("base_gas_capacity", Float64),
-    ("working_gas_capacity", Float64),
-    ("total_field_capacity", Float64),
     ("edi_id", Union{Int, String, SubString{String}})
 ])
 
