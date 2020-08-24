@@ -215,8 +215,7 @@ const _params_for_unit_conversions = Dict(
         "flow_withdrawal_rate_min",
         "flow_withdrawal_rate_max",
         "base_gas_capacity",
-        "total_field_capacity",
-        "reservoir_volume"
+        "total_field_capacity"
     ],
     "loss_resistor" => [
         "p_loss",
