@@ -10,6 +10,7 @@
 @inline get_base_time(data::Dict{String,Any}) = data["base_time"]
 @inline get_base_diameter(data::Dict{String,Any}) = data["base_diameter"]
 @inline get_base_volume(data::Dict{String,Any}) = data["base_volume"]
+@inline get_base_mass(data::Dict{String,Any}) = get_base_flow(data) * get_base_time(data)
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
