@@ -36,8 +36,14 @@ function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::B
         end
     end
 
-    report &&
-    _IM.sol_component_value(gm, nw, :junction, :net_injection, ids(gm, nw, :junction), q)
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :junction,
+        :net_injection,
+        ids(gm, nw, :junction),
+        q,
+    )
 end
 
 "net nodal edge flow out"

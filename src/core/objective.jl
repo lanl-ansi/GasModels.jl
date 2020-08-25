@@ -13,10 +13,11 @@ function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
         Min,
         sum(
             sum(
-                gm.ref[:nw][n][:ne_pipe][i]["construction_cost"] * zp[n][i] for i in keys(gm.ref[:nw][n][:ne_pipe])
+                gm.ref[:nw][n][:ne_pipe][i]["construction_cost"] * zp[n][i]
+                for i in keys(gm.ref[:nw][n][:ne_pipe])
             ) + sum(
-                gm.ref[:nw][n][:ne_compressor][i]["construction_cost"] *
-                zc[n][i] for i in keys(gm.ref[:nw][n][:ne_compressor])
+                gm.ref[:nw][n][:ne_compressor][i]["construction_cost"] * zc[n][i]
+                for i in keys(gm.ref[:nw][n][:ne_compressor])
             ) for n in nws
         )
     )
@@ -168,14 +169,16 @@ function objective_min_transient_economic_costs(gm::AbstractGasModel, time_point
         end
     end
     if length(load_shed_expressions) != 0 && length(compressor_power_expressions) != 0
-    JuMP.@NLobjective(
-        gm.model,
-        Min,
-        econ_weight *
-        sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
-        (1 - econ_weight) *
-        sum(compressor_power_expressions[i] for i = 1:length(compressor_power_expressions))
-    )
+        JuMP.@NLobjective(
+            gm.model,
+            Min,
+            econ_weight *
+            sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
+            (1 - econ_weight) * sum(
+                compressor_power_expressions[i]
+                for i = 1:length(compressor_power_expressions)
+            )
+        )
     end
 end
 

@@ -26,9 +26,9 @@ function variable_density(
     end
 
     report &&
-    _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
+        _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
     report &&
-    _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
+        _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
 end
 
 "variables associated with compressor mass flow (transient)"
@@ -60,7 +60,7 @@ function variable_compressor_flow(
     end
 
     report &&
-    _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
+        _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
 end
 
 "variables associated with pipe flux (transient)"
@@ -292,4 +292,135 @@ function variable_transfer_flow(
             sol_withdrawal,
         )
     end
+end
+
+"variables associated with well compressor/regulator ratio"
+function variable_c_ratio_well(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw;
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    c_ratio_well =
+        var(gm, nw)[:well_compressor_ratio] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :storage)],
+            base_name = "$(nw)_c_ratio_well",
+            start = 0.1
+        )
+
+    if bounded
+        for (i, storage) in ref(gm, nw, :storage)
+            JuMP.set_lower_bound(c_ratio[i], storage["reduction_factor_max"])
+            JuMP.set_upper_bound(c_ratio[i], storage["c_ratio_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :storage,
+        :well_compressor_ratio,
+        ids(gm, nw, :storage),
+        c_ratio_well,
+    )
+end
+
+"variables associated with reservoir density"
+function variable_reservoir_density(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw;
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    rho_reservoir =
+        var(gm, nw)[:reservoir_density] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :reservoir)],
+            base_name = "$(nw)_density_reservoir"
+        )
+
+    if bounded
+        for (i, storage) in ref(gm, nw, :storage)
+            JuMP.set_lower_bound(rho_reservoir[i], storage["reservoir_density_min"])
+            JuMP.set_upper_bound(rho_reservoir[i], storage["reservoir_density_max"])
+        end
+    end
+
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :storage,
+        :reservoir_density,
+        ids(gm, nw, :storage),
+        rho_reservoir,
+    )
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :storage,
+        :reservoir_pressure,
+        ids(gm, nw, :storage),
+        rho_reservoir,
+    )
+end
+
+"variables associated with the nodal densities of the well"
+function variable_well_density(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw,
+    num_discretizations::Int = 4,
+    bounded::Bool = true,
+    report::Bool = true,
+)
+    rho_well_nodes = var(gm, nw)[:well_nodal_density] = Dict{Int,Any}()
+    for i in ids(gm, nw, :storage)
+        var(gm, nw)[:well_nodal_density][i] = JuMP.@variable(
+            gm.model,
+            [j in 1:num_discretizations+1],
+            base_name = "$(nw)_storage_$(i)_nodal_density_well"
+        )
+    end
+
+    for i in ids(gm, nw, :storage)
+        for j = 1:num_discretizations+1
+            JuMP.set_lower_bound(rho_well_nodes[i][j], 0)
+        end
+    end
+
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :storage,
+        :well_nodal_density,
+        ids(gm, nw, :storage),
+        rho_well_nodes,
+    )
+
+end
+
+"variables associated with the well fluxes for the storages"
+function variable_well_flux(
+    gm::AbstractGasModel,
+    nw::Int = gm.cnw,
+    num_discretizations::Int = gm.cnw,
+    report::Bool = true,
+)
+    phi_well = var(gm, nw)[:well_flux] = Dict{Int,Any}()
+    for i in ids(gm, nw, :storage)
+        var(gm, nw)[:well_flux][i] = JuMP.@variable(
+            gm.model,
+            [j in 1:no_disc],
+            base_name = "$(nw)_storage_$(i)_flux_well"
+        )
+    end
+
+    report && _IM.sol_component_value(
+        gm,
+        nw,
+        :storage,
+        :well_flux,
+        ids(gm, nw, :storage),
+        phi_well,
+    )
 end

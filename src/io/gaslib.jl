@@ -27,10 +27,13 @@ function parse_gaslib(zip_path::Union{IO,String})
         nomination_xml = _parse_xml_file(zip_reader, fid)
 
         # Print a warning message stating that the above file is being used.
-        Memento.warn(_LOGGER, "Multiple nomination file paths found " *
-                     "in GasLib data. Selecting last nomination file " *
-                     "(i.e., \"$(file_paths[fid])\") " *
-                     "after sorting by name.")
+        Memento.warn(
+            _LOGGER,
+            "Multiple nomination file paths found " *
+            "in GasLib data. Selecting last nomination file " *
+            "(i.e., \"$(file_paths[fid])\") " *
+            "after sorting by name.",
+        )
     else # If only one nominations scenario is defined...
         # Parse and use the only nominations file available.
         nomination_xml = _parse_xml_file(zip_reader, fids[end])
@@ -54,8 +57,14 @@ function parse_gaslib(zip_path::Union{IO,String})
     short_pipes = _read_gaslib_short_pipes(topology_xml, density)
     valves = _read_gaslib_valves(topology_xml, density)
     loss_resistors = _read_gaslib_loss_resistors(topology_xml, density)
-    compressors = _read_gaslib_compressors(topology_xml, compressor_xml,
-        temperature, 8.314 * inv(molar_mass), isentropic_exponent, density)
+    compressors = _read_gaslib_compressors(
+        topology_xml,
+        compressor_xml,
+        temperature,
+        8.314 * inv(molar_mass),
+        isentropic_exponent,
+        density,
+    )
     deliveries = _read_gaslib_deliveries(topology_xml, nomination_xml, density)
     receipts = _read_gaslib_receipts(topology_xml, nomination_xml, density)
 
@@ -68,14 +77,30 @@ function parse_gaslib(zip_path::Union{IO,String})
     compressibility_factor = min(1.0, sound_speed^2 * molar_mass * inv(8.314 * temperature))
 
     # Build the master data dictionary.
-    data = Dict{String,Any}("compressor"=>compressors, "delivery"=>deliveries,
-        "junction"=>junctions, "receipt"=>receipts, "pipe"=>pipes,
-        "regulator"=>regulators, "resistor"=>resistors, "loss_resistor"=>loss_resistors,
-        "short_pipe"=>short_pipes, "valve"=>valves, "is_si_units"=>1, "is_english_units"=>0,
-        "is_per_unit"=>0, "sound_speed"=>sound_speed, "temperature"=>temperature,
-        "name"=>name, "R"=>8.314, "compressibility_factor"=>compressibility_factor,
-        "gas_specific_gravity"=>gas_specific_gravity, "standard_density"=>density,
-        "specific_heat_capacity_ratio"=>isentropic_exponent, "gas_molar_mass"=>molar_mass)
+    data = Dict{String,Any}(
+        "compressor" => compressors,
+        "delivery" => deliveries,
+        "junction" => junctions,
+        "receipt" => receipts,
+        "pipe" => pipes,
+        "regulator" => regulators,
+        "resistor" => resistors,
+        "loss_resistor" => loss_resistors,
+        "short_pipe" => short_pipes,
+        "valve" => valves,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "is_per_unit" => 0,
+        "sound_speed" => sound_speed,
+        "temperature" => temperature,
+        "name" => name,
+        "R" => 8.314,
+        "compressibility_factor" => compressibility_factor,
+        "gas_specific_gravity" => gas_specific_gravity,
+        "standard_density" => density,
+        "specific_heat_capacity_ratio" => isentropic_exponent,
+        "gas_molar_mass" => molar_mass,
+    )
 
     # Assign nodal IDs in place of string IDs.
     data = _correct_ids(data)
@@ -94,7 +119,7 @@ end
 function _correct_ids(data::Dict{String,<:Any})
     new_data = deepcopy(data)
     junction_names = keys(data["junction"])
-    junction_mapping = Dict(k=>i for (i, k) in enumerate(junction_names))
+    junction_mapping = Dict(k => i for (i, k) in enumerate(junction_names))
 
     for (junction_name, junction) in data["junction"]
         i = junction_mapping[junction_name]
@@ -116,7 +141,15 @@ function _correct_ids(data::Dict{String,<:Any})
         end
     end
 
-    for edge_type in ["compressor", "pipe", "resistor", "regulator", "short_pipe", "valve", "loss_resistor"]
+    for edge_type in [
+        "compressor",
+        "pipe",
+        "resistor",
+        "regulator",
+        "short_pipe",
+        "valve",
+        "loss_resistor",
+    ]
         edge_id = 1
 
         for (a, edge) in data[edge_type]
@@ -153,8 +186,8 @@ function _add_auxiliary_junctions!(junctions, regulators)
             regulator_reverse["flow_max"] = -regulator["flow_min"]
             regulator["to_junction"] = junction_aux_name
 
-            push!(new_junctions, junction_aux_name=>junction_aux)
-            push!(new_regulators, regulator_reverse_name=>regulator_reverse)
+            push!(new_junctions, junction_aux_name => junction_aux)
+            push!(new_regulators, regulator_reverse_name => regulator_reverse)
         end
     end
 
@@ -201,11 +234,18 @@ end
 
 function _get_component_dict(data)
     return data isa Array ? Dict{String,Any}(x[:id] => x for x in data) :
-        Dict{String,Any}(x[:id] => x for x in [data])
+           Dict{String,Any}(x[:id] => x for x in [data])
 end
 
 
-function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kappa::Float64, density::Float64)
+function _get_compressor_entry(
+    compressor,
+    stations,
+    T::Float64,
+    R::Float64,
+    kappa::Float64,
+    density::Float64,
+)
     fr_junction, to_junction = compressor[:from], compressor[:to]
     inlet_p_min = parse(Float64, compressor["pressureInMin"][:value]) * 1.0e5
     inlet_p_max = parse(Float64, compressor["pressureOutMax"][:value]) * 1.0e5
@@ -249,22 +289,37 @@ function _get_compressor_entry(compressor, stations, T::Float64, R::Float64, kap
     # Assume a worst-case efficiency of 0.1 in the computation of power_max.
     power_max = H_max * abs(flow_max) * inv(0.1)
 
-    return Dict{String,Any}("is_per_unit"=>0, "fr_junction"=>fr_junction,
-        "to_junction"=>to_junction, "inlet_p_min"=>inlet_p_min, "inlet_p_max"=>inlet_p_max,
-        "outlet_p_min"=>outlet_p_min, "outlet_p_max"=>outlet_p_max, "flow_min"=>flow_min,
-        "flow_max"=>flow_max, "diameter"=>diameter,
-        "directionality"=>directionality, "status"=>1, "is_si_units"=>1,
-        "is_english_units"=>0, "c_ratio_min"=>c_ratio_min, "c_ratio_max"=>c_ratio_max,
-        "power_max"=>power_max, "operating_cost"=>operating_cost)
+    return Dict{String,Any}(
+        "is_per_unit" => 0,
+        "fr_junction" => fr_junction,
+        "to_junction" => to_junction,
+        "inlet_p_min" => inlet_p_min,
+        "inlet_p_max" => inlet_p_max,
+        "outlet_p_min" => outlet_p_min,
+        "outlet_p_max" => outlet_p_max,
+        "flow_min" => flow_min,
+        "flow_max" => flow_max,
+        "diameter" => diameter,
+        "directionality" => directionality,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "c_ratio_min" => c_ratio_min,
+        "c_ratio_max" => c_ratio_max,
+        "power_max" => power_max,
+        "operating_cost" => operating_cost,
+    )
 end
 
 
 function _get_delivery_entry(delivery, density::Float64)
     if delivery["flow"] isa Array
         min_id = findfirst(x -> x[:bound] == "lower", delivery["flow"])
-        withdrawal_min = density * parse(Float64, delivery["flow"][min_id][:value]) * inv(3.6)
+        withdrawal_min =
+            density * parse(Float64, delivery["flow"][min_id][:value]) * inv(3.6)
         max_id = findfirst(x -> x[:bound] == "upper", delivery["flow"])
-        withdrawal_max = density * parse(Float64, delivery["flow"][max_id][:value]) * inv(3.6)
+        withdrawal_max =
+            density * parse(Float64, delivery["flow"][max_id][:value]) * inv(3.6)
     else
         withdrawal_min = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
         withdrawal_max = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
@@ -272,10 +327,17 @@ function _get_delivery_entry(delivery, density::Float64)
 
     is_dispatchable = withdrawal_min != withdrawal_max ? 1 : 0
 
-    return Dict{String,Any}("withdrawal_min"=>withdrawal_min,
-        "withdrawal_max"=>withdrawal_max, "withdrawal_nominal"=>withdrawal_max,
-        "is_dispatchable"=>is_dispatchable, "is_per_unit"=>0, "status"=>1, "is_si_units"=>1,
-        "is_english_units"=>0, "junction_id"=>delivery[:id])
+    return Dict{String,Any}(
+        "withdrawal_min" => withdrawal_min,
+        "withdrawal_max" => withdrawal_max,
+        "withdrawal_nominal" => withdrawal_max,
+        "is_dispatchable" => is_dispatchable,
+        "is_per_unit" => 0,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "junction_id" => delivery[:id],
+    )
 end
 
 
@@ -289,10 +351,23 @@ function _get_junction_entry(junction)
     p_min = parse(Float64, junction["pressureMin"][:value]) * 1.0e5
     p_max = parse(Float64, junction["pressureMax"][:value]) * 1.0e5
 
-    return Dict{String,Any}("lat"=>lat, "lon"=>lon, "p_min"=>p_min, "p_max"=>p_max,
-        "height"=>height, "is_dispatchable"=>0, "status"=>1, "junction_type"=>0,
-        "is_per_unit"=>0, "is_si_units"=>1, "is_english_units"=>0, "edi_id"=>junction[:id],
-        "id"=>junction[:id], "index"=>junction[:id], "pipeline_id"=>"")
+    return Dict{String,Any}(
+        "lat" => lat,
+        "lon" => lon,
+        "p_min" => p_min,
+        "p_max" => p_max,
+        "height" => height,
+        "is_dispatchable" => 0,
+        "status" => 1,
+        "junction_type" => 0,
+        "is_per_unit" => 0,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "edi_id" => junction[:id],
+        "id" => junction[:id],
+        "index" => junction[:id],
+        "pipeline_id" => "",
+    )
 end
 
 
@@ -336,10 +411,20 @@ function _get_pipe_entry(pipe, junctions, density::Float64)
 
     is_bidirectional = flow_min > 0.0 ? 0 : 1
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
-        "diameter"=>diameter, "length"=>length, "p_min"=>p_min, "p_max"=>p_max,
-        "friction_factor"=>friction_factor, "is_bidirectional"=>is_bidirectional,
-        "status"=>1, "is_per_unit"=>0, "is_si_units"=>1, "is_english_units"=>0)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "to_junction" => to_junction,
+        "diameter" => diameter,
+        "length" => length,
+        "p_min" => p_min,
+        "p_max" => p_max,
+        "friction_factor" => friction_factor,
+        "is_bidirectional" => is_bidirectional,
+        "status" => 1,
+        "is_per_unit" => 0,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+    )
 end
 
 
@@ -356,10 +441,18 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
     p_loss = parse(Float64, loss_resistor["pressureLoss"][:value]) * 1.0e5
     is_bidirectional = flow_min > 0.0 ? 0 : 1
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
-        "flow_min"=>flow_min, "flow_max"=>flow_max, "p_loss"=>p_loss, "is_per_unit"=>0,
-        "status"=>1, "is_si_units"=>1, "is_english_units"=>0,
-        "is_bidirectional"=>is_bidirectional)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "to_junction" => to_junction,
+        "flow_min" => flow_min,
+        "flow_max" => flow_max,
+        "p_loss" => p_loss,
+        "is_per_unit" => 0,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "is_bidirectional" => is_bidirectional,
+    )
 end
 
 
@@ -375,9 +468,15 @@ function _get_short_pipe_entry(short_pipe, density::Float64)
 
     is_bidirectional = flow_min > 0.0 ? 0 : 1
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
-        "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0, "status"=>1,
-        "is_si_units"=>1, "is_english_units"=>0)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "to_junction" => to_junction,
+        "is_bidirectional" => is_bidirectional,
+        "is_per_unit" => 0,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+    )
 end
 
 
@@ -394,10 +493,17 @@ function _get_receipt_entry(receipt, density::Float64)
 
     is_dispatchable = injection_min != injection_max ? 1 : 0
 
-    return Dict{String,Any}("injection_min"=>injection_min, "injection_max"=>injection_max,
-        "injection_nominal"=>injection_max, "is_dispatchable"=>is_dispatchable,
-        "is_per_unit"=>0, "status"=>1, "is_si_units"=>1, "is_english_units"=>0,
-        "junction_id"=>receipt[:id])
+    return Dict{String,Any}(
+        "injection_min" => injection_min,
+        "injection_max" => injection_max,
+        "injection_nominal" => injection_max,
+        "is_dispatchable" => is_dispatchable,
+        "is_per_unit" => 0,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "junction_id" => receipt[:id],
+    )
 end
 
 
@@ -415,10 +521,19 @@ function _get_resistor_entry(resistor, density::Float64)
     drag = parse(Float64, resistor["dragFactor"][:value])
     is_bidirectional = flow_min > 0.0 ? 0 : 1
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "to_junction"=>to_junction,
-        "flow_min"=>flow_min, "flow_max"=>flow_max, "drag"=>drag, "diameter"=>diameter,
-        "is_per_unit"=>0, "status"=>1, "is_si_units"=>1, "is_english_units"=>0,
-        "is_bidirectional"=>is_bidirectional)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "to_junction" => to_junction,
+        "flow_min" => flow_min,
+        "flow_max" => flow_max,
+        "drag" => drag,
+        "diameter" => diameter,
+        "is_per_unit" => 0,
+        "status" => 1,
+        "is_si_units" => 1,
+        "is_english_units" => 0,
+        "is_bidirectional" => is_bidirectional,
+    )
 end
 
 
@@ -434,9 +549,17 @@ function _get_valve_entry(valve, density::Float64)
 
     is_bidirectional = flow_min > 0.0 ? 0 : 1
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
-        "to_junction"=>to_junction, "flow_min"=>flow_min, "flow_max"=>flow_max, "status"=>1,
-        "is_per_unit"=>0, "is_si_units"=>1, "is_bidirectional"=>is_bidirectional)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "is_english_units" => 0,
+        "to_junction" => to_junction,
+        "flow_min" => flow_min,
+        "flow_max" => flow_max,
+        "status" => 1,
+        "is_per_unit" => 0,
+        "is_si_units" => 1,
+        "is_bidirectional" => is_bidirectional,
+    )
 end
 
 
@@ -458,39 +581,64 @@ function _get_regulator_entry(regulator, density::Float64)
     is_bidirectional = flow_min > 0.0 ? 0 : 1
     bypass_required = bypass_required
 
-    return Dict{String,Any}("fr_junction"=>fr_junction, "is_english_units"=>0,
-        "to_junction"=>to_junction, "flow_min"=>flow_min, "is_si_units"=>1,
-        "flow_max"=>flow_max, "reduction_factor_min"=>reduction_factor_min,
-        "reduction_factor_max"=>reduction_factor_max, "status"=>1,
-        "is_bidirectional"=>is_bidirectional, "is_per_unit"=>0,
-        "bypass_required"=>bypass_required)
+    return Dict{String,Any}(
+        "fr_junction" => fr_junction,
+        "is_english_units" => 0,
+        "to_junction" => to_junction,
+        "flow_min" => flow_min,
+        "is_si_units" => 1,
+        "flow_max" => flow_max,
+        "reduction_factor_min" => reduction_factor_min,
+        "reduction_factor_max" => reduction_factor_max,
+        "status" => 1,
+        "is_bidirectional" => is_bidirectional,
+        "is_per_unit" => 0,
+        "bypass_required" => bypass_required,
+    )
 end
 
 
-function _read_gaslib_compressors(topology, compressor_stations, T::Float64, R::Float64, kappa::Float64, density::Float64)
+function _read_gaslib_compressors(
+    topology,
+    compressor_stations,
+    T::Float64,
+    R::Float64,
+    kappa::Float64,
+    density::Float64,
+)
     if "compressorStation" in keys(topology["connections"])
         compressors = _get_component_dict(topology["connections"]["compressorStation"])
-        stations = "compressorStation" in keys(compressor_stations) ? compressor_stations["compressorStation"] : nothing
-        return Dict{String,Any}(i => _get_compressor_entry(x, stations, T, R, kappa, density) for (i, x) in compressors)
+        stations = "compressorStation" in keys(compressor_stations) ?
+            compressor_stations["compressorStation"] : nothing
+        return Dict{String,Any}(
+            i => _get_compressor_entry(x, stations, T, R, kappa, density)
+            for (i, x) in compressors
+        )
     else
         return Dict{String,Any}()
     end
 end
 
 
-function _read_gaslib_deliveries(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement, density::Float64)
+function _read_gaslib_deliveries(
+    topology::XMLDict.XMLDictElement,
+    nominations::XMLDict.XMLDictElement,
+    density::Float64,
+)
     node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
 
     # Collect source nodes with negative injections.
     source_ids = [x[:id] for x in get(topology["nodes"], "source", [])]
     source_xml = filter(x -> x.second[:id] in source_ids, node_xml)
-    source_data = Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in source_xml)
+    source_data =
+        Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in source_xml)
     source_data = filter(x -> x.second["withdrawal_max"] < 0.0, source_data)
 
     # Collect sink nodes with positive withdrawals.
     sink_ids = [x[:id] for x in get(topology["nodes"], "sink", [])]
     sink_xml = filter(x -> x.second[:id] in sink_ids, node_xml)
-    sink_data = Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in sink_xml)
+    sink_data =
+        Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in sink_xml)
     sink_data = filter(x -> x.second["withdrawal_min"] > 0.0, sink_data)
 
     # For sink nodes with negative injections, negate the values.
@@ -511,26 +659,40 @@ function _read_gaslib_junctions(topology::XMLDict.XMLDictElement)
 end
 
 
-function _read_gaslib_pipes(topology::XMLDict.XMLDictElement, junctions::Dict{String,<:Any}, density::Float64)
+function _read_gaslib_pipes(
+    topology::XMLDict.XMLDictElement,
+    junctions::Dict{String,<:Any},
+    density::Float64,
+)
     pipe_xml = _get_component_dict(get(topology["connections"], "pipe", []))
-    return Dict{String,Any}(i => _get_pipe_entry(x, junctions, density) for (i, x) in pipe_xml)
+    return Dict{String,Any}(
+        i => _get_pipe_entry(x, junctions, density) for (i, x) in pipe_xml
+    )
 end
 
 
 function _read_gaslib_loss_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     loss_resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
-    loss_resistor_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
-    return Dict{String,Any}(i => _get_loss_resistor_entry(x, density) for (i, x) in loss_resistor_xml)
+    loss_resistor_xml =
+        filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
+    return Dict{String,Any}(
+        i => _get_loss_resistor_entry(x, density) for (i, x) in loss_resistor_xml
+    )
 end
 
 
-function _read_gaslib_receipts(topology::XMLDict.XMLDictElement, nominations::XMLDict.XMLDictElement, density::Float64)
+function _read_gaslib_receipts(
+    topology::XMLDict.XMLDictElement,
+    nominations::XMLDict.XMLDictElement,
+    density::Float64,
+)
     node_xml = _get_component_dict(get(nominations["scenario"], "node", []))
 
     # Collect source nodes with positive injections.
     source_ids = [x[:id] for x in get(topology["nodes"], "source", [])]
     source_xml = filter(x -> x.second[:id] in source_ids, node_xml)
-    source_data = Dict{String,Any}(i => _get_receipt_entry(x, density) for (i, x) in source_xml)
+    source_data =
+        Dict{String,Any}(i => _get_receipt_entry(x, density) for (i, x) in source_xml)
     source_data = filter(x -> x.second["injection_min"] > 0.0, source_data)
 
     # Collect sink nodes with negative withdrawals.
@@ -552,14 +714,17 @@ end
 
 function _read_gaslib_regulators(topology::XMLDict.XMLDictElement, density::Float64)
     regulator_xml = _get_component_dict(get(topology["connections"], "controlValve", []))
-    return Dict{String,Any}(i => _get_regulator_entry(x, density) for (i, x) in regulator_xml)
+    return Dict{String,Any}(
+        i => _get_regulator_entry(x, density) for (i, x) in regulator_xml
+    )
 end
 
 
 function _read_gaslib_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
-    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) > 0.0, resistor_xml)
+    resistor_xml =
+        filter(x -> parse(Float64, x.second["dragFactor"][:value]) > 0.0, resistor_xml)
     return Dict{String,Any}(i => _get_resistor_entry(x, density) for (i, x) in resistor_xml)
 end
 
@@ -567,13 +732,17 @@ end
 function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement, density::Float64)
     # Parse all short pipes in the network.
     short_pipe_xml = _get_component_dict(get(topology["connections"], "shortPipe", []))
-    short_pipes = Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in short_pipe_xml)
+    short_pipes = Dict{String,Any}(
+        i => _get_short_pipe_entry(x, density) for (i, x) in short_pipe_xml
+    )
 
     # Resistors with drag equal to zero should also be considered short pipes.
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
-    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
-    resistors = Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in resistor_xml)
+    resistor_xml =
+        filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
+    resistors =
+        Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in resistor_xml)
 
     # Return the merged dictionary of short pipes and resistors.
     return merge(short_pipes, resistors)

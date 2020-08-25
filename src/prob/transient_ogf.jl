@@ -26,6 +26,11 @@ function build_transient_ogf(gm::AbstractGasModel)
         variable_injection(gm, n)
         variable_withdrawal(gm, n)
         variable_transfer_flow(gm, n)
+
+        variable_c_ratio_well(gm, n)
+        variable_reservoir_density(gm, n)
+        variable_well_density(gm, n, num_discretizations = 4)
+        variable_well_flux(gm, n, num_discretizations = 4)
     end
 
     # enforcing time-periodicity without adding additional variables
@@ -78,10 +83,9 @@ function build_transient_ogf(gm::AbstractGasModel)
     econ_weight = gm.ref[:economic_weighting]
     if econ_weight == 1.0
         objective_min_transient_load_shed(gm, time_points)
-    elseif econ_weight == 0.0 
+    elseif econ_weight == 0.0
         objective_min_transient_compressor_power(gm, time_points)
-    else 
+    else
         objective_min_transient_economic_costs(gm, time_points)
     end
 end
-
