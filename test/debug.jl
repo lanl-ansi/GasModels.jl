@@ -1,28 +1,28 @@
 @testset "test gaslib 582 dwp gf" begin
     data = GasModels.parse_file("../test/data/matgas/gaslib-582-G.m")
     gm = GasModels.instantiate_model(data, DWPGasModel, GasModels.build_gf)
-    @test length(gm.var[:nw][gm.cnw][:psqr])  == 605
-    @test length(gm.var[:nw][gm.cnw][:f_pipe])  == 278
-    @test length(gm.var[:nw][gm.cnw][:f_compressor])  == 5
-    @test length(gm.var[:nw][gm.cnw][:f_short_pipe])  == 269
-    @test length(gm.var[:nw][gm.cnw][:f_resistor])  == 8
-    @test length(gm.var[:nw][gm.cnw][:f_valve])  == 26
-    @test length(gm.var[:nw][gm.cnw][:f_regulator])  == 46
+    @test length(gm.var[:nw][gm.cnw][:psqr]) == 605
+    @test length(gm.var[:nw][gm.cnw][:f_pipe]) == 278
+    @test length(gm.var[:nw][gm.cnw][:f_compressor]) == 5
+    @test length(gm.var[:nw][gm.cnw][:f_short_pipe]) == 269
+    @test length(gm.var[:nw][gm.cnw][:f_resistor]) == 8
+    @test length(gm.var[:nw][gm.cnw][:f_valve]) == 26
+    @test length(gm.var[:nw][gm.cnw][:f_regulator]) == 46
     @test length(gm.var[:nw][gm.cnw][:y_pipe]) == 278
     @test length(gm.var[:nw][gm.cnw][:y_compressor]) == 5
     @test length(gm.var[:nw][gm.cnw][:y_short_pipe]) == 269
     @test length(gm.var[:nw][gm.cnw][:y_resistor]) == 8
     @test length(gm.var[:nw][gm.cnw][:y_valve]) == 26
     @test length(gm.var[:nw][gm.cnw][:y_regulator]) == 46
-    @test haskey(gm.var[:nw][gm.cnw],:l)   == false
-    @test length(gm.var[:nw][gm.cnw][:v_valve])  == 26
+    @test haskey(gm.var[:nw][gm.cnw], :l) == false
+    @test length(gm.var[:nw][gm.cnw][:v_valve]) == 26
 
     ref = gm.con[:nw][gm.cnw][:junction_mass_flow_balance][100]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
-    @test isapprox(set.value, 0.64266/data["base_flow"]; atol = 1e-4)
+    @test isapprox(set.value, 0.64266 / data["base_flow"]; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 1
     var_ref = gm.var[:nw][gm.cnw][:f_pipe][128]
@@ -50,7 +50,7 @@
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
-    @test isapprox(set.value, -526.0/data["base_flow"]; atol = 1e-4)
+    @test isapprox(set.value, -526.0 / data["base_flow"]; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 
@@ -97,10 +97,19 @@
     @test isa(set, MOI.GreaterThan{Float64})
     @test length(func.terms) == 8
 
-    var_ref = [gm.var[:nw][gm.cnw][:y_short_pipe][294], gm.var[:nw][gm.cnw][:y_short_pipe][293], gm.var[:nw][gm.cnw][:y_short_pipe][327], gm.var[:nw][gm.cnw][:y_short_pipe][295], gm.var[:nw][gm.cnw][:y_pipe][0], gm.var[:nw][gm.cnw][:y_short_pipe][296], gm.var[:nw][gm.cnw][:y_pipe][248], gm.var[:nw][gm.cnw][:y_pipe][275] ]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:y_short_pipe][294],
+        gm.var[:nw][gm.cnw][:y_short_pipe][293],
+        gm.var[:nw][gm.cnw][:y_short_pipe][327],
+        gm.var[:nw][gm.cnw][:y_short_pipe][295],
+        gm.var[:nw][gm.cnw][:y_pipe][0],
+        gm.var[:nw][gm.cnw][:y_short_pipe][296],
+        gm.var[:nw][gm.cnw][:y_pipe][248],
+        gm.var[:nw][gm.cnw][:y_pipe][275],
+    ]
     coeff = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0]
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -155,7 +164,11 @@
     # 0.34408340524232955 yp[161] + p[503] - p[415] <= 0.34408340524232955
     # p[415] - p[503] + 0.34408340524232955 yn[161] <= 0.34408340524232955
     ref = gm.con[:nw][gm.cnw][:on_off_pressure_drop2][161]
-    var_ref = [gm.var[:nw][gm.cnw][:y_pipe][161], gm.var[:nw][gm.cnw][:psqr][503], gm.var[:nw][gm.cnw][:psqr][415]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:y_pipe][161],
+        gm.var[:nw][gm.cnw][:psqr][503],
+        gm.var[:nw][gm.cnw][:psqr][415],
+    ]
     coeff = [-0.34408340524232955, 1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -167,13 +180,17 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_pressure_drop1][161]
-    var_ref = [gm.var[:nw][gm.cnw][:y_pipe][161], gm.var[:nw][gm.cnw][:psqr][503], gm.var[:nw][gm.cnw][:psqr][415]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:y_pipe][161],
+        gm.var[:nw][gm.cnw][:psqr][503],
+        gm.var[:nw][gm.cnw][:psqr][415],
+    ]
     coeff = [0.34408340524232955, -1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -185,7 +202,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -204,7 +221,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -221,7 +238,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -284,14 +301,15 @@
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     # yp[321] - f[321] <= 1.0
     # f[321] + yn[321] <= 1.0
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow1][321]
-    var_ref = [gm.var[:nw][gm.cnw][:y_short_pipe][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_short_pipe][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -303,12 +321,13 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow2][321]
-    var_ref = [gm.var[:nw][gm.cnw][:y_short_pipe][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_short_pipe][321], gm.var[:nw][gm.cnw][:f_short_pipe][321]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -320,7 +339,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -328,7 +347,8 @@
     # yp[549] - f[549] <= 1.0
     # f[549] + yn[549] <= 1.0
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction1][549]
-    var_ref = [gm.var[:nw][gm.cnw][:y_compressor][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_compressor][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -340,13 +360,14 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction2][549]
-    var_ref = [gm.var[:nw][gm.cnw][:y_compressor][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_compressor][549], gm.var[:nw][gm.cnw][:f_compressor][549]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -358,7 +379,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -367,7 +388,11 @@
     # p[560] - 25 p[561] + 0.34436018196723495 y[551] <= 0.34436018196723495
     # p[560] - p[561] + 0.34436018196723495 y[551] <= 0.34436018196723495
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios4][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][561],
+        gm.var[:nw][gm.cnw][:psqr][560],
+        gm.var[:nw][gm.cnw][:y_compressor][551],
+    ]
     coeff = [1.0, -1.0, -0.4831288389273021]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -379,12 +404,16 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios1][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][561],
+        gm.var[:nw][gm.cnw][:psqr][560],
+        gm.var[:nw][gm.cnw][:y_compressor][551],
+    ]
     coeff = [1.0, -25.0, 0.4831288389273021]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -396,12 +425,16 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios3][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][560],
+        gm.var[:nw][gm.cnw][:psqr][561],
+        gm.var[:nw][gm.cnw][:y_compressor][551],
+    ]
     coeff = [1.0, -25.0, -0.34436018196723495]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -413,13 +446,17 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios2][551]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][560], gm.var[:nw][gm.cnw][:psqr][561], gm.var[:nw][gm.cnw][:y_compressor][551]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][560],
+        gm.var[:nw][gm.cnw][:psqr][561],
+        gm.var[:nw][gm.cnw][:y_compressor][551],
+    ]
     coeff = [1.0, -1.0, 0.34436018196723495]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -431,7 +468,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -452,7 +489,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -469,7 +506,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -486,7 +523,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -503,14 +540,18 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     # - p[164] + 0.50520177292419455 v[571] + p[170] <= 0.5052017729241945
     # - p[170] + p[164] + 0.5052017729241945 v[571] <= 0.5052017729241945
     ref = gm.con[:nw][gm.cnw][:valve_pressure_drop2][571]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][164], gm.var[:nw][gm.cnw][:v_valve][571], gm.var[:nw][gm.cnw][:psqr][170]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][164],
+        gm.var[:nw][gm.cnw][:v_valve][571],
+        gm.var[:nw][gm.cnw][:psqr][170],
+    ]
     coeff = [-1.0, 0.5052017729241945, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -522,12 +563,16 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:valve_pressure_drop1][571]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][164], gm.var[:nw][gm.cnw][:v_valve][571], gm.var[:nw][gm.cnw][:psqr][170]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][164],
+        gm.var[:nw][gm.cnw][:v_valve][571],
+        gm.var[:nw][gm.cnw][:psqr][170],
+    ]
     coeff = [1.0, 0.5052017729241945, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -539,7 +584,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -548,7 +593,8 @@
     # f[591] + yn[591] <= 1.0
     # - v[591] - f[591] <= 0.0
     ref = gm.con[:nw][gm.cnw][:on_off_regulator_flow_direction4][591]
-    var_ref = [gm.var[:nw][gm.cnw][:v_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:v_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -560,12 +606,13 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_regulator_flow_direction1][591]
-    var_ref = [gm.var[:nw][gm.cnw][:y_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
     coeff = [1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -577,12 +624,13 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_regulator_flow_direction2][591]
-    var_ref = [gm.var[:nw][gm.cnw][:y_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:y_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
     coeff = [-1.0, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -594,12 +642,13 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:on_off_regulator_flow_direction3][591]
-    var_ref = [gm.var[:nw][gm.cnw][:v_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
+    var_ref =
+        [gm.var[:nw][gm.cnw][:v_regulator][591], gm.var[:nw][gm.cnw][:f_regulator][591]]
     coeff = [-1.0, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -611,7 +660,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -620,7 +669,11 @@
     # 0_p[2600217] - 0_p[217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     # 0_p[217] - 0_p[2600217] + 0.505201772924194 0_yn[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop2][585]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][2600217],
+        gm.var[:nw][gm.cnw][:y_regulator][585],
+        gm.var[:nw][gm.cnw][:v_regulator][585],
+    ]
     coeff = [-1.0, 0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -632,12 +685,17 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop4][585]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][217],
+        gm.var[:nw][gm.cnw][:psqr][2600217],
+        gm.var[:nw][gm.cnw][:y_regulator][585],
+        gm.var[:nw][gm.cnw][:v_regulator][585],
+    ]
     coeff = [1.0, -1.0, -0.505201772924194, 0.505201772924196]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -649,12 +707,17 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop1][585]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][217],
+        gm.var[:nw][gm.cnw][:psqr][2600217],
+        gm.var[:nw][gm.cnw][:y_regulator][585],
+        gm.var[:nw][gm.cnw][:v_regulator][585],
+    ]
     coeff = [-1.0, 1.0, 0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -666,12 +729,17 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
     ref = gm.con[:nw][gm.cnw][:regulator_pressure_drop3][585]
-    var_ref = [gm.var[:nw][gm.cnw][:psqr][217], gm.var[:nw][gm.cnw][:psqr][2600217], gm.var[:nw][gm.cnw][:y_regulator][585], gm.var[:nw][gm.cnw][:v_regulator][585]]
+    var_ref = [
+        gm.var[:nw][gm.cnw][:psqr][217],
+        gm.var[:nw][gm.cnw][:psqr][2600217],
+        gm.var[:nw][gm.cnw][:y_regulator][585],
+        gm.var[:nw][gm.cnw][:v_regulator][585],
+    ]
     coeff = [-1.0, 1.0, -0.505201772924194, 0.505201772924194]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
@@ -683,7 +751,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i in 1:length(var_ref)
+    for i = 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 

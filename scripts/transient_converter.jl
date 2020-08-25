@@ -8,14 +8,15 @@ function convert_old_transient_format(file::String)
     header = old_data[1]
     column_names = split(header, ',')
 
-    data = [join(["timestamp", "component_type", "component_id", "parameter", "value"], ",")]
+    data =
+        [join(["timestamp", "component_type", "component_id", "parameter", "value"], ",")]
 
     for row in old_data[2:end]
         _timestamp = ""
         for (name, val) in zip(column_names, split(row, ','))
             if name != "timestamp"
                 val = parse(Float64, val)
-                val = round(val, digits=2)
+                val = round(val, digits = 2)
                 comp_type, comp_id, param = split(name, '.')
                 push!(data, join([_timestamp, comp_type, comp_id, param, val], ","))
             else

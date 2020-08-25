@@ -21,7 +21,7 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
                 "component_id" => component_id,
                 "parameter" => parameter,
                 "value" => value,
-            )
+            ),
         )
     end
 
@@ -96,50 +96,57 @@ end
 
 "function to calculate bearing given 2 lat lon values"
 function _calc_bearing(fr, to)
-    y = cos(to[1] * pi/180) * sin(abs(to[2] - fr[2]) * pi/180)
-    x = cos(fr[1] * pi/180) * sin(to[1] * pi/180) - sin(fr[1] * pi/180) * cos(to[1] * pi/180) * cos((to[2]-fr[2]) * pi/180)
+    y = cos(to[1] * pi / 180) * sin(abs(to[2] - fr[2]) * pi / 180)
+    x =
+        cos(fr[1] * pi / 180) * sin(to[1] * pi / 180) -
+        sin(fr[1] * pi / 180) * cos(to[1] * pi / 180) * cos((to[2] - fr[2]) * pi / 180)
     beta = atan(y, x)
-    return (beta *180.0/pi + 360) % 360
-end 
+    return (beta * 180.0 / pi + 360) % 360
+end
 
 "function to calculate lat lon given origin, bearing, and distance"
 function _get_lat_lon(fr, bearing, distance)
     R = 6378.1
-    brng = bearing * pi/180.0
-    d = distance/1000.0
-    lat1 = fr[1] * pi/180 
-    lon1 = fr[2] * pi/180
-    lat2 = asin(sin(lat1) * cos(d/R) + cos(lat1) * sin(d/R) * cos(brng))
-    lon2 = lon1 + atan(sin(brng) * sin(d/R)  * cos(lat1), cos(d/R) - sin(lat1) * sin(lat2))
-    return (lat2 * 180/pi, lon2 * 180/pi)
-end 
+    brng = bearing * pi / 180.0
+    d = distance / 1000.0
+    lat1 = fr[1] * pi / 180
+    lon1 = fr[2] * pi / 180
+    lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng))
+    lon2 =
+        lon1 + atan(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2))
+    return (lat2 * 180 / pi, lon2 * 180 / pi)
+end
 
 "function to update the lat lon for the new junctions"
 function update_lat_lon!(data::Dict{String,Any})
-        for (i, p) in data["original_pipe"]
-            sub_pipes = collect(p["fr_pipe"]:p["to_pipe"])
-            start_junction = data["pipe"]["$(sub_pipes[1])"]["fr_junction"]
-            start_lon = data["junction"]["$(start_junction)"]["lon"]
-            start_lat = data["junction"]["$(start_junction)"]["lat"]
+    for (i, p) in data["original_pipe"]
+        sub_pipes = collect(p["fr_pipe"]:p["to_pipe"])
+        start_junction = data["pipe"]["$(sub_pipes[1])"]["fr_junction"]
+        start_lon = data["junction"]["$(start_junction)"]["lon"]
+        start_lat = data["junction"]["$(start_junction)"]["lat"]
 
-            end_junction = data["pipe"]["$(sub_pipes[end])"]["to_junction"]
-            end_lon = data["junction"]["$(end_junction)"]["lon"]
-            end_lat = data["junction"]["$(end_junction)"]["lat"]
+        end_junction = data["pipe"]["$(sub_pipes[end])"]["to_junction"]
+        end_lon = data["junction"]["$(end_junction)"]["lon"]
+        end_lat = data["junction"]["$(end_junction)"]["lat"]
 
-            lon_incr = (end_lon - start_lon) / (length(sub_pipes)*2)
-            lat_incr = (end_lat - start_lat) / (length(sub_pipes)*2)
+        lon_incr = (end_lon - start_lon) / (length(sub_pipes) * 2)
+        lat_incr = (end_lat - start_lat) / (length(sub_pipes) * 2)
 
-            for (s, sub_pipe_id) in enumerate(sub_pipes)
-                sub_pipe = data["pipe"]["$sub_pipe_id"]
+        for (s, sub_pipe_id) in enumerate(sub_pipes)
+            sub_pipe = data["pipe"]["$sub_pipe_id"]
 
-                data["junction"]["$(sub_pipe["fr_junction"])"]["lon"] = 2*(s-1) * lon_incr + start_lon
-                data["junction"]["$(sub_pipe["fr_junction"])"]["lat"] = 2*(s-1) * lat_incr + start_lat
+            data["junction"]["$(sub_pipe["fr_junction"])"]["lon"] =
+                2 * (s - 1) * lon_incr + start_lon
+            data["junction"]["$(sub_pipe["fr_junction"])"]["lat"] =
+                2 * (s - 1) * lat_incr + start_lat
 
-                data["junction"]["$(sub_pipe["to_junction"])"]["lon"] = (2*(s-1)+1) * lon_incr + start_lon
-                data["junction"]["$(sub_pipe["to_junction"])"]["lat"] = (2*(s-1)+1) * lat_incr + start_lat
-            end
+            data["junction"]["$(sub_pipe["to_junction"])"]["lon"] =
+                (2 * (s - 1) + 1) * lon_incr + start_lon
+            data["junction"]["$(sub_pipe["to_junction"])"]["lat"] =
+                (2 * (s - 1) + 1) * lat_incr + start_lat
         end
-end 
+    end
+end
 
 " discretizes the pipes and takes care of renumbering junctions and pipes"
 function _prep_transient_data!(
@@ -255,7 +262,8 @@ function _prep_transient_data!(
                 "id" => id,
                 "p_min" => min(fr_junction["p_min"], to_junction["p_min"]),
                 "p_max" => max(fr_junction["p_max"], to_junction["p_max"]),
-                "p_nominal" => (fr_junction["p_nominal"] + to_junction["p_nominal"]) / 2.0,
+                "p_nominal" =>
+                    (fr_junction["p_nominal"] + to_junction["p_nominal"]) / 2.0,
                 "junction_type" => 0,
                 "status" => 1,
                 "is_physical" => false,
@@ -310,11 +318,8 @@ function _create_time_series_block(
 provide a time step that exactly divides 3600.0",
         )
     end
-    if time_step < 3600.0 && ~isinteger(3600.0/time_step)
-        Memento.error(
-            _LOGGER,
-            "time step should divide 3600.0 exactly when < 3600.0"
-        )
+    if time_step < 3600.0 && ~isinteger(3600.0 / time_step)
+        Memento.error(_LOGGER, "time step should divide 3600.0 exactly when < 3600.0")
     end
     if total_time > 86400.0
         Memento.warn(

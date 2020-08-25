@@ -59,13 +59,13 @@ function per_unit_data_field_check!(data::Dict{String,Any})
             )
         else
             (get(data, "base_density", false) == false) &&
-            (data["base_density"] = calc_base_density(data))
+                (data["base_density"] = calc_base_density(data))
             data["base_time"] = calc_base_time(data)
             data["base_diameter"] = 1.0
             (get(data, "base_flow", false) == false) &&
-            (data["base_flow"] = calc_base_flow(data))
+                (data["base_flow"] = calc_base_flow(data))
             (get(data, "base_flux", false) == false) &&
-            (data["base_flux"] = calc_base_flux(data))
+                (data["base_flux"] = calc_base_flux(data))
         end
     end
 end
@@ -74,16 +74,18 @@ end
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String,Any})
     (get(data, "base_pressure", false) == false) &&
-    (data["base_pressure"] = calc_base_pressure(data))
+        (data["base_pressure"] = calc_base_pressure(data))
     (get(data, "base_density", false) == false) &&
-    (data["base_density"] = calc_base_density(data))
+        (data["base_density"] = calc_base_density(data))
     (get(data, "base_length", false) == false) && (data["base_length"] = 5000.0)
     data["base_time"] = calc_base_time(data)
     data["base_diameter"] = 1.0
     (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
     (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
-    (get(data, "base_volume", false) == false) && (data["base_volume"] = data["base_length"])
-    (get(data, "base_mass", false) == false) && (data["base_mass"] = data["base_density"] * data["base_volume"])
+    (get(data, "base_volume", false) == false) &&
+        (data["base_volume"] = data["base_length"])
+    (get(data, "base_mass", false) == false) &&
+        (data["base_mass"] = data["base_density"] * data["base_volume"])
 end
 
 "make transient data to si units"
@@ -108,7 +110,7 @@ function make_si_units!(
         "design_inlet_pressure",
         "design_outlet_pressure",
         "pressure_nominal",
-        "reservoir_p_max"
+        "reservoir_p_max",
     ]
     flow_params = [
         "f",
@@ -217,21 +219,11 @@ const _params_for_unit_conversions = Dict(
         "flow_withdrawal_rate_min",
         "flow_withdrawal_rate_max",
         "base_gas_capacity",
-        "total_field_capacity"
+        "total_field_capacity",
     ],
-    "loss_resistor" => [
-        "p_loss",
-        "flow_min",
-        "flow_max"
-    ],
-    "resistor" => [
-        "flow_min",
-        "flow_max"
-    ],
-    "valve" => [
-        "flow_min",
-        "flow_max"
-    ],
+    "loss_resistor" => ["p_loss", "flow_min", "flow_max"],
+    "resistor" => ["flow_min", "flow_max"],
+    "valve" => ["flow_min", "flow_max"],
 )
 
 function _rescale_functions(
@@ -317,7 +309,6 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     _apply_func!(nw_data, "time_point", rescale_time)
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
-
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
                 Memento.error(
                     _LOGGER,
@@ -623,26 +614,58 @@ end
 
 "correct minimum pressures"
 function correct_f_bounds!(data::Dict{String,Any})
-    mf = _calc_max_mass_flow(data["receipt"], get(data, "storage", Dict()), get(data,"transfer", Dict()))
+    mf = _calc_max_mass_flow(
+        data["receipt"],
+        get(data, "storage", Dict()),
+        get(data, "transfer", Dict()),
+    )
 
-    for (idx, pipe) in get(data,"pipe",Dict())
-        pipe["flow_min"] = _calc_pipe_flow_min(-mf, pipe, data["junction"][string(pipe["fr_junction"])], data["junction"][string(pipe["to_junction"])], data["base_length"], data["base_pressure"], data["base_flow"], data["sound_speed"])
-        pipe["flow_max"] = _calc_pipe_flow_max(mf,  pipe, data["junction"][string(pipe["fr_junction"])], data["junction"][string(pipe["to_junction"])], data["base_length"], data["base_pressure"], data["base_flow"], data["sound_speed"])
+    for (idx, pipe) in get(data, "pipe", Dict())
+        pipe["flow_min"] = _calc_pipe_flow_min(
+            -mf,
+            pipe,
+            data["junction"][string(pipe["fr_junction"])],
+            data["junction"][string(pipe["to_junction"])],
+            data["base_length"],
+            data["base_pressure"],
+            data["base_flow"],
+            data["sound_speed"],
+        )
+        pipe["flow_max"] = _calc_pipe_flow_max(
+            mf,
+            pipe,
+            data["junction"][string(pipe["fr_junction"])],
+            data["junction"][string(pipe["to_junction"])],
+            data["base_length"],
+            data["base_pressure"],
+            data["base_flow"],
+            data["sound_speed"],
+        )
     end
 
-    for (idx, compressor) in get(data,"compressor", Dict())
+    for (idx, compressor) in get(data, "compressor", Dict())
         compressor["flow_min"] = _calc_compressor_flow_min(-mf, compressor)
         compressor["flow_max"] = _calc_compressor_flow_max(mf, compressor)
     end
 
-    for (idx, pipe) in get(data,"short_pipe",Dict())
+    for (idx, pipe) in get(data, "short_pipe", Dict())
         pipe["flow_min"] = _calc_short_pipe_flow_min(-mf, pipe)
         pipe["flow_max"] = _calc_short_pipe_flow_max(mf, pipe)
     end
 
-    for (idx, resistor) in get(data,"resistor",Dict())
-        resistor["flow_min"] = _calc_resistor_flow_min(-mf, resistor, data["junction"][string(resistor["fr_junction"])], data["junction"][string(resistor["to_junction"])])
-        resistor["flow_max"] = _calc_resistor_flow_max(mf, resistor, data["junction"][string(resistor["fr_junction"])], data["junction"][string(resistor["to_junction"])])
+    for (idx, resistor) in get(data, "resistor", Dict())
+        resistor["flow_min"] = _calc_resistor_flow_min(
+            -mf,
+            resistor,
+            data["junction"][string(resistor["fr_junction"])],
+            data["junction"][string(resistor["to_junction"])],
+        )
+        resistor["flow_max"] = _calc_resistor_flow_max(
+            mf,
+            resistor,
+            data["junction"][string(resistor["fr_junction"])],
+            data["junction"][string(resistor["to_junction"])],
+        )
     end
 
     for (idx, loss_resistor) in get(data, "loss_resistor", Dict())
@@ -650,22 +673,40 @@ function correct_f_bounds!(data::Dict{String,Any})
         loss_resistor["flow_max"] = _calc_loss_resistor_flow_max(mf, loss_resistor)
     end
 
-    for (idx, valve) in get(data,"valve",Dict())
+    for (idx, valve) in get(data, "valve", Dict())
         valve["flow_min"] = _calc_valve_flow_min(-mf, valve)
         valve["flow_max"] = _calc_valve_flow_max(mf, valve)
     end
 
-    for (idx, regulator) in get(data,"regulator",Dict())
+    for (idx, regulator) in get(data, "regulator", Dict())
         regulator["flow_min"] = _calc_regulator_flow_min(-mf, regulator)
         regulator["flow_max"] = _calc_regulator_flow_max(mf, regulator)
     end
 
-    for (idx, pipe) in get(data,"ne_pipe",Dict())
-        pipe["flow_min"] = _calc_ne_pipe_flow_min(-mf, pipe, data["junction"][string(pipe["fr_junction"])], data["junction"][string(pipe["to_junction"])], data["base_length"], data["base_pressure"], data["base_flow"], data["sound_speed"])
-        pipe["flow_max"] = _calc_ne_pipe_flow_max(mf,  pipe, data["junction"][string(pipe["fr_junction"])], data["junction"][string(pipe["to_junction"])], data["base_length"], data["base_pressure"], data["base_flow"], data["sound_speed"])
+    for (idx, pipe) in get(data, "ne_pipe", Dict())
+        pipe["flow_min"] = _calc_ne_pipe_flow_min(
+            -mf,
+            pipe,
+            data["junction"][string(pipe["fr_junction"])],
+            data["junction"][string(pipe["to_junction"])],
+            data["base_length"],
+            data["base_pressure"],
+            data["base_flow"],
+            data["sound_speed"],
+        )
+        pipe["flow_max"] = _calc_ne_pipe_flow_max(
+            mf,
+            pipe,
+            data["junction"][string(pipe["fr_junction"])],
+            data["junction"][string(pipe["to_junction"])],
+            data["base_length"],
+            data["base_pressure"],
+            data["base_flow"],
+            data["sound_speed"],
+        )
     end
 
-    for (idx, compressor) in get(data,"ne_compressor", Dict())
+    for (idx, compressor) in get(data, "ne_compressor", Dict())
         compressor["flow_min"] = _calc_ne_compressor_flow_min(-mf, compressor)
         compressor["flow_max"] = _calc_ne_compressor_flow_max(mf, compressor)
     end
@@ -880,9 +921,8 @@ end
 
 "helper function to propagate disabled status of junctions to connected components"
 function propagate_topology_status!(data::Dict{String,<:Any})
-    disabled_junctions = Set([
-        junc["index"] for junc in values(data["junction"]) if junc["status"] == 0
-    ])
+    disabled_junctions =
+        Set([junc["index"] for junc in values(data["junction"]) if junc["status"] == 0])
 
     for comp_type in _gm_component_types
         if haskey(data, comp_type) && comp_type != "junction"
@@ -926,12 +966,16 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared for a pipe"
-function _calc_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
+function _calc_pipe_pd_bounds_sqr(
+    pipe::Dict{String,Any},
+    i::Dict{String,Any},
+    j::Dict{String,Any},
+)
     pd_max = i["p_max"]^2 - j["p_min"]^2
     pd_min = i["p_min"]^2 - j["p_max"]^2
 
     is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
+    flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         pd_min = max(0, pd_min)
@@ -946,12 +990,16 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared for a resistor"
-function _calc_resistor_pd_bounds_sqr(resistor::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
+function _calc_resistor_pd_bounds_sqr(
+    resistor::Dict{String,Any},
+    i::Dict{String,Any},
+    j::Dict{String,Any},
+)
     pd_max = i["p_max"]^2 - j["p_min"]^2
     pd_min = i["p_min"]^2 - j["p_max"]^2
 
     is_bidirectional = get(resistor, "is_bidirectional", 1)
-    flow_direction   = get(resistor, "flow_direction", 0)
+    flow_direction = get(resistor, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         pd_min = max(0, pd_min)
@@ -966,12 +1014,16 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared for a ne pipe, which is different dependeing on whether or not the pipe is present"
-function _calc_ne_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
+function _calc_ne_pipe_pd_bounds_sqr(
+    pipe::Dict{String,Any},
+    i::Dict{String,Any},
+    j::Dict{String,Any},
+)
     pd_max_on = pd_max_off = i["p_max"]^2 - j["p_min"]^2
     pd_min_on = pd_min_off = i["p_min"]^2 - j["p_max"]^2
 
     is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
+    flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         pd_min_on = max(0, pd_min_on)
@@ -1025,13 +1077,22 @@ end
 
 
 "calculates the minimum flow on a pipe"
-function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
+function _calc_pipe_flow_min(
+    mf::Float64,
+    pipe::Dict,
+    i::Dict,
+    j::Dict,
+    base_length::Number,
+    base_pressure::Number,
+    base_flow::Number,
+    sound_speed::Number,
+)
     is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
-    flow_min         = get(pipe,"flow_min",mf)
-    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe,i,j)
-    w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    flow_direction = get(pipe, "flow_direction", 0)
+    flow_min = get(pipe, "flow_min", mf)
+    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, i, j)
+    w = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(mf, pf_min, flow_min, 0)
@@ -1042,12 +1103,21 @@ end
 
 
 "calculates the maximum flow on a pipe"
-function _calc_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
+function _calc_pipe_flow_max(
+    mf::Float64,
+    pipe::Dict,
+    i::Dict,
+    j::Dict,
+    base_length::Number,
+    base_pressure::Number,
+    base_flow::Number,
+    sound_speed::Number,
+)
     flow_direction = get(pipe, "flow_direction", 0)
-    flow_max       = get(pipe,"flow_max",mf)
-    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe,i,j)
-    w              = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_max         = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    flow_max = get(pipe, "flow_max", mf)
+    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, i, j)
+    w = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
 
     if flow_direction == -1
         return min(mf, pf_max, flow_max, 0)
@@ -1060,11 +1130,11 @@ end
 "calculates the minimum flow on a resistor"
 function _calc_resistor_flow_min(mf::Float64, resistor::Dict, i::Dict, j::Dict)
     is_bidirectional = get(resistor, "is_bidirectional", 1)
-    flow_direction   = get(resistor, "flow_direction", 0)
-    flow_min         = get(resistor,"flow_min",mf)
-    pd_min, pd_max   = _calc_resistor_pd_bounds_sqr(resistor,i,j)
-    w                = _calc_resistor_resistance(resistor)
-    pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    flow_direction = get(resistor, "flow_direction", 0)
+    flow_min = get(resistor, "flow_min", mf)
+    pd_min, pd_max = _calc_resistor_pd_bounds_sqr(resistor, i, j)
+    w = _calc_resistor_resistance(resistor)
+    pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(mf, pf_min, flow_min, 0)
@@ -1076,11 +1146,11 @@ end
 
 "calculates the maximum flow on a resistor"
 function _calc_resistor_flow_max(mf::Float64, resistor::Dict, i::Dict, j::Dict)
-    flow_direction = get(resistor,"flow_direction", 0)
-    flow_max       = get(resistor,"flow_max",mf)
-    pd_min, pd_max = _calc_resistor_pd_bounds_sqr(resistor,i,j)
-    w              = _calc_resistor_resistance(resistor)
-    pf_max         = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    flow_direction = get(resistor, "flow_direction", 0)
+    flow_max = get(resistor, "flow_max", mf)
+    pd_min, pd_max = _calc_resistor_pd_bounds_sqr(resistor, i, j)
+    w = _calc_resistor_resistance(resistor)
+    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
 
     if flow_direction == -1
         return min(mf, pf_max, flow_max, 0)
@@ -1091,14 +1161,23 @@ end
 
 
 "calculates the minimum flow on a ne pipe"
-function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
-    flow_min = get(pipe,"flow_min",mf)
+function _calc_ne_pipe_flow_min(
+    mf::Float64,
+    pipe::Dict,
+    i::Dict,
+    j::Dict,
+    base_length::Number,
+    base_pressure::Number,
+    base_flow::Number,
+    sound_speed::Number,
+)
+    flow_min = get(pipe, "flow_min", mf)
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, i, j)
-    pd_min   = pd_min_on
-    w        = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_min   = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    pd_min = pd_min_on
+    w = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pf_min = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
     is_bidirectional = get(pipe, "is_bidirectional", 1)
-    flow_direction   = get(pipe, "flow_direction", 0)
+    flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(mf, pf_min, flow_min, 0)
@@ -1109,13 +1188,22 @@ end
 
 
 "calculates the maximum flow on a pipe"
-function _calc_ne_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
-    flow_max = min(mf,get(pipe,"flow_max",mf))
+function _calc_ne_pipe_flow_max(
+    mf::Float64,
+    pipe::Dict,
+    i::Dict,
+    j::Dict,
+    base_length::Number,
+    base_pressure::Number,
+    base_flow::Number,
+    sound_speed::Number,
+)
+    flow_max = min(mf, get(pipe, "flow_max", mf))
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, i, j)
-    pd_max   = pd_max_on
-    w        = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_max  = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
-    flow_direction = get(pipe,"flow_direction", 0)
+    pd_max = pd_max_on
+    w = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    flow_direction = get(pipe, "flow_direction", 0)
 
     if flow_direction == -1
         return min(mf, pf_max, flow_max, 0)
@@ -1126,9 +1214,9 @@ end
 
 "calculates the minimum flow on a compressor"
 function _calc_compressor_flow_min(mf::Float64, compressor::Dict)
-    flow_min         = get(compressor,"flow_min",mf)
-    directionality   = get(compressor, "directionality", 0)
-    flow_direction   = get(compressor, "flow_direction", 0)
+    flow_min = get(compressor, "flow_min", mf)
+    directionality = get(compressor, "directionality", 0)
+    flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
         return max(mf, flow_min, 0)
@@ -1140,8 +1228,8 @@ end
 
 "calculates the maximum flow on a pipe"
 function _calc_compressor_flow_max(mf::Float64, compressor::Dict)
-    flow_max         = get(compressor,"flow_max",mf)
-    flow_direction   = get(compressor, "flow_direction", 0)
+    flow_max = get(compressor, "flow_max", mf)
+    flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
         return min(mf, flow_max, 0)
@@ -1152,9 +1240,9 @@ end
 
 "calculates the minimum flow on a compressor"
 function _calc_ne_compressor_flow_min(mf::Float64, compressor::Dict)
-    flow_min         = get(compressor,"flow_min",mf)
-    directionality   = get(compressor,"directionality",0)
-    flow_direction   = get(compressor,"flow_direction",0)
+    flow_min = get(compressor, "flow_min", mf)
+    directionality = get(compressor, "directionality", 0)
+    flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
         return max(mf, flow_min, 0)
@@ -1166,8 +1254,8 @@ end
 
 "calculates the maximum flow on a pipe"
 function _calc_ne_compressor_flow_max(mf::Float64, compressor::Dict)
-    flow_max         = get(compressor,"flow_max",mf)
-    flow_direction   = get(compressor,"flow_direction",0)
+    flow_max = get(compressor, "flow_max", mf)
+    flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
         return min(mf, flow_max, 0)
@@ -1192,8 +1280,8 @@ end
 "calculates the minimum flow on a loss resistor"
 function _calc_loss_resistor_flow_min(mf::Float64, loss_resistor::Dict{String,Any})
     is_bidirectional = get(loss_resistor, "is_bidirectional", 1)
-    flow_direction   = get(loss_resistor, "flow_direction", 0)
-    flow_min         = get(loss_resistor, "flow_min", mf)
+    flow_direction = get(loss_resistor, "flow_direction", 0)
+    flow_min = get(loss_resistor, "flow_min", mf)
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(mf, flow_min, 0.0)
@@ -1206,7 +1294,7 @@ end
 "calculates the maximum flow on a loss resistor"
 function _calc_loss_resistor_flow_max(mf::Float64, loss_resistor::Dict{String,Any})
     flow_direction = get(loss_resistor, "flow_direction", 0)
-    flow_max       = get(loss_resistor, "flow_max", mf)
+    flow_max = get(loss_resistor, "flow_max", mf)
 
     if flow_direction == -1
         return min(mf, flow_max, 0.0)
@@ -1218,9 +1306,9 @@ end
 
 "calculates the minimum flow on a short pipe"
 function _calc_short_pipe_flow_min(mf::Float64, short_pipe::Dict)
-    flow_min         = get(short_pipe, "flow_min",mf)
+    flow_min = get(short_pipe, "flow_min", mf)
     is_bidirectional = get(short_pipe, "is_bidirectional", 1)
-    flow_direction   = get(short_pipe, "flow_direction", 0)
+    flow_direction = get(short_pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(0, flow_min, mf)
@@ -1232,8 +1320,8 @@ end
 
 "calculates the maximum flow on a short pipe"
 function _calc_short_pipe_flow_max(mf::Float64, short_pipe::Dict)
-    flow_max         = get(short_pipe,"flow_max",mf)
-    flow_direction   = get(short_pipe, "flow_direction", 0)
+    flow_max = get(short_pipe, "flow_max", mf)
+    flow_direction = get(short_pipe, "flow_direction", 0)
 
     if flow_direction == -1
         return min(0, flow_max, mf)
@@ -1245,9 +1333,9 @@ end
 
 "calculates the minimum flow on a valve"
 function _calc_valve_flow_min(mf::Float64, valve::Dict)
-    flow_min         = get(valve, "flow_min",mf)
+    flow_min = get(valve, "flow_min", mf)
     is_bidirectional = get(valve, "is_bidirectional", 1)
-    flow_direction   = get(valve, "flow_direction", 0)
+    flow_direction = get(valve, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(0, flow_min, mf)
@@ -1259,8 +1347,8 @@ end
 
 "calculates the maximum flow on a valve"
 function _calc_valve_flow_max(mf::Float64, valve::Dict)
-    flow_max         = get(valve,"flow_max",mf)
-    flow_direction   = get(valve, "flow_direction", 0)
+    flow_max = get(valve, "flow_max", mf)
+    flow_direction = get(valve, "flow_direction", 0)
 
     if flow_direction == -1
         return min(0, flow_max, mf)
@@ -1272,9 +1360,9 @@ end
 
 "calculates the minimum flow on a regulator"
 function _calc_regulator_flow_min(mf::Float64, regulator::Dict)
-    flow_min         = get(regulator, "flow_min",mf)
+    flow_min = get(regulator, "flow_min", mf)
     is_bidirectional = get(regulator, "is_bidirectional", 1)
-    flow_direction   = get(regulator, "flow_direction", 0)
+    flow_direction = get(regulator, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         return max(0, flow_min, mf)
@@ -1286,8 +1374,8 @@ end
 
 "calculates the maximum flow on a regulator"
 function _calc_regulator_flow_max(mf::Float64, regulator::Dict)
-    flow_max         = get(regulator,"flow_max",mf)
-    flow_direction   = get(regulator, "flow_direction", 0)
+    flow_max = get(regulator, "flow_max", mf)
+    flow_direction = get(regulator, "flow_direction", 0)
 
     if flow_direction == -1
         return min(0, flow_max, mf)
@@ -1636,8 +1724,7 @@ function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_ty
     end
 
     active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
-    active_junction_ids =
-        Set{Int64}([junction["id"] for (i, junction) in active_junction])
+    active_junction_ids = Set{Int64}([junction["id"] for (i, junction) in active_junction])
 
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
@@ -1682,23 +1769,23 @@ end
 
 "Calculate the work of a compressor"
 function _calc_compressor_work(gamma, G, T, compressor::Dict)
-    magic_num      = 286.76
-    return ((magic_num / G) * T * (gamma/(gamma-1)))
+    magic_num = 286.76
+    return ((magic_num / G) * T * (gamma / (gamma - 1)))
 end
 
 "Calculate the m value of a compressor when the ratios are expressed in terms of its square"
-function _calc_compressor_m_sqr(gamma,compressor::Dict)
+function _calc_compressor_m_sqr(gamma, compressor::Dict)
     return ((gamma - 1) / gamma) / 2
 end
 
 "Determine if a compressor is energy bounded"
 function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
-    power_max      = compressor["power_max"]
-    max_ratio      = compressor["c_ratio_max"]
-    f_max          = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+    power_max = compressor["power_max"]
+    max_ratio = compressor["c_ratio_max"]
+    f_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
 
-    work           = _calc_compressor_work(gamma, G, T, compressor)
-    m              = _calc_compressor_m_sqr(gamma, compressor)
+    work = _calc_compressor_work(gamma, G, T, compressor)
+    m = _calc_compressor_m_sqr(gamma, compressor)
 
-    return f_max * (max_ratio^2^m - 1) > power_max/work
+    return f_max * (max_ratio^2^m - 1) > power_max / work
 end
