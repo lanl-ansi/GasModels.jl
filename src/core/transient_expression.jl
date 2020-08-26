@@ -7,6 +7,43 @@ function expression_density_derivative(gm::AbstractGasModel, nw::Int, nw_prev::I
     end
 end
 
+"density derivative for well nodal densities"
+function expression_well_density_derivative(
+    gm::AbstractGasModel,
+    nw::Int,
+    nw_prev::Int;
+    num_discretizations::Int = 4,
+)
+    var(gm, nw)[:well_density_derivative] = Dict{Int,Any}()
+    for storage_id in ids(gm, nw, :storage)
+        var(gm, nw, :well_density_derivative)[storage_id] = Dict{Int,Any}()
+        for j = 1:(num_discretizations+1)
+            var(gm, nw, :well_density_derivative, storage_id)[j] =
+                (
+                    var(gm, nw, :well_density, storage_id)[j] -
+                    var(gm, nw_prev, :well_density, storage_id)[j]
+                ) / gm.ref[:time_step]
+        end
+    end
+end
+
+"density derivative for storage reservoir"
+function expression_reservoir_density_derivative(
+    gm::AbstractGasModel,
+    nw::Int,
+    nw_prev::Int;
+    num_discretizations::Int = 4,
+)
+    var(gm, nw)[:reservoir_density_derivative] = Dict{Int,Any}()
+    for storage_id in ids(gm, nw, :storage)
+        var(gm, nw, :reservoir_density_derivative)[storage_id] =
+            (
+                var(gm, nw, :reservoir_density, storage_id) -
+                var(gm, nw_prev, :reservoir_density, storage_id)
+            ) / gm.ref[:time_step]
+    end
+end
+
 "net nodal injection"
 function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::Bool = true)
     q = var(gm, nw)[:net_nodal_injection] = Dict{Int,Any}()
@@ -35,7 +72,7 @@ function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::B
         end
         for j in ref(gm, nw, :storages_in_junction, i)
             var(gm, nw, :net_nodal_injection)[i] -= var(gm, nw, :storage_effective, j)
-        end 
+        end
     end
 
     report && _IM.sol_component_value(

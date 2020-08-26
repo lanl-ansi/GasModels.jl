@@ -59,27 +59,51 @@ function constraint_compressor_power(gm::AbstractGasModel, i::Int, nw::Int = gm.
 end
 
 "Template: storage compression/pressure-reduction"
-function constraint_storage_compressor_regulator(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+function constraint_storage_compressor_regulator(
+    gm::AbstractGasModel,
+    i::Int,
+    nw::Int = gm.cnw,
+)
     storage = ref(gm, nw, :storage, i)
     junction_id = storage["junction_id"]
     constraint_storage_compressor_regulator(gm, nw, i, junction_id)
-end 
+end
 
 "Template: well momentum balance"
-function constraint_storage_well_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw; num_discretizations::Int = 4)
+function constraint_storage_well_momentum_balance(
+    gm::AbstractGasModel,
+    i::Int,
+    nw::Int = gm.cnw;
+    num_discretizations::Int = 4,
+)
     well = ref(gm, nw, :storage, i)
     length = well["depth"]
-    length_per_well_segment = length/num_discretizations
-    beta = (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) / gm.ref[:sound_speed] / gm.ref[:sound_speed]
-    resistance = well[:well_friction_factor] * gm.ref[:base_length] * length_per_well_segment / well[:well_diameter]
-    constraint_storage_well_momentum_balance(gm, nw, num_discretizations, i, beta, resistance)
+    length_per_well_segment = length / num_discretizations
+    beta =
+        (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) /
+        gm.ref[:sound_speed] / gm.ref[:sound_speed]
+    resistance =
+        well[:well_friction_factor] * gm.ref[:base_length] * length_per_well_segment /
+        well[:well_diameter]
+    constraint_storage_well_momentum_balance(
+        gm,
+        nw,
+        num_discretizations,
+        i,
+        beta,
+        resistance,
+    )
 end
 
 "Template: well mass balance"
-function constraint_storage_well_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw; 
-    num_discretizations::Int = 4)
+function constraint_storage_well_mass_balance(
+    gm::AbstractGasModel,
+    i::Int,
+    nw::Int = gm.cnw;
+    num_discretizations::Int = 4,
+)
     well = ref(gm, nw, :storage, i)
     length = well["depth"]
-    length_per_well_segment = length/num_discretizations
+    length_per_well_segment = length / num_discretizations
     constraint_storage_well_mass_balance(gm, nw, num_discretizations, i, length)
-end 
+end

@@ -31,44 +31,32 @@ function build_transient_ogf(gm::AbstractGasModel)
         variable_storage_c_ratio(gm, n)
         variable_reservoir_density(gm, n)
         variable_well_density(gm, n, num_discretizations = 4)
-        variable_well_density_derivative(gm, n, num_discretizations = 4)
         variable_well_flux_avg(gm, n, num_discretizations = 4)
         variable_well_flux_neg(gm, n, num_discretizations = 4)
 
     end
 
-    # well variables for the final time point 
-    # variable_c_ratio_well(gm, end_t)
-    # variable_reservoir_density(gm, end_t)
-    # variable_well_density(gm, end_t, num_discretizations = 4)
-    # variable_well_density_derivative(gm, end_t, num_discretizations = 4)
-    # variable_well_flux_avg(gm, end_t, num_discretizations = 4)
-    # variable_well_flux_neg(gm, end_t, num_discretizations = 4)
-
-
     # enforcing time-periodicity without adding additional variables
-    var(gm, end_t)[:density] = var(gm, time_points[start_t], :density)
-    var(gm, end_t)[:compressor_flow] = var(gm, time_points[start_t], :compressor_flow)
-    var(gm, end_t)[:pipe_flux] = var(gm, time_points[start_t], :pipe_flux)
-    var(gm, end_t)[:compressor_ratio] = var(gm, time_points[start_t], :compressor_ratio)
-    var(gm, end_t)[:injection] = var(gm, time_points[start_t], :injection)
-    var(gm, end_t)[:withdrawal] = var(gm, time_points[start_t], :withdrawal)
-    var(gm, end_t)[:transfer_effective] = var(gm, time_points[start_t], :transfer_effective)
-    var(gm, end_t)[:transfer_injection] = var(gm, time_points[start_t], :transfer_injection)
-    var(gm, end_t)[:transfer_withdrawal] =
-        var(gm, time_points[start_t], :transfer_withdrawal)
+    var(gm, end_t)[:density] = var(gm, start_t, :density)
+    var(gm, end_t)[:compressor_flow] = var(gm, start_t, :compressor_flow)
+    var(gm, end_t)[:pipe_flux] = var(gm, start_t, :pipe_flux)
+    var(gm, end_t)[:compressor_ratio] = var(gm, start_t, :compressor_ratio)
+    var(gm, end_t)[:injection] = var(gm, start_t, :injection)
+    var(gm, end_t)[:withdrawal] = var(gm, start_t, :withdrawal)
+    var(gm, end_t)[:transfer_effective] = var(gm, start_t, :transfer_effective)
+    var(gm, end_t)[:transfer_injection] = var(gm, start_t, :transfer_injection)
+    var(gm, end_t)[:transfer_withdrawal] = var(gm, start_t, :transfer_withdrawal)
+    var(gm, end_t)[:storage_effective] = var(gm, start_t, :storage_effective)
+    var(gm, end_t)[:well_head] = var(gm, start_t, :well_head)
+    var(gm, end_t)[:bottom_hole] = var(gm, start_t, :bottom_hole)
 
-    # for n in time_points[1:end]
-    #     prev = n - 1
-    #     (n == start_t) && (prev = time_points[end-1])
-    #     expression_well_density_derivative(gm, n, prev, num_discretizations = 4)
-    #     expression_storage_flows(gm, n, num_discretizations = 4)
-    # end 
 
     for n in time_points[1:end-1]
         prev = n - 1
         (n == start_t) && (prev = time_points[end-1])
         expression_density_derivative(gm, n, prev)
+        expression_well_density_derivative(gm, n, prev, num_discretizations = 4)
+        expression_reservoir_density_derivative(gm, n, prev)
         expression_net_nodal_injection(gm, n)
         expression_net_nodal_edge_out_flow(gm, n)
         expression_non_slack_affine_derivative(gm, n)
@@ -104,12 +92,14 @@ function build_transient_ogf(gm::AbstractGasModel)
             constraint_storage_well_momentum_balance(gm, i, n, num_discretizations = 4)
             constraint_storage_well_mass_balance(gm, i, n, num_discretizations = 4)
             constraint_storage_well_nodal_balance(gm, i, n, num_discretizations = 4)
+            constraint_storage_bottom_hole_reservoir_density(
+                gm,
+                i,
+                n,
+                num_discretizations = 4,
+            )
             constraint_storage_reservoir_physics(gm, i, n)
-            constraint_storage_bottom_hole_flow(gm, i, n, num_discretizations = 4)
-            constraint_storage_well_head_flow(gm, i, n, num_discretizations = 4)
-            constraint_storage_well_head_to_junction_flow(gm, i, n, num_discretizations = 4)
         end
-
     end
 
     econ_weight = gm.ref[:economic_weighting]

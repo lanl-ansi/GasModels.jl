@@ -301,23 +301,22 @@ function variable_storage_flow(
     bounded::Bool = true,
     report::Bool = true,
 )
-    f_eff = 
+    f_eff =
         var(gm, nw)[:storage_effective] = JuMP.@variable(
-            gm.model, 
-            [i in ids(gm, nw, :storage)], 
+            gm.model,
+            [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_storage_eff_flow"
-        ) 
-    
-    f_bh = 
-        var(gm, nw)[:bottom_hole] = JuMP.@variable(
-            gm.model, 
-            [i in ids(gm, nw, :storage)]
-            base_name = "$(nw)_storage_bottom_hole"
         )
-    
-    f_wh = 
+
+    f_bh =
+        var(gm, nw)[:bottom_hole] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :storage)]base_name = "$(nw)_storage_bottom_hole"
+        )
+
+    f_wh =
         var(gm, nw)[:well_head] = JuMP.@variable(
-            gm.model, 
+            gm.model,
             [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_storage_well_head"
         )
@@ -336,30 +335,9 @@ function variable_storage_flow(
     end
 
     if report
-        _IM.sol_component_value(
-            gm,
-            nw,
-            :storage
-            :storage_effective,
-            ids(gm, nw, :storage),
-            f_eff,
-        )
-        _IM.sol_component_value(
-            gm,
-            nw,
-            :storage
-            :bottom_hole,
-            ids(gm, nw, :storage),
-            f_bh,
-        )
-        _IM.sol_component_value(
-            gm,
-            nw,
-            :storage
-            :well_head,
-            ids(gm, nw, :storage),
-            f_wh,
-        )
+        _IM.sol_component_value(gm, nw, :storage_effective, ids(gm, nw, :storage), f_eff)
+        _IM.sol_component_value(gm, nw, :bottom_hole, ids(gm, nw, :storage), f_bh)
+        _IM.sol_component_value(gm, nw, :well_head, ids(gm, nw, :storage), f_wh)
     end
 end
 
@@ -473,7 +451,7 @@ function variable_well_flux_avg(
     gm::AbstractGasModel,
     nw::Int = gm.cnw;
     num_discretizations::Int = gm.cnw,
-    report::Bool = true
+    report::Bool = true,
 )
     phi_well = var(gm, nw)[:well_flux_avg] = Dict{Int,Any}()
     for i in ids(gm, nw, :storage)
@@ -499,7 +477,7 @@ function variable_well_flux_neg(
     gm::AbstractGasModel,
     nw::Int = gm.cnw;
     num_discretizations::Int = gm.cnw,
-    report::Bool = true
+    report::Bool = true,
 )
     phi_well = var(gm, nw)[:well_flux_neg] = Dict{Int,Any}()
     for i in ids(gm, nw, :storage)
@@ -517,31 +495,5 @@ function variable_well_flux_neg(
         :well_flux_neg,
         ids(gm, nw, :storage),
         phi_well,
-    )
-end
-
-"variables associated with density derivative of the well"
-function variable_well_density_derivative(
-    gm::AbstractGasModel,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = 4,
-    report::Bool = true,
-)
-    rho_dot_well_nodes = var(gm,nw)[:well_density_derivative] = Dict{Int,Any}();
-    for i in ids(gm, nw, :storage)
-        var(gm,nw)[:well_density_derivative][i] = JuMP.@variable(
-            gm.model,
-            [j in 1:num_discretizations + 1],
-            base_name = "$(nw)_$(i)_rho_dot_well_nodes"
-        )
-    end
-
-    report && _IM.sol_component_value(
-        gm,
-        nw,
-        :storage,
-        :well_density_derivative,
-        ids(gm, nw, :storage),
-        rho_dot_well_nodes,
     )
 end
