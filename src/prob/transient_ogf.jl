@@ -26,12 +26,25 @@ function build_transient_ogf(gm::AbstractGasModel)
         variable_injection(gm, n)
         variable_withdrawal(gm, n)
         variable_transfer_flow(gm, n)
+        variable_storage_flow(gm, n)
 
-        variable_c_ratio_well(gm, n)
+        variable_storage_c_ratio(gm, n)
         variable_reservoir_density(gm, n)
         variable_well_density(gm, n, num_discretizations = 4)
-        variable_well_flux(gm, n, num_discretizations = 4)
+        variable_well_density_derivative(gm, n, num_discretizations = 4)
+        variable_well_flux_avg(gm, n, num_discretizations = 4)
+        variable_well_flux_neg(gm, n, num_discretizations = 4)
+
     end
+
+    # well variables for the final time point 
+    # variable_c_ratio_well(gm, end_t)
+    # variable_reservoir_density(gm, end_t)
+    # variable_well_density(gm, end_t, num_discretizations = 4)
+    # variable_well_density_derivative(gm, end_t, num_discretizations = 4)
+    # variable_well_flux_avg(gm, end_t, num_discretizations = 4)
+    # variable_well_flux_neg(gm, end_t, num_discretizations = 4)
+
 
     # enforcing time-periodicity without adding additional variables
     var(gm, end_t)[:density] = var(gm, time_points[start_t], :density)
@@ -45,6 +58,12 @@ function build_transient_ogf(gm::AbstractGasModel)
     var(gm, end_t)[:transfer_withdrawal] =
         var(gm, time_points[start_t], :transfer_withdrawal)
 
+    # for n in time_points[1:end]
+    #     prev = n - 1
+    #     (n == start_t) && (prev = time_points[end-1])
+    #     expression_well_density_derivative(gm, n, prev, num_discretizations = 4)
+    #     expression_storage_flows(gm, n, num_discretizations = 4)
+    # end 
 
     for n in time_points[1:end-1]
         prev = n - 1
@@ -78,6 +97,19 @@ function build_transient_ogf(gm::AbstractGasModel)
         for i in ids(gm, n, :dispatchable_transfer)
             constraint_transfer_separation(gm, i, n)
         end
+
+        for i in ids(gm, n, :storage)
+            constraint_storage_well_head_to_eff_flow(gm, i, n)
+            constraint_storage_compressor_regulator(gm, i, n)
+            constraint_storage_well_momentum_balance(gm, i, n, num_discretizations = 4)
+            constraint_storage_well_mass_balance(gm, i, n, num_discretizations = 4)
+            constraint_storage_well_nodal_balance(gm, i, n, num_discretizations = 4)
+            constraint_storage_reservoir_physics(gm, i, n)
+            constraint_storage_bottom_hole_flow(gm, i, n, num_discretizations = 4)
+            constraint_storage_well_head_flow(gm, i, n, num_discretizations = 4)
+            constraint_storage_well_head_to_junction_flow(gm, i, n, num_discretizations = 4)
+        end
+
     end
 
     econ_weight = gm.ref[:economic_weighting]

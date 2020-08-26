@@ -5,7 +5,6 @@ function expression_density_derivative(gm::AbstractGasModel, nw::Int, nw_prev::I
         var(gm, nw, :density_derivative)[i] =
             (var(gm, nw, :density, i) - var(gm, nw_prev, :density, i)) / gm.ref[:time_step]
     end
-
 end
 
 "net nodal injection"
@@ -34,6 +33,9 @@ function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::B
             var(gm, nw, :net_nodal_injection)[i] -=
                 ref(gm, nw, :delivery, j)["withdrawal_nominal"]
         end
+        for j in ref(gm, nw, :storages_in_junction, i)
+            var(gm, nw, :net_nodal_injection)[i] -= var(gm, nw, :storage_effective, j)
+        end 
     end
 
     report && _IM.sol_component_value(
