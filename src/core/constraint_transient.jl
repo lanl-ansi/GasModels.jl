@@ -207,7 +207,7 @@ function constraint_storage_well_mass_balance(
     nw::Int,
     num_discretizations::Int,
     storage_id::Int,
-    length::Float64,
+    L::Float64,
 )
     for i = 1:num_discretizations
         rho_dot_top = var(gm, nw, :well_density_derivative, storage_id)[i]
@@ -220,7 +220,7 @@ function constraint_storage_well_mass_balance(
             storage_id * 1000 + i,
             JuMP.@constraint(
                 gm.model,
-                length * (rho_dot_top + rho_dot_bottom) = -4 * phi_neg
+                L * (rho_dot_top + rho_dot_bottom) == -4 * phi_neg
             )
         )
     end
@@ -257,7 +257,7 @@ function constraint_storage_well_nodal_balance(
         nw,
         :bh_flow_balance,
         storage_id,
-        JuMP.@constraint(gm, f_bh == well_area * phi_out_bh)
+        JuMP.@constraint(gm.model, f_bh == well_area * phi_out_bh)
     )
 
 
@@ -307,8 +307,8 @@ function constraint_storage_reservoir_physics(
     storage_id::Int,
     nw::Int = gm.cnw,
 )
-    volume = ref(gm, nw, :storage, storage_id)["resevoir_volume"]
-    rho_dot = var(gm, nw, :resevoir_density_derivative, storage_id)
+    volume = ref(gm, nw, :storage, storage_id)["reservoir_volume"]
+    rho_dot = var(gm, nw, :reservoir_density_derivative, storage_id)
     f_bh = var(gm, nw, :bottom_hole, storage_id)
 
     GasModels._add_constraint!(
@@ -316,6 +316,22 @@ function constraint_storage_reservoir_physics(
         nw,
         :reservoir_physics,
         storage_id,
-        JuMP.@constraint(gm, model, volume * rho_dot == f_bh)
+        JuMP.@constraint(gm.model, volume * rho_dot == f_bh)
     )
 end
+
+"Constraint: reservoir initial condition"
+function constraint_initial_condition_reservoir(
+    gm::AbstractGasModel, 
+    storage_id::Int, 
+    nw::Int, 
+    initial_density)
+    rho = var(gm, nw, :reservoir_density, nw)
+    GasModels._add_constraint!(
+        gm, 
+        nw, 
+        :reservoir_initial_condition, 
+        storage_id, 
+        JuMP.@constraint(gm.model, rho == initial_density)
+    )
+end 

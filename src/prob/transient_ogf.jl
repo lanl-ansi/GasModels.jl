@@ -50,6 +50,9 @@ function build_transient_ogf(gm::AbstractGasModel)
     var(gm, end_t)[:well_head] = var(gm, start_t, :well_head)
     var(gm, end_t)[:bottom_hole] = var(gm, start_t, :bottom_hole)
 
+    for i in ids(gm, start_t, :storage)
+        constraint_initial_condition_reservoir(gm, i, start_t)
+    end 
 
     for n in time_points[1:end-1]
         prev = n - 1
