@@ -311,7 +311,8 @@ function variable_storage_flow(
     f_bh =
         var(gm, nw)[:bottom_hole] = JuMP.@variable(
             gm.model,
-            [i in ids(gm, nw, :storage)]base_name = "$(nw)_storage_bottom_hole"
+            [i in ids(gm, nw, :storage)],
+            base_name = "$(nw)_storage_bottom_hole"
         )
 
     f_wh =
@@ -335,9 +336,9 @@ function variable_storage_flow(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :storage_effective, ids(gm, nw, :storage), f_eff)
-        _IM.sol_component_value(gm, nw, :bottom_hole, ids(gm, nw, :storage), f_bh)
-        _IM.sol_component_value(gm, nw, :well_head, ids(gm, nw, :storage), f_wh)
+        _IM.sol_component_value(gm, nw, :storagem, :storage_effective, ids(gm, nw, :storage), f_eff)
+        _IM.sol_component_value(gm, nw, :storage, :bottom_hole, ids(gm, nw, :storage), f_bh)
+        _IM.sol_component_value(gm, nw, :storage, :well_head, ids(gm, nw, :storage), f_wh)
     end
 end
 
@@ -358,8 +359,8 @@ function variable_storage_c_ratio(
 
     if bounded
         for (i, storage) in ref(gm, nw, :storage)
-            JuMP.set_lower_bound(c_ratio[i], storage["reduction_factor_max"])
-            JuMP.set_upper_bound(c_ratio[i], storage["c_ratio_max"])
+            JuMP.set_lower_bound(c_ratio_well[i], storage["reduction_factor_max"])
+            JuMP.set_upper_bound(c_ratio_well[i], storage["c_ratio_max"])
         end
     end
 
@@ -383,7 +384,7 @@ function variable_reservoir_density(
     rho_reservoir =
         var(gm, nw)[:reservoir_density] = JuMP.@variable(
             gm.model,
-            [i in ids(gm, nw, :reservoir)],
+            [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_density_reservoir"
         )
 

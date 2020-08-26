@@ -77,14 +77,14 @@ function constraint_storage_well_momentum_balance(
     num_discretizations::Int = 4,
 )
     well = ref(gm, nw, :storage, i)
-    length = well["depth"]
+    length = well["well_depth"]
     length_per_well_segment = length / num_discretizations
     beta =
         (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) /
         gm.ref[:sound_speed] / gm.ref[:sound_speed]
     resistance =
-        well[:well_friction_factor] * gm.ref[:base_length] * length_per_well_segment /
-        well[:well_diameter]
+        well["well_friction_factor"] * gm.ref[:base_length] * length_per_well_segment /
+        well["well_diameter"]
     constraint_storage_well_momentum_balance(
         gm,
         nw,
@@ -103,7 +103,17 @@ function constraint_storage_well_mass_balance(
     num_discretizations::Int = 4,
 )
     well = ref(gm, nw, :storage, i)
-    length = well["depth"]
-    length_per_well_segment = length / num_discretizations
-    constraint_storage_well_mass_balance(gm, nw, num_discretizations, i, length)
+    L = well["well_depth"]
+    length_per_well_segment = L / num_discretizations
+    constraint_storage_well_mass_balance(gm, nw, num_discretizations, i, length_per_well_segment)
 end
+
+"Template: initial condition for reservoir density"
+function constraint_initial_condition_reservoir(
+    gm::AbstractGasModel,
+    i::Int, 
+    nw::Int = gm.cnw)
+    
+    initial_density = ref(gm, nw, :storage, i)["initial_density"]
+    constraint_initial_condition_reservoir(gm, i, nw, initial_density)
+end 
