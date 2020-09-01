@@ -34,6 +34,24 @@ function constraint_non_slack_junction_mass_balance(
     )
 end
 
+"Template: pipe mass balance"
+function constraint_pipe_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+    pipe = ref(gm, nw, :pipe, i)
+    fr_junction = pipe["fr_junction"]
+    to_junction = pipe["to_junction"]
+    L = pipe["length"]
+    constraint_pipe_mass_balance(gm, nw, i, fr_junction, to_junction, L)
+end 
+
+"Templage: pipe momentum balance"
+function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
+    pipe = ref(gm, nw, :pipe, i)
+    fr_junction = pipe["fr_junction"]
+    to_junction = pipe["to_junction"]
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:base_length])
+    constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
+end
+
 "Template: pipe physics with ideal gas assumption"
 function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     pipe = ref(gm, nw, :pipe, i)
@@ -53,9 +71,9 @@ end
 
 "Template: compressor power"
 function constraint_compressor_power(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
-    compressor_power = var(gm, nw, :compressor_power)[i]
-    power_max = ref(gm, nw, :compressor, i)["power_max"]
-    constraint_compressor_power(gm, nw, i, compressor_power, power_max)
+    compressor_power_expr = var(gm, nw, :compressor_power_expr)[i]
+    compressor_power_var = var(gm, nw, :compressor_power_var)[i]
+    constraint_compressor_power(gm, nw, i, compressor_power_expr, compressor_power_var)
 end
 
 "Template: storage compression/pressure-reduction"
@@ -77,8 +95,7 @@ function constraint_storage_well_momentum_balance(
     num_discretizations::Int = 4,
 )
     well = ref(gm, nw, :storage, i)
-    length = well["well_depth"]
-    length_per_well_segment = length / num_discretizations
+    length_per_well_segment = well["well_depth"] / num_discretizations
     beta =
         (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) /
         gm.ref[:sound_speed] / gm.ref[:sound_speed]
@@ -101,19 +118,28 @@ function constraint_storage_well_mass_balance(
     i::Int,
     nw::Int = gm.cnw;
     num_discretizations::Int = 4,
+    is_end::Bool = false,
 )
     well = ref(gm, nw, :storage, i)
     L = well["well_depth"]
     length_per_well_segment = L / num_discretizations
-    constraint_storage_well_mass_balance(gm, nw, num_discretizations, i, length_per_well_segment)
+    constraint_storage_well_mass_balance(
+        gm,
+        nw,
+        num_discretizations,
+        i,
+        length_per_well_segment,
+        is_end,
+    )
 end
 
 "Template: initial condition for reservoir density"
 function constraint_initial_condition_reservoir(
     gm::AbstractGasModel,
-    i::Int, 
-    nw::Int = gm.cnw)
-    
+    i::Int,
+    nw::Int = gm.cnw,
+)
+
     initial_density = ref(gm, nw, :storage, i)["initial_density"]
     constraint_initial_condition_reservoir(gm, i, nw, initial_density)
-end 
+end

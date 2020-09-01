@@ -70,5 +70,5 @@ mgc.delivery = [
 %% storage data
 %column_names% id junction_id well_diameter well_depth well_friction_factor reservoir_p_max base_gas_capacity total_field_capacity initial_field_capacity_percent reduction_factor_max c_ratio_max status flow_injection_rate_min flow_injection_rate_max flow_withdrawal_rate_min flow_withdrawal_rate_max
 mgc.storage = [
-1  3  0.3048  3962.4  0.015  9411350  350000  620000  0.8 0.5  2.0 1 0 1000.0 0 1000.0
+1  3  0.3048  3962.4  0.015  9411350  350000000  620000000  0.8 0.5  2.0 1 0 1000.0 0 1000.0
 ];
