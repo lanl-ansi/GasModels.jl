@@ -460,6 +460,14 @@ function variable_storage_flow(
             gm,
             nw,
             :storage,
+            :withdrawal,
+            ids(gm, nw, :storage),
+            f_wh,
+        )
+        _IM.sol_component_value(
+            gm,
+            nw,
+            :storage,
             :well_head_flow,
             ids(gm, nw, :storage),
             f_wh,

@@ -41,7 +41,7 @@ function constraint_pipe_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = gm
     to_junction = pipe["to_junction"]
     L = pipe["length"]
     constraint_pipe_mass_balance(gm, nw, i, fr_junction, to_junction, L)
-end 
+end
 
 "Templage: pipe momentum balance"
 function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)

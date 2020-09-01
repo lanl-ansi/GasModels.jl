@@ -134,22 +134,12 @@ function build_transient_ogf(gm::AbstractGasModel)
                 num_discretizations = num_well_discretizations,
             )
             if n != end_t
-                if n == (end_t - 1)
-                    constraint_storage_well_mass_balance(
-                        gm,
-                        i,
-                        n,
-                        num_discretizations = num_well_discretizations,
-                        is_end = false,
-                    )
-                else
-                    constraint_storage_well_mass_balance(
-                        gm,
-                        i,
-                        n,
-                        num_discretizations = num_well_discretizations,
-                    )
-                end
+                constraint_storage_well_mass_balance(
+                    gm,
+                    i,
+                    n,
+                    num_discretizations = num_well_discretizations,
+                )
             end
             constraint_storage_well_nodal_balance(
                 gm,
@@ -164,11 +154,7 @@ function build_transient_ogf(gm::AbstractGasModel)
                 num_discretizations = num_well_discretizations,
             )
             if n != end_t
-                if n == (end_t - 1)
-                    constraint_storage_reservoir_physics(gm, i, n, is_end = false)
-                else
-                    constraint_storage_reservoir_physics(gm, i, n)
-                end
+                constraint_storage_reservoir_physics(gm, i, n)
             end
         end
     end
