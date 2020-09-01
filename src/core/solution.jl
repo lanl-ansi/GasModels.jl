@@ -6,6 +6,8 @@ function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
     solution["base_time"] = gm.ref[:base_time]
     solution["base_length"] = gm.ref[:base_length]
     solution["base_density"] = gm.ref[:base_density]
+    solution["base_volume"] = gm.ref[:base_volume]
+    solution["base_mass"] = gm.ref[:base_mass]
 end
 
 

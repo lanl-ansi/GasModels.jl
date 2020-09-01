@@ -15,6 +15,19 @@ function constraint_slack_junction_density(
     )
 end
 
+"Constraint: nodal balance"
+function constraint_nodal_balance(gm::AbstractGasModel, junction_id::Int, nw::Int = gm.cnw)
+    net_in = var(gm, nw, :net_nodal_injection, junction_id)
+    net_out = var(gm, nw, :net_nodal_edge_out_flow, junction_id)
+    _add_constraint!(
+        gm,
+        nw,
+        :nodal_balance,
+        junction_id,
+        JuMP.@constraint(gm.model, net_in == net_out)
+    )
+end
+
 "Constraint: slack junction mass balance"
 function constraint_slack_junction_mass_balance(
     gm::AbstractGasModel,
@@ -29,6 +42,42 @@ function constraint_slack_junction_mass_balance(
         :slack_junction_mass_balance,
         slack_junction_id,
         JuMP.@constraint(gm.model, net_injection == net_edge_out_flow)
+    )
+end
+
+"Constraint: pipe mass balance"
+function constraint_pipe_mass_balance(gm::AbstractGasModel, nw::Int, pipe_id::Int, fr_junction::Int, to_junction::Int, L::Float64)
+
+    p_fr_dot = var(gm, nw, :density_derivative, fr_junction)
+    p_to_dot = var(gm, nw, :density_derivative, to_junction)
+    phi = var(gm, nw, :pipe_flux_neg, pipe_id)
+    _add_constraint!(
+        gm, 
+        nw, 
+        :pipe_mass_balance, 
+        pipe_id, 
+        JuMP.@constraint(gm.model, L * ( p_fr_dot + p_to_dot ) + 4 * phi == 0)
+    )
+end 
+
+"Constraint: pipe momentum balance"
+function constraint_pipe_momentum_balance(
+    gm::AbstractGasModel,
+    nw::Int,
+    pipe_id::Int,
+    fr_junction::Int,
+    to_junction::Int,
+    resistance::Float64,
+)
+    p_fr = var(gm, nw, :density, fr_junction)
+    p_to = var(gm, nw, :density, to_junction)
+    f = var(gm, nw, :pipe_flux_avg, pipe_id)
+    _add_constraint!(
+        gm,
+        nw,
+        :pipe_momentum_balance,
+        pipe_id,
+        JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0)
     )
 end
 
@@ -126,32 +175,15 @@ function constraint_compressor_power(
     gm::AbstractGasModel,
     nw::Int,
     compressor_id::Int,
-    compressor_power,
-    power_max::Float64,
+    compressor_power_expr,
+    compressor_power_var,
 )
     _add_constraint!(
         gm,
         nw,
         :compressor_power,
         compressor_id,
-        JuMP.@NLconstraint(gm.model, compressor_power <= power_max)
-    )
-end
-
-"Constraint: storage effective flow"
-function constraint_storage_well_head_to_eff_flow(
-    gm::AbstractGasModel,
-    storage_id::Int,
-    nw::Int = gm.cnw,
-)
-    f_eff = var(gm, nw, :storage_effective, storage_id)
-    f_wh = var(gm, nw, :well_head, storage_id)
-    _add_constraint!(
-        gm,
-        nw,
-        :storage_effective_flow_balance,
-        storage_id,
-        JuMP.@constraint(gm.model, f_eff == f_wh)
+        JuMP.@NLconstraint(gm.model, compressor_power_var == compressor_power_expr)
     )
 end
 
@@ -194,7 +226,7 @@ function constraint_storage_well_momentum_balance(
             storage_id * 1000 + i,
             JuMP.@NLconstraint(
                 gm.model,
-                exp(beta) * rho_top^2 - rho_bottom^2 ==
+                exp(beta) * rho_bottom^2 - rho_top^2 ==
                 (-resistance * phi_avg * abs(phi_avg)) * (exp(beta) - 1) / beta
             )
         )
@@ -208,20 +240,25 @@ function constraint_storage_well_mass_balance(
     num_discretizations::Int,
     storage_id::Int,
     L::Float64,
+    is_end::Bool,
 )
     for i = 1:num_discretizations
         rho_dot_top = var(gm, nw, :well_density_derivative, storage_id)[i]
         rho_dot_bottom = var(gm, nw, :well_density_derivative, storage_id)[i+1]
         phi_neg = var(gm, nw, :well_flux_neg, storage_id)[i]
+        if is_end
+            phi_neg =
+                0.5 * (
+                    var(gm, nw, :well_flux_neg, storage_id)[i] +
+                    var(gm, nw + 1, :well_flux_neg, storage_id)[i]
+                )
+        end
         GasModels._add_constraint!(
             gm,
             nw,
             :well_ideal_mass_balance,
             storage_id * 1000 + i,
-            JuMP.@constraint(
-                gm.model,
-                L * (rho_dot_top + rho_dot_bottom) == -4 * phi_neg
-            )
+            JuMP.@constraint(gm.model, L * (rho_dot_top + rho_dot_bottom) == 4 * phi_neg)
         )
     end
 end
@@ -234,22 +271,17 @@ function constraint_storage_well_nodal_balance(
     num_discretizations::Int = 4,
 )
 
-    f_bh = var(gm, nw, :bottom_hole, storage_id)
-    phi_in_wh =
-        var(gm, nw, :well_flux_avg, storage_id)[1] +
-        var(gm, nw, :well_flux_neg, storage_id)[1]
-    phi_out_bh =
-        var(gm, nw, :well_flux_avg, storage_id)[num_discretizations] -
-        var(gm, nw, :well_flux_neg, storage_id)[num_discretizations]
-    f_wh = var(gm, nw, :well_head, storage_id)
-    well_area = ref(gm, nw, :storage, storage_id)["well_area"]
-
+    f_wh = var(gm, nw, :well_head_flow, storage_id)
+    f_bh = var(gm, nw, :bottom_hole_flow, storage_id)
+    flow_to_well = var(gm, nw, :well_flow_to, storage_id)[1]
+    flow_fr_well = var(gm, nw, :well_flow_fr, storage_id)[num_discretizations]
+    
     GasModels._add_constraint!(
         gm,
         nw,
         :wh_flow_balance,
         storage_id,
-        JuMP.@constraint(gm.model, f_wh == well_area * phi_in_wh)
+        JuMP.@constraint(gm.model, f_wh == flow_to_well)
     )
 
     GasModels._add_constraint!(
@@ -257,15 +289,13 @@ function constraint_storage_well_nodal_balance(
         nw,
         :bh_flow_balance,
         storage_id,
-        JuMP.@constraint(gm.model, f_bh == well_area * phi_out_bh)
+        JuMP.@constraint(gm.model, f_bh == flow_fr_well)
     )
 
 
     for i = 1:(num_discretizations-1)
-        phi_top_well_avg = var(gm, nw, :well_flux_avg, storage_id)[i]
-        phi_top_well_neg = var(gm, nw, :well_flux_neg, storage_id)[i]
-        phi_bottom_well_avg = var(gm, nw, :well_flux_avg, storage_id)[i+1]
-        phi_bottom_well_neg = var(gm, nw, :well_flux_neg, storage_id)[i+1]
+        flux_fr = var(gm, nw, :well_flux_fr, storage_id)[i]
+        flux_to = var(gm, nw, :well_flux_to, storage_id)[i+1]
 
         GasModels._add_constraint!(
             gm,
@@ -274,8 +304,7 @@ function constraint_storage_well_nodal_balance(
             storage_id * 1000 + i,
             JuMP.@constraint(
                 gm.model,
-                phi_top_well_avg - phi_top_well_neg ==
-                phi_bottom_well_avg + phi_bottom_well_neg
+                flux_fr == flux_to
             )
         )
 
@@ -305,11 +334,19 @@ end
 function constraint_storage_reservoir_physics(
     gm::AbstractGasModel,
     storage_id::Int,
-    nw::Int = gm.cnw,
+    nw::Int = gm.cnw;
+    is_end::Bool = false,
 )
     volume = ref(gm, nw, :storage, storage_id)["reservoir_volume"]
     rho_dot = var(gm, nw, :reservoir_density_derivative, storage_id)
-    f_bh = var(gm, nw, :bottom_hole, storage_id)
+    f_bh = var(gm, nw, :bottom_hole_flow, storage_id)
+    if is_end
+        f_bh =
+            0.5 * (
+                var(gm, nw, :bottom_hole_flow, storage_id) +
+                var(gm, nw + 1, :bottom_hole_flow, storage_id)
+            )
+    end
 
     GasModels._add_constraint!(
         gm,
@@ -322,16 +359,35 @@ end
 
 "Constraint: reservoir initial condition"
 function constraint_initial_condition_reservoir(
-    gm::AbstractGasModel, 
-    storage_id::Int, 
-    nw::Int, 
-    initial_density)
+    gm::AbstractGasModel,
+    storage_id::Int,
+    nw::Int,
+    initial_density,
+)
     rho = var(gm, nw, :reservoir_density, nw)
     GasModels._add_constraint!(
-        gm, 
-        nw, 
-        :reservoir_initial_condition, 
-        storage_id, 
+        gm,
+        nw,
+        :reservoir_initial_condition,
+        storage_id,
         JuMP.@constraint(gm.model, rho == initial_density)
     )
-end 
+end
+
+"Constraint: time periodicity of well head flow"
+function constraint_wh_flow_time_periodicity(
+    gm::AbstractGasModel,
+    storage_id::Int,
+    nw_start::Int,
+    nw_end::Int,
+)
+    f_wh_start = var(gm, nw_start, :well_head_flow, storage_id)
+    f_wh_end = var(gm, nw_end, :well_head_flow, storage_id)
+    GasModels._add_constraint!(
+        gm,
+        nw_start,
+        :wh_flow_periodicity,
+        storage_id,
+        JuMP.@constraint(gm.model, f_wh_start == f_wh_end)
+    )
+end

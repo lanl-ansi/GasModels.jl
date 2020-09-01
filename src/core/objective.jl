@@ -133,58 +133,38 @@ end
 "transient objective for minimizing a linear combination of compressor power and load shed"
 function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
     econ_weight = gm.ref[:economic_weighting]
+    load_shed_expression = 0.0 
+    compressor_power_expression = 0.0
     load_shed_expressions = []
     compressor_power_expressions = []
     for nw in time_points[1:end-1]
         for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    receipt["offer_price"] * var(gm, nw, :injection)[i]
-                )
-            )
+            load_shed_expression += (receipt["offer_price"] * var(gm, nw, :injection)[i])
         end
         for (i, delivery) in ref(gm, nw, :dispatchable_delivery)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    -delivery["bid_price"] * var(gm, nw, :withdrawal)[i]
-                )
-            )
+            load_shed_expression -= (delivery["bid_price"] * var(gm, nw, :withdrawal)[i])
         end
         for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
-            push!(
-                load_shed_expressions,
-                JuMP.@NLexpression(
-                    gm.model,
-                    transfer["offer_price"] * var(gm, nw, :transfer_injection)[i] -
-                    transfer["bid_price"] * var(gm, nw, :transfer_withdrawal)[i]
-                )
+            load_shed_expression += (
+                transfer["offer_price"] * var(gm, nw, :transfer_injection)[i] -
+                transfer["bid_price"] * var(gm, nw, :transfer_withdrawal)[i]
             )
         end
         for (i, compressor) in ref(gm, nw, :compressor)
-            push!(compressor_power_expressions, var(gm, nw, :compressor_power)[i])
+            compressor_power_expression += var(gm, nw, :compressor_power_var, i)
         end
     end
-    if length(load_shed_expressions) != 0 && length(compressor_power_expressions) != 0
-        JuMP.@NLobjective(
+    JuMP.@objective(
             gm.model,
             Min,
-            econ_weight *
-            sum(load_shed_expressions[i] for i = 1:length(load_shed_expressions)) +
-            (1 - econ_weight) * sum(
-                compressor_power_expressions[i]
-                for i = 1:length(compressor_power_expressions)
-            )
+            econ_weight * load_shed_expression +
+            (1 - econ_weight) * compressor_power_expression
         )
-    end
 end
 
 "minimum load shedding objective for transient OGF problem"
 function objective_min_transient_load_shed(gm::AbstractGasModel, time_points)
-    load_shed_expression = 0
+    load_shed_expression = 0.0
     for nw in time_points[1:end-1]
         for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
             load_shed_expression += (receipt["offer_price"] * var(gm, nw, :injection)[i])
@@ -204,20 +184,11 @@ end
 
 "minium compressor power objective for transient OGF problem"
 function objective_min_transient_compressor_power(gm::AbstractGasModel, time_points)
-    compressor_power_expressions = []
+    compressor_power_expression = 0
     for nw in time_points[1:end-1]
         for (i, compressor) in ref(gm, nw, :compressor)
-            push!(compressor_power_expressions, var(gm, nw, :compressor_power)[i])
+            compressor_power_expression += var(gm, nw, :compressor_power_var)[i]
         end
     end
-    if length(compressor_power_expressions) != 0
-        JuMP.@NLobjective(
-            gm.model,
-            Min,
-            sum(
-                compressor_power_expressions[i]
-                for i = 1:length(compressor_power_expressions)
-            )
-        )
-    end
+    JuMP.@objective(gm.model, Min, compressor_power_expression)
 end
