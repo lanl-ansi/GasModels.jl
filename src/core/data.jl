@@ -111,7 +111,7 @@ function make_si_units!(
         "design_outlet_pressure",
         "pressure_nominal",
         "reservoir_p_max",
-        "reservoir_pressure",
+        "reservoir_pressure"
     ]
     flow_params = [
         "f",
@@ -134,7 +134,7 @@ function make_si_units!(
         "well_flux_avg",
         "well_flux_neg",
         "bottom_hole_flow",
-        "well_head_flow",
+        "well_head_flow"
     ]
     inv_flow_params = ["bid_price", "offer_price"]
     for line in transient_data
@@ -232,7 +232,7 @@ const _params_for_unit_conversions = Dict(
         "reservoir_density",
         "reservoir_pressure",
         "well_density",
-        "well_pressure",
+        "well_pressure"
     ],
     "loss_resistor" => ["p_loss", "flow_min", "flow_max"],
     "resistor" => ["flow_min", "flow_max"],
