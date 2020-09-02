@@ -2,12 +2,13 @@
 
 ## Pending
 
-- bug fix for storage
 - compressors are made optional components
 - fixed bug in `calc_connected_components`
 
 ## v0.8
 
+- added support storage model for transient_ogf added 
+- transient_ogf constraints and variables changed for improved computation times
 - renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
 - removed explicit direction function calls. These are now handled automatically based on data
 - renamed pd_min, pd_max to be pd_sqr_min and pd_sqr_max (breaking)
