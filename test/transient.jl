@@ -44,7 +44,7 @@ end
         atol = 1e-1,
     )
     @test isapprox(
-        result["solution"]["nw"]["2"]["compressor"]["1"]["power"],
+        result["solution"]["nw"]["2"]["compressor"]["1"]["power_var"],
         3e6,
         atol = 10,
     )
@@ -59,7 +59,7 @@ end
     )
     result = run_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -5002.87, atol = 1e-1)
+    @test isapprox(result["objective"], -5002, atol = 1)
     make_si_units!(result["solution"])
     @test isapprox(
         result["solution"]["nw"]["1"]["receipt"]["1"]["injection"],
@@ -72,7 +72,7 @@ end
         atol = 1e-1,
     )
     @test isapprox(
-        result["solution"]["nw"]["2"]["compressor"]["1"]["power"],
+        result["solution"]["nw"]["2"]["compressor"]["1"]["power_var"],
         3e6,
         atol = 10,
     )
