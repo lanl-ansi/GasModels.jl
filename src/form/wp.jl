@@ -4,6 +4,19 @@
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
 
+
+"Constraint: Constraints which define pressure drop across a resistor"
+function constraint_resistor_pressure(gm::AbstractWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    p_i_sqr, p_j_sqr = var(gm, n, :psqr, i), var(gm, n, :psqr, j)
+
+    c_1 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :pressure_drop_1, k, c_1)
+    c_2 = JuMP.@constraint(gm.model, p_j^2 == p_j_sqr)
+    _add_constraint!(gm, n, :pressure_drop_2, k, c_2)
+end
+
+
 "Weymouth equation with absolute value"
 function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     pi = var(gm, n, :psqr, i)
@@ -14,13 +27,13 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
 end
 
 
-"Weymouth equation with absolute value"
-function constraint_resistor_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    f  = var(gm, n, :f_resistor, k)
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= (f * abs(f))/w))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= (f * abs(f))/w))
+"Darcy-Weisbach equation with absolute value"
+function constraint_resistor_darcy_weisbach(gm::AbstractWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    f = var(gm, n, :f_resistor, k)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+
+    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@NLconstraint(gm.model, inv(w) * (p_i - p_j) <= f * abs(f)))
+    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@NLconstraint(gm.model, inv(w) * (p_i - p_j) >= f * abs(f)))
 end
 
 

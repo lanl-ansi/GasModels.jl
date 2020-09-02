@@ -57,7 +57,7 @@ mgc.short_pipe = [
 %% resistor data
 % id	fr_junction	to_junction	drag	diameter	status	is_bidirectional
 mgc.resistor = [
-40 1	42	7377164597  1	  1	1
+40 1	42	1  1	  1	1
 ];
 
 % id	fr_junction	to_junction	reduction_factor_min	reduction_factor_max	flow_min	flow_max	status

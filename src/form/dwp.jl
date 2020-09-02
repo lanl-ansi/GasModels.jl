@@ -84,19 +84,27 @@ Constraint 4:
 When y = 0, w(pj - pi) >= 0 this constraint needs to be active, so should be upper bounded by f^2 to get equality when combined with weymouth3
 When y = 1, w(pj - pi) <= 0, making this constraint always true (inactive when y = 1)
 note the sign flip between pi and pj
-
-
 "
-function constraint_resistor_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    y  = var(gm, n, :y_resistor, k)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    f  = var(gm, n, :f_resistor, k)
+function constraint_resistor_darcy_weisbach(gm::AbstractDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    f, y = var(gm, n, :f_resistor, k), var(gm, n, :y_resistor, k)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w*(pi - pj) >= f^2 - (1-y) * (f_min^2 - w*pd_min)))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w*(pi - pj) <= f^2))
-    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w*(pj - pi) >= f^2 - y * (f_max^2 + w*pd_max)))
-    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w*(pj - pi) <= f^2))
+    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, inv(w)*(p_i - p_j) >= f^2 - (1.0 - y) * (f_min^2-inv(w)*pd_min)))
+    _add_constraint!(gm, n, :darcy_weisbach_2, k, JuMP.@constraint(gm.model, inv(w)*(p_i - p_j) <= f^2))
+    _add_constraint!(gm, n, :darcy_weisbach_3, k, JuMP.@constraint(gm.model, inv(w)*(p_j - p_i) >= f^2 - y * (f_max^2+inv(w)*pd_max)))
+    _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, inv(w)*(p_j - p_i) <= f^2))
+end
+
+
+"Constraint: Define pressures across a resistor"
+function constraint_resistor_pressure(gm::AbstractDWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    p_i_sqr, p_j_sqr = var(gm, n, :psqr, i), var(gm, n, :psqr, j)
+
+    c_1 = JuMP.@constraint(gm.model, p_i^2 == p_i_sqr)
+    _add_constraint!(gm, n, :pressure_drop_1, k, c_1)
+    c_2 = JuMP.@constraint(gm.model, p_j^2 == p_j_sqr)
+    _add_constraint!(gm, n, :pressure_drop_2, k, c_2)
 end
 
 

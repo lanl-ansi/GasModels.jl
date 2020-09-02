@@ -6,14 +6,20 @@
 
 "Constraint: Weymouth equation--not applicable for LRWP models"
 function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in wp.jl
+    # TODO Linear convex hull of the weymouth equations in wp.jl
 end
 
 
-"Constraint: Weymouth equation--not applicable for LRWP models"
-function constraint_resistor_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in wp.jl
+"Constraint: Darcy-Weisbach equation--not applicable for LRWP models"
+function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    # TODO Linear convex hull of the weymouth equations in wp.jl
 end
+
+
+"Constraint: Define pressures across a resistor"
+function constraint_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+end
+
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
 function constraint_loss_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)

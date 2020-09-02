@@ -914,6 +914,24 @@ function _calc_max_mass_flow(receipts::Dict, storages::Dict, transfers::Dict)
 end
 
 
+"Calculate the bounds on minimum and maximum pressure difference across a resistor."
+function _calc_resistor_pd_bounds(resistor::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
+    pd_min = i["p_min"] - j["p_max"]
+    pd_max = i["p_max"] - j["p_min"]
+
+    is_bidirectional = get(resistor, "is_bidirectional", 1)
+    flow_direction = get(resistor, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0.0, pd_min)
+    elseif flow_direction == -1
+        pd_max = min(0.0, pd_max)
+    end
+
+    return pd_min, pd_max
+end
+
+
 "Calculate the bounds on minimum and maximum pressure difference squared for a pipe"
 function _calc_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
     pd_max = i["p_max"]^2 - j["p_min"]^2
@@ -921,26 +939,6 @@ function _calc_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j
 
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
-
-    if is_bidirectional == 0 || flow_direction == 1
-        pd_min = max(0, pd_min)
-    end
-
-    if flow_direction == -1
-        pd_max = min(0, pd_max)
-    end
-
-    return pd_min, pd_max
-end
-
-
-"Calculate the bounds on minimum and maximum pressure difference squared for a resistor"
-function _calc_resistor_pd_bounds_sqr(resistor::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
-    pd_max = i["p_max"]^2 - j["p_min"]^2
-    pd_min = i["p_min"]^2 - j["p_max"]^2
-
-    is_bidirectional = get(resistor, "is_bidirectional", 1)
-    flow_direction   = get(resistor, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
         pd_min = max(0, pd_min)
@@ -1050,13 +1048,13 @@ end
 function _calc_resistor_flow_min(mf::Float64, resistor::Dict, i::Dict, j::Dict)
     is_bidirectional = get(resistor, "is_bidirectional", 1)
     flow_direction   = get(resistor, "flow_direction", 0)
-    flow_min         = get(resistor,"flow_min",mf)
-    pd_min, pd_max   = _calc_resistor_pd_bounds_sqr(resistor,i,j)
+    flow_min         = get(resistor, "flow_min", mf)
+    pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, i, j)
     w                = _calc_resistor_resistance(resistor)
-    pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    pf_min           = pd_min < 0.0 ? -sqrt(inv(w) * abs(pd_min)) : sqrt(inv(w) * abs(pd_min))
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(mf, pf_min, flow_min, 0)
+        return max(mf, pf_min, flow_min, 0.0)
     else
         return max(mf, pf_min, flow_min)
     end
@@ -1065,14 +1063,14 @@ end
 
 "calculates the maximum flow on a resistor"
 function _calc_resistor_flow_max(mf::Float64, resistor::Dict, i::Dict, j::Dict)
-    flow_direction = get(resistor,"flow_direction", 0)
-    flow_max       = get(resistor,"flow_max",mf)
-    pd_min, pd_max = _calc_resistor_pd_bounds_sqr(resistor,i,j)
+    flow_direction = get(resistor, "flow_direction", 0)
+    flow_max       = get(resistor, "flow_max", mf)
+    pd_min, pd_max = _calc_resistor_pd_bounds(resistor, i, j)
     w              = _calc_resistor_resistance(resistor)
-    pf_max         = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    pf_max         = pd_max < 0.0 ? -sqrt(inv(w) * abs(pd_max)) : sqrt(inv(w) * abs(pd_max))
 
     if flow_direction == -1
-        return min(mf, pf_max, flow_max, 0)
+        return min(mf, pf_max, flow_max, 0.0)
     else
         return min(mf, pf_max, flow_max)
     end
@@ -1169,12 +1167,7 @@ end
 "A very simple model of computing resistance for resistors that is based on the Thorley model.
 Eq (2.30) in Evaluating Gas Network Capacities"
 function _calc_resistor_resistance(resistor::Dict{String,Any})
-    lambda = resistor["drag"]
-    D = resistor["diameter"]
-    A = (pi * D^2) / 4
-
-    resistance = lambda / A / A / 2
-    return resistance
+    return 8.0 * resistor["drag"] * inv(pi^2 * resistor["diameter"]^4)
 end
 
 

@@ -31,23 +31,23 @@ function constraint_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
     j                = resistor["to_junction"]
     i_junction       = ref(gm, n, :junction, i)
     j_junction       = ref(gm, n, :junction, j)
-    pd_min, pd_max   = _calc_resistor_pd_bounds_sqr(resistor, i_junction, j_junction)
+    pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, i_junction, j_junction)
 
     constraint_resistor_pressure(gm, n, k, i, j, pd_min, pd_max)
 end
 
 
-"Template: Weymouth equation for defining the relationship between pressure drop and flow across a resistor"
-function constraint_resistor_weymouth(gm::AbstractGasModel, k; n::Int=gm.cnw)
+"Template: Darcy-Weisbach equation for defining the relationship between pressure drop and flow across a resistor"
+function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=gm.cnw)
     resistor         = ref(gm,n,:resistor,k)
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
     w                = _calc_resistor_resistance(resistor)
-    pd_min, pd_max   = _calc_resistor_pd_bounds_sqr(resistor,ref(gm,n,:junction,i),ref(gm,n,:junction,j))
+    pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min            = resistor["flow_min"]
     f_max            = resistor["flow_max"]
 
-    constraint_resistor_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    constraint_resistor_darcy_weisbach(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
 end
 
 
