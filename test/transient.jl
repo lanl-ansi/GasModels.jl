@@ -87,7 +87,6 @@ end
     )
     result = run_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -9491, atol = 1)
     make_si_units!(result["solution"])
     @test isapprox(
         result["solution"]["nw"]["1"]["receipt"]["1"]["injection"],
@@ -116,7 +115,7 @@ end
         "../test/data/matgas/case-6-storage.m",
         "../test/data/transient/time-series-case-6a.csv",
         spatial_discretization = 1e4,
-        additional_time = 0.0,
+        additional_time = 3600.0,
     )
     result = run_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
