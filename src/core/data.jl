@@ -38,6 +38,18 @@ function calc_base_density(data::Dict{String,<:Any})
     return get_base_pressure(data) / data["sound_speed"] / data["sound_speed"]
 end
 
+"estimates standard density from existing data"
+function _estimate_standard_density(data::Dict{String,<:Any})
+    standard_pressure = 101325.0 # 1 atm in Pascals
+    molecular_mass_of_air = 0.02896
+    temperature = get(data, "temperature", 288.7060)
+    specific_gravity = get(data, "gas_specific_gravity", 0.6)
+    gas_constant = get(data, "R", 8.314)
+
+    return standard_pressure * specific_gravity *
+        molecular_mass_of_air * inv(temperature * gas_constant)
+end
+
 "apply a function on a dict entry"
 function _apply_func!(data::Dict{String,Any}, key::String, func)
     if haskey(data, key)
@@ -631,20 +643,13 @@ function correct_f_bounds!(data::Dict{String,Any})
         pipe["flow_max"] = _calc_short_pipe_flow_max(mf, pipe)
     end
 
+    if "standard_density" in keys(data)
+        density = data["standard_density"]
+    else
+        density = _estimate_standard_density(data)
+    end
+
     for (idx, resistor) in get(data, "resistor", Dict())
-        if "standard_density" in keys(data)
-            density = data["standard_density"]
-        else
-            standard_pressure = 101325.0 # 1 atm in Pascals
-            molecular_mass_of_air = 0.02896
-            temperature = get(data, "temperature", 288.7060)
-            specific_gravity = get(data, "gas_specific_gravity", 0.6)
-            gas_constant = get(data, "R", 8.314)
-
-            density = standard_pressure * specific_gravity *
-                molecular_mass_of_air * inv(temperature * gas_constant)
-        end
-
         resistor["flow_min"] = _calc_resistor_flow_min(
             -mf, resistor, data["junction"][string(resistor["fr_junction"])],
             data["junction"][string(resistor["to_junction"])],
