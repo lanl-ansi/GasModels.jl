@@ -632,15 +632,28 @@ function correct_f_bounds!(data::Dict{String,Any})
     end
 
     for (idx, resistor) in get(data, "resistor", Dict())
+        if "standard_density" in keys(data)
+            density = data["standard_density"]
+        else
+            standard_pressure = 101325.0 # 1 atm in Pascals
+            molecular_mass_of_air = 0.02896
+            temperature = get(data, "temperature", 288.7060)
+            specific_gravity = get(data, "gas_specific_gravity", 0.6)
+            gas_constant = get(data, "R", 8.314)
+
+            density = standard_pressure * specific_gravity *
+                molecular_mass_of_air * inv(temperature * gas_constant)
+        end
+
         resistor["flow_min"] = _calc_resistor_flow_min(
             -mf, resistor, data["junction"][string(resistor["fr_junction"])],
             data["junction"][string(resistor["to_junction"])],
-            data["base_pressure"], data["base_flow"], data["standard_density"])
+            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
 
         resistor["flow_max"] = _calc_resistor_flow_max(
             mf, resistor, data["junction"][string(resistor["fr_junction"])],
             data["junction"][string(resistor["to_junction"])],
-            data["base_pressure"], data["base_flow"], data["standard_density"])
+            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
     end
 
     for (idx, loss_resistor) in get(data, "loss_resistor", Dict())
