@@ -6,12 +6,12 @@ julia:
   - 1.0
   - 1.5
   - nightly
+    env: CAN_FAIL=true
 codecov: true
 jobs:
   allow_failures:
     - julia:
       - env: CAN_FAIL=true
-      - nightly
   include:
     - stage: "Documentation"
       julia: 1.5
