@@ -5,6 +5,7 @@
 - bug fix for storage
 - compressors are made optional components
 - fixed bug in `calc_connected_components`
+- corrected models of resistor physics
 
 ## v0.8
 
