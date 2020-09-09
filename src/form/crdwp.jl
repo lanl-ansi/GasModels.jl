@@ -45,11 +45,7 @@ function variable_pipe_pressure_difference(
         for (k, pipe) in ref(gm, nw, :pipe)
             i = pipe["fr_junction"]
             j = pipe["to_junction"]
-            pd_min, pd_max = _calc_pipe_pd_bounds_sqr(
-                pipe,
-                ref(gm, nw, :junction, i),
-                ref(gm, nw, :junction, j),
-            )
+            pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, nw, :junction, i), ref(gm, nw, :junction, j))
 
             JuMP.set_lower_bound(l_pipe[k], 0.0)
             JuMP.set_upper_bound(l_pipe[k], max(abs(pd_min), abs(pd_max)))
@@ -78,11 +74,7 @@ function variable_resistor_pressure_difference(
         for (k, resistor) in ref(gm, nw, :resistor)
             i = resistor["fr_junction"]
             j = resistor["to_junction"]
-            pd_min, pd_max = _calc_resistor_pd_bounds_sqr(
-                resistor,
-                ref(gm, nw, :junction, i),
-                ref(gm, nw, :junction, j),
-            )
+            pd_min, pd_max = _calc_resistor_pd_bounds_sqr(resistor, ref(gm, nw, :junction, i), ref(gm, nw, :junction, j))
             JuMP.set_lower_bound(l_resistor[k], 0.0)
             JuMP.set_upper_bound(l_resistor[k], max(abs(pd_min), abs(pd_max)))
         end
@@ -123,11 +115,7 @@ function variable_pressure_difference_ne(
 
     if bounded
         for (k, ne_pipe) in ref(gm, nw, :ne_pipe)
-            pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(
-                ne_pipe,
-                ref(gm, nw, :junction, ne_pipe["fr_junction"]),
-                ref(gm, nw, :junction, ne_pipe["to_junction"]),
-            )
+            pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(ne_pipe, ref(gm, nw, :junction, ne_pipe["fr_junction"]), ref(gm, nw, :junction, ne_pipe["to_junction"]))
             pd_abs_max = max(abs(pd_min_off), abs(pd_max_off))
             JuMP.set_lower_bound(l_ne_pipe[k], 0.0)
             JuMP.set_upper_bound(l_ne_pipe[k], pd_abs_max)
@@ -190,39 +178,12 @@ function constraint_pipe_weymouth(
 
     _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj))
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth3,
-        k,
-        JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y))
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth4,
-        k,
-        JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2))
-    )
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
     _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w * l >= f^2))
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth6,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2)
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth7,
-        k,
-        JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2))
-    )
+    _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2)))
+    _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2)))
 end
 
 
@@ -276,39 +237,12 @@ function constraint_resistor_weymouth(
 
     _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj))
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth3,
-        k,
-        JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y))
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth4,
-        k,
-        JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2))
-    )
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
     _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, l >= f^2 / w))
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth6,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2)
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth7,
-        k,
-        JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2))
-    )
+    _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2)))
+    _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2)))
 end
 
 
@@ -350,43 +284,12 @@ function constraint_pipe_weymouth_ne(
 
     _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, l >= pj - pi))
     _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, l >= pi - pj))
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth_ne3,
-        k,
-        JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y))
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth_ne4,
-        k,
-        JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2))
-    )
+    _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
     _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp * w * l >= f^2))
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth_ne6,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * l <=
-            f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2) + (1 - zp) * w * pd_M
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth_ne7,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2) + (1 - zp) * w * pd_M
-        )
-    )
+    _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2) + (1 - zp) * w * pd_M))
+    _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2) + (1 - zp) * w * pd_M))
 end
 
 
@@ -413,34 +316,10 @@ function constraint_compressor_ratio_value(
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (1 - y) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (1 - y) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value3,
-            k,
-            JuMP.@constraint(gm.model, rpj <= pi + y * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value4,
-            k,
-            JuMP.@constraint(gm.model, rpj >= pi - y * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - y) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, rpj <= pi + y * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, rpj >= pi - y * i_pmax^2))
     else
         _IM.relaxation_product(gm.model, pi, r, pj)
     end
@@ -494,51 +373,15 @@ function constraint_compressor_ratio_value_ne(
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (2 - y - z) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne3,
-            k,
-            JuMP.@constraint(gm.model, rpj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne4,
-            k,
-            JuMP.@constraint(gm.model, rpj >= pi - (1 + y - z) * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (2 - y - z) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, rpj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne4, k, JuMP.@constraint(gm.model, rpj >= pi - (1 + y - z) * i_pmax^2))
     else
         rpi = JuMP.@variable(gm.model)
         _IM.relaxation_product(gm.model, pi, r, rpi)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (1 - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (1 - z) * j_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - z) * j_pmax^2))
     end
 end
 

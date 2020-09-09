@@ -112,34 +112,10 @@ function constraint_compressor_ratio_value(
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (1 - y) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (1 - y) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value3,
-            k,
-            JuMP.@constraint(gm.model, rpj <= pi + y * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value4,
-            k,
-            JuMP.@constraint(gm.model, rpj >= pi - y * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - y) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, rpj <= pi + y * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, rpj >= pi - y * i_pmax^2))
     else
         _IM.relaxation_product(gm.model, pi, r, pj)
     end
@@ -170,51 +146,15 @@ function constraint_compressor_ratio_value_ne(
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (2 - y - z) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne3,
-            k,
-            JuMP.@constraint(gm.model, rpj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne4,
-            k,
-            JuMP.@constraint(gm.model, rpj >= pi - (1 + y - z) * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (2 - y - z) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, rpj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne4, k, JuMP.@constraint(gm.model, rpj >= pi - (1 + y - z) * i_pmax^2))
     else
         rpi = JuMP.@variable(gm.model)
         _IM.relaxation_product(gm.model, pi, r, rpi)
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne1,
-            k,
-            JuMP.@constraint(gm.model, rpi <= pj + (1 - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne2,
-            k,
-            JuMP.@constraint(gm.model, rpi >= pj - (1 - z) * j_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - z) * j_pmax^2))
     end
 end
 

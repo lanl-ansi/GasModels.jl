@@ -18,20 +18,8 @@ end
 function constraint_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    _add_constraint!(
-        gm,
-        n,
-        :pressure_drop1,
-        k,
-        JuMP.@constraint(gm.model, pd_min <= pi - pj)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :pressure_drop2,
-        k,
-        JuMP.@constraint(gm.model, pi - pj <= pd_max)
-    )
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
 
 
@@ -104,28 +92,14 @@ function constraint_mass_flow_balance(
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
     ft = var(gm, n, :ft)
-    _add_constraint!(
-        gm,
-        n,
-        :junction_mass_flow_balance,
-        i,
-        JuMP.@constraint(
-            gm.model,
-            fg_constant - fl_constant + sum(fg[a] for a in receipts) -
-            sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
-            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-            sum(f_compressor[a] for a in f_compressors) -
-            sum(f_compressor[a] for a in t_compressors) +
-            sum(f_resistor[a] for a in f_resistors) -
-            sum(f_resistor[a] for a in t_resistors) +
-            sum(f_loss_resistor[a] for a in f_loss_resistors) -
-            sum(f_loss_resistor[a] for a in t_loss_resistors) +
-            sum(f_short_pipe[a] for a in f_short_pipes) -
-            sum(f_short_pipe[a] for a in t_short_pipes) +
-            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-            sum(f_regulator[a] for a in f_regulators) -
-            sum(f_regulator[a] for a in t_regulators)
-        )
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
+                                                                            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                            sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                            sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                            sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
+                                                                            sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                            sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators))
     )
 end
 
@@ -174,33 +148,17 @@ function constraint_mass_flow_balance_ne(
     f_ne_compressor = var(gm, n, :f_ne_compressor)
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
-    _add_constraint!(
-        gm,
-        n,
-        :junction_mass_flow_balance_ne_ls,
-        i,
-        JuMP.@constraint(
-            gm.model,
-            fg_constant - fl_constant + sum(fg[a] for a in receipts) -
-            sum(fl[a] for a in deliveries) ==
-            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-            sum(f_compressor[a] for a in f_compressors) -
-            sum(f_compressor[a] for a in t_compressors) +
-            sum(f_resistor[a] for a in f_resistors) -
-            sum(f_resistor[a] for a in t_resistors) +
-            sum(f_loss_resistor[a] for a in f_loss_resistors) -
-            sum(f_loss_resistor[a] for a in t_loss_resistors) +
-            sum(f_short_pipe[a] for a in f_short_pipes) -
-            sum(f_short_pipe[a] for a in t_short_pipes) +
-            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-            sum(f_regulator[a] for a in f_regulators) -
-            sum(f_regulator[a] for a in t_regulators) +
-            sum(f_ne_pipe[a] for a in ne_pipes_fr) -
-            sum(f_ne_pipe[a] for a in ne_pipes_to) +
-            sum(f_ne_compressor[a] for a in ne_compressors_fr) -
-            sum(f_ne_compressor[a] for a in ne_compressors_to)
-        )
-    )
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+                                                                                    sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+                                                                                    sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+                                                                                    sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+                                                                                    sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
+                                                                                    sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+                                                                                    sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+                                                                                    sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +
+                                                                                    sum(f_ne_pipe[a] for a in ne_pipes_fr) - sum(f_ne_pipe[a] for a in ne_pipes_to) +
+                                                                                    sum(f_ne_compressor[a] for a in ne_compressors_fr) - sum(f_ne_compressor[a] for a in ne_compressors_to)
+                                                                                ))
 end
 
 
@@ -212,13 +170,7 @@ end
 function constraint_short_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    _add_constraint!(
-        gm,
-        n,
-        :short_pipe_pressure_drop,
-        k,
-        JuMP.@constraint(gm.model, pi == pj)
-    )
+    _add_constraint!(gm, n, :short_pipe_pressure_drop, k, JuMP.@constraint(gm.model, pi == pj))
 end
 
 
@@ -243,20 +195,8 @@ function constraint_on_off_valve_pressure(
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v = var(gm, n, :v_valve, k)
-    _add_constraint!(
-        gm,
-        n,
-        :valve_pressure_drop1,
-        k,
-        JuMP.@constraint(gm.model, pj - ((1 - v) * j_pmax^2) <= pi)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :valve_pressure_drop2,
-        k,
-        JuMP.@constraint(gm.model, pi <= pj + ((1 - v) * i_pmax^2))
-    )
+    _add_constraint!(gm, n, :valve_pressure_drop1, k, JuMP.@constraint(gm.model, pj - ((1 - v) * j_pmax^2) <= pi))
+    _add_constraint!(gm, n, :valve_pressure_drop2, k, JuMP.@constraint(gm.model, pi <= pj + ((1 - v) * i_pmax^2)))
 end
 
 
@@ -264,20 +204,8 @@ end
 function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm, n, :f_valve, k)
     v = var(gm, n, :v_valve, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow1,
-        k,
-        JuMP.@constraint(gm.model, f_min * v <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * v)
-    )
+    _add_constraint!(gm, n, :on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min * v <= f))
+    _add_constraint!(gm, n, :on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max * v))
 end
 
 
@@ -298,20 +226,8 @@ end
 function constraint_pipe_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    _add_constraint!(
-        gm,
-        n,
-        :pressure_drop1,
-        k,
-        JuMP.@constraint(gm.model, pd_min <= pi - pj)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :pressure_drop2,
-        k,
-        JuMP.@constraint(gm.model, pi - pj <= pd_max)
-    )
+    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
+    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
 end
 
 
@@ -330,20 +246,8 @@ function constraint_pipe_pressure_ne(
     z = var(gm, n, :zp, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop_ne1,
-        k,
-        JuMP.@constraint(gm.model, (1 - z) * pd_min_off + z * pd_min_on <= pi - pj)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop_ne2,
-        k,
-        JuMP.@constraint(gm.model, pi - pj <= z * pd_max_on + (1 - z) * pd_max_off)
-    )
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1 - z) * pd_min_off + z * pd_min_on <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= z * pd_max_on + (1 - z) * pd_max_off))
 end
 
 
@@ -369,20 +273,8 @@ function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_min, f_
 function constraint_compressor_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     zc = var(gm, n, :zc, k)
     f = var(gm, n, :f_ne_compressor, k)
-    _add_constraint!(
-        gm,
-        n,
-        :compressor_flow_ne1,
-        k,
-        JuMP.@constraint(gm.model, f_min * zc <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :compressor_flow_ne2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * zc)
-    )
+    _add_constraint!(gm, n, :compressor_flow_ne1, k, JuMP.@constraint(gm.model, f_min * zc <= f))
+    _add_constraint!(gm, n, :compressor_flow_ne2, k, JuMP.@constraint(gm.model, f <= f_max * zc))
 end
 
 
@@ -408,18 +300,6 @@ function constraint_on_off_regulator_mass_flow(
 )
     f = var(gm, n, :f_regulator, k)
     v = var(gm, n, :v_regulator, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow1,
-        k,
-        JuMP.@constraint(gm.model, f_min * v <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * v)
-    )
+    _add_constraint!(gm, n, :on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min * v <= f))
+    _add_constraint!(gm, n, :on_off_valve_flow2, k, JuMP.@constraint(gm.model, f <= f_max * v))
 end

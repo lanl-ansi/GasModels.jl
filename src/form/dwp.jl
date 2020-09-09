@@ -70,21 +70,9 @@ function constraint_pipe_weymouth(
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth1,
-        k,
-        JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min))
-    )
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2))
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth3,
-        k,
-        JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max))
-    )
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max)))
     _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2))
 end
 
@@ -137,21 +125,9 @@ function constraint_resistor_weymouth(
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_resistor, k)
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth1,
-        k,
-        JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min))
-    )
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
     _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2))
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth3,
-        k,
-        JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max))
-    )
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max)))
     _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2))
 end
 
@@ -203,41 +179,10 @@ function constraint_pipe_weymouth_ne(
     zp = var(gm, n, :zp, k)
     f = var(gm, n, :f_ne_pipe, k)
 
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth1,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * (pi - pj) >=
-            f^2 - (1 - y) * (f_min^2 - w * pd_min) - (1 - zp) * abs(w * pd_min)
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth2,
-        k,
-        JuMP.@constraint(gm.model, w * (pi - pj) <= f^2 + (1 - zp) * w * pd_max)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth3,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max) - (1 - zp) * abs(w * pd_max)
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :weymouth4,
-        k,
-        JuMP.@constraint(gm.model, w * (pj - pi) <= f^2 - (1 - zp) * w * pd_min)
-    )
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min) - (1 - zp) * abs(w * pd_min)))
+    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2 + (1 - zp) * w * pd_max))
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max) - (1 - zp) * abs(w * pd_max)))
+    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2 - (1 - zp) * w * pd_min))
 end
 
 
@@ -259,49 +204,13 @@ function constraint_compressor_ratio_value(
     y = var(gm, n, :y_compressor, k)
 
     if type == 0
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value1,
-            k,
-            JuMP.@constraint(gm.model, r * pi <= pj + (1 - y) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value2,
-            k,
-            JuMP.@constraint(gm.model, r * pi >= pj - (1 - y) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value3,
-            k,
-            JuMP.@constraint(gm.model, r * pj <= pi + y * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value4,
-            k,
-            JuMP.@constraint(gm.model, r * pj >= pi - y * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj - (1 - y) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, r * pj <= pi + y * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, r * pj >= pi - y * i_pmax^2))
     else
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value1,
-            k,
-            JuMP.@constraint(gm.model, r * pi <= pj)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value2,
-            k,
-            JuMP.@constraint(gm.model, r * pi >= pj)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj))
     end
 end
 
@@ -348,49 +257,13 @@ function constraint_compressor_ratio_value_ne(
     z = var(gm, n, :zc, k)
 
     if type == 0
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne1,
-            k,
-            JuMP.@constraint(gm.model, r * pi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne2,
-            k,
-            JuMP.@constraint(gm.model, r * pi >= pj - (2 - y - z) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne3,
-            k,
-            JuMP.@constraint(gm.model, r * pj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value_ne4,
-            k,
-            JuMP.@constraint(gm.model, r * pj >= pi - (1 + y - z) * i_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, r * pi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, r * pi >= pj - (2 - y - z) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, r * pj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne4, k, JuMP.@constraint(gm.model, r * pj >= pi - (1 + y - z) * i_pmax^2))
     else
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value1,
-            k,
-            JuMP.@constraint(gm.model, r * pi <= pj + (1 - z) * i_pmax^2 * max_ratio^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratio_value2,
-            k,
-            JuMP.@constraint(gm.model, r * pi >= pj - (1 - z) * j_pmax^2)
-        )
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj - (1 - z) * j_pmax^2))
     end
 end
 
@@ -406,13 +279,7 @@ function constraint_compressor_energy(
 )
     r = var(gm, n, :rsqr, k)
     f = var(gm, n, :f_compressor, k)
-    _add_constraint!(
-        gm,
-        n,
-        :compressor_energy,
-        k,
-        JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work)
-    )
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
 end
 
 
@@ -428,11 +295,5 @@ function constraint_compressor_energy_ne(
     r = var(gm, n, :rsqr_ne, k)
     f = var(gm, n, :f_ne_compressor, k)
     # f is zero when the compressor is not built, so constraint is always true then
-    _add_constraint!(
-        gm,
-        n,
-        :compressor_energy,
-        k,
-        JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work)
-    )
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
 end
