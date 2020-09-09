@@ -398,6 +398,9 @@ function _get_pipe_entry(pipe, junctions, density::Float64)
     diameter = _parse_gaslib_length(pipe["diameter"])
     length = _parse_gaslib_length(pipe["length"])
     roughness = _parse_gaslib_length(pipe["roughness"])
+
+    # Compute the friction factor as per ``The Gas Transmission Problem Solved by an
+    # Extension of the Simplex Algorithm'' by De Wolf and Smeers (2000).
     friction_factor = (2.0 * log(3.7 * diameter * inv(roughness)))^(-2)
 
     # Determine bidirectionality.

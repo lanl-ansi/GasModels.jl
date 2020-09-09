@@ -45,21 +45,16 @@ function constraint_pipe_weymouth(
 end
 
 
-"Constraint: Weymouth equation--not applicable for LRDWP models"
-function constraint_resistor_weymouth(
-    gm::AbstractLRDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    f_min,
-    f_max,
-    w,
-    pd_min,
-    pd_max,
-)
+"Constraint: Darcy-Weisbach equation--not applicable for LRDWP models"
+function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     #TODO Linear convex hull of the weymouth equations in crdwp.jl
 end
+
+
+"Constraint: Define pressures across a resistor"
+function constraint_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+end
+
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
 function constraint_loss_resistor_pressure(

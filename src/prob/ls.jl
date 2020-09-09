@@ -50,8 +50,8 @@ function build_ls(gm::AbstractGasModel)
 
     for i in ids(gm, :resistor)
         constraint_resistor_pressure(gm, i)
-        constraint_resistor_mass_flow(gm, i)
-        constraint_resistor_weymouth(gm, i)
+        constraint_resistor_mass_flow(gm,i)
+        constraint_resistor_darcy_weisbach(gm,i)
     end
 
     for i in ids(gm, :loss_resistor)

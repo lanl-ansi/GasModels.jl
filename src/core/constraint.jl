@@ -14,14 +14,6 @@ end
 # Constraints associated with resistors
 #################################################################################################
 
-"Constraint: Constraints which define pressure drop across a resistor"
-function constraint_resistor_pressure(gm::AbstractGasModel, n::Int, k, i, j, pd_min, pd_max)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    _add_constraint!(gm, n, :pressure_drop1, k, JuMP.@constraint(gm.model, pd_min <= pi - pj))
-    _add_constraint!(gm, n, :pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= pd_max))
-end
-
 
 "Constraint: Constraint on mass flow across the resistor"
 function constraint_resistor_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max) end
