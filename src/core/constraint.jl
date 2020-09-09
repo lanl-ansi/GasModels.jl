@@ -46,34 +46,7 @@ end
 
 
 "Constraint: standard flow balance equation where demand and production are variables"
-function constraint_mass_flow_balance(
-    gm::AbstractGasModel,
-    n::Int,
-    i,
-    f_pipes,
-    t_pipes,
-    f_compressors,
-    t_compressors,
-    f_resistors,
-    t_resistors,
-    f_loss_resistors,
-    t_loss_resistors,
-    f_short_pipes,
-    t_short_pipes,
-    f_valves,
-    t_valves,
-    f_regulators,
-    t_regulators,
-    fl_constant,
-    fg_constant,
-    deliveries,
-    receipts,
-    transfers,
-    flmin,
-    flmax,
-    fgmin,
-    fgmax,
-)
+function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe = var(gm, n, :f_pipe)
     f_compressor = var(gm, n, :f_compressor)
     f_resistor = var(gm, n, :f_resistor)
@@ -91,44 +64,13 @@ function constraint_mass_flow_balance(
                                                                             sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
                                                                             sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
                                                                             sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                            sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators))
-    )
+                                                                            sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators)
+                                                                        ))
 end
 
 
 "Constraint: standard flow balance equation where demand and production are variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(
-    gm::AbstractGasModel,
-    n::Int,
-    i,
-    f_pipes,
-    t_pipes,
-    f_compressors,
-    t_compressors,
-    f_resistors,
-    t_resistors,
-    f_loss_resistors,
-    t_loss_resistors,
-    f_short_pipes,
-    t_short_pipes,
-    f_valves,
-    t_valves,
-    f_regulators,
-    t_regulators,
-    ne_pipes_fr,
-    ne_pipes_to,
-    ne_compressors_fr,
-    ne_compressors_to,
-    fl_constant,
-    fg_constant,
-    deliveries,
-    receipts,
-    transfers,
-    flmin,
-    flmax,
-    fgmin,
-    fgmax,
-)
+function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl_constant, fg_constant, deliveries, receipts, transfers, flmin, flmax, fgmin, fgmax)
     f_pipe = var(gm, n, :f_pipe)
     f_compressor = var(gm, n, :f_compressor)
     f_resistor = var(gm, n, :f_resistor)
@@ -175,15 +117,7 @@ function constraint_short_pipe_mass_flow(gm::AbstractGasModel, n::Int, k, f_min,
 #################################################################################################
 
 "Constraint: Constraints on pressure drop across valves where the valve can open or close"
-function constraint_on_off_valve_pressure(
-    gm::AbstractGasModel,
-    n::Int,
-    k,
-    i,
-    j,
-    i_pmax,
-    j_pmax,
-)
+function constraint_on_off_valve_pressure(gm::AbstractGasModel, n::Int, k, i, j, i_pmax, j_pmax)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v = var(gm, n, :v_valve, k)
@@ -224,17 +158,7 @@ end
 
 
 "Constraint: constraints on pressure drop across an expansion pipe"
-function constraint_pipe_pressure_ne(
-    gm::AbstractGasModel,
-    n::Int,
-    k,
-    i,
-    j,
-    pd_min_on,
-    pd_max_on,
-    pd_min_off,
-    pd_max_off,
-)
+function constraint_pipe_pressure_ne(gm::AbstractGasModel, n::Int, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
     z = var(gm, n, :zp, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -283,13 +207,7 @@ function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_m
 #################################################################################################
 
 "constraints on flow across control valves"
-function constraint_on_off_regulator_mass_flow(
-    gm::AbstractGasModel,
-    n::Int,
-    k,
-    f_min,
-    f_max,
-)
+function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, n::Int, k, f_min, f_max)
     f = var(gm, n, :f_regulator, k)
     v = var(gm, n, :v_regulator, k)
     _add_constraint!(gm, n, :on_off_valve_flow1, k, JuMP.@constraint(gm.model, f_min * v <= f))

@@ -321,10 +321,7 @@ function parse_m_string(data_string::String)
     if func_name != nothing
         case["name"] = func_name
     else
-        Memento.warn(
-            _LOGGER,
-            "no case name found in .m file.  The file seems to be missing \"function mgc = ...\"",
-        )
+        Memento.warn(_LOGGER, "no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
         case["name"] = "no_name_found"
     end
 
@@ -332,10 +329,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        Memento.warn(
-            _LOGGER,
-            "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"",
-        )
+        Memento.warn(_LOGGER, "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
         case["source_version"] = "0.0.0+"
     end
 
@@ -375,10 +369,7 @@ function parse_m_string(data_string::String)
             case["is_english_units"] = 1
             case["is_si_units"] = 0
         else
-            Memento.error(
-                _LOGGER,
-                string("the possible values for units field in .m file are \"si\" or \"usc\""),
-            )
+            Memento.error(_LOGGER, string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
     else
         Memento.error(_LOGGER, string("no units field found in .m file.
@@ -441,7 +432,7 @@ This value will be auto-assigned based on the pressure limits provided in the da
         Memento.warn(
             _LOGGER,
             "economic_weighting value set to 1.0; the transient ogf
-objective is economic_weighting * (load shed) + 
+objective is economic_weighting * (load shed) +
 (1-economic_weighting) * (compressor power)",
         )
     end
@@ -677,16 +668,10 @@ objective is economic_weighting * (load shed) +
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                Memento.info(
-                    _LOGGER,
-                    "extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)",
-                )
+                Memento.info(_LOGGER, "extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
-                Memento.info(
-                    _LOGGER,
-                    "extending matlab format with constant data: $(case_name)",
-                )
+                Memento.info(_LOGGER, "extending matlab format with constant data: $(case_name)")
             end
         end
     end
@@ -726,26 +711,17 @@ function _merge_generic_data!(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mg_matrix) != length(v)
-                        Memento.error(
-                            _LOGGER,
-                            "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.",
-                        )
+                        Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
                     end
 
-                    Memento.info(
-                        _LOGGER,
-                        "extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"",
-                    )
+                    Memento.info(_LOGGER, "extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
 
                     for (i, row) in enumerate(mg_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                Memento.error(
-                                    _LOGGER,
-                                    "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.",
-                                )
+                                Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end

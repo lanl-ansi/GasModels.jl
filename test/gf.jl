@@ -9,11 +9,7 @@
         check_pressure_status(result["solution"], gm)
         check_compressor_ratio(result["solution"], gm)
 
-        result = run_gf(
-            "../test/data/gaslib/GasLib-Integration.zip",
-            CRDWPGasModel,
-            misocp_solver,
-        )
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     end
 
@@ -27,8 +23,7 @@
     @testset "test lrwp gf" begin
         @info "Testing lrwp gf"
         result = run_gf("../test/data/matgas/case-6-gf.m", LRWPGasModel, lp_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL ||
-              result["termination_status"] == ALMOST_LOCALLY_SOLVED
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-6)
     end
 
@@ -38,8 +33,7 @@
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
 
-        result =
-            run_gf("../test/data/gaslib/GasLib-Integration.zip", WPGasModel, minlp_solver)
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", WPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     end
 
@@ -49,8 +43,7 @@
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-6)
 
-        result =
-            run_gf("../test/data/gaslib/GasLib-Integration.zip", DWPGasModel, minlp_solver)
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", DWPGasModel, minlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     end
 end

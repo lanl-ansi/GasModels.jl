@@ -63,12 +63,8 @@ end
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String,Any})
     if get(data, "is_per_unit", false) == true
-        if get(data, "base_pressure", false) == false ||
-           get(data, "base_length", false) == false
-            Memento.error(
-                _LOGGER,
-                "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided",
-            )
+        if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
+            Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
             (get(data, "base_density", false) == false) &&
                 (data["base_density"] = calc_base_density(data))
@@ -101,9 +97,7 @@ function add_base_values!(data::Dict{String,Any})
 end
 
 "make transient data to si units"
-function make_si_units!(
-    transient_data::Array{Dict{String,Any},1},
-    static_data::Dict{String,Any},
+function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::Dict{String,Any},
 )
     if static_data["units"] == "si"
         return
@@ -297,15 +291,7 @@ const _params_for_unit_conversions = Dict(
     ],
 )
 
-function _rescale_functions(
-    rescale_pressure::Function,
-    rescale_density::Function,
-    rescale_length::Function,
-    rescale_diameter::Function,
-    rescale_flow::Function,
-    rescale_mass::Function,
-    rescale_inv_flow::Function,
-)::Dict{String,Function}
+function _rescale_functions(rescale_pressure::Function, rescale_density::Function, rescale_length::Function, rescale_diameter::Function, rescale_flow::Function, rescale_mass::Function, rescale_inv_flow::Function)::Dict{String,Function}
     Dict{String,Function}(
         "p_min" => rescale_pressure,
         "p_max" => rescale_pressure,
@@ -407,10 +393,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
-                Memento.error(
-                    _LOGGER,
-                    "the current units of the data/result dictionary unknown",
-                )
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
@@ -456,10 +439,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
-                Memento.error(
-                    _LOGGER,
-                    "the current units of the data/result dictionary unknown",
-                )
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
@@ -501,10 +481,7 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
-                Memento.error(
-                    _LOGGER,
-                    "the current units of the data/result dictionary unknown",
-                )
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
@@ -547,10 +524,7 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
             if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
-                Memento.error(
-                    _LOGGER,
-                    "the current units of the data/result dictionary unknown",
-                )
+                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
             if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
                 @assert data["is_per_unit"] == 1
@@ -680,32 +654,20 @@ function check_global_parameters(data::Dict{String,<:Any})
         Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
     end
 
-    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 ||
-       get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        Memento.warn(
-            _LOGGER,
-            "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic",
-        )
+    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
+        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
-    if get(data, "gas_specific_gravity", 0.6) < 0.5 ||
-       get(data, "gas_specific_gravity", 0.6) > 0.7
-        Memento.warn(
-            _LOGGER,
-            "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic",
-        )
+    if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
+        Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
     end
 
     if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
         Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
     end
 
-    if get(data, "compressibility_factor", 0.8) < 0.7 ||
-       get(data, "compressibility_factor", 0.8) > 1.0
-        Memento.warn(
-            _LOGGER,
-            "compressibility_factor $(data["compressibility_factor"]) is unrealistic",
-        )
+    if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
+        Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
     end
 end
 
@@ -818,10 +780,7 @@ end
 function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 1e-5
-            Memento.warn(
-                _LOGGER,
-                "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from 0",
-            )
+            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
             (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
             (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
         end
@@ -837,18 +796,12 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
 
     for (i, compressor) in get(data, "compressor", [])
         if compressor["inlet_p_min"] < 1e-5
-            Memento.warn(
-                _LOGGER,
-                "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from 0",
-            )
+            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
             (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
         if compressor["outlet_p_min"] < 1e-5
-            Memento.warn(
-                _LOGGER,
-                "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from 0",
-            )
+            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
             (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
@@ -957,10 +910,7 @@ function _check_connectivity(data::Dict{String,<:Any})
             for junc_key in _gm_junction_keys
                 if haskey(comp, junc_key)
                     if !(comp[junc_key] in junc_ids)
-                        Memento.warn(
-                            _LOGGER,
-                            "$junc_key $(comp[junc_key]) in $comp_type $i is not defined",
-                        )
+                        Memento.warn(_LOGGER, "$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
                     end
                 end
             end
@@ -986,10 +936,7 @@ function check_status(data::Dict{String,<:Any})
                 if haskey(comp, junc_key)
                     if get(comp, "status", 1) != 0 &&
                        !(comp[junc_key] in active_junction_ids)
-                        Memento.warn(
-                            _LOGGER,
-                            "active $comp_type $i is connected to inactive junction $(comp[junc_key])",
-                        )
+                        Memento.warn(_LOGGER, "active $comp_type $i is connected to inactive junction $(comp[junc_key])")
                     end
                 end
             end
@@ -1008,10 +955,7 @@ function check_edge_loops(data::Dict{String,<:Any})
         if haskey(data, edge_type)
             for edge in values(data[edge_type])
                 if edge["fr_junction"] == edge["to_junction"]
-                    Memento.error(
-                        _LOGGER,
-                        "both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])",
-                    )
+                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
                 end
             end
         end
@@ -1021,8 +965,7 @@ end
 
 "helper function to propagate disabled status of junctions to connected components"
 function propagate_topology_status!(data::Dict{String,<:Any})
-    disabled_junctions =
-        Set([junc["index"] for junc in values(data["junction"]) if junc["status"] == 0])
+    disabled_junctions = Set([junc["index"] for junc in values(data["junction"]) if junc["status"] == 0])
 
     for comp_type in _gm_component_types
         if haskey(data, comp_type) && comp_type != "junction"
@@ -1030,10 +973,7 @@ function propagate_topology_status!(data::Dict{String,<:Any})
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
                         comp["status"] = 0
-                        Memento.info(
-                            _LOGGER,
-                            "Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled",
-                        )
+                        Memento.info(_LOGGER, "Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
                         break
                     end
                 end
@@ -1104,11 +1044,7 @@ end
 
 
 "Calculate the bounds on minimum and maximum pressure difference squared for a ne pipe, which is different dependeing on whether or not the pipe is present"
-function _calc_ne_pipe_pd_bounds_sqr(
-    pipe::Dict{String,Any},
-    i::Dict{String,Any},
-    j::Dict{String,Any},
-)
+function _calc_ne_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
     pd_max_on = pd_max_off = i["p_max"]^2 - j["p_min"]^2
     pd_min_on = pd_min_off = i["p_min"]^2 - j["p_max"]^2
 
@@ -1132,13 +1068,7 @@ fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
 This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
-function _calc_pipe_resistance(
-    pipe::Dict{String,Any},
-    base_length,
-    base_pressure,
-    base_flow,
-    sound_speed,
-)
+function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed)
     lambda = pipe["friction_factor"]
     D = pipe["diameter"]
     L = pipe["length"] * base_length
@@ -1167,16 +1097,7 @@ end
 
 
 "calculates the minimum flow on a pipe"
-function _calc_pipe_flow_min(
-    mf::Float64,
-    pipe::Dict,
-    i::Dict,
-    j::Dict,
-    base_length::Number,
-    base_pressure::Number,
-    base_flow::Number,
-    sound_speed::Number,
-)
+function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
@@ -1193,16 +1114,7 @@ end
 
 
 "calculates the maximum flow on a pipe"
-function _calc_pipe_flow_max(
-    mf::Float64,
-    pipe::Dict,
-    i::Dict,
-    j::Dict,
-    base_length::Number,
-    base_pressure::Number,
-    base_flow::Number,
-    sound_speed::Number,
-)
+function _calc_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
     flow_direction = get(pipe, "flow_direction", 0)
     flow_max = get(pipe, "flow_max", mf)
     pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, i, j)
@@ -1251,16 +1163,7 @@ end
 
 
 "calculates the minimum flow on a ne pipe"
-function _calc_ne_pipe_flow_min(
-    mf::Float64,
-    pipe::Dict,
-    i::Dict,
-    j::Dict,
-    base_length::Number,
-    base_pressure::Number,
-    base_flow::Number,
-    sound_speed::Number,
-)
+function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
     flow_min = get(pipe, "flow_min", mf)
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, i, j)
     pd_min = pd_min_on
@@ -1278,16 +1181,7 @@ end
 
 
 "calculates the maximum flow on a pipe"
-function _calc_ne_pipe_flow_max(
-    mf::Float64,
-    pipe::Dict,
-    i::Dict,
-    j::Dict,
-    base_length::Number,
-    base_pressure::Number,
-    base_flow::Number,
-    sound_speed::Number,
-)
+function _calc_ne_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
     flow_max = min(mf, get(pipe, "flow_max", mf))
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, i, j)
     pd_max = pd_max_on
@@ -1487,29 +1381,17 @@ end
 
 
 "calculates connections in parallel with one another and their orientation"
-function _calc_parallel_connections(
-    gm::AbstractGasModel,
-    n::Int,
-    connection::Dict{String,Any},
-)
+function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
     i = min(connection["fr_junction"], connection["to_junction"])
     j = max(connection["fr_junction"], connection["to_junction"])
 
-    parallel_pipes =
-        haskey(ref(gm, n, :parallel_pipes), (i, j)) ? ref(gm, n, :parallel_pipes, (i, j)) :
-        []
-    parallel_compressors = haskey(ref(gm, n, :parallel_compressors), (i, j)) ?
-        ref(gm, n, :parallel_compressors, (i, j)) : []
-    parallel_short_pipes = haskey(ref(gm, n, :parallel_short_pipes), (i, j)) ?
-        ref(gm, n, :parallel_short_pipes, (i, j)) : []
-    parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ?
-        ref(gm, n, :parallel_resistors, (i, j)) : []
-    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ?
-        ref(gm, n, :parallel_loss_resistors, (i, j)) : []
-    parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ?
-        ref(gm, n, :parallel_valves, (i, j)) : []
-    parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ?
-        ref(gm, n, :parallel_regulators, (i, j)) : []
+    parallel_pipes = haskey(ref(gm, n, :parallel_pipes), (i, j)) ? ref(gm, n, :parallel_pipes, (i, j)) : []
+    parallel_compressors = haskey(ref(gm, n, :parallel_compressors), (i, j)) ? ref(gm, n, :parallel_compressors, (i, j)) : []
+    parallel_short_pipes = haskey(ref(gm, n, :parallel_short_pipes), (i, j)) ? ref(gm, n, :parallel_short_pipes, (i, j)) : []
+    parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ? ref(gm, n, :parallel_resistors, (i, j)) : []
+    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ? ref(gm, n, :parallel_loss_resistors, (i, j)) : []
+    parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ? ref(gm, n, :parallel_valves, (i, j)) : []
+    parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ? ref(gm, n, :parallel_regulators, (i, j)) : []
 
     num_connections =
         length(parallel_pipes) +
@@ -1528,54 +1410,20 @@ function _calc_parallel_connections(
     valves = ref(gm, n, :valve)
     regulators = ref(gm, n, :regulator)
 
-    aligned_pipes =
-        filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
-    opposite_pipes =
-        filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
-    aligned_compressors = filter(
-        i -> compressors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_compressors,
-    )
-    opposite_compressors = filter(
-        i -> compressors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_compressors,
-    )
-    aligned_resistors = filter(
-        i -> resistors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_resistors,
-    )
-    opposite_resistors = filter(
-        i -> resistors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_resistors,
-    )
-    aligned_loss_resistors = filter(
-        i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_loss_resistors,
-    )
-    opposite_loss_resistors = filter(
-        i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_loss_resistors,
-    )
-    aligned_short_pipes = filter(
-        i -> short_pipes[i]["fr_junction"] == connection["fr_junction"],
-        parallel_short_pipes,
-    )
-    opposite_short_pipes = filter(
-        i -> short_pipes[i]["fr_junction"] != connection["fr_junction"],
-        parallel_short_pipes,
-    )
-    aligned_valves =
-        filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
-    opposite_valves =
-        filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
-    aligned_regulators = filter(
-        i -> regulators[i]["fr_junction"] == connection["fr_junction"],
-        parallel_regulators,
-    )
-    opposite_regulators = filter(
-        i -> regulators[i]["fr_junction"] != connection["fr_junction"],
-        parallel_regulators,
-    )
+    aligned_pipes = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
+    opposite_pipes = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
+    aligned_compressors = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
+    opposite_compressors = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
+    aligned_resistors = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
+    opposite_resistors = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
+    aligned_loss_resistors = filter(i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"], parallel_loss_resistors)
+    opposite_loss_resistors = filter(i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"], parallel_loss_resistors)
+    aligned_short_pipes = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
+    opposite_short_pipes = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
+    aligned_valves = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
+    opposite_valves = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
+    aligned_regulators = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
+    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
 
     return num_connections,
     aligned_pipes,
@@ -1596,33 +1444,19 @@ end
 
 
 "calculates connections in parallel with one another and their orientation"
-function _calc_parallel_ne_connections(
-    gm::AbstractGasModel,
-    n::Int,
-    connection::Dict{String,Any},
-)
+function _calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection::Dict{String,Any})
     i = min(connection["fr_junction"], connection["to_junction"])
     j = max(connection["fr_junction"], connection["to_junction"])
 
-    parallel_pipes =
-        haskey(ref(gm, n, :parallel_pipes), (i, j)) ? ref(gm, n, :parallel_pipes, (i, j)) :
-        []
-    parallel_compressors = haskey(ref(gm, n, :parallel_compressors), (i, j)) ?
-        ref(gm, n, :parallel_compressors, (i, j)) : []
-    parallel_short_pipes = haskey(ref(gm, n, :parallel_short_pipes), (i, j)) ?
-        ref(gm, n, :parallel_short_pipes, (i, j)) : []
-    parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ?
-        ref(gm, n, :parallel_resistors, (i, j)) : []
-    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ?
-        ref(gm, n, :parallel_loss_resistors, (i, j)) : []
-    parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ?
-        ref(gm, n, :parallel_valves, (i, j)) : []
-    parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ?
-        ref(gm, n, :parallel_regulators, (i, j)) : []
-    parallel_ne_pipes = haskey(ref(gm, n, :parallel_ne_pipes), (i, j)) ?
-        ref(gm, n, :parallel_ne_pipes, (i, j)) : []
-    parallel_ne_compressors = haskey(ref(gm, n, :parallel_ne_compressors), (i, j)) ?
-        ref(gm, n, :parallel_ne_compressors, (i, j)) : []
+    parallel_pipes = haskey(ref(gm, n, :parallel_pipes), (i, j)) ? ref(gm, n, :parallel_pipes, (i, j)) : []
+    parallel_compressors = haskey(ref(gm, n, :parallel_compressors), (i, j)) ? ref(gm, n, :parallel_compressors, (i, j)) : []
+    parallel_short_pipes = haskey(ref(gm, n, :parallel_short_pipes), (i, j)) ? ref(gm, n, :parallel_short_pipes, (i, j)) : []
+    parallel_resistors = haskey(ref(gm, n, :parallel_resistors), (i, j)) ? ref(gm, n, :parallel_resistors, (i, j)) : []
+    parallel_loss_resistors = haskey(ref(gm, n, :parallel_loss_resistors), (i, j)) ? ref(gm, n, :parallel_loss_resistors, (i, j)) : []
+    parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ? ref(gm, n, :parallel_valves, (i, j)) : []
+    parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ? ref(gm, n, :parallel_regulators, (i, j)) : []
+    parallel_ne_pipes = haskey(ref(gm, n, :parallel_ne_pipes), (i, j)) ? ref(gm, n, :parallel_ne_pipes, (i, j)) : []
+    parallel_ne_compressors = haskey(ref(gm, n, :parallel_ne_compressors), (i, j)) ? ref(gm, n, :parallel_ne_compressors, (i, j)) : []
 
     num_connections =
         length(parallel_pipes) +
@@ -1645,70 +1479,24 @@ function _calc_parallel_ne_connections(
     ne_pipes = ref(gm, n, :ne_pipe)
     ne_compressors = ref(gm, n, :ne_compressor)
 
-    aligned_pipes =
-        filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
-    opposite_pipes =
-        filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
-    aligned_compressors = filter(
-        i -> compressors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_compressors,
-    )
-    opposite_compressors = filter(
-        i -> compressors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_compressors,
-    )
-    aligned_resistors = filter(
-        i -> resistors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_resistors,
-    )
-    opposite_resistors = filter(
-        i -> resistors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_resistors,
-    )
-    aligned_loss_resistors = filter(
-        i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_loss_resistors,
-    )
-    opposite_loss_resistors = filter(
-        i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_loss_resistors,
-    )
-    aligned_short_pipes = filter(
-        i -> short_pipes[i]["fr_junction"] == connection["fr_junction"],
-        parallel_short_pipes,
-    )
-    opposite_short_pipes = filter(
-        i -> short_pipes[i]["fr_junction"] != connection["fr_junction"],
-        parallel_short_pipes,
-    )
-    aligned_valves =
-        filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
-    opposite_valves =
-        filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
-    aligned_regulators = filter(
-        i -> regulators[i]["fr_junction"] == connection["fr_junction"],
-        parallel_regulators,
-    )
-    opposite_regulators = filter(
-        i -> regulators[i]["fr_junction"] != connection["fr_junction"],
-        parallel_regulators,
-    )
-    aligned_ne_pipes = filter(
-        i -> ne_pipes[i]["fr_junction"] == connection["fr_junction"],
-        parallel_ne_pipes,
-    )
-    opposite_ne_pipes = filter(
-        i -> ne_pipes[i]["fr_junction"] != connection["fr_junction"],
-        parallel_ne_pipes,
-    )
-    aligned_ne_compressors = filter(
-        i -> ne_compressors[i]["fr_junction"] == connection["fr_junction"],
-        parallel_ne_compressors,
-    )
-    opposite_ne_compressors = filter(
-        i -> ne_compressors[i]["fr_junction"] != connection["fr_junction"],
-        parallel_ne_compressors,
-    )
+    aligned_pipes = filter(i -> pipes[i]["fr_junction"] == connection["fr_junction"], parallel_pipes)
+    opposite_pipes = filter(i -> pipes[i]["fr_junction"] != connection["fr_junction"], parallel_pipes)
+    aligned_compressors = filter(i -> compressors[i]["fr_junction"] == connection["fr_junction"], parallel_compressors)
+    opposite_compressors = filter(i -> compressors[i]["fr_junction"] != connection["fr_junction"], parallel_compressors)
+    aligned_resistors = filter(i -> resistors[i]["fr_junction"] == connection["fr_junction"], parallel_resistors)
+    opposite_resistors = filter(i -> resistors[i]["fr_junction"] != connection["fr_junction"], parallel_resistors)
+    aligned_loss_resistors = filter(i -> loss_resistors[i]["fr_junction"] == connection["fr_junction"], parallel_loss_resistors)
+    opposite_loss_resistors = filter(i -> loss_resistors[i]["fr_junction"] != connection["fr_junction"], parallel_loss_resistors)
+    aligned_short_pipes = filter(i -> short_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_short_pipes)
+    opposite_short_pipes = filter(i -> short_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_short_pipes)
+    aligned_valves = filter(i -> valves[i]["fr_junction"] == connection["fr_junction"], parallel_valves)
+    opposite_valves = filter(i -> valves[i]["fr_junction"] != connection["fr_junction"], parallel_valves)
+    aligned_regulators = filter(i -> regulators[i]["fr_junction"] == connection["fr_junction"], parallel_regulators)
+    opposite_regulators = filter(i -> regulators[i]["fr_junction"] != connection["fr_junction"], parallel_regulators)
+    aligned_ne_pipes = filter(i -> ne_pipes[i]["fr_junction"] == connection["fr_junction"], parallel_ne_pipes)
+    opposite_ne_pipes = filter(i -> ne_pipes[i]["fr_junction"] != connection["fr_junction"], parallel_ne_pipes)
+    aligned_ne_compressors = filter(i -> ne_compressors[i]["fr_junction"] == connection["fr_junction"], parallel_ne_compressors)
+    opposite_ne_compressors = filter(i -> ne_compressors[i]["fr_junction"] != connection["fr_junction"], parallel_ne_compressors)
 
     return num_connections,
     aligned_pipes,
@@ -1802,10 +1590,7 @@ returns a set of sets of juntion ids, each set is a connected component
 """
 function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_types)
     if _IM.ismultinetwork(data)
-        Memento.error(
-            _LOGGER,
-            "calc_connected_components does not yet support multinetwork data",
-        )
+        Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
     end
 
     active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)

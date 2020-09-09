@@ -26,10 +26,7 @@ module GasModels
 
     "Suppresses information and warning messages output by GasModels, for fine grained control use the Memento package"
     function silence()
-        Memento.info(
-            _LOGGER,
-            "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.",
-        )
+        Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
         Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
         Memento.setlevel!(Memento.getlogger(GasModels), "error")
     end

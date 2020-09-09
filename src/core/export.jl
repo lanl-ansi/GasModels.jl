@@ -13,8 +13,7 @@ for sym in names(@__MODULE__, all = true)
         continue
     end
     if !(
-        Base.isidentifier(sym) ||
-        (startswith(sym_string, "@") && Base.isidentifier(sym_string[2:end]))
+        Base.isidentifier(sym) || (startswith(sym_string, "@") && Base.isidentifier(sym_string[2:end]))
     )
         continue
     end

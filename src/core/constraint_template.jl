@@ -105,13 +105,7 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(
-        pipe,
-        gm.ref[:base_length],
-        gm.ref[:base_pressure],
-        gm.ref[:base_flow],
-        gm.ref[:sound_speed],
-    )
+    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -124,23 +118,9 @@ function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(
-        pipe,
-        ref(gm, n, :junction, i),
-        ref(gm, n, :junction, j),
-    )
+    pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
 
-    constraint_pipe_pressure_ne(
-        gm,
-        n,
-        k,
-        i,
-        j,
-        pd_min_on,
-        pd_max_on,
-        pd_min_off,
-        pd_max_off,
-    )
+    constraint_pipe_pressure_ne(gm, n, k, i, j, pd_min_on, pd_max_on, pd_min_off, pd_max_off)
 end
 
 
@@ -149,13 +129,7 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(
-        pipe,
-        gm.ref[:base_length],
-        gm.ref[:base_pressure],
-        gm.ref[:base_flow],
-        gm.ref[:sound_speed],
-    )
+    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
     pd_min, pd_max =
         _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
@@ -168,13 +142,7 @@ end
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = gm.ref[:nw][n][:ne_pipe][k]
-    w = _calc_pipe_resistance(
-        pipe,
-        gm.ref[:base_length],
-        gm.ref[:base_pressure],
-        gm.ref[:base_flow],
-        gm.ref[:sound_speed],
-    )
+    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -187,18 +155,8 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(
-        pipe,
-        gm.ref[:base_length],
-        gm.ref[:base_pressure],
-        gm.ref[:base_flow],
-        gm.ref[:sound_speed],
-    )
-    pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(
-        pipe,
-        ref(gm, n, :junction, i),
-        ref(gm, n, :junction, j),
-    )
+    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
+    pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -263,34 +221,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = gm.cnw)
     flmin += length(dispatch_transfers) > 0 ?
         sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
-    constraint_mass_flow_balance(
-        gm,
-        n,
-        i,
-        f_pipes,
-        t_pipes,
-        f_compressors,
-        t_compressors,
-        f_resistors,
-        t_resistors,
-        f_loss_resistors,
-        t_loss_resistors,
-        f_short_pipes,
-        t_short_pipes,
-        f_valves,
-        t_valves,
-        f_regulators,
-        t_regulators,
-        fl,
-        fg,
-        dispatch_deliveries,
-        dispatch_receipts,
-        dispatch_transfers,
-        flmin,
-        flmax,
-        fgmin,
-        fgmax,
-    )
+    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -344,38 +275,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = gm.cn
     ne_compressors_fr = ref(gm, n, :ne_compressors_fr, i)
     ne_compressors_to = ref(gm, n, :ne_compressors_to, i)
 
-    constraint_mass_flow_balance_ne(
-        gm,
-        n,
-        i,
-        f_pipes,
-        t_pipes,
-        f_compressors,
-        t_compressors,
-        f_resistors,
-        t_resistors,
-        f_loss_resistors,
-        t_loss_resistors,
-        f_short_pipes,
-        t_short_pipes,
-        f_valves,
-        t_valves,
-        f_regulators,
-        t_regulators,
-        ne_pipes_fr,
-        ne_pipes_to,
-        ne_compressors_fr,
-        ne_compressors_to,
-        fl,
-        fg,
-        dispatch_deliveries,
-        dispatch_receipts,
-        dispatch_transfers,
-        flmin,
-        flmax,
-        fgmin,
-        fgmax,
-    )
+    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -444,20 +344,7 @@ function constraint_compressor_ratios(gm::AbstractGasModel, k; n::Int = gm.cnw)
     i_pmin = ref(gm, n, :junction, i)["p_min"]
     type = get(compressor, "directionality", 0)
 
-    constraint_compressor_ratios(
-        gm,
-        n,
-        k,
-        i,
-        j,
-        min_ratio,
-        max_ratio,
-        i_pmin,
-        i_pmax,
-        j_pmin,
-        j_pmax,
-        type,
-    )
+    constraint_compressor_ratios(gm, n, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 
@@ -506,20 +393,7 @@ function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int = gm.cn
     i_pmin = ref(gm, n, :junction, i)["p_min"]
     type = get(compressor, "directionality", 0)
 
-    constraint_compressor_ratios_ne(
-        gm,
-        n,
-        k,
-        i,
-        j,
-        min_ratio,
-        max_ratio,
-        i_pmin,
-        i_pmax,
-        j_pmin,
-        j_pmax,
-        type,
-    )
+    constraint_compressor_ratios_ne(gm, n, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
 end
 
 "Template: Constraints on the compressor energy"
@@ -598,18 +472,5 @@ function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int = 
     i_pmin = ref(gm, n, :junction, i)["p_min"]
     f_min = regulator["flow_min"]
 
-    constraint_on_off_regulator_pressure(
-        gm,
-        n,
-        k,
-        i,
-        j,
-        min_ratio,
-        max_ratio,
-        f_min,
-        i_pmin,
-        i_pmax,
-        j_pmin,
-        j_pmax,
-    )
+    constraint_on_off_regulator_pressure(gm, n, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
 end

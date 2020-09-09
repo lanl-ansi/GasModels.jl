@@ -5,33 +5,18 @@ function constraint_slack_junction_density(gm::AbstractGasModel, i::Int, nw::Int
 end
 
 "Template: slack junction mass balance"
-function constraint_slack_junction_mass_balance(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw,
-)
+function constraint_slack_junction_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     net_injection = var(gm, nw, :net_nodal_injection)[i]
     net_edge_out_flow = var(gm, nw, :net_nodal_edge_out_flow)[i]
     constraint_slack_junction_mass_balance(gm, nw, i, net_injection, net_edge_out_flow)
 end
 
 "Template: non-slack junction mass balance"
-function constraint_non_slack_junction_mass_balance(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw,
-)
+function constraint_non_slack_junction_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     derivative = var(gm, nw, :non_slack_derivative)[i]
     net_injection = var(gm, nw, :net_nodal_injection)[i]
     net_edge_out_flow = var(gm, nw, :net_nodal_edge_out_flow)[i]
-    constraint_non_slack_junction_mass_balance(
-        gm,
-        nw,
-        i,
-        derivative,
-        net_injection,
-        net_edge_out_flow,
-    )
+    constraint_non_slack_junction_mass_balance(gm, nw, i, derivative, net_injection, net_edge_out_flow)
 end
 
 "Template: pipe mass balance"
@@ -77,11 +62,7 @@ function constraint_compressor_power(gm::AbstractGasModel, i::Int, nw::Int = gm.
 end
 
 "Template: storage compression/pressure-reduction"
-function constraint_storage_compressor_regulator(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw,
-)
+function constraint_storage_compressor_regulator(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
     storage = ref(gm, nw, :storage, i)
     junction_id = storage["junction_id"]
     constraint_storage_compressor_regulator(gm, nw, i, junction_id)
@@ -89,56 +70,27 @@ end
 
 "Template: well momentum balance"
 function constraint_storage_well_momentum_balance(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = 4,
-)
+    gm::AbstractGasModel, i::Int, nw::Int = gm.cnw;
+    num_discretizations::Int = 4, )
     well = ref(gm, nw, :storage, i)
     length_per_well_segment = well["well_depth"] / num_discretizations
-    beta =
-        (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) /
-        gm.ref[:sound_speed] / gm.ref[:sound_speed]
-    resistance =
-        well["well_friction_factor"] * gm.ref[:base_length] * length_per_well_segment /
-        well["well_diameter"]
-    constraint_storage_well_momentum_balance(
-        gm,
-        nw,
-        num_discretizations,
-        i,
-        beta,
-        resistance,
-    )
+    beta = (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) / gm.ref[:sound_speed] / gm.ref[:sound_speed]
+    resistance = well["well_friction_factor"] * gm.ref[:base_length] * length_per_well_segment / well["well_diameter"]
+    constraint_storage_well_momentum_balance(gm, nw, num_discretizations, i, beta, resistance)
 end
 
 "Template: well mass balance"
 function constraint_storage_well_mass_balance(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = 4,
-    is_end::Bool = false,
-)
+    gm::AbstractGasModel, i::Int, nw::Int = gm.cnw;
+    num_discretizations::Int = 4, is_end::Bool = false, )
     well = ref(gm, nw, :storage, i)
     L = well["well_depth"]
     length_per_well_segment = L / num_discretizations
-    constraint_storage_well_mass_balance(
-        gm,
-        nw,
-        num_discretizations,
-        i,
-        length_per_well_segment,
-        is_end,
-    )
+    constraint_storage_well_mass_balance(gm, nw, num_discretizations, i, length_per_well_segment, is_end)
 end
 
 "Template: initial condition for reservoir density"
-function constraint_initial_condition_reservoir(
-    gm::AbstractGasModel,
-    i::Int,
-    nw::Int = gm.cnw,
-)
+function constraint_initial_condition_reservoir(gm::AbstractGasModel, i::Int, nw::Int = gm.cnw)
 
     initial_density = ref(gm, nw, :storage, i)["initial_density"]
     constraint_initial_condition_reservoir(gm, i, nw, initial_density)
