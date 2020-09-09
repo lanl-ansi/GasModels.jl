@@ -120,8 +120,7 @@ end
 
 ""
 function parse_old_m_string(data_string::String)
-    matlab_data, func_name, colnames =
-        InfrastructureModels.parse_matlab_string(data_string, extended = true)
+    matlab_data, func_name, colnames = InfrastructureModels.parse_matlab_string(data_string, extended = true)
 
     case = Dict{String,Any}()
 
@@ -184,8 +183,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction")
         junctions = []
         for junction_row in matlab_data["mgc.junction"]
-            junction_data =
-                InfrastructureModels.row_to_typed_dict(junction_row, mlab_junction_columns)
+            junction_data = InfrastructureModels.row_to_typed_dict(junction_row, mlab_junction_columns)
             junction_data["index"] = InfrastructureModels.check_type(Int, junction_row[1])
             push!(junctions, junction_data)
         end
@@ -211,8 +209,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.ne_pipe")
         ne_pipes = []
         for pipe_row in matlab_data["mgc.ne_pipe"]
-            pipe_data =
-                InfrastructureModels.row_to_typed_dict(pipe_row, mlab_ne_pipe_columns)
+            pipe_data = InfrastructureModels.row_to_typed_dict(pipe_row, mlab_ne_pipe_columns)
             pipe_data["index"] = InfrastructureModels.check_type(Int, pipe_row[1])
             push!(ne_pipes, pipe_data)
         end
@@ -226,8 +223,7 @@ function parse_old_m_string(data_string::String)
                 compressor_row,
                 mlab_compressor_columns,
             )
-            compressor_data["index"] =
-                InfrastructureModels.check_type(Int, compressor_row[1])
+            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(compressors, compressor_data)
         end
         case["compressor"] = compressors

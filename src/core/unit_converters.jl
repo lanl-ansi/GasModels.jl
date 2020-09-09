@@ -10,8 +10,7 @@
 @inline m_to_inches(m) = m / 0.0254
 @inline get_universal_R() = 8.314
 @inline get_universal_R(data::Dict{String,Any}) = get(data, "R", get_universal_R())
-@inline get_gas_specific_gravity(data::Dict{String,Any}) =
-    get(data, "gas_specific_gravity", 0.6)
+@inline get_gas_specific_gravity(data::Dict{String,Any}) = get(data, "gas_specific_gravity", 0.6)
 @inline get_temperature(data::Dict{String,Any}) = get(data, "temperature", 288.7060)
 @inline get_sound_speed(data::Dict{String,Any}) = get(data, "sound_speed", 371.6643)
 @inline get_molecular_mass_of_air() = 0.02896
@@ -29,10 +28,8 @@ function get_mmscfd_to_kgps_conversion_factor(data::Dict{String,Any})::Number
     cubic_ft_to_cubic_m = 0.02832
     volumetric_flow_rate_in_si = cubic_ft_to_cubic_m * 1e6 / 86400.0
     molecular_mass_of_gas = get_gas_specific_gravity(data) * get_molecular_mass_of_air()
-    density_at_standard_conditions =
-        standard_pressure * molecular_mass_of_gas / standard_temperature / R
+    density_at_standard_conditions = standard_pressure * molecular_mass_of_gas / standard_temperature / R
     return density_at_standard_conditions * volumetric_flow_rate_in_si
 end
 
-get_kgps_to_mmscfd_conversion_factor(data::Dict{String,Any})::Number =
-    1 / get_mmscfd_to_kgps_conversion_factor(data)
+get_kgps_to_mmscfd_conversion_factor(data::Dict{String,Any})::Number = 1 / get_mmscfd_to_kgps_conversion_factor(data)

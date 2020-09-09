@@ -315,11 +315,9 @@ end
 function _get_delivery_entry(delivery, density::Float64)
     if delivery["flow"] isa Array
         min_id = findfirst(x -> x[:bound] == "lower", delivery["flow"])
-        withdrawal_min =
-            density * parse(Float64, delivery["flow"][min_id][:value]) * inv(3.6)
+        withdrawal_min = density * parse(Float64, delivery["flow"][min_id][:value]) * inv(3.6)
         max_id = findfirst(x -> x[:bound] == "upper", delivery["flow"])
-        withdrawal_max =
-            density * parse(Float64, delivery["flow"][max_id][:value]) * inv(3.6)
+        withdrawal_max = density * parse(Float64, delivery["flow"][max_id][:value]) * inv(3.6)
     else
         withdrawal_min = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
         withdrawal_max = density * parse(Float64, delivery["flow"][:value]) * inv(3.6)
@@ -633,15 +631,13 @@ function _read_gaslib_deliveries(
     # Collect source nodes with negative injections.
     source_ids = [x[:id] for x in get(topology["nodes"], "source", [])]
     source_xml = filter(x -> x.second[:id] in source_ids, node_xml)
-    source_data =
-        Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in source_xml)
+    source_data = Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in source_xml)
     source_data = filter(x -> x.second["withdrawal_max"] < 0.0, source_data)
 
     # Collect sink nodes with positive withdrawals.
     sink_ids = [x[:id] for x in get(topology["nodes"], "sink", [])]
     sink_xml = filter(x -> x.second[:id] in sink_ids, node_xml)
-    sink_data =
-        Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in sink_xml)
+    sink_data = Dict{String,Any}(i => _get_delivery_entry(x, density) for (i, x) in sink_xml)
     sink_data = filter(x -> x.second["withdrawal_min"] > 0.0, sink_data)
 
     # For sink nodes with negative injections, negate the values.
@@ -676,8 +672,7 @@ end
 
 function _read_gaslib_loss_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     loss_resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
-    loss_resistor_xml =
-        filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
+    loss_resistor_xml = filter(x -> "pressureLoss" in collect(keys(x.second)), loss_resistor_xml)
     return Dict{String,Any}(
         i => _get_loss_resistor_entry(x, density) for (i, x) in loss_resistor_xml
     )
@@ -694,8 +689,7 @@ function _read_gaslib_receipts(
     # Collect source nodes with positive injections.
     source_ids = [x[:id] for x in get(topology["nodes"], "source", [])]
     source_xml = filter(x -> x.second[:id] in source_ids, node_xml)
-    source_data =
-        Dict{String,Any}(i => _get_receipt_entry(x, density) for (i, x) in source_xml)
+    source_data = Dict{String,Any}(i => _get_receipt_entry(x, density) for (i, x) in source_xml)
     source_data = filter(x -> x.second["injection_min"] > 0.0, source_data)
 
     # Collect sink nodes with negative withdrawals.
@@ -726,8 +720,7 @@ end
 function _read_gaslib_resistors(topology::XMLDict.XMLDictElement, density::Float64)
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
-    resistor_xml =
-        filter(x -> parse(Float64, x.second["dragFactor"][:value]) > 0.0, resistor_xml)
+    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) > 0.0, resistor_xml)
     return Dict{String,Any}(i => _get_resistor_entry(x, density) for (i, x) in resistor_xml)
 end
 
@@ -742,10 +735,8 @@ function _read_gaslib_short_pipes(topology::XMLDict.XMLDictElement, density::Flo
     # Resistors with drag equal to zero should also be considered short pipes.
     resistor_xml = _get_component_dict(get(topology["connections"], "resistor", []))
     resistor_xml = filter(x -> "dragFactor" in collect(keys(x.second)), resistor_xml)
-    resistor_xml =
-        filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
-    resistors =
-        Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in resistor_xml)
+    resistor_xml = filter(x -> parse(Float64, x.second["dragFactor"][:value]) <= 0.0, resistor_xml)
+    resistors = Dict{String,Any}(i => _get_short_pipe_entry(x, density) for (i, x) in resistor_xml)
 
     # Return the merged dictionary of short pipes and resistors.
     return merge(short_pipes, resistors)

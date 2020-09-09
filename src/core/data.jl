@@ -14,8 +14,7 @@
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    p_mins =
-        filter(x -> x > 0, [junction["p_min"] for junction in values(data["junction"])])
+    p_mins = filter(x -> x > 0, [junction["p_min"] for junction in values(data["junction"])])
 
     return isempty(p_mins) ? 1.0 : minimum(p_mins)
 end
@@ -1393,8 +1392,7 @@ function _calc_parallel_connections(gm::AbstractGasModel, n::Int, connection::Di
     parallel_valves = haskey(ref(gm, n, :parallel_valves), (i, j)) ? ref(gm, n, :parallel_valves, (i, j)) : []
     parallel_regulators = haskey(ref(gm, n, :parallel_regulators), (i, j)) ? ref(gm, n, :parallel_regulators, (i, j)) : []
 
-    num_connections =
-        length(parallel_pipes) +
+    num_connections = length(parallel_pipes) +
         length(parallel_compressors) +
         length(parallel_short_pipes) +
         length(parallel_resistors) +
@@ -1458,8 +1456,7 @@ function _calc_parallel_ne_connections(gm::AbstractGasModel, n::Int, connection:
     parallel_ne_pipes = haskey(ref(gm, n, :parallel_ne_pipes), (i, j)) ? ref(gm, n, :parallel_ne_pipes, (i, j)) : []
     parallel_ne_compressors = haskey(ref(gm, n, :parallel_ne_compressors), (i, j)) ? ref(gm, n, :parallel_ne_compressors, (i, j)) : []
 
-    num_connections =
-        length(parallel_pipes) +
+    num_connections = length(parallel_pipes) +
         length(parallel_compressors) +
         length(parallel_short_pipes) +
         length(parallel_resistors) +

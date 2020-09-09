@@ -795,8 +795,7 @@ const _matlab_global_params_order_required = [
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional =
-    ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
 
 
 "list of units of meta data fields"

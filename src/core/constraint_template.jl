@@ -95,8 +95,7 @@ function constraint_pipe_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    pd_min, pd_max =
-        _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
+    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
 
     constraint_pipe_pressure(gm, n, k, i, j, pd_min, pd_max)
 end
@@ -130,8 +129,7 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = gm.cnw)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
     w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
-    pd_min, pd_max =
-        _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
+    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 

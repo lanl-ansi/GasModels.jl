@@ -156,8 +156,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             end
         end
 
-        nw_ref[:neighbor_edge_info] =
-            Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
+        nw_ref[:neighbor_edge_info] = Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
         for (i, fr_junction, to_junction, is_compressor) in arcs_from
             nw_ref[:neighbor_edge_info][fr_junction][to_junction] = Dict()
             nw_ref[:neighbor_edge_info][to_junction][fr_junction] = Dict()

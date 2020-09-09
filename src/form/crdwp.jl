@@ -33,8 +33,7 @@ function variable_pipe_pressure_difference(
     bounded::Bool = true,
     report::Bool = true,
 )
-    l_pipe =
-        gm.var[:nw][nw][:l_pipe] = JuMP.@variable(
+    l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:pipe])],
             base_name = "$(nw)_l_pipe",
@@ -62,8 +61,7 @@ function variable_resistor_pressure_difference(
     bounded::Bool = true,
     report::Bool = true,
 )
-    l_resistor =
-        gm.var[:nw][nw][:l_resistor] = JuMP.@variable(
+    l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:resistor])],
             base_name = "$(nw)_l_resistor",
@@ -105,8 +103,7 @@ function variable_pressure_difference_ne(
 )
     max_flow = ref(gm, nw, :max_mass_flow)
 
-    l_ne_pipe =
-        gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(
+    l_ne_pipe = gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:ne_pipe])],
             base_name = "$(nw)_l_ne_pipe",

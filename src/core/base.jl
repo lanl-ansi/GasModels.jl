@@ -4,57 +4,19 @@ abstract type AbstractGasModel <: _IM.AbstractInfrastructureModel end
 
 
 "a macro for adding the base GasModels fields to a type definition"
-_IM.@def gm_fields begin
-    GasModels.@im_fields
-end
+_IM.@def gm_fields begin GasModels.@im_fields end
 
 
 ""
-function run_model(
-    file::String,
-    model_type,
-    optimizer,
-    build_method;
-    ref_extensions = [],
-    solution_processors = [],
-    kwargs...,
-)
+function run_model(file::String, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(
-        data,
-        model_type,
-        optimizer,
-        build_method;
-        ref_extensions = ref_extensions,
-        solution_processors = solution_processors,
-        kwargs...,
-    )
+    return run_model(data, model_type, optimizer, build_method; ref_extensions = ref_extensions, solution_processors = solution_processors, kwargs...)
 end
 
 ""
-function run_model(
-    data::Dict{String,<:Any},
-    model_type,
-    optimizer,
-    build_method;
-    ref_extensions = [],
-    solution_processors = [],
-    kwargs...,
-)
-    gm = instantiate_model(
-        data,
-        model_type,
-        build_method;
-        ref_extensions = ref_extensions,
-        ext = get(kwargs, :ext, Dict{Symbol,Any}()),
-        setting = get(kwargs, :setting, Dict{String,Any}()),
-        jump_model = get(kwargs, :jump_model, JuMP.Model()),
-    )
-    result = optimize_model!(
-        gm,
-        optimizer = optimizer,
-        solution_processors = solution_processors,
-    )
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
+    gm = instantiate_model(data, model_type, build_method; ref_extensions = ref_extensions, ext = get(kwargs, :ext, Dict{Symbol,Any}()), setting = get(kwargs, :setting, Dict{String,Any}()), jump_model = get(kwargs, :jump_model, JuMP.Model()))
+    result = optimize_model!(gm, optimizer = optimizer, solution_processors = solution_processors)
 
     if haskey(data, "objective_normalization")
         result["objective"] *= data["objective_normalization"]
@@ -70,20 +32,8 @@ function instantiate_model(file::String, model_type, build_method; kwargs...)
 end
 
 
-function instantiate_model(
-    data::Dict{String,<:Any},
-    model_type::Type,
-    build_method;
-    kwargs...,
-)
-    gm = _IM.instantiate_model(
-        data,
-        model_type,
-        build_method,
-        ref_add_core!,
-        _gm_global_keys;
-        kwargs...,
-    )
+function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
+    gm = _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
     return gm
 end
 
@@ -94,17 +44,12 @@ dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
-    return _IM.build_ref(
-        data,
-        ref_add_core!,
-        _gm_global_keys,
-        ref_extensions = ref_extensions,
-    )
+    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
 end
 
 
 """
-Returns a dict that stores commonly used pre-computed data from of the data dictionary,
+Returns a dict that stores commonly used pre-computed data from of the data dictionary
 primarily for converting data-types, filtering out deactivated components, and storing
 system-wide values that need to be computed globally.
 
@@ -126,22 +71,10 @@ Some of the common keys include:
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
-    _ref_add_core!(
-        refs[:nw],
-        refs[:base_length],
-        refs[:base_pressure],
-        refs[:base_flow],
-        refs[:sound_speed],
-    )
+    _ref_add_core!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
 end
 
-function _ref_add_core!(
-    nw_refs::Dict{Int,<:Any},
-    base_length,
-    base_pressure,
-    base_flow,
-    sound_speed,
-)
+function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
     for (nw, ref) in nw_refs
         ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -157,9 +90,7 @@ function _ref_add_core!(
         ref[:storage] = haskey(ref, :storage) ? Dict(x for x in ref[:storage] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
-        mf =
-            ref[:max_mass_flow] =
-                _calc_max_mass_flow(ref[:receipt], ref[:storage], ref[:transfer])
+        mf = ref[:max_mass_flow] = _calc_max_mass_flow(ref[:receipt], ref[:storage], ref[:transfer])
 
         # dispatchable tranfers, receipts, and deliveries
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
@@ -239,8 +170,7 @@ function _ref_add_core!(
         end
 
         for (idx, storage) in ref[:storage]
-            storage["well_area"] =
-                pi * storage["well_diameter"] * storage["well_diameter"] / 4.0
+            storage["well_area"] = pi * storage["well_diameter"] * storage["well_diameter"] / 4.0
         end
     end
 end
@@ -317,15 +247,10 @@ end
 function ref_storage!(ref::Dict{Symbol,Any})
     for (i, storage) in ref[:storage]
         storage["reservoir_density_max"] = storage["reservoir_p_max"]
-        storage["reservoir_volume"] =
-            storage["total_field_capacity"] / storage["reservoir_density_max"]
-        storage["reservoir_p_min"] =
-            storage["base_gas_capacity"] / storage["total_field_capacity"] *
-            storage["reservoir_p_max"]
+        storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"]
+        storage["reservoir_p_min"] = storage["base_gas_capacity"] / storage["total_field_capacity"] * storage["reservoir_p_max"]
         storage["reservoir_density_min"] = storage["reservoir_p_min"]
-        storage["initial_capacity"] =
-            storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
-        storage["initial_density"] =
-            storage["initial_capacity"] / storage["reservoir_volume"]
+        storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
+        storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
     end
 end

@@ -5,8 +5,7 @@ function variable_density(
     bounded::Bool = true,
     report::Bool = true,
 )
-    rho =
-        var(gm, nw)[:density] = JuMP.@variable(
+    rho = var(gm, nw)[:density] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :junction)],
             base_name = "$(nw)_rho",
@@ -33,8 +32,7 @@ function variable_compressor_flow(
     report::Bool = true,
 )
     max_mass_flow = ref(gm, nw, :max_mass_flow)
-    f =
-        var(gm, nw)[:compressor_flow] = JuMP.@variable(
+    f = var(gm, nw)[:compressor_flow] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :compressor)],
             base_name = "$(nw)_f_compressor",
@@ -58,8 +56,7 @@ function variable_pipe_flux(
     bounded::Bool = true,
     report::Bool = true,
 )
-    phi =
-        var(gm, nw)[:pipe_flux] = JuMP.@variable(
+    phi = var(gm, nw)[:pipe_flux] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             base_name = "$(nw)_flux_pipe",
@@ -74,8 +71,7 @@ function variable_pipe_flux(
 
     if report
         _IM.sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
-        sol_f =
-            Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
+        sol_f = Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
         _IM.sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
     end
 end
@@ -87,15 +83,13 @@ function variable_pipe_flux_avg(
     bounded::Bool = true,
     report::Bool = true,
 )
-    phi =
-        var(gm, nw)[:pipe_flux_avg] = JuMP.@variable(
+    phi = var(gm, nw)[:pipe_flux_avg] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             base_name = "$(nw)_flux_pipe_avg",
         )
 
-    flow =
-        var(gm, nw)[:pipe_flow_avg] = JuMP.@expression(
+    flow = var(gm, nw)[:pipe_flow_avg] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             phi[i] * ref(gm, nw, :pipe, i)["area"]
@@ -121,15 +115,13 @@ function variable_pipe_flux_neg(
     bounded::Bool = true,
     report::Bool = true,
 )
-    phi =
-        var(gm, nw)[:pipe_flux_neg] = JuMP.@variable(
+    phi = var(gm, nw)[:pipe_flux_neg] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             base_name = "$(nw)_flux_pipe_neg",
         )
 
-    flow =
-        var(gm, nw)[:pipe_flow_neg] = JuMP.@expression(
+    flow = var(gm, nw)[:pipe_flow_neg] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             phi[i] * ref(gm, nw, :pipe, i)["area"]
@@ -155,15 +147,13 @@ function variable_pipe_flux_fr(
     bounded::Bool = true,
     report::Bool = true,
 )
-    phi =
-        var(gm, nw)[:pipe_flux_fr] = JuMP.@expression(
+    phi = var(gm, nw)[:pipe_flux_fr] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             var(gm, nw, :pipe_flux_avg, i) - var(gm, nw, :pipe_flux_neg, i)
         )
 
-    flow =
-        var(gm, nw)[:pipe_flow_fr] = JuMP.@expression(
+    flow = var(gm, nw)[:pipe_flow_fr] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             phi[i] * ref(gm, nw, :pipe, i)["area"]
@@ -182,15 +172,13 @@ function variable_pipe_flux_to(
     bounded::Bool = true,
     report::Bool = true,
 )
-    phi =
-        var(gm, nw)[:pipe_flux_to] = JuMP.@expression(
+    phi = var(gm, nw)[:pipe_flux_to] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             var(gm, nw, :pipe_flux_avg, i) + var(gm, nw, :pipe_flux_neg, i)
         )
 
-    flow =
-        var(gm, nw)[:pipe_flow_to] = JuMP.@expression(
+    flow = var(gm, nw)[:pipe_flow_to] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :pipe)],
             phi[i] * ref(gm, nw, :pipe, i)["area"]
@@ -209,8 +197,7 @@ function variable_c_ratio(
     bounded::Bool = true,
     report::Bool = true,
 )
-    c_ratio =
-        var(gm, nw)[:compressor_ratio] = JuMP.@variable(
+    c_ratio = var(gm, nw)[:compressor_ratio] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :compressor)],
             base_name = "$(nw)_c_ratio",
@@ -240,8 +227,7 @@ function variable_compressor_power(
     bounded::Bool = true,
     report::Bool = true,
 )
-    c_power =
-        var(gm, nw)[:compressor_power_var] = JuMP.@variable(
+    c_power = var(gm, nw)[:compressor_power_var] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :compressor)],
             base_name = "$(nw)_c_power",
@@ -271,8 +257,7 @@ function variable_injection(
     bounded::Bool = true,
     report::Bool = true,
 )
-    s =
-        var(gm, nw)[:injection] = JuMP.@variable(
+    s = var(gm, nw)[:injection] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :dispatchable_receipt)],
             base_name = "$(nw)_injection",
@@ -312,8 +297,7 @@ function variable_withdrawal(
     bounded::Bool = true,
     report::Bool = true,
 )
-    d =
-        var(gm, nw)[:withdrawal] = JuMP.@variable(
+    d = var(gm, nw)[:withdrawal] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :dispatchable_delivery)],
             base_name = "$(nw)_withdrawal"
@@ -353,22 +337,19 @@ function variable_transfer_flow(
     bounded::Bool = true,
     report::Bool = true,
 )
-    s =
-        var(gm, nw)[:transfer_injection] = JuMP.@variable(
+    s = var(gm, nw)[:transfer_injection] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :dispatchable_transfer)],
             base_name = "$(nw)_transfer_injection"
         )
 
-    d =
-        var(gm, nw)[:transfer_withdrawal] = JuMP.@variable(
+    d = var(gm, nw)[:transfer_withdrawal] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :dispatchable_transfer)],
             base_name = "$(nw)_transfer_withdrawal"
         )
 
-    t =
-        var(gm, nw)[:transfer_effective] = JuMP.@expression(
+    t = var(gm, nw)[:transfer_effective] = JuMP.@expression(
             gm.model,
             [i in ids(gm, nw, :dispatchable_transfer)],
             d[i] - s[i]
@@ -422,15 +403,13 @@ function variable_storage_flow(
     report::Bool = true,
 )
 
-    f_bh =
-        var(gm, nw)[:bottom_hole_flow] = JuMP.@variable(
+    f_bh = var(gm, nw)[:bottom_hole_flow] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_storage_bottom_hole"
         )
 
-    f_wh =
-        var(gm, nw)[:well_head_flow] = JuMP.@variable(
+    f_wh = var(gm, nw)[:well_head_flow] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_storage_well_head"
@@ -482,8 +461,7 @@ function variable_storage_c_ratio(
     bounded::Bool = true,
     report::Bool = true,
 )
-    c_ratio_well =
-        var(gm, nw)[:storage_compressor_ratio] = JuMP.@variable(
+    c_ratio_well = var(gm, nw)[:storage_compressor_ratio] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_c_ratio_storage"
@@ -513,8 +491,7 @@ function variable_reservoir_density(
     bounded::Bool = true,
     report::Bool = true,
 )
-    rho_reservoir =
-        var(gm, nw)[:reservoir_density] = JuMP.@variable(
+    rho_reservoir = var(gm, nw)[:reservoir_density] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :storage)],
             base_name = "$(nw)_density_reservoir"

@@ -60,10 +60,8 @@ function sol_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
     for (n, nw_data) in nws_data
         if haskey(nw_data, "compressor")
             for (k, compressor) in nw_data["compressor"]
-                i =
-                    ref(gm, :compressor, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
-                j =
-                    ref(gm, :compressor, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
+                i = ref(gm, :compressor, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
+                j = ref(gm, :compressor, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
                 f = compressor["f"]
                 pi = max(0.0, nw_data["junction"][string(i)]["psqr"])
                 pj = max(0.0, nw_data["junction"][string(j)]["psqr"])
@@ -85,10 +83,8 @@ function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
     for (n, nw_data) in nws_data
         if haskey(nw_data, "ne_compressor")
             for (k, compressor) in nw_data["ne_compressor"]
-                i =
-                    ref(gm, :ne_compressor, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
-                j =
-                    ref(gm, :ne_compressor, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
+                i = ref(gm, :ne_compressor, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
+                j = ref(gm, :ne_compressor, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
                 f = compressor["f"]
                 pi = max(0.0, nw_data["junction"][string(i)]["psqr"])
                 pj = max(0.0, nw_data["junction"][string(j)]["psqr"])
@@ -109,10 +105,8 @@ function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
     for (n, nw_data) in nws_data
         if haskey(nw_data, "regulator")
             for (k, regulator) in nw_data["regulator"]
-                i =
-                    ref(gm, :regulator, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
-                j =
-                    ref(gm, :regulator, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
+                i = ref(gm, :regulator, parse(Int64, k); nw = parse(Int64, n))["fr_junction"]
+                j = ref(gm, :regulator, parse(Int64, k); nw = parse(Int64, n))["to_junction"]
                 f = regulator["f"]
                 pi = max(0.0, nw_data["junction"][string(i)]["psqr"])
                 pj = max(0.0, nw_data["junction"][string(j)]["psqr"])

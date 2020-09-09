@@ -29,7 +29,7 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
 end
 
 """
-Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments: 
+Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments:
 (i) `total_time` (defaults to 86400 seconds or 24 hours) - this is the total time for which transient optimization needs to be solved (ii) `time_step` (defaults to 3600 seconds or 1 hours) - this argument specifies the time discretization step (iii) `spatial_discretization` (defaults to 10000 m or 10 km) - this argument specifies the spatial discretization step (iv) `additional_time` (defaults to 21600 seconds or 6 hours) - this argument decides the time horizon that needs to be padded to the total time to in case the user wishes to perform a moving horizon transient optimization.
 """
 function parse_files(
@@ -97,8 +97,7 @@ end
 "function to calculate bearing given 2 lat lon values"
 function _calc_bearing(fr, to)
     y = cos(to[1] * pi / 180) * sin(abs(to[2] - fr[2]) * pi / 180)
-    x =
-        cos(fr[1] * pi / 180) * sin(to[1] * pi / 180) -
+    x = cos(fr[1] * pi / 180) * sin(to[1] * pi / 180) -
         sin(fr[1] * pi / 180) * cos(to[1] * pi / 180) * cos((to[2] - fr[2]) * pi / 180)
     beta = atan(y, x)
     return (beta * 180.0 / pi + 360) % 360
@@ -112,8 +111,7 @@ function _get_lat_lon(fr, bearing, distance)
     lat1 = fr[1] * pi / 180
     lon1 = fr[2] * pi / 180
     lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng))
-    lon2 =
-        lon1 + atan(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2))
+    lon2 = lon1 + atan(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2))
     return (lat2 * 180 / pi, lon2 * 180 / pi)
 end
 
@@ -135,15 +133,11 @@ function update_lat_lon!(data::Dict{String,Any})
         for (s, sub_pipe_id) in enumerate(sub_pipes)
             sub_pipe = data["pipe"]["$sub_pipe_id"]
 
-            data["junction"]["$(sub_pipe["fr_junction"])"]["lon"] =
-                2 * (s - 1) * lon_incr + start_lon
-            data["junction"]["$(sub_pipe["fr_junction"])"]["lat"] =
-                2 * (s - 1) * lat_incr + start_lat
+            data["junction"]["$(sub_pipe["fr_junction"])"]["lon"] = 2 * (s - 1) * lon_incr + start_lon
+            data["junction"]["$(sub_pipe["fr_junction"])"]["lat"] = 2 * (s - 1) * lat_incr + start_lat
 
-            data["junction"]["$(sub_pipe["to_junction"])"]["lon"] =
-                (2 * (s - 1) + 1) * lon_incr + start_lon
-            data["junction"]["$(sub_pipe["to_junction"])"]["lat"] =
-                (2 * (s - 1) + 1) * lat_incr + start_lat
+            data["junction"]["$(sub_pipe["to_junction"])"]["lon"] = (2 * (s - 1) + 1) * lon_incr + start_lon
+            data["junction"]["$(sub_pipe["to_junction"])"]["lat"] = (2 * (s - 1) + 1) * lat_incr + start_lat
         end
     end
 end
@@ -253,8 +247,7 @@ function _prep_transient_data!(
         sub_pipe_count = pipe["num_sub_pipes"]
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
         data["original_pipe"][key]["fr_pipe"] = max_pipe_id + pipe["id"] * 1000 + 1
-        data["original_pipe"][key]["to_pipe"] =
-            max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
+        data["original_pipe"][key]["to_pipe"] = max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
             id = max_pipe_id + pipe["id"] * 1000 + i
@@ -308,13 +301,13 @@ function _create_time_series_block(
     additional_time = 21600.0,
     periodic = true,
 )::Dict{String,Any}
-    # create time information 
+    # create time information
     time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time
     if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
         Memento.error(
             _LOGGER,
-            "the 3600 seconds has to be exactly divisible by the time step, 
+            "the 3600 seconds has to be exactly divisible by the time step,
 provide a time step that exactly divides 3600.0",
         )
     end
@@ -324,17 +317,17 @@ provide a time step that exactly divides 3600.0",
     if total_time > 86400.0
         Memento.warn(
             _LOGGER,
-            "the solver takes a substantial performance hit when trying to solve 
-transient optimization problems for more than a day's worth of data; if it takes too long to 
+            "the solver takes a substantial performance hit when trying to solve
+transient optimization problems for more than a day's worth of data; if it takes too long to
 converge, please restrict the final time horizon to a day or less",
         )
     end
     if (additional_time == 0.0)
         Memento.warn(
             _LOGGER,
-            "the transient optimization problem will only work for time-periodic 
-time-series data. Please ensure the time-series data is time-periodic with a period of $total_time; 
-if the data is not time-periodic GasModels will perform a time-periodic spline interpolation if 
+            "the transient optimization problem will only work for time-periodic
+time-series data. Please ensure the time-series data is time-periodic with a period of $total_time;
+if the data is not time-periodic GasModels will perform a time-periodic spline interpolation if
 at least 4 time series data points are available (and result in an error otherwise)",
         )
     end
@@ -377,8 +370,7 @@ at least 4 time series data points are available (and result in an error otherwi
 
         push!(interpolators[type][id][param]["values"], val)
         push!(interpolators[type][id][param]["timestamps"], timestamp)
-        time_val =
-            (
+        time_val = (
                 interpolators[type][id][param]["timestamps"][end] -
                 interpolators[type][id][param]["timestamps"][1]
             ) / Millisecond(1) * 1 / 1000.0
