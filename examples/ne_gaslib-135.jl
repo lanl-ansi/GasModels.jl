@@ -57,8 +57,7 @@ end
     @testset "gaslib 135 case 5%" begin
         println("gaslib 135 - CRDWP 5%")
         result = run_ne("../examples/data/matgas/gaslib-135-F-5.m", CRDWPGasModel, misocp_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED ||
-              result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0.0; atol = 1e-2)
         GC.gc()
     end
