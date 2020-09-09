@@ -143,110 +143,18 @@ function _ref_add_core!(
     sound_speed,
 )
     for (nw, ref) in nw_refs
-        ref[:junction] = haskey(ref, :junction) ?
-            Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
-        ref[:pipe] = haskey(ref, :pipe) ?
-            Dict(
-            x
-            for
-            x in ref[:pipe] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:compressor] = haskey(ref, :compressor) ?
-            Dict(
-            x
-            for
-            x in ref[:compressor] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:short_pipe] = haskey(ref, :short_pipe) ?
-            Dict(
-            x
-            for
-            x in ref[:short_pipe] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:resistor] = haskey(ref, :resistor) ?
-            Dict(
-            x
-            for
-            x in ref[:resistor] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:loss_resistor] = haskey(ref, :loss_resistor) ?
-            Dict(
-            x
-            for
-            x in ref[:loss_resistor] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:transfer] = haskey(ref, :transfer) ?
-            Dict(
-            x
-            for
-            x in ref[:transfer] if
-            x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:receipt] = haskey(ref, :receipt) ?
-            Dict(
-            x
-            for
-            x in ref[:receipt] if
-            x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:delivery] = haskey(ref, :delivery) ?
-            Dict(
-            x
-            for
-            x in ref[:delivery] if
-            x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:regulator] = haskey(ref, :regulator) ?
-            Dict(
-            x
-            for
-            x in ref[:regulator] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:valve] = haskey(ref, :valve) ?
-            Dict(
-            x
-            for
-            x in ref[:valve] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:storage] = haskey(ref, :storage) ?
-            Dict(
-            x
-            for
-            x in ref[:storage] if
-            x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])
-        ) :
-            Dict()
+        ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
+        ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:compressor] = haskey(ref, :compressor) ? Dict(x for x in ref[:compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:short_pipe] = haskey(ref, :short_pipe) ? Dict(x for x in ref[:short_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:resistor] = haskey(ref, :resistor) ? Dict(x for x in ref[:resistor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:loss_resistor] = haskey(ref, :loss_resistor) ? Dict(x for x in ref[:loss_resistor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:transfer] = haskey(ref, :transfer) ? Dict(x for x in ref[:transfer] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
+        ref[:receipt] = haskey(ref, :receipt) ? Dict(x for x in ref[:receipt] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
+        ref[:delivery] = haskey(ref, :delivery) ? Dict(x for x in ref[:delivery] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
+        ref[:regulator] = haskey(ref, :regulator) ? Dict(x for x in ref[:regulator] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:valve] = haskey(ref, :valve) ? Dict(x for x in ref[:valve] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:storage] = haskey(ref, :storage) ? Dict(x for x in ref[:storage] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
         mf =
@@ -254,58 +162,28 @@ function _ref_add_core!(
                 _calc_max_mass_flow(ref[:receipt], ref[:storage], ref[:transfer])
 
         # dispatchable tranfers, receipts, and deliveries
-        ref[:dispatchable_transfer] =
-            Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
-        ref[:dispatchable_receipt] =
-            Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 1)
-        ref[:dispatchable_delivery] =
-            Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 1)
-        ref[:nondispatchable_transfer] =
-            Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 0)
-        ref[:nondispatchable_receipt] =
-            Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 0)
-        ref[:nondispatchable_delivery] =
-            Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 0)
+        ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
+        ref[:dispatchable_receipt] = Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 1)
+        ref[:dispatchable_delivery] = Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 1)
+        ref[:nondispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 0)
+        ref[:nondispatchable_receipt] = Dict(x for x in ref[:receipt] if x.second["is_dispatchable"] == 0)
+        ref[:nondispatchable_delivery] = Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 0)
 
         # transfers, receipts, deliveries and storages in junction
-        ref[:dispatchable_transfers_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
-        ref[:dispatchable_receipts_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
-        ref[:dispatchable_deliveries_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
-        ref[:nondispatchable_transfers_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
-        ref[:nondispatchable_receipts_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
-        ref[:nondispatchable_deliveries_in_junction] =
-            Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:dispatchable_transfers_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:dispatchable_receipts_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:dispatchable_deliveries_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_transfers_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_receipts_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_deliveries_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
         ref[:storages_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
 
-        _add_junction_map!(
-            ref[:dispatchable_transfers_in_junction],
-            ref[:dispatchable_transfer],
-        )
-        _add_junction_map!(
-            ref[:nondispatchable_transfers_in_junction],
-            ref[:nondispatchable_transfer],
-        )
-        _add_junction_map!(
-            ref[:dispatchable_receipts_in_junction],
-            ref[:dispatchable_receipt],
-        )
-        _add_junction_map!(
-            ref[:nondispatchable_receipts_in_junction],
-            ref[:nondispatchable_receipt],
-        )
-        _add_junction_map!(
-            ref[:dispatchable_deliveries_in_junction],
-            ref[:dispatchable_delivery],
-        )
-        _add_junction_map!(
-            ref[:nondispatchable_deliveries_in_junction],
-            ref[:nondispatchable_delivery],
-        )
+        _add_junction_map!(ref[:dispatchable_transfers_in_junction], ref[:dispatchable_transfer])
+        _add_junction_map!(ref[:nondispatchable_transfers_in_junction], ref[:nondispatchable_transfer])
+        _add_junction_map!(ref[:dispatchable_receipts_in_junction], ref[:dispatchable_receipt])
+        _add_junction_map!(ref[:nondispatchable_receipts_in_junction], ref[:nondispatchable_receipt])
+        _add_junction_map!(ref[:dispatchable_deliveries_in_junction], ref[:dispatchable_delivery])
+        _add_junction_map!(ref[:nondispatchable_deliveries_in_junction], ref[:nondispatchable_delivery])
         _add_junction_map!(ref[:storages_in_junction], ref[:storage])
 
         ref[:parallel_pipes] = Dict()
@@ -338,27 +216,11 @@ function _ref_add_core!(
         ref[:valves_fr] = Dict(i => [] for (i, junction) in ref[:junction])
         ref[:valves_to] = Dict(i => [] for (i, junction) in ref[:junction])
         _add_edges_to_junction_map!(ref[:pipes_fr], ref[:pipes_to], ref[:pipe])
-        _add_edges_to_junction_map!(
-            ref[:compressors_fr],
-            ref[:compressors_to],
-            ref[:compressor],
-        )
-        _add_edges_to_junction_map!(
-            ref[:short_pipes_fr],
-            ref[:short_pipes_to],
-            ref[:short_pipe],
-        )
+        _add_edges_to_junction_map!(ref[:compressors_fr], ref[:compressors_to], ref[:compressor])
+        _add_edges_to_junction_map!(ref[:short_pipes_fr], ref[:short_pipes_to], ref[:short_pipe])
         _add_edges_to_junction_map!(ref[:resistors_fr], ref[:resistors_to], ref[:resistor])
-        _add_edges_to_junction_map!(
-            ref[:loss_resistors_fr],
-            ref[:loss_resistors_to],
-            ref[:loss_resistor],
-        )
-        _add_edges_to_junction_map!(
-            ref[:regulators_fr],
-            ref[:regulators_to],
-            ref[:regulator],
-        )
+        _add_edges_to_junction_map!(ref[:loss_resistors_fr], ref[:loss_resistors_to], ref[:loss_resistor])
+        _add_edges_to_junction_map!(ref[:regulators_fr], ref[:regulators_to], ref[:regulator])
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
         ref_degree!(ref)

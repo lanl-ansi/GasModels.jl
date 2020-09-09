@@ -23,23 +23,17 @@ end
 
 accepted_keys = ["junction"]
 for (i, junction) in data["junction"]
-    junction["id"] =
-        (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) :
-        parse(Int64, i)
+    junction["id"] = (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) : parse(Int64, i)
     if (data["per_unit"] == 1)
         junction["p_min"] = junction["pmin"] * data["baseP"]
         junction["p_max"] = junction["pmax"] * data["baseP"]
-        junction["p_nominal"] =
-            (get(junction, "p", false) == true) ? junction["p"] * data["baseP"] :
-            junction["pmin"] * data["baseP"]
+        junction["p_nominal"] = (get(junction, "p", false) == true) ? junction["p"] * data["baseP"] : junction["pmin"] * data["baseP"]
     else
         junction["p_min"] = junction["pmin"]
         junction["p_max"] = junction["pmax"]
-        junction["p_nominal"] =
-            (get(junction, "p", false) == true) ? junction["p"] : junction["pmin"]
+        junction["p_nominal"] = (get(junction, "p", false) == true) ? junction["p"] : junction["pmin"]
     end
-    junction["junction_type"] =
-        (get(junction, "junction_type", false) == true) ? Int(junction["junction_type"]) : 0
+    junction["junction_type"] = (get(junction, "junction_type", false) == true) ? Int(junction["junction_type"]) : 0
     junction["pipeline_name"] = split(file, ".")[1]
     junction["edi_id"] = Int(junction["id"])
     junction["lat"] = get(junction, "latitude", 0.0)
@@ -57,18 +51,17 @@ end
 
 push!(accepted_keys, "pipe")
 for (i, pipe) in data["pipe"]
-    pipe["id"] =
-        (get(pipe, "pipline_i", false) != false) ? Int(pipe["pipline_i"]) : parse(Int64, i)
+    pipe["id"] = (get(pipe, "pipline_i", false) != false) ? Int(pipe["pipline_i"]) : parse(Int64, i)
     pipe["fr_junction"] = pipe["f_junction"]
     pipe["to_junction"] = pipe["t_junction"]
     pipe["p_min"] = min(
         data["junction"][string(pipe["fr_junction"])]["p_min"],
         data["junction"][string(pipe["to_junction"])]["p_min"],
-    )
+        )
     pipe["p_max"] = max(
         data["junction"][string(pipe["fr_junction"])]["p_max"],
         data["junction"][string(pipe["to_junction"])]["p_max"],
-    )
+        )
     pipe["status"] = 1
     delete!(pipe, "pipline_i")
     delete!(pipe, "f_junction")
@@ -79,8 +72,7 @@ end
 push!(accepted_keys, "compressor")
 for (i, compressor) in data["compressor"]
     compressor["status"] = 1
-    compressor["id"] = (get(compressor, "compressor_i", false) != false) ?
-        Int(compressor["compressor_i"]) : parse(Int64, i)
+    compressor["id"] = (get(compressor, "compressor_i", false) != false) ? Int(compressor["compressor_i"]) : parse(Int64, i)
     compressor["fr_junction"] = Int(compressor["f_junction"])
     compressor["to_junction"] = Int(compressor["t_junction"])
     if get(compressor, "qmin", false) == false
@@ -100,19 +92,19 @@ for (i, compressor) in data["compressor"]
     compressor["inlet_p_min"] = min(
         data["junction"][string(compressor["fr_junction"])]["p_min"],
         data["junction"][string(compressor["to_junction"])]["p_min"],
-    )
+        )
     compressor["inlet_p_max"] = max(
         data["junction"][string(compressor["fr_junction"])]["p_max"],
         data["junction"][string(compressor["to_junction"])]["p_max"],
-    )
+        )
     compressor["outlet_p_min"] = min(
         data["junction"][string(compressor["fr_junction"])]["p_min"],
         data["junction"][string(compressor["to_junction"])]["p_min"],
-    )
+        )
     compressor["outlet_p_max"] = max(
         data["junction"][string(compressor["fr_junction"])]["p_max"],
         data["junction"][string(compressor["to_junction"])]["p_max"],
-    )
+        )
     compressor["operating_cost"] = 10.0
     compressor["directionality"] = 2
     compressor["power_max"] = get(compressor, "power_max", 1e9)
@@ -129,14 +121,9 @@ push!(accepted_keys, "receipt")
 data["receipt"] = Dict()
 for (i, producer) in data["producer"]
     data["receipt"][i] = Dict{String,Any}()
-    data["receipt"][i]["id"] =
-        (get(producer, "producer_i", false) != false) ? Int(producer["producer_i"]) :
-        parse(Int64, i)
-    data["receipt"][i]["junction_id"] =
-        (get(producer, "junction", false) != false) ? producer["junction"] :
-        producer["qg_junc"]
-    data["receipt"][i]["status"] =
-        (get(producer, "status", false) != false) ? producer["status"] : Int(1)
+    data["receipt"][i]["id"] = (get(producer, "producer_i", false) != false) ? Int(producer["producer_i"]) : parse(Int64, i)
+    data["receipt"][i]["junction_id"] = (get(producer, "junction", false) != false) ? producer["junction"] : producer["qg_junc"]
+    data["receipt"][i]["status"] = (get(producer, "status", false) != false) ? producer["status"] : Int(1)
     data["receipt"][i]["is_dispatchable"] = producer["dispatchable"]
     if data["per_unit"] == 1
         data["receipt"][i]["injection_min"] = producer["qgmin"] * data["baseQ"]
@@ -154,14 +141,9 @@ push!(accepted_keys, "delivery")
 data["delivery"] = Dict()
 for (i, consumer) in data["consumer"]
     data["delivery"][i] = Dict{String,Any}()
-    data["delivery"][i]["id"] =
-        (get(consumer, "consumer_i", false) != false) ? Int(consumer["consumer_i"]) :
-        parse(Int64, i)
-    data["delivery"][i]["junction_id"] =
-        (get(consumer, "junction", false) != false) ? consumer["junction"] :
-        consumer["ql_junc"]
-    data["delivery"][i]["status"] =
-        (get(consumer, "status", false) != false) ? Int(consumer["status"]) : Int(1)
+    data["delivery"][i]["id"] = (get(consumer, "consumer_i", false) != false) ? Int(consumer["consumer_i"]) : parse(Int64, i)
+    data["delivery"][i]["junction_id"] = (get(consumer, "junction", false) != false) ? consumer["junction"] : consumer["ql_junc"]
+    data["delivery"][i]["status"] = (get(consumer, "status", false) != false) ? Int(consumer["status"]) : Int(1)
     data["delivery"][i]["is_dispatchable"] = consumer["dispatchable"]
     if haskey(consumer, "priority")
         data["delivery"][i]["priority"] = consumer["priority"]
@@ -240,18 +222,17 @@ end
 if haskey(data, "ne_pipe")
     push!(accepted_keys, "ne_pipe")
     for (i, pipe) in data["ne_pipe"]
-        pipe["id"] = (get(pipe, "pipline_i", false) != false) ? Int(pipe["pipline_i"]) :
-            parse(Int64, i)
+        pipe["id"] = (get(pipe, "pipline_i", false) != false) ? Int(pipe["pipline_i"]) : parse(Int64, i)
         pipe["fr_junction"] = pipe["f_junction"]
         pipe["to_junction"] = pipe["t_junction"]
         pipe["p_min"] = min(
             data["junction"][string(pipe["fr_junction"])]["p_min"],
             data["junction"][string(pipe["to_junction"])]["p_min"],
-        )
+            )
         pipe["p_max"] = max(
             data["junction"][string(pipe["fr_junction"])]["p_max"],
             data["junction"][string(pipe["to_junction"])]["p_max"],
-        )
+            )
         pipe["status"] = 1
         delete!(pipe, "pipline_i")
         delete!(pipe, "f_junction")
@@ -264,8 +245,7 @@ if haskey(data, "ne_compressor")
     push!(accepted_keys, "ne_compressor")
     for (i, compressor) in data["ne_compressor"]
         compressor["status"] = 1
-        compressor["id"] = (get(compressor, "compressor_i", false) != false) ?
-            Int(compressor["compressor_i"]) : parse(Int64, i)
+        compressor["id"] = (get(compressor, "compressor_i", false) != false) ? Int(compressor["compressor_i"]) : parse(Int64, i)
         compressor["fr_junction"] = Int(compressor["f_junction"])
         compressor["to_junction"] = Int(compressor["t_junction"])
         if get(compressor, "qmin", false) == false
@@ -285,19 +265,19 @@ if haskey(data, "ne_compressor")
         compressor["inlet_p_min"] = min(
             data["junction"][string(compressor["fr_junction"])]["p_min"],
             data["junction"][string(compressor["to_junction"])]["p_min"],
-        )
+            )
         compressor["inlet_p_max"] = max(
             data["junction"][string(compressor["fr_junction"])]["p_max"],
             data["junction"][string(compressor["to_junction"])]["p_max"],
-        )
+            )
         compressor["outlet_p_min"] = min(
             data["junction"][string(compressor["fr_junction"])]["p_min"],
             data["junction"][string(compressor["to_junction"])]["p_min"],
-        )
+            )
         compressor["outlet_p_max"] = max(
             data["junction"][string(compressor["fr_junction"])]["p_max"],
             data["junction"][string(compressor["to_junction"])]["p_max"],
-        )
+            )
         compressor["operating_cost"] = 10.0
         compressor["directionality"] = 2
         delete!(compressor, "compressor_i")
@@ -324,31 +304,31 @@ push!(accepted_keys, "base_pressure")
 push!(accepted_keys, "base_length")
 push!(accepted_keys, "name")
 
-if !haskey(data, "gas_specific_gravity")
+if !haskey(data,"gas_specific_gravity")
     data["gas_specific_gravity"] = 0.6
 end
 
-if !haskey(data, "specific_heat_capacity_ratio")
+if !haskey(data,"specific_heat_capacity_ratio")
     data["specific_heat_capacity_ratio"] = 1.4
 end
 
-if !haskey(data, "temperature")
+if !haskey(data,"temperature")
     data["temperature"] = 288.7060
 end
 
-if !haskey(data, "R")
+if !haskey(data,"R")
     data["R"] = 8.314
 end
 
-if !haskey(data, "compressibility_factor")
+if !haskey(data,"compressibility_factor")
     data["compressibility_factor"] = 1.0
 end
 
-if !haskey(data, "economic_weighting")
+if !haskey(data,"economic_weighting")
     data["economic_weighting"] = 0.95
 end
 
-if !haskey(data, "sound_speed")
+if !haskey(data,"sound_speed")
     molecular_mass = data["gas_molar_mass"] # kg/mol
     z = data["compressibility_factor"]
     T = data["temperature"] # K

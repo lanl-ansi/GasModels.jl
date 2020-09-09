@@ -19,25 +19,7 @@ function constraint_source_flow(gm::AbstractMIModels, i; n::Int = gm.cnw)
     f_regulators = ref(gm, n, :regulators_fr, i)
     t_regulators = ref(gm, n, :regulators_to, i)
 
-    constraint_source_flow(
-        gm,
-        n,
-        i,
-        f_pipes,
-        t_pipes,
-        f_compressors,
-        t_compressors,
-        f_resistors,
-        t_resistors,
-        f_loss_resistors,
-        t_loss_resistors,
-        f_short_pipes,
-        t_short_pipes,
-        f_valves,
-        t_valves,
-        f_regulators,
-        t_regulators,
-    )
+    constraint_source_flow(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators)
 end
 
 
@@ -62,29 +44,7 @@ function constraint_source_flow_ne(gm::AbstractMIModels, i; n::Int = gm.cnw)
     ne_compressors_fr = ref(gm, n, :ne_compressors_fr, i)
     ne_compressors_to = ref(gm, n, :ne_compressors_to, i)
 
-    constraint_source_flow_ne(
-        gm,
-        n,
-        i,
-        f_pipes,
-        t_pipes,
-        f_compressors,
-        t_compressors,
-        f_resistors,
-        t_resistors,
-        f_loss_resistors,
-        t_loss_resistors,
-        f_short_pipes,
-        t_short_pipes,
-        f_valves,
-        t_valves,
-        f_regulators,
-        t_regulators,
-        ne_pipes_fr,
-        ne_pipes_to,
-        ne_compressors_fr,
-        ne_compressors_to,
-    )
+    constraint_source_flow_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 end
 
 
@@ -176,54 +136,20 @@ end
 
 " Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption "
 function constraint_conserve_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
-    f_pipes =
-        Dict(i => ref(gm, n, :pipe, i)["to_junction"] for i in ref(gm, n, :pipes_fr, idx))
-    t_pipes =
-        Dict(i => ref(gm, n, :pipe, i)["fr_junction"] for i in ref(gm, n, :pipes_to, idx))
-    f_compressors = Dict(
-        i => ref(gm, n, :compressor, i)["to_junction"]
-        for i in ref(gm, n, :compressors_fr, idx)
-    )
-    t_compressors = Dict(
-        i => ref(gm, n, :compressor, i)["fr_junction"]
-        for i in ref(gm, n, :compressors_to, idx)
-    )
-    f_resistors = Dict(
-        i => ref(gm, n, :resistor, i)["to_junction"]
-        for i in ref(gm, n, :resistors_fr, idx)
-    )
-    t_resistors = Dict(
-        i => ref(gm, n, :resistor, i)["fr_junction"]
-        for i in ref(gm, n, :resistors_to, idx)
-    )
-    f_loss_resistors = Dict(
-        i => ref(gm, n, :loss_resistor, i)["to_junction"]
-        for i in ref(gm, n, :loss_resistors_fr, idx)
-    )
-    t_loss_resistors = Dict(
-        i => ref(gm, n, :loss_resistor, i)["fr_junction"]
-        for i in ref(gm, n, :loss_resistors_to, idx)
-    )
-    f_short_pipes = Dict(
-        i => ref(gm, n, :short_pipe, i)["to_junction"]
-        for i in ref(gm, n, :short_pipes_fr, idx)
-    )
-    t_short_pipes = Dict(
-        i => ref(gm, n, :short_pipe, i)["fr_junction"]
-        for i in ref(gm, n, :short_pipes_to, idx)
-    )
-    f_valves =
-        Dict(i => ref(gm, n, :valve, i)["to_junction"] for i in ref(gm, n, :valves_fr, idx))
-    t_valves =
-        Dict(i => ref(gm, n, :valve, i)["fr_junction"] for i in ref(gm, n, :valves_to, idx))
-    f_regulators = Dict(
-        i => ref(gm, n, :regulator, i)["to_junction"]
-        for i in ref(gm, n, :regulators_fr, idx)
-    )
-    t_regulators = Dict(
-        i => ref(gm, n, :regulator, i)["fr_junction"]
-        for i in ref(gm, n, :regulators_to, idx)
-    )
+    f_pipes = Dict(i => ref(gm, n, :pipe, i)["to_junction"] for i in ref(gm, n, :pipes_fr, idx))
+    t_pipes = Dict(i => ref(gm, n, :pipe, i)["fr_junction"] for i in ref(gm, n, :pipes_to, idx))
+    f_compressors = Dict(i => ref(gm, n, :compressor, i)["to_junction"] for i in ref(gm, n, :compressors_fr, idx))
+    t_compressors = Dict(i => ref(gm, n, :compressor, i)["fr_junction"] for i in ref(gm, n, :compressors_to, idx))
+    f_resistors = Dict(i => ref(gm, n, :resistor, i)["to_junction"] for i in ref(gm, n, :resistors_fr, idx))
+    t_resistors = Dict(i => ref(gm, n, :resistor, i)["fr_junction"] for i in ref(gm, n, :resistors_to, idx))
+    f_loss_resistors = Dict(i => ref(gm, n, :loss_resistor, i)["to_junction"] for i in ref(gm, n, :loss_resistors_fr, idx))
+    t_loss_resistors = Dict(i => ref(gm, n, :loss_resistor, i)["fr_junction"] for i in ref(gm, n, :loss_resistors_to, idx))
+    f_short_pipes = Dict(i => ref(gm, n, :short_pipe, i)["to_junction"] for i in ref(gm, n, :short_pipes_fr, idx))
+    t_short_pipes = Dict(i => ref(gm, n, :short_pipe, i)["fr_junction"] for i in ref(gm, n, :short_pipes_to, idx))
+    f_valves = Dict(i => ref(gm, n, :valve, i)["to_junction"] for i in ref(gm, n, :valves_fr, idx))
+    t_valves = Dict(i => ref(gm, n, :valve, i)["fr_junction"] for i in ref(gm, n, :valves_to, idx))
+    f_regulators = Dict(i => ref(gm, n, :regulator, i)["to_junction"] for i in ref(gm, n, :regulators_fr, idx))
+    t_regulators = Dict(i => ref(gm, n, :regulator, i)["fr_junction"] for i in ref(gm, n, :regulators_to, idx))
 
     constraint_conserve_flow(
         gm,
@@ -249,68 +175,24 @@ end
 
 "Template: Constraints to ensure that flow is the same direction through a node with degree 2 and no production or consumption"
 function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int = gm.cnw)
-    f_pipes =
-        Dict(i => ref(gm, n, :pipe, i)["to_junction"] for i in ref(gm, n, :pipes_fr, idx))
-    t_pipes =
-        Dict(i => ref(gm, n, :pipe, i)["fr_junction"] for i in ref(gm, n, :pipes_to, idx))
-    f_compressors = Dict(
-        i => ref(gm, n, :compressor, i)["to_junction"]
-        for i in ref(gm, n, :compressors_fr, idx)
-    )
-    t_compressors = Dict(
-        i => ref(gm, n, :compressor, i)["fr_junction"]
-        for i in ref(gm, n, :compressors_to, idx)
-    )
-    f_resistors = Dict(
-        i => ref(gm, n, :resistor, i)["to_junction"]
-        for i in ref(gm, n, :resistors_fr, idx)
-    )
-    t_resistors = Dict(
-        i => ref(gm, n, :resistor, i)["fr_junction"]
-        for i in ref(gm, n, :resistors_to, idx)
-    )
-    f_loss_resistors = Dict(
-        i => ref(gm, n, :loss_resistor, i)["to_junction"]
-        for i in ref(gm, n, :loss_resistors_fr, idx)
-    )
-    t_loss_resistors = Dict(
-        i => ref(gm, n, :loss_resistor, i)["fr_junction"]
-        for i in ref(gm, n, :loss_resistors_to, idx)
-    )
-    f_short_pipes = Dict(
-        i => ref(gm, n, :short_pipe, i)["to_junction"]
-        for i in ref(gm, n, :short_pipes_fr, idx)
-    )
-    t_short_pipes = Dict(
-        i => ref(gm, n, :short_pipe, i)["fr_junction"]
-        for i in ref(gm, n, :short_pipes_to, idx)
-    )
-    f_valves =
-        Dict(i => ref(gm, n, :valve, i)["to_junction"] for i in ref(gm, n, :valves_fr, idx))
-    t_valves =
-        Dict(i => ref(gm, n, :valve, i)["fr_junction"] for i in ref(gm, n, :valves_to, idx))
-    f_regulators = Dict(
-        i => ref(gm, n, :regulator, i)["to_junction"]
-        for i in ref(gm, n, :regulators_fr, idx)
-    )
-    t_regulators = Dict(
-        i => ref(gm, n, :regulator, i)["fr_junction"]
-        for i in ref(gm, n, :regulators_to, idx)
-    )
-    ne_pipes_fr = Dict(
-        i => ref(gm, n, :ne_pipe, i)["to_junction"] for i in ref(gm, n, :ne_pipes_fr, idx)
-    )
-    ne_pipes_to = Dict(
-        i => ref(gm, n, :ne_pipe, i)["fr_junction"] for i in ref(gm, n, :ne_pipes_to, idx)
-    )
-    ne_compressors_fr = Dict(
-        i => ref(gm, n, :ne_compressor, i)["to_junction"]
-        for i in ref(gm, n, :ne_compressors_fr, idx)
-    )
-    ne_compressors_to = Dict(
-        i => ref(gm, n, :ne_compressor, i)["fr_junction"]
-        for i in ref(gm, n, :ne_compressors_to, idx)
-    )
+    f_pipes = Dict(i => ref(gm, n, :pipe, i)["to_junction"] for i in ref(gm, n, :pipes_fr, idx))
+    t_pipes = Dict(i => ref(gm, n, :pipe, i)["fr_junction"] for i in ref(gm, n, :pipes_to, idx))
+    f_compressors = Dict(i => ref(gm, n, :compressor, i)["to_junction"] for i in ref(gm, n, :compressors_fr, idx))
+    t_compressors = Dict(i => ref(gm, n, :compressor, i)["fr_junction"] for i in ref(gm, n, :compressors_to, idx))
+    f_resistors = Dict(i => ref(gm, n, :resistor, i)["to_junction"] for i in ref(gm, n, :resistors_fr, idx))
+    t_resistors = Dict(i => ref(gm, n, :resistor, i)["fr_junction"] for i in ref(gm, n, :resistors_to, idx))
+    f_loss_resistors = Dict(i => ref(gm, n, :loss_resistor, i)["to_junction"] for i in ref(gm, n, :loss_resistors_fr, idx))
+    t_loss_resistors = Dict(i => ref(gm, n, :loss_resistor, i)["fr_junction"] for i in ref(gm, n, :loss_resistors_to, idx))
+    f_short_pipes = Dict(i => ref(gm, n, :short_pipe, i)["to_junction"] for i in ref(gm, n, :short_pipes_fr, idx))
+    t_short_pipes = Dict(i => ref(gm, n, :short_pipe, i)["fr_junction"] for i in ref(gm, n, :short_pipes_to, idx))
+    f_valves = Dict(i => ref(gm, n, :valve, i)["to_junction"] for i in ref(gm, n, :valves_fr, idx))
+    t_valves = Dict(i => ref(gm, n, :valve, i)["fr_junction"] for i in ref(gm, n, :valves_to, idx))
+    f_regulators = Dict(i => ref(gm, n, :regulator, i)["to_junction"] for i in ref(gm, n, :regulators_fr, idx))
+    t_regulators = Dict(i => ref(gm, n, :regulator, i)["fr_junction"] for i in ref(gm, n, :regulators_to, idx))
+    ne_pipes_fr = Dict(i => ref(gm, n, :ne_pipe, i)["to_junction"] for i in ref(gm, n, :ne_pipes_fr, idx))
+    ne_pipes_to = Dict(i => ref(gm, n, :ne_pipe, i)["fr_junction"] for i in ref(gm, n, :ne_pipes_to, idx))
+    ne_compressors_fr = Dict(i => ref(gm, n, :ne_compressor, i)["to_junction"] for i in ref(gm, n, :ne_compressors_fr, idx))
+    ne_compressors_to = Dict(i => ref(gm, n, :ne_compressor, i)["fr_junction"] for i in ref(gm, n, :ne_compressors_to, idx))
 
     constraint_conserve_flow_ne(
         gm,

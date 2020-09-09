@@ -16,26 +16,12 @@ end
 
 ### Data and functions specific to the gas Matlab format ###
 
-mlab_data_names = [
-    "mgc.sound_speed",
-    "mgc.temperature",
-    "mgc.R",
-    "mgc.compressibility_factor",
-    "mgc.gas_molar_mass",
-    "mgc.gas_specific_gravity",
-    "mgc.specific_heat_capacity_ratio",
-    "mgc.standard_density",
-    "mgc.baseP",
-    "mgc.baseF",
-    "mgc.junction",
-    "mgc.pipe",
-    "mgc.ne_pipe",
-    "mgc.compressor",
-    "mgc.ne_compressor",
-    "mgc.producer",
-    "mgc.consumer",
-    "mgc.junction_name",
-    "mgc.per_unit",
+mlab_data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
+    "mgc.compressibility_factor", "mgc.gas_molar_mass",
+    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
+    "mgc.standard_density", "mgc.baseP", "mgc.baseF", "mgc.junction",
+    "mgc.pipe", "mgc.ne_pipe", "mgc.compressor", "mgc.ne_compressor",
+    "mgc.producer", "mgc.consumer", "mgc.junction_name", "mgc.per_unit",
 ]
 
 mlab_junction_columns = [
@@ -253,12 +239,8 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.ne_compressor")
         ne_compressors = []
         for compressor_row in matlab_data["mgc.ne_compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(
-                compressor_row,
-                mlab_ne_compressor_columns,
-            )
-            compressor_data["index"] =
-                InfrastructureModels.check_type(Int, compressor_row[1])
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_ne_compressor_columns,)
+            compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(ne_compressors, compressor_data)
         end
         case["ne_compressor"] = ne_compressors
@@ -267,8 +249,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.producer")
         producers = []
         for producer_row in matlab_data["mgc.producer"]
-            producer_data =
-                InfrastructureModels.row_to_typed_dict(producer_row, mlab_producer_columns)
+            producer_data = InfrastructureModels.row_to_typed_dict(producer_row, mlab_producer_columns)
             producer_data["index"] = InfrastructureModels.check_type(Int, producer_row[1])
             push!(producers, producer_data)
         end
@@ -278,8 +259,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.consumer")
         consumers = []
         for consumer_row in matlab_data["mgc.consumer"]
-            consumer_data =
-                InfrastructureModels.row_to_typed_dict(consumer_row, mlab_consumer_columns)
+            consumer_data = InfrastructureModels.row_to_typed_dict(consumer_row, mlab_consumer_columns)
             consumer_data["index"] = InfrastructureModels.check_type(Int, consumer_row[1])
             push!(consumers, consumer_data)
         end
@@ -289,22 +269,14 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction_name")
         junction_names = []
         for (i, junction_name_row) in enumerate(matlab_data["mgc.junction_name"])
-            junction_name_data = InfrastructureModels.row_to_typed_dict(
-                junction_name_row,
-                mlab_junction_name_columns,
-            )
+            junction_name_data = InfrastructureModels.row_to_typed_dict(junction_name_row, mlab_junction_name_columns,)
             junction_name_data["index"] = i
             push!(junction_names, junction_name_data)
         end
         case["junction_name"] = junction_names
 
         if length(case["junction_name"]) != length(case["junction"])
-            Memento.error(
-                _LOGGER,
-                "incorrect .m file, the number of junction names
-($(length(case["junction_name"]))) is inconsistent with
-the number of junctions ($(length(case["junction"]))).\n",
-            )
+            Memento.error(_LOGGER, "incorrect .m file, the number of junction names ($(length(case["junction_name"]))) is inconsistent with the number of junctions ($(length(case["junction"]))).\n")
         end
     end
 

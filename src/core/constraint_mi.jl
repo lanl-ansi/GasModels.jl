@@ -227,32 +227,15 @@ function constraint_mass_flow_balance_ne(
         _apply_mass_flow_cuts(y_ne_compressor, ne_compressors_fr) &&
         _apply_mass_flow_cuts(y_ne_compressor, ne_compressors_to)
 
-    if max(fgmin, fg_constant) > 0.0 &&
-       flmin == 0.0 &&
-       flmax == 0.0 &&
-       fl_constant == 0.0 &&
-       fgmin >= 0.0 &&
-       is_disjunction
+    if max(fgmin, fg_constant) > 0.0 && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
         constraint_source_flow_ne(gm, i; n = n)
     end
 
-    if fgmax == 0.0 &&
-       fgmin == 0.0 &&
-       fg_constant == 0.0 &&
-       max(flmin, fl_constant) > 0.0 &&
-       flmin >= 0.0 &&
-       is_disjunction
+    if fgmax == 0.0 && fgmin == 0.0 && fg_constant == 0.0 && max(flmin, fl_constant) > 0.0 && flmin >= 0.0 && is_disjunction
         constraint_sink_flow_ne(gm, i; n = n)
     end
 
-    if fgmax == 0 &&
-       fgmin == 0 &&
-       fg_constant == 0 &&
-       flmax == 0 &&
-       flmin == 0 &&
-       fl_constant == 0 &&
-       ref(gm, n, :degree_ne)[i] == 2 &&
-       is_disjunction
+    if fgmax == 0 && fgmin == 0 && fg_constant == 0 && flmax == 0 && flmin == 0 && fl_constant == 0 && ref(gm, n, :degree_ne)[i] == 2 && is_disjunction
         constraint_conserve_flow_ne(gm, i; n = n)
     end
 
@@ -268,20 +251,8 @@ function constraint_pipe_pressure(gm::AbstractMIModels, n::Int, k, i, j, pd_min,
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop1,
-        k,
-        JuMP.@constraint(gm.model, (1 - y) * pd_min <= pi - pj)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop2,
-        k,
-        JuMP.@constraint(gm.model, pi - pj <= y * pd_max)
-    )
+    _add_constraint!(gm, n, :on_off_pressure_drop1, k, JuMP.@constraint(gm.model, (1 - y) * pd_min <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max))
 end
 
 
@@ -289,20 +260,8 @@ end
 function constraint_pipe_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
     y = var(gm, n, :y_pipe, k)
     f = var(gm, n, :f_pipe, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pipe_flow1,
-        k,
-        JuMP.@constraint(gm.model, (1 - y) * f_min <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pipe_flow2,
-        k,
-        JuMP.@constraint(gm.model, f <= y * f_max)
-    )
+    _add_constraint!(gm, n, :on_off_pipe_flow1, k, JuMP.@constraint(gm.model, (1 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_pipe_flow2, k, JuMP.@constraint(gm.model, f <= y * f_max))
 
     constraint_pipe_parallel_flow(gm, k)
 end
@@ -329,26 +288,8 @@ function constraint_pipe_pressure_ne(
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     # abs is used to account for potential sign flipping and make sure any value for y is valid when z = 0
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop_ne1,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            (1 - z) * (pd_min_off - abs(pd_min_on)) + (1 - y) * pd_min_on <= pi - pj
-        )
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pressure_drop_ne2,
-        k,
-        JuMP.@constraint(
-            gm.model,
-            pi - pj <= y * pd_max_on + (1 - z) * (pd_max_off + abs(pd_max_on))
-        )
-    )
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne1, k, JuMP.@constraint(gm.model, (1 - z) * (pd_min_off - abs(pd_min_on)) + (1 - y) * pd_min_on <= pi - pj))
+    _add_constraint!(gm, n, :on_off_pressure_drop_ne2, k, JuMP.@constraint(gm.model, pi - pj <= y * pd_max_on + (1 - z) * (pd_max_off + abs(pd_max_on))))
 end
 
 
@@ -356,20 +297,8 @@ end
 function constraint_pipe_mass_flow_ne(gm::AbstractMIModels, n::Int, k, f_min, f_max)
     y = var(gm, n, :y_ne_pipe, k)
     f = var(gm, n, :f_ne_pipe, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pipe_flow_ne1,
-        k,
-        JuMP.@constraint(gm.model, (1 - y) * f_min <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_pipe_flow_ne2,
-        k,
-        JuMP.@constraint(gm.model, f <= y * f_max)
-    )
+    _add_constraint!(gm, n, :on_off_pipe_flow_ne1, k, JuMP.@constraint(gm.model, (1 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_pipe_flow_ne2, k, JuMP.@constraint(gm.model, f <= y * f_max))
 
     constraint_ne_pipe_parallel_flow(gm, k; n = n)
 end
@@ -383,20 +312,8 @@ end
 function constraint_short_pipe_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
     y = var(gm, n, :y_short_pipe, k)
     f = var(gm, n, :f_short_pipe, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_short_pipe_flow1,
-        k,
-        JuMP.@constraint(gm.model, f_min * (1 - y) <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_short_pipe_flow2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * y)
-    )
+    _add_constraint!(gm, n, :on_off_short_pipe_flow1, k, JuMP.@constraint(gm.model, f_min * (1 - y) <= f))
+    _add_constraint!(gm, n, :on_off_short_pipe_flow2, k, JuMP.@constraint(gm.model, f <= f_max * y))
 
     constraint_short_pipe_parallel_flow(gm, k; n = n)
 end
@@ -410,20 +327,8 @@ end
 function constraint_compressor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
     y = var(gm, n, :y_compressor, k)
     f = var(gm, n, :f_compressor, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_compressor_flow_direction1,
-        k,
-        JuMP.@constraint(gm.model, (1 - y) * f_min <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_compressor_flow_direction2,
-        k,
-        JuMP.@constraint(gm.model, f <= y * f_max)
-    )
+    _add_constraint!(gm, n, :on_off_compressor_flow_direction1, k, JuMP.@constraint(gm.model, (1 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_compressor_flow_direction2, k, JuMP.@constraint(gm.model, f <= y * f_max))
 
     constraint_compressor_parallel_flow(gm, k; n = n)
 end
@@ -450,89 +355,20 @@ function constraint_compressor_ratios(
 
     # compression in both directions
     if type == 0
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios1,
-            k,
-            JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= (1 - y) * (j_pmax^2))
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios2,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                min_ratio^2 * pi - pj <= (1 - y) * (min_ratio^2 * i_pmax^2)
-            )
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios3,
-            k,
-            JuMP.@constraint(gm.model, pi - max_ratio^2 * pj <= y * (i_pmax^2))
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios4,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                min_ratio^2 * pj - pi <= y * (min_ratio^2 * j_pmax^2)
-            )
-        )
+        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= (1 - y) * (j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pj <= (1 - y) * (min_ratio^2 * i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2 * pj <= y * (i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, min_ratio^2 * pj - pi <= y * (min_ratio^2 * j_pmax^2)))
         # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
     elseif type == 1
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratios1,
-            k,
-            JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= 0)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :compressor_ratios2,
-            k,
-            JuMP.@constraint(gm.model, min_ratio^2 * pi - pj <= 0)
-        )
+        _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= 0))
+        _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pj <= 0))
         # compression when flow is from i to j.  no compression when flow is from j to i
     else
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios1,
-            k,
-            JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= (1 - y) * (j_pmax^2))
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios2,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                min_ratio^2 * pi - pj <= (1 - y) * (min_ratio^2 * i_pmax^2)
-            )
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios3,
-            k,
-            JuMP.@constraint(gm.model, pi - pj <= y * (i_pmax^2))
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios4,
-            k,
-            JuMP.@constraint(gm.model, pj - pi <= y * (j_pmax^2))
-        )
+        _add_constraint!(gm, n, :on_off_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= (1 - y) * (j_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pj <= (1 - y) * (min_ratio^2 * i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - pj <= y * (i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios4, k, JuMP.@constraint(gm.model, pj - pi <= y * (j_pmax^2)))
     end
 end
 
@@ -541,20 +377,8 @@ end
 function constraint_compressor_mass_flow_ne(gm::AbstractMIModels, n::Int, k, f_min, f_max)
     y = var(gm, n, :y_ne_compressor, k)
     f = var(gm, n, :f_ne_compressor, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_compressor_flow_direction_ne1,
-        k,
-        JuMP.@constraint(gm.model, (1 - y) * f_min <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_compressor_flow_direction_ne2,
-        k,
-        JuMP.@constraint(gm.model, f <= y * f_max)
-    )
+    _add_constraint!(gm, n, :on_off_compressor_flow_direction_ne1, k, JuMP.@constraint(gm.model, (1 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_compressor_flow_direction_ne2, k, JuMP.@constraint(gm.model, f <= y * f_max))
     constraint_ne_compressor_parallel_flow(gm, k; n = n)
 end
 
@@ -581,92 +405,20 @@ function constraint_compressor_ratios_ne(
 
     # compression in both directions
     if type == 0
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne1,
-            k,
-            JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - zc) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne2,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                (min_ratio^2 * pi) - pj <= (2 - y - zc) * (min_ratio^2 * i_pmax^2)
-            )
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne3,
-            k,
-            JuMP.@constraint(gm.model, pi - (max_ratio^2 * pj) <= (1 + y - zc) * i_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne4,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                (min_ratio^2 * pj) - pi <= (1 + y - zc) * (min_ratio^2 * j_pmax^2)
-            )
-        )
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - zc) * j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model, (min_ratio^2 * pi) - pj <= (2 - y - zc) * (min_ratio^2 * i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model, pi - (max_ratio^2 * pj) <= (1 + y - zc) * i_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne4, k, JuMP.@constraint(gm.model, (min_ratio^2 * pj) - pi <= (1 + y - zc) * (min_ratio^2 * j_pmax^2)))
         # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
     elseif type == 1
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne1,
-            k,
-            JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= zc * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne2,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                (min_ratio^2 * pi) - pj <= zc * i_pmax^2 * min_ratio^2
-            )
-        )
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= zc * j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model, (min_ratio^2 * pi) - pj <= zc * i_pmax^2 * min_ratio^2))
         # compression when flow is from i to j.  no compression when flow is from j to i
     else
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne1,
-            k,
-            JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - zc) * j_pmax^2)
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne2,
-            k,
-            JuMP.@constraint(
-                gm.model,
-                (min_ratio^2 * pi) - pj <= (2 - y - zc) * (min_ratio^2 * i_pmax^2)
-            )
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne3,
-            k,
-            JuMP.@constraint(gm.model, pi - pj <= (1 + y - zc) * (i_pmax^2))
-        )
-        _add_constraint!(
-            gm,
-            n,
-            :on_off_compressor_ratios_ne4,
-            k,
-            JuMP.@constraint(gm.model, pj - pi <= (1 + y - zc) * (j_pmax^2))
-        )
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - zc) * j_pmax^2))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne2, k, JuMP.@constraint(gm.model, (min_ratio^2 * pi) - pj <= (2 - y - zc) * (min_ratio^2 * i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne3, k, JuMP.@constraint(gm.model, pi - pj <= (1 + y - zc) * (i_pmax^2)))
+        _add_constraint!(gm, n, :on_off_compressor_ratios_ne4, k, JuMP.@constraint(gm.model, pj - pi <= (1 + y - zc) * (j_pmax^2)))
     end
 end
 
@@ -676,34 +428,10 @@ function constraint_on_off_valve_mass_flow(gm::AbstractMIModels, n::Int, k, f_mi
     y = var(gm, n, :y_valve, k)
     f = var(gm, n, :f_valve, k)
     v = var(gm, n, :v_valve, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow_direction1,
-        k,
-        JuMP.@constraint(gm.model, f_min * (1 - y) <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow_direction2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * y)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow_direction3,
-        k,
-        JuMP.@constraint(gm.model, f_min * v <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_valve_flow_direction4,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * v)
-    )
+    _add_constraint!(gm, n, :on_off_valve_flow_direction1, k, JuMP.@constraint(gm.model, f_min * (1 - y) <= f))
+    _add_constraint!(gm, n, :on_off_valve_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max * y))
+    _add_constraint!(gm, n, :on_off_valve_flow_direction3, k, JuMP.@constraint(gm.model, f_min * v <= f))
+    _add_constraint!(gm, n, :on_off_valve_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max * v))
 
     constraint_valve_parallel_flow(gm, k; n = n)
 end
@@ -724,34 +452,10 @@ function constraint_on_off_regulator_mass_flow(
     y = var(gm, n, :y_regulator, k)
     f = var(gm, n, :f_regulator, k)
     v = var(gm, n, :v_regulator, k)
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_regulator_flow_direction1,
-        k,
-        JuMP.@constraint(gm.model, f_min * (1 - y) <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_regulator_flow_direction2,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * y)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_regulator_flow_direction3,
-        k,
-        JuMP.@constraint(gm.model, f_min * v <= f)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :on_off_regulator_flow_direction4,
-        k,
-        JuMP.@constraint(gm.model, f <= f_max * v)
-    )
+    _add_constraint!(gm, n, :on_off_regulator_flow_direction1, k, JuMP.@constraint(gm.model, f_min * (1 - y) <= f))
+    _add_constraint!(gm, n, :on_off_regulator_flow_direction2, k, JuMP.@constraint(gm.model, f <= f_max * y))
+    _add_constraint!(gm, n, :on_off_regulator_flow_direction3, k, JuMP.@constraint(gm.model, f_min * v <= f))
+    _add_constraint!(gm, n, :on_off_regulator_flow_direction4, k, JuMP.@constraint(gm.model, f <= f_max * v))
 
     constraint_regulator_parallel_flow(gm, k; n = n)
 end
@@ -776,34 +480,10 @@ function constraint_on_off_regulator_pressure(
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v = var(gm, n, :v_regulator, k)
-    _add_constraint!(
-        gm,
-        n,
-        :regulator_pressure_drop1,
-        k,
-        JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - v) * j_pmax^2)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :regulator_pressure_drop2,
-        k,
-        JuMP.@constraint(gm.model, (min_ratio^2 * pi) - pj <= (2 - y - v) * i_pmax^2)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :regulator_pressure_drop3,
-        k,
-        JuMP.@constraint(gm.model, pj - pi <= (1 + y - v) * j_pmax^2)
-    )
-    _add_constraint!(
-        gm,
-        n,
-        :regulator_pressure_drop4,
-        k,
-        JuMP.@constraint(gm.model, pi - pj <= (1 + y - v) * i_pmax^2)
-    )
+    _add_constraint!(gm, n, :regulator_pressure_drop1, k, JuMP.@constraint(gm.model, pj - (max_ratio^2 * pi) <= (2 - y - v) * j_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop2, k, JuMP.@constraint(gm.model, (min_ratio^2 * pi) - pj <= (2 - y - v) * i_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop3, k, JuMP.@constraint(gm.model, pj - pi <= (1 + y - v) * j_pmax^2))
+    _add_constraint!(gm, n, :regulator_pressure_drop4, k, JuMP.@constraint(gm.model, pi - pj <= (1 + y - v) * i_pmax^2))
 end
 
 
@@ -1126,13 +806,7 @@ function constraint_conserve_flow(
     for (y1, t1) in y_fr
         for (y2, t2) in y_fr
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 + y2 == 1)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 + y2 == 1))
             end
         end
     end
@@ -1140,13 +814,7 @@ function constraint_conserve_flow(
     for (y1, t1) in y_to
         for (y2, t2) in y_to
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 + y2 == 1)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 + y2 == 1))
             end
         end
     end
@@ -1154,13 +822,7 @@ function constraint_conserve_flow(
     for (y1, t1) in y_fr
         for (y2, t2) in y_to
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 == y2)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 == y2))
             end
         end
     end
@@ -1263,13 +925,7 @@ function constraint_conserve_flow_ne(
     for (y1, t1) in y_fr
         for (y2, t2) in y_fr
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 + y2 == 1)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 + y2 == 1))
             end
         end
     end
@@ -1277,13 +933,7 @@ function constraint_conserve_flow_ne(
     for (y1, t1) in y_to
         for (y2, t2) in y_to
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 + y2 == 1)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 + y2 == 1))
             end
         end
     end
@@ -1291,13 +941,7 @@ function constraint_conserve_flow_ne(
     for (y1, t1) in y_fr
         for (y2, t2) in y_to
             if t1 != t2
-                _add_constraint!(
-                    gm,
-                    n,
-                    :conserve_flow,
-                    idx,
-                    JuMP.@constraint(gm.model, y1 == y2)
-                )
+                _add_constraint!(gm, n, :conserve_flow, idx, JuMP.@constraint(gm.model, y1 == y2))
             end
         end
     end
