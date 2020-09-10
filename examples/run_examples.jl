@@ -28,10 +28,10 @@ couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "couenne.exe")
 bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "bonmin.exe")
 
 misocp_solver = gurobi_solver
-mip_solver    = gurobi_solver
-lp_solver     = gurobi_solver
-minlp_solver  = scip_solver
-nlp_solver    = scip_solver
+mip_solver = gurobi_solver
+lp_solver = gurobi_solver
+minlp_solver = scip_solver
+nlp_solver = scip_solver
 
 @testset "Examples" begin
     include("gf.jl")

@@ -107,7 +107,7 @@ for (i, compressor) in data["compressor"]
         )
     compressor["operating_cost"] = 10.0
     compressor["directionality"] = 2
-    compressor["power_max"]      = get(compressor,"power_max",1e9)
+    compressor["power_max"] = get(compressor, "power_max", 1e9)
 
     delete!(compressor, "compressor_i")
     delete!(compressor, "f_junction")
@@ -355,4 +355,4 @@ for key in keys(data)
     end
 end
 
-write_matgas!(data, matgas_out_file; include_extended=true)
+write_matgas!(data, matgas_out_file; include_extended = true)

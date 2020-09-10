@@ -2,7 +2,7 @@
 
     @testset "gaslib 135 5% case" begin
         println("gaslib 135 - WP 5%")
-        result = run_ne("../examples/data/matgas/gaslib-135-F-5.m", WPGasModel, minlp_solver; )
+        result = run_ne("../examples/data/matgas/gaslib-135-F-5.m", WPGasModel, minlp_solver;)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0.0; atol = 1e-2)
     end
@@ -19,12 +19,12 @@ end
 
 @testset "test dwp ne gaslib 135" begin
 
-#    @testset "gaslib 135 5% case" begin
-#        println("gaslib 135 - DWP 5%")
-#        result = run_ne("../examples/data/matgas/gaslib-135-F-5.m", DWPGasModel, minlp_solver)
-#        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
-#        @test isapprox(result["objective"], 0.0; atol = 1e-2)
-#    end
+    #    @testset "gaslib 135 5% case" begin
+    #        println("gaslib 135 - DWP 5%")
+    #        result = run_ne("../examples/data/matgas/gaslib-135-F-5.m", DWPGasModel, minlp_solver)
+    #        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+    #        @test isapprox(result["objective"], 0.0; atol = 1e-2)
+    #    end
 
     @testset "gaslib 135 25% case" begin
         println("gaslib 135 - DWP 25%")

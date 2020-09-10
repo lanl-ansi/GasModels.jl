@@ -2,7 +2,18 @@
 
 "entry point into running the gas flow feasability problem"
 function run_gf(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_gf; solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!], kwargs...)
+    return run_model(
+        file,
+        model_type,
+        optimizer,
+        build_gf;
+        solution_processors = [
+            sol_psqr_to_p!,
+            sol_compressor_p_to_r!,
+            sol_regulator_p_to_r!,
+        ],
+        kwargs...,
+    )
 end
 
 
@@ -20,7 +31,17 @@ end
 
 "construct the gas flow feasbility problem"
 function build_gf(gm::AbstractGasModel)
-    bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+    bounded_compressors = Dict(
+        x
+        for
+        x in ref(gm, :compressor) if
+        _calc_is_compressor_energy_bounded(
+            gm.data["specific_heat_capacity_ratio"],
+            gm.data["gas_specific_gravity"],
+            gm.data["temperature"],
+            x.second,
+        )
+    )
 
     variable_pressure(gm)
     variable_pressure_sqr(gm)
@@ -29,20 +50,20 @@ function build_gf(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
-    variable_compressor_ratio_sqr(gm; compressors=bounded_compressors)
+    variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
 
-    for (i,junction) in ref(gm, :junction)
+    for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
 
         if (junction["junction_type"] == 1)
-            constraint_pressure(gm,i)
+            constraint_pressure(gm, i)
         end
     end
 
     for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_pipe_weymouth(gm,i)
+        constraint_pipe_mass_flow(gm, i)
+        constraint_pipe_weymouth(gm, i)
     end
 
     for i in ids(gm, :resistor)
@@ -68,7 +89,7 @@ function build_gf(gm::AbstractGasModel)
 
     for i in keys(bounded_compressors)
         constraint_compressor_ratio_value(gm, i)
-        constraint_compressor_energy(gm,i)
+        constraint_compressor_energy(gm, i)
     end
 
     for i in ids(gm, :valve)

@@ -1,34 +1,35 @@
 # Define CRDWP implementations of Gas Models
 
 "Variables needed for modeling flow in MI models"
-function variable_flow(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_pressure_difference(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction(gm, nw; report=report)
+function variable_flow(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+    variable_pressure_difference(gm, nw; bounded = bounded, report = report)
+    variable_mass_flow(gm, nw; bounded = bounded, report = report)
+    variable_connection_direction(gm, nw; report = report)
 end
 
 
 "Variables needed for modeling flow in MI models"
-function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_pressure_difference_ne(gm, nw; bounded=bounded, report=report)
-    variable_mass_flow_ne(gm, nw; bounded=bounded, report=report)
-    variable_connection_direction_ne(gm, nw; report=report)
+function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+    variable_pressure_difference_ne(gm, nw; bounded = bounded, report = report)
+    variable_mass_flow_ne(gm, nw; bounded = bounded, report = report)
+    variable_connection_direction_ne(gm, nw; report = report)
 end
 
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
-function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(gm.model,
-        [k in keys(gm.ref[:nw][nw][:pipe])],
-        base_name="$(nw)_l_pipe",
-        start=comp_start_value(gm.ref[:nw][nw][:pipe], k, "l_start", 0)
-    )
+function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+    l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(
+            gm.model,
+            [k in keys(gm.ref[:nw][nw][:pipe])],
+            base_name = "$(nw)_l_pipe",
+            start = comp_start_value(gm.ref[:nw][nw][:pipe], k, "l_start", 0)
+        )
 
     if bounded
         for (k, pipe) in ref(gm, nw, :pipe)
-            i                = pipe["fr_junction"]
-            j                = pipe["to_junction"]
-            pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe,ref(gm,nw,:junction,i),ref(gm,nw,:junction,j))
+            i = pipe["fr_junction"]
+            j = pipe["to_junction"]
+            pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, nw, :junction, i), ref(gm, nw, :junction, j))
 
             JuMP.set_lower_bound(l_pipe[k], 0.0)
             JuMP.set_upper_bound(l_pipe[k], max(abs(pd_min), abs(pd_max)))
@@ -39,12 +40,13 @@ function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int=gm.cn
 end
 
 ""
-function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(gm.model,
-        [k in keys(gm.ref[:nw][nw][:resistor])],
-        base_name="$(nw)_l_resistor",
-        start=comp_start_value(gm.ref[:nw][nw][:resistor], k, "l_start", 0)
-    )
+function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+    l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(
+            gm.model,
+            [k in keys(gm.ref[:nw][nw][:resistor])],
+            base_name = "$(nw)_l_resistor",
+            start = comp_start_value(gm.ref[:nw][nw][:resistor], k, "l_start", 0)
+        )
 
     if bounded
         for (k, resistor) in ref(gm, nw, :resistor)
@@ -56,25 +58,27 @@ function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int=g
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :resistor, :l, ids(gm, nw, :resistor), l_resistor)
+    report &&
+        _IM.sol_component_value(gm, nw, :resistor, :l, ids(gm, nw, :resistor), l_resistor)
 end
 
 ""
-function variable_pressure_difference(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    variable_pipe_pressure_difference(gm, nw; bounded=bounded, report=report)
-    variable_resistor_pressure_difference(gm, nw; bounded=bounded, report=report)
+function variable_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+    variable_pipe_pressure_difference(gm, nw; bounded = bounded, report = report)
+    variable_resistor_pressure_difference(gm, nw; bounded = bounded, report = report)
 end
 
 
 ""
-function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     max_flow = ref(gm, nw, :max_mass_flow)
 
-    l_ne_pipe = gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(gm.model,
-        [k in keys(gm.ref[:nw][nw][:ne_pipe])],
-        base_name="$(nw)_l_ne_pipe",
-        start=comp_start_value(gm.ref[:nw][nw][:ne_pipe], k, "l_start", 0)
-    )
+    l_ne_pipe = gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(
+            gm.model,
+            [k in keys(gm.ref[:nw][nw][:ne_pipe])],
+            base_name = "$(nw)_l_ne_pipe",
+            start = comp_start_value(gm.ref[:nw][nw][:ne_pipe], k, "l_start", 0)
+        )
 
     if bounded
         for (k, ne_pipe) in ref(gm, nw, :ne_pipe)
@@ -85,17 +89,18 @@ function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int=gm.cnw;
         end
     end
 
-    report && _IM.sol_component_value(gm, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
+    report &&
+        _IM.sol_component_value(gm, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
 end
 
 
 "Weymouth equation for a pipe"
 function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    y  = var(gm, n, :y_pipe, k)
+    y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    l  = var(gm, n, :l_pipe, k)
-    f  = var(gm, n, :f_pipe, k)
+    l = var(gm, n, :l_pipe, k)
+    f = var(gm, n, :f_pipe, k)
 
 
     # constraints weymouth1 - weymouth4 are designed to enforce constraint l == abs(pi-pj)
@@ -127,14 +132,14 @@ function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min
     # Since abs(f_min*f_max) >= abs(f_min,f), this makes the rhs >= 0. Since w*l <= f_max^2, adding another f_max^2
     # deactives the constraint
 
-   _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
-   _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj))
-   _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
-   _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-   _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
+    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj))
+    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
+    _add_constraint!(gm, n, :weymouth5, k, JuMP.@constraint(gm.model, w * l >= f^2))
 
-   _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2)))
-   _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2)))
+    _add_constraint!(gm, n, :weymouth6, k, JuMP.@constraint(gm.model, w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2)))
+    _add_constraint!(gm, n, :weymouth7, k, JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2)))
 end
 
 
@@ -168,14 +173,14 @@ end
 
 "Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-    y  = var(gm, n, :y_ne_pipe, k)
+    y = var(gm, n, :y_ne_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
-    l  = var(gm, n, :l_ne_pipe, k)
-    f  = var(gm, n, :f_ne_pipe, k)
+    l = var(gm, n, :l_ne_pipe, k)
+    f = var(gm, n, :f_ne_pipe, k)
 
-    pd_M = max(abs(pd_min),abs(pd_max))
+    pd_M = max(abs(pd_min), abs(pd_max))
 
     # weymouth1-4 same as constraint_pipe_weymouth and make l = abs(pi-pj)
 
@@ -193,21 +198,21 @@ function constraint_pipe_weymouth_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, w,
 
     _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, l >= pj - pi))
     _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, l >= pi - pj))
-    _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
-    _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
-    _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp*w*l >= f^2))
+    _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
+    _add_constraint!(gm, n, :weymouth_ne5, k, JuMP.@constraint(gm.model, zp * w * l >= f^2))
 
-    _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w*l <= f_max * f + (1-y) * (abs(f_min*f_max) + f_min^2) + (1-zp) * w * pd_M))
-    _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w*l <= f_min * f + y     * (abs(f_min*f_max) + f_max^2) + (1-zp) * w * pd_M))
+    _add_constraint!(gm, n, :weymouth_ne6, k, JuMP.@constraint(gm.model, w * l <= f_max * f + (1 - y) * (abs(f_min * f_max) + f_min^2) + (1 - zp) * w * pd_M))
+    _add_constraint!(gm, n, :weymouth_ne7, k, JuMP.@constraint(gm.model, w * l <= f_min * f + y * (abs(f_min * f_max) + f_max^2) + (1 - zp) * w * pd_M))
 end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
-    pi    = var(gm, n, :psqr, i)
-    pj    = var(gm, n, :psqr, j)
-    r     = var(gm, n, :rsqr, k)
-    y     = var(gm, n, :y_compressor, k)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    r = var(gm, n, :rsqr, k)
+    y = var(gm, n, :y_compressor, k)
 
     if type == 0
         rpi = JuMP.@variable(gm.model)
@@ -215,10 +220,10 @@ function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i,
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, rpi <= pj + (1-y) * i_pmax^2*max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, rpi >= pj - (1-y) * j_pmax^2))
-        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, rpj <= pi +  y * j_pmax^2*max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, rpj >= pi -  y * i_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - y) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, rpj <= pi + y * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, rpj >= pi - y * i_pmax^2))
     else
         _IM.relaxation_product(gm.model, pi, r, pj)
     end
@@ -243,11 +248,11 @@ end
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
 function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
-    pi    = var(gm, n, :psqr, i)
-    pj    = var(gm, n, :psqr, j)
-    r     = var(gm, n, :rsqr_ne, k)
-    y     = var(gm, n, :y_ne_compressor, k)
-    z     = var(gm, n, :zc, k)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    r = var(gm, n, :rsqr_ne, k)
+    y = var(gm, n, :y_ne_compressor, k)
+    z = var(gm, n, :zc, k)
 
     if type == 0
         rpi = JuMP.@variable(gm.model)
@@ -255,15 +260,15 @@ function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k,
 
         _IM.relaxation_product(gm.model, pi, r, rpi)
         _IM.relaxation_product(gm.model, pj, r, rpj)
-        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (2-y-z)  * i_pmax^2*max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (2-y-z)  * j_pmax^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, rpj <= pi + (1+y-z)  * j_pmax^2*max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne4, k, JuMP.@constraint(gm.model, rpj >= pi - (1+y-z)  * i_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (2 - y - z) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, rpj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne4, k, JuMP.@constraint(gm.model, rpj >= pi - (1 + y - z) * i_pmax^2))
     else
         rpi = JuMP.@variable(gm.model)
         _IM.relaxation_product(gm.model, pi, r, rpi)
-        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (1-z) * i_pmax^2*max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (1-z) * j_pmax^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, rpi <= pj + (1 - z) * i_pmax^2 * max_ratio^2))
+        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, rpi >= pj - (1 - z) * j_pmax^2))
     end
 end
 
@@ -275,5 +280,4 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work)
-end
+function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work) end

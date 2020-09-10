@@ -2,14 +2,47 @@
 
 "entry point into running the gas flow feasability problem"
 function run_ne(file, model_type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_ne; ref_extensions=[ref_add_ne!], solution_processors=[sol_psqr_to_p!, sol_compressor_p_to_r!, sol_regulator_p_to_r!, sol_ne_compressor_p_to_r!], kwargs...)
+    return run_model(
+        file,
+        model_type,
+        optimizer,
+        build_ne;
+        ref_extensions = [ref_add_ne!],
+        solution_processors = [
+            sol_psqr_to_p!,
+            sol_compressor_p_to_r!,
+            sol_regulator_p_to_r!,
+            sol_ne_compressor_p_to_r!,
+        ],
+        kwargs...,
+    )
 end
 
 
 "construct the gas flow feasbility problem"
 function build_ne(gm::AbstractGasModel)
-    bounded_compressors = Dict(x for x in ref(gm, :compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
-    bounded_compressors_ne = Dict(x for x in ref(gm, :ne_compressor) if _calc_is_compressor_energy_bounded(gm.data["specific_heat_capacity_ratio"], gm.data["gas_specific_gravity"], gm.data["temperature"], x.second))
+    bounded_compressors = Dict(
+        x
+        for
+        x in ref(gm, :compressor) if
+        _calc_is_compressor_energy_bounded(
+            gm.data["specific_heat_capacity_ratio"],
+            gm.data["gas_specific_gravity"],
+            gm.data["temperature"],
+            x.second,
+        )
+    )
+    bounded_compressors_ne = Dict(
+        x
+        for
+        x in ref(gm, :ne_compressor) if
+        _calc_is_compressor_energy_bounded(
+            gm.data["specific_heat_capacity_ratio"],
+            gm.data["gas_specific_gravity"],
+            gm.data["temperature"],
+            x.second,
+        )
+    )
 
     variable_pressure(gm)
     variable_pressure_sqr(gm)
@@ -21,26 +54,26 @@ function build_ne(gm::AbstractGasModel)
     variable_load_mass_flow(gm)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
-    variable_compressor_ratio_sqr(gm;compressors=bounded_compressors)
-    variable_compressor_ratio_sqr_ne(gm;compressors=bounded_compressors_ne)
+    variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
+    variable_compressor_ratio_sqr_ne(gm; compressors = bounded_compressors_ne)
 
     # expansion cost objective
     objective_min_ne_cost(gm)
 
-    for (i,junction) in ref(gm, :junction)
+    for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance_ne(gm, i)
         if (junction["junction_type"] == 1)
-            constraint_pressure(gm,i)
+            constraint_pressure(gm, i)
         end
     end
 
-    for i in ids(gm,:pipe)
+    for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm,i)
-        constraint_pipe_weymouth(gm,i)
+        constraint_pipe_mass_flow(gm, i)
+        constraint_pipe_weymouth(gm, i)
     end
 
-    for i in ids(gm,:resistor)
+    for i in ids(gm, :resistor)
         constraint_resistor_pressure(gm, i)
         constraint_resistor_mass_flow(gm,i)
         constraint_resistor_darcy_weisbach(gm,i)
@@ -51,11 +84,11 @@ function build_ne(gm::AbstractGasModel)
         constraint_loss_resistor_mass_flow(gm, i)
     end
 
-    for i in ids(gm,:ne_pipe)
+    for i in ids(gm, :ne_pipe)
         constraint_pipe_pressure_ne(gm, i)
         constraint_pipe_ne(gm, i)
         constraint_pipe_weymouth_ne(gm, i)
-        constraint_pipe_mass_flow_ne(gm,i)
+        constraint_pipe_mass_flow_ne(gm, i)
     end
 
     for i in ids(gm, :short_pipe)
@@ -70,7 +103,7 @@ function build_ne(gm::AbstractGasModel)
 
     for i in keys(bounded_compressors)
         constraint_compressor_ratio_value(gm, i)
-        constraint_compressor_energy(gm,i)
+        constraint_compressor_energy(gm, i)
     end
 
     for i in ids(gm, :ne_compressor)
@@ -81,7 +114,7 @@ function build_ne(gm::AbstractGasModel)
 
     for i in keys(bounded_compressors_ne)
         constraint_compressor_ratio_value_ne(gm, i)
-        constraint_compressor_energy_ne(gm,i)
+        constraint_compressor_energy_ne(gm, i)
     end
 
     for i in ids(gm, :valve)

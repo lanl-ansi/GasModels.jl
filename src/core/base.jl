@@ -8,15 +8,15 @@ _IM.@def gm_fields begin GasModels.@im_fields end
 
 
 ""
-function run_model(file::String, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
+function run_model(file::String, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
     data = GasModels.parse_file(file)
-    return run_model(data, model_type, optimizer, build_method; ref_extensions=ref_extensions, solution_processors= solution_processors, kwargs...)
+    return run_model(data, model_type, optimizer, build_method; ref_extensions = ref_extensions, solution_processors = solution_processors, kwargs...)
 end
 
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions=[], solution_processors=[], kwargs...)
-    gm = instantiate_model(data, model_type, build_method; ref_extensions=ref_extensions, ext=get(kwargs, :ext, Dict{Symbol,Any}()), setting=get(kwargs, :setting, Dict{String,Any}()), jump_model=get(kwargs, :jump_model, JuMP.Model()))
-    result = optimize_model!(gm, optimizer=optimizer, solution_processors=solution_processors)
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
+    gm = instantiate_model(data, model_type, build_method; ref_extensions = ref_extensions, ext = get(kwargs, :ext, Dict{Symbol,Any}()), setting = get(kwargs, :setting, Dict{String,Any}()), jump_model = get(kwargs, :jump_model, JuMP.Model()))
+    result = optimize_model!(gm, optimizer = optimizer, solution_processors = solution_processors)
 
     if haskey(data, "objective_normalization")
         result["objective"] *= data["objective_normalization"]
@@ -26,7 +26,7 @@ function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method
 end
 
 ""
-function instantiate_model(file::String,  model_type, build_method; kwargs...)
+function instantiate_model(file::String, model_type, build_method; kwargs...)
     data = GasModels.parse_file(file)
     return instantiate_model(data, model_type, build_method; kwargs...)
 end
@@ -43,13 +43,13 @@ Builds the ref dictionary from the data dictionary. Additionally the ref
 dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
-function build_ref(data::Dict{String,<:Any}; ref_extensions=[])
-    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions=ref_extensions)
+function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
+    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
 end
 
 
 """
-Returns a dict that stores commonly used pre-computed data from of the data dictionary,
+Returns a dict that stores commonly used pre-computed data from of the data dictionary
 primarily for converting data-types, filtering out deactivated components, and storing
 system-wide values that need to be computed globally.
 
@@ -90,7 +90,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         ref[:storage] = haskey(ref, :storage) ? Dict(x for x in ref[:storage] if x.second["status"] == 1 && x.second["junction_id"] in keys(ref[:junction])) : Dict()
 
         # compute the maximum flow
-        mf = ref[:max_mass_flow] = _calc_max_mass_flow(ref[:receipt],ref[:storage],ref[:transfer])
+        mf = ref[:max_mass_flow] = _calc_max_mass_flow(ref[:receipt], ref[:storage], ref[:transfer])
 
         # dispatchable tranfers, receipts, and deliveries
         ref[:dispatchable_transfer] = Dict(x for x in ref[:transfer] if x.second["is_dispatchable"] == 1)
@@ -101,13 +101,13 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         ref[:nondispatchable_delivery] = Dict(x for x in ref[:delivery] if x.second["is_dispatchable"] == 0)
 
         # transfers, receipts, deliveries and storages in junction
-        ref[:dispatchable_transfers_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:dispatchable_receipts_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:dispatchable_deliveries_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:nondispatchable_transfers_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:nondispatchable_receipts_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:nondispatchable_deliveries_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
-        ref[:storages_in_junction] = Dict([(i, []) for (i,junction) in ref[:junction]])
+        ref[:dispatchable_transfers_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:dispatchable_receipts_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:dispatchable_deliveries_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_transfers_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_receipts_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:nondispatchable_deliveries_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+        ref[:storages_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
 
         _add_junction_map!(ref[:dispatchable_transfers_in_junction], ref[:dispatchable_transfer])
         _add_junction_map!(ref[:nondispatchable_transfers_in_junction], ref[:nondispatchable_transfer])
@@ -132,20 +132,20 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         _add_parallel_edges!(ref[:parallel_regulators], ref[:regulator])
         _add_parallel_edges!(ref[:parallel_valves], ref[:valve])
 
-        ref[:pipes_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:pipes_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:compressors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:compressors_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:short_pipes_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:short_pipes_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:resistors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:resistors_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:loss_resistors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:loss_resistors_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:regulators_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:regulators_to] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:valves_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:valves_to] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:pipes_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:pipes_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:compressors_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:compressors_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:short_pipes_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:short_pipes_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:resistors_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:resistors_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:loss_resistors_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:loss_resistors_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:regulators_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:regulators_to] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:valves_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:valves_to] = Dict(i => [] for (i, junction) in ref[:junction])
         _add_edges_to_junction_map!(ref[:pipes_fr], ref[:pipes_to], ref[:pipe])
         _add_edges_to_junction_map!(ref[:compressors_fr], ref[:compressors_to], ref[:compressor])
         _add_edges_to_junction_map!(ref[:short_pipes_fr], ref[:short_pipes_to], ref[:short_pipe])
@@ -155,6 +155,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
         ref_degree!(ref)
+        ref_storage!(ref)
 
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
@@ -165,7 +166,11 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         for (idx, compressor) in ref[:compressor]
             i = compressor["fr_junction"]
             j = compressor["to_junction"]
-            compressor["area"] = pi * compressor["diameter"]  * compressor["diameter"] / 4.0
+            compressor["area"] = pi * compressor["diameter"] * compressor["diameter"] / 4.0
+        end
+
+        for (idx, storage) in ref[:storage]
+            storage["well_area"] = pi * storage["well_diameter"] * storage["well_diameter"] / 4.0
         end
     end
 end
@@ -204,21 +209,34 @@ end
 "Add reference information for the degree of junction"
 function ref_degree!(ref::Dict{Symbol,Any})
     ref[:degree] = Dict()
-    for (i,junction) in ref[:junction]
+    for (i, junction) in ref[:junction]
         ref[:degree][i] = 0
     end
 
     connections = Set()
-    for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_regulators]) push!(connections, (i,j)) end
+    for (i, j) in keys(ref[:parallel_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_compressors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_short_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_valves]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_regulators]) push!(connections, (i, j)) end
 
-    for (i,j) in connections
+    for (i, j) in connections
         ref[:degree][i] = ref[:degree][i] + 1
         ref[:degree][j] = ref[:degree][j] + 1
+    end
+end
+
+
+"Add reference information for storage facilities"
+function ref_storage!(ref::Dict{Symbol,Any})
+    for (i, storage) in ref[:storage]
+        storage["reservoir_density_max"] = storage["reservoir_p_max"]
+        storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"]
+        storage["reservoir_p_min"] = storage["base_gas_capacity"] / storage["total_field_capacity"] * storage["reservoir_p_max"]
+        storage["reservoir_density_min"] = storage["reservoir_p_min"]
+        storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
+        storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
     end
 end

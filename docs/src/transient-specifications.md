@@ -19,11 +19,22 @@ build_transient_ogf
 ```@docs 
 variable_density
 variable_compressor_flow
-variable_pipe_flux
 variable_c_ratio
+variable_compressor_power
+
+variable_pipe_flux_avg
+variable_pipe_flux_neg
+
 variable_injection
 variable_withdrawal
 variable_transfer_flow
+        
+variable_storage_flow
+variable_storage_c_ratio
+variable_reservoir_density
+variable_well_density
+variable_well_flux_avg
+variable_well_flux_neg
 ```
 
 ### Expressions 
@@ -31,23 +42,34 @@ variable_transfer_flow
 The following linear and non-linear expressions are created by the formulation for ease of formulating the constraints
 
 ```@docs 
+variable_pipe_flux_fr
+variable_pipe_flux_to
+variable_well_flux_fr
+variable_well_flux_to
 expression_density_derivative
 expression_net_nodal_injection
 expression_net_nodal_edge_out_flow
-expression_non_slack_affine_derivative
 expression_compressor_power
+expression_well_density_derivative
+expression_reservoir_density_derivative
 ```
 
 ## Constraints and Constraint Templates
 
 ```@docs 
 constraint_slack_junction_density
-constraint_slack_junction_mass_balance
-constraint_non_slack_junction_mass_balance
-constraint_pipe_physics_ideal
+constraint_nodal_balance
+constraint_nodal_balance
+constraint_pipe_mass_balance
+constraint_pipe_momentum_balance
 constraint_compressor_physics
 constraint_compressor_power
-constraint_transfer_separation
+constraint_storage_compressor_regulator
+constraint_storage_well_momentum_balance
+constraint_storage_well_mass_balance
+constraint_storage_well_nodal_balance
+constraint_storage_bottom_hole_reservoir_density
+constraint_storage_reservoir_physics
 ```
 
 ## Objective 

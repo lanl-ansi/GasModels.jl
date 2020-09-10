@@ -6,7 +6,7 @@ end
 
 function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
     for (nw, ref) in nw_refs
-        ref[:ne_pipe]       = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
 
         ref[:parallel_ne_pipes] = Dict()
@@ -15,11 +15,11 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base
         _add_parallel_edges!(ref[:parallel_ne_pipes], ref[:ne_pipe])
         _add_parallel_edges!(ref[:parallel_ne_compressors], ref[:ne_compressor])
 
-        ref[:ne_pipes_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:ne_pipes_to] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:ne_pipes_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:ne_pipes_to] = Dict(i => [] for (i, junction) in ref[:junction])
 
-        ref[:ne_compressors_fr] = Dict(i => [] for (i,junction) in ref[:junction])
-        ref[:ne_compressors_to] = Dict(i => [] for (i,junction) in ref[:junction])
+        ref[:ne_compressors_fr] = Dict(i => [] for (i, junction) in ref[:junction])
+        ref[:ne_compressors_to] = Dict(i => [] for (i, junction) in ref[:junction])
 
         _add_edges_to_junction_map!(ref[:ne_pipes_fr], ref[:ne_pipes_to], ref[:ne_pipe])
         _add_edges_to_junction_map!(ref[:ne_compressors_fr], ref[:ne_compressors_to], ref[:ne_compressor])
@@ -28,26 +28,25 @@ function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base
     end
 end
 
-
 "Add reference information for the degree of junction with expansion edges"
 function ref_degree_ne!(ref::Dict{Symbol,Any})
     ref[:degree_ne] = Dict()
-    for (i,junction) in ref[:junction]
+    for (i, junction) in ref[:junction]
         ref[:degree_ne][i] = 0
     end
 
     connections = Set()
-    for (i,j) in keys(ref[:parallel_pipes]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_compressors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_resistors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_short_pipes]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_valves]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_regulators]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_ne_pipes]) push!(connections, (i,j)) end
-    for (i,j) in keys(ref[:parallel_ne_compressors]) push!(connections, (i,j)) end
+    for (i, j) in keys(ref[:parallel_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_compressors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_short_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_valves]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_regulators]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_ne_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_ne_compressors]) push!(connections, (i, j)) end
 
-    for (i,j) in connections
+    for (i, j) in connections
         ref[:degree_ne][i] = ref[:degree_ne][i] + 1
         ref[:degree_ne][j] = ref[:degree_ne][j] + 1
     end
@@ -66,7 +65,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref = ref[:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            resistance =  _calc_pipe_resistance_rho_phi_space(pipe, ref[:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, ref[:base_length])
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]
@@ -126,10 +125,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
 
         if length(slack_junctions) == 0
-            Memento.warn(
-                _LOGGER,
-                "No slack junctions found in the data - add a slack junction",
-            )
+            Memento.warn(_LOGGER, "No slack junctions found in the data - add a slack junction")
         end
 
         if length(slack_junctions) > 1

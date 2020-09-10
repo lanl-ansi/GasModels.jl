@@ -19,18 +19,16 @@ makedocs(
             "Network Formulations" => "formulations.md",
             "Steady State Specifications" => [
                 "Problem Specifications" => "ss-specifications.md",
-                "Objective"              => "objective.md",
-                "Variables"              => "variables.md",
-                "Constraints"            => "constraints.md"
+                "Objective" => "objective.md",
+                "Variables" => "variables.md",
+                "Constraints" => "constraints.md",
             ],
             "Transient Specifications" => "transient-specifications.md",
-            "File IO" => "parser.md"
+            "File IO" => "parser.md",
         ],
         "Developer" => "developer.md",
-        "Examples" =>  "examples.md"
-    ]
+        "Examples" => "examples.md",
+    ],
 )
 
-deploydocs(
-    repo = "github.com/lanl-ansi/GasModels.jl.git",
-)
+deploydocs(repo = "github.com/lanl-ansi/GasModels.jl.git")

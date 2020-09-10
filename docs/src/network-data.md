@@ -172,14 +172,21 @@ The network data dictionary structure is roughly as follows:
 }
 "storage":{
     "1":{
-        "junction_id": <float>,                 # id of the junction in which storage is located
-        "pressure_nomial": <float>,             # nominal pressure inside the storage 
-        "flow_injection_rate_min": <float>,     # minimum flow rate at which gas can be injected into storage. SI units is kg/s
-        "flow_injection_rate_max": <float>,     # maximum flow rate at which gas can be injected into storage. SI units is kg/s
-        "flow_withdrawal_rate_min": <float>,    # minimum flow rate at which gas can be withdrawn from storage. SI units is kg/s
-        "flow_withdrawal_rate_max": <float>,    # maxium flow rate at which gas can be withdrawn storage. SI units is kg/s  
-        "capacity": <float>,                    # capacity of storage in kg 
-        "status": <int>,                        # status of the component (0 = off, 1 = on). Default is 1.
+        "id": <int>,                                # id of the junction in which storage is located
+        "well_diameter": <float>,                   # diameter of the wells
+        "well_depth": <float>,                      # depth of the wells
+        "well_friction_factor": <float>,            # friction factor of the wells 
+        "reservoir_p_max": <float>,                 # maximum pressure of the reservoir
+        "base_gas_capacity": <float>,               # base gas capacity in reservoir (SI units: kg)
+        "total_field_capacity": <float>,            # total gas capacity in reservoir (SI units: kg)
+        "initial_field_capacity_percent": <float>,  # initial gas in reservoir as a percentage of total capacity
+        "reduction_factor_max": <float>             # maximum reduction factor of the regulator 
+        "c_ratio_max": <float>,                     # maximum compression ratio of the compressor
+        "status": <int>,                            # status of the component (0=off, 1=on). Default is 1.
+        "flow_injection_rate_min": <float>,         # minimum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_injection_rate_max": <float>,         # maximum flow rate at which gas can be injected into storage. SI units is kg/s
+        "flow_withdrawal_rate_min": <float>,        # minimum flow rate at which gas can be withdrawn from storage. SI units is kg/s
+        "flow_withdrawal_rate_max": <float>,        # maxium flow rate at which gas can be withdrawn storage. SI units is kg/s  
         ...
     },
     "2":{...},

@@ -7,7 +7,7 @@ using InfrastructureModels
 #####################################################################
 
 "Parses the matlab gas data from either a filename or an IO object"
-function parse_old_matlab(file::Union{IO, String})
+function parse_old_matlab(file::Union{IO,String})
     mlab_data = parse_old_m_file(file)
     gm_data = _old_matlab_to_gasmodels(mlab_data)
     return gm_data
@@ -21,20 +21,19 @@ mlab_data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
     "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
     "mgc.standard_density", "mgc.baseP", "mgc.baseF", "mgc.junction",
     "mgc.pipe", "mgc.ne_pipe", "mgc.compressor", "mgc.ne_compressor",
-    "mgc.producer", "mgc.consumer","mgc.junction_name", "mgc.per_unit"
+    "mgc.producer", "mgc.consumer", "mgc.junction_name", "mgc.per_unit",
 ]
 
 mlab_junction_columns = [
     ("junction_i", Int),
     ("junction_type", Int),
-    ("pmin", Float64), ("pmax", Float64),
+    ("pmin", Float64),
+    ("pmax", Float64),
     ("status", Int),
-    ("p", Float64)
+    ("p", Float64),
 ]
 
-mlab_junction_name_columns = [
-    ("junction_name", Union{String,SubString{String}})
-]
+mlab_junction_name_columns = [("junction_name", Union{String,SubString{String}})]
 
 mlab_pipe_columns = [
     ("pipline_i", Int),
@@ -43,7 +42,7 @@ mlab_pipe_columns = [
     ("diameter", Float64),
     ("length", Float64),
     ("friction_factor", Float64),
-    ("status", Int)
+    ("status", Int),
 ]
 
 mlab_ne_pipe_columns = [
@@ -54,39 +53,42 @@ mlab_ne_pipe_columns = [
     ("length", Float64),
     ("friction_factor", Float64),
     ("status", Int),
-    ("construction_cost", Float64)
+    ("construction_cost", Float64),
 ]
 
 mlab_compressor_columns = [
     ("compressor_i", Int),
     ("f_junction", Int),
     ("t_junction", Int),
-    ("c_ratio_min", Float64), ("c_ratio_max", Float64),
+    ("c_ratio_min", Float64),
+    ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("fmin", Float64),
     ("fmax", Float64),
-    ("status", Int)
+    ("status", Int),
 ]
 
 mlab_ne_compressor_columns = [
     ("compressor_i", Int),
     ("f_junction", Int),
     ("t_junction", Int),
-    ("c_ratio_min", Float64), ("c_ratio_max", Float64),
+    ("c_ratio_min", Float64),
+    ("c_ratio_max", Float64),
     ("power_max", Float64),
     ("fmin", Float64),
     ("fmax", Float64),
     ("status", Int),
-    ("construction_cost", Float64)
+    ("construction_cost", Float64),
 ]
 
 mlab_producer_columns = [
     ("producer_i", Int),
     ("junction", Int),
-    ("fg_min", Float64), ("fg_max", Float64),
+    ("fg_min", Float64),
+    ("fg_max", Float64),
     ("fg", Float64),
     ("status", Int),
-    ("dispatchable", Int)
+    ("dispatchable", Int),
 ]
 
 mlab_consumer_columns = [
@@ -94,7 +96,7 @@ mlab_consumer_columns = [
     ("junction", Int),
     ("fd", Float64),
     ("status", Float64),
-    ("dispatchable", Int)
+    ("dispatchable", Int),
 ]
 
 
@@ -118,7 +120,7 @@ end
 
 ""
 function parse_old_m_string(data_string::String)
-    matlab_data, func_name, colnames = InfrastructureModels.parse_matlab_string(data_string, extended=true)
+    matlab_data, func_name, colnames = InfrastructureModels.parse_matlab_string(data_string, extended = true)
 
     case = Dict{String,Any}()
 
@@ -133,20 +135,26 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        @warn  "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\""
+        @warn "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\""
         case["source_version"] = "0.0.0+"
     end
 
-    data_names = ["mgc.sound_speed", "mgc.temperature", "mgc.R",
-    "mgc.compressibility_factor", "mgc.gas_molar_mass",
-    "mgc.gas_specific_gravity", "mgc.specific_heat_capacity_ratio",
-    "mgc.standard_density"]
+    data_names = [
+        "mgc.sound_speed",
+        "mgc.temperature",
+        "mgc.R",
+        "mgc.compressibility_factor",
+        "mgc.gas_molar_mass",
+        "mgc.gas_specific_gravity",
+        "mgc.specific_heat_capacity_ratio",
+        "mgc.standard_density",
+    ]
 
     for data_name in data_names
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            @error  string("no $constant found in .m file")
+            @error string("no $constant found in .m file")
         end
     end
 
@@ -211,7 +219,10 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.compressor")
         compressors = []
         for compressor_row in matlab_data["mgc.compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_compressor_columns)
+            compressor_data = InfrastructureModels.row_to_typed_dict(
+                compressor_row,
+                mlab_compressor_columns,
+            )
             compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(compressors, compressor_data)
         end
@@ -224,7 +235,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.ne_compressor")
         ne_compressors = []
         for compressor_row in matlab_data["mgc.ne_compressor"]
-            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_ne_compressor_columns)
+            compressor_data = InfrastructureModels.row_to_typed_dict(compressor_row, mlab_ne_compressor_columns,)
             compressor_data["index"] = InfrastructureModels.check_type(Int, compressor_row[1])
             push!(ne_compressors, compressor_data)
         end
@@ -254,16 +265,14 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.junction_name")
         junction_names = []
         for (i, junction_name_row) in enumerate(matlab_data["mgc.junction_name"])
-            junction_name_data = InfrastructureModels.row_to_typed_dict(junction_name_row, mlab_junction_name_columns)
+            junction_name_data = InfrastructureModels.row_to_typed_dict(junction_name_row, mlab_junction_name_columns,)
             junction_name_data["index"] = i
             push!(junction_names, junction_name_data)
         end
         case["junction_name"] = junction_names
 
         if length(case["junction_name"]) != length(case["junction"])
-            Memento.error(_LOGGER, "incorrect .m file, the number of junction names
-                ($(length(case["junction_name"]))) is inconsistent with
-                the number of junctions ($(length(case["junction"]))).\n")
+            Memento.error(_LOGGER, "incorrect .m file, the number of junction names ($(length(case["junction_name"]))) is inconsistent with the number of junctions ($(length(case["junction"]))).\n")
         end
     end
 
@@ -338,9 +347,9 @@ function _old_mlab2gm_producer!(data::Dict{String,Any})
     producers = [producer for producer in data["producer"]]
     for producer in producers
         producer["qg_junc"] = producer["junction"]
-        producer["qgmin"]  = producer["fg_min"] / data["standard_density"]
-        producer["qgmax"]  = producer["fg_max"] / data["standard_density"]
-        producer["qg"]     = producer["fg"] / data["standard_density"]
+        producer["qgmin"] = producer["fg_min"] / data["standard_density"]
+        producer["qgmax"] = producer["fg_max"] / data["standard_density"]
+        producer["qg"] = producer["fg"] / data["standard_density"]
         delete!(producer, "fg")
         delete!(producer, "fg_min")
         delete!(producer, "fg_max")
@@ -407,7 +416,7 @@ function _old_merge_generic_data!(data::Dict{String,Any})
     mlab_matrix_names = [name[5:length(name)] for name in mlab_data_names]
 
     key_to_delete = []
-    for (k,v) in data
+    for (k, v) in data
         if isa(v, Array)
             for mlab_name in mlab_matrix_names
                 if startswith(k, "$(mlab_name)_")
@@ -425,7 +434,7 @@ function _old_merge_generic_data!(data::Dict{String,Any})
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                @error  "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name."
+                                @error "failed to extend the matlab matrix \"$(mlab_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name."
                             end
                             row[key] = merge_row[key]
                         end
@@ -445,7 +454,7 @@ end
 
 
 "Get a default value for dict entry"
-function _old_get_default(dict, key, default=0.0)
+function _old_get_default(dict, key, default = 0.0)
     if haskey(dict, key) && dict[key] != NaN
         return dict[key]
     end

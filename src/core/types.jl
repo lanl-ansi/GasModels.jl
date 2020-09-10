@@ -40,4 +40,4 @@ mutable struct DWPGasModel <: AbstractDWPModel @gm_fields end
 
 
 "Union of MI Models"
-AbstractMIModels = Union{AbstractCRDWPModel, AbstractDWPModel, AbstractLRDWPModel}
+AbstractMIModels = Union{AbstractCRDWPModel,AbstractDWPModel,AbstractLRDWPModel}
