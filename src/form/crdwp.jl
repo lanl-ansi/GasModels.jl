@@ -1,12 +1,7 @@
 # Define CRDWP implementations of Gas Models
 
 "Variables needed for modeling flow in MI models"
-function variable_flow(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_flow(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     variable_pressure_difference(gm, nw; bounded = bounded, report = report)
     variable_mass_flow(gm, nw; bounded = bounded, report = report)
     variable_connection_direction(gm, nw; report = report)
@@ -14,12 +9,7 @@ end
 
 
 "Variables needed for modeling flow in MI models"
-function variable_flow_ne(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     variable_pressure_difference_ne(gm, nw; bounded = bounded, report = report)
     variable_mass_flow_ne(gm, nw; bounded = bounded, report = report)
     variable_connection_direction_ne(gm, nw; report = report)
@@ -27,12 +17,7 @@ end
 
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
-function variable_pipe_pressure_difference(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:pipe])],
@@ -55,12 +40,7 @@ function variable_pipe_pressure_difference(
 end
 
 ""
-function variable_resistor_pressure_difference(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:resistor])],
@@ -83,24 +63,14 @@ function variable_resistor_pressure_difference(
 end
 
 ""
-function variable_pressure_difference(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     variable_pipe_pressure_difference(gm, nw; bounded = bounded, report = report)
     variable_resistor_pressure_difference(gm, nw; bounded = bounded, report = report)
 end
 
 
 ""
-function variable_pressure_difference_ne(
-    gm::AbstractCRDWPModel,
-    nw::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     max_flow = ref(gm, nw, :max_mass_flow)
 
     l_ne_pipe = gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(
@@ -125,18 +95,7 @@ end
 
 
 "Weymouth equation for a pipe"
-function constraint_pipe_weymouth(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    f_min,
-    f_max,
-    w,
-    pd_min,
-    pd_max,
-)
+function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -213,18 +172,7 @@ end
 
 
 "Weymouth equation for an expansion pipe"
-function constraint_pipe_weymouth_ne(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    w,
-    f_min,
-    f_max,
-    pd_min,
-    pd_max,
-)
+function constraint_pipe_weymouth_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y = var(gm, n, :y_ne_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -260,17 +208,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -293,14 +231,7 @@ end
 
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k::Int,
-    i::Int,
-    j::Int,
-    pd::Float64,
-)
+function constraint_loss_resistor_pressure(gm::AbstractCRDWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
     f = var(gm, n, :f_loss_resistor, k)
     y = var(gm, n, :y_loss_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
@@ -316,17 +247,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)
@@ -359,11 +280,4 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(
-    gm::AbstractCRDWPModel,
-    n::Int,
-    k,
-    power_max,
-    m,
-    work,
-) end
+function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work) end

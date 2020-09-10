@@ -1,43 +1,13 @@
 
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _ref_add_ne!(
-        refs[:nw],
-        refs[:base_length],
-        refs[:base_pressure],
-        refs[:base_flow],
-        refs[:sound_speed],
-    )
+    _ref_add_ne!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
 end
 
 
-function _ref_add_ne!(
-    nw_refs::Dict{Int,<:Any},
-    base_length,
-    base_pressure,
-    base_flow,
-    sound_speed,
-)
+function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
     for (nw, ref) in nw_refs
-        ref[:ne_pipe] = haskey(ref, :ne_pipe) ?
-            Dict(
-            x
-            for
-            x in ref[:ne_pipe] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
-        ref[:ne_compressor] = haskey(ref, :ne_compressor) ?
-            Dict(
-            x
-            for
-            x in ref[:ne_compressor] if
-            x.second["status"] == 1 &&
-            x.second["fr_junction"] in keys(ref[:junction]) &&
-            x.second["to_junction"] in keys(ref[:junction])
-        ) :
-            Dict()
+        ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+        ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
 
         ref[:parallel_ne_pipes] = Dict()
         ref[:parallel_ne_compressors] = Dict()
@@ -52,11 +22,7 @@ function _ref_add_ne!(
         ref[:ne_compressors_to] = Dict(i => [] for (i, junction) in ref[:junction])
 
         _add_edges_to_junction_map!(ref[:ne_pipes_fr], ref[:ne_pipes_to], ref[:ne_pipe])
-        _add_edges_to_junction_map!(
-            ref[:ne_compressors_fr],
-            ref[:ne_compressors_to],
-            ref[:ne_compressor],
-        )
+        _add_edges_to_junction_map!(ref[:ne_compressors_fr], ref[:ne_compressors_to], ref[:ne_compressor])
 
         ref_degree_ne!(ref)
     end
@@ -70,33 +36,15 @@ function ref_degree_ne!(ref::Dict{Symbol,Any})
     end
 
     connections = Set()
-    for (i, j) in keys(ref[:parallel_pipes])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_compressors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_resistors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_loss_resistors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_short_pipes])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_valves])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_regulators])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_ne_pipes])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_ne_compressors])
-        push!(connections, (i, j))
-    end
+    for (i, j) in keys(ref[:parallel_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_compressors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_short_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_valves]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_regulators]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_ne_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_ne_compressors]) push!(connections, (i, j)) end
 
     for (i, j) in connections
         ref[:degree_ne][i] = ref[:degree_ne][i] + 1
@@ -156,7 +104,8 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
             end
         end
 
-        nw_ref[:neighbor_edge_info] = Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
+        nw_ref[:neighbor_edge_info] =
+            Dict(i => Dict{Any,Any}() for i in keys(nw_ref[:junction]))
         for (i, fr_junction, to_junction, is_compressor) in arcs_from
             nw_ref[:neighbor_edge_info][fr_junction][to_junction] = Dict()
             nw_ref[:neighbor_edge_info][to_junction][fr_junction] = Dict()

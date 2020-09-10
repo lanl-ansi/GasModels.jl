@@ -136,7 +136,9 @@ function constraint_conserve_flow_ne(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     ne_compressors_fr = Dict(i => ref(gm, n, :ne_compressor, i)["to_junction"] for i in ref(gm, n, :ne_compressors_fr, idx))
     ne_compressors_to = Dict(i => ref(gm, n, :ne_compressor, i)["fr_junction"] for i in ref(gm, n, :ne_compressors_to, idx))
 
-    constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
+    constraint_conserve_flow_ne(gm, n, idx, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors,
+        t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators,
+        t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to)
 
 end
 
@@ -144,102 +146,152 @@ end
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_pipe"
 function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors = _calc_parallel_ne_connections(gm, n, pipe)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors = _calc_parallel_ne_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_ne_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
+    constraint_ne_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes,
+        aligned_ne_compressors, opposite_ne_compressors)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for ne_compressor"
 function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     compressor = ref(gm, n, :ne_compressor, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors = _calc_parallel_ne_connections(gm, n, compressor)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors = _calc_parallel_ne_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_ne_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
+    constraint_ne_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes,
+        aligned_ne_compressors, opposite_ne_compressors)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for pipe"
 function constraint_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     pipe = ref(gm, n, :pipe, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, pipe)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for compressor"
 function constraint_compressor_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     compressor = ref(gm, n, :compressor, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, compressor)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, compressor)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_compressor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for short pipe"
 function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     pipe = ref(gm, n, :short_pipe, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, pipe)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, pipe)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_short_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_short_pipe_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for resistor"
 function constraint_resistor_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     resistor = ref(gm, n, :resistor, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, resistor)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, resistor)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_resistor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_resistor_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for valve"
 function constraint_valve_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     valve = ref(gm, n, :valve, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, valve)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_valve_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_valve_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end
 
 
 "Template: Constraints which ensure that parallel lines have flow in the same direction - customized for control valve"
 function constraint_regulator_parallel_flow(gm::AbstractMIModels, idx; n::Int = gm.cnw)
     valve = ref(gm, n, :regulator, idx)
-    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, valve)
+    num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators = _calc_parallel_connections(gm, n, valve)
 
     if num_connections <= 1
         return nothing
     end
 
-    constraint_regulator_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+    constraint_regulator_parallel_flow(gm, n, idx, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+        aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors,
+        aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+        aligned_regulators, opposite_regulators)
 end

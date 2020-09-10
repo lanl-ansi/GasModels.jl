@@ -1,24 +1,14 @@
 # Define DWP implementations of Gas Models
 
 "Variables needed for modeling flow in MI models"
-function variable_flow(
-    gm::AbstractDWPModel,
-    n::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_flow(gm::AbstractDWPModel, n::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     variable_mass_flow(gm, n; bounded = bounded, report = report)
     variable_connection_direction(gm, n; report = report)
 end
 
 
 "Variables needed for modeling flow in MI models"
-function variable_flow_ne(
-    gm::AbstractDWPModel,
-    n::Int = gm.cnw;
-    bounded::Bool = true,
-    report::Bool = true,
-)
+function variable_flow_ne(gm::AbstractDWPModel, n::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     variable_mass_flow_ne(gm, n; bounded = bounded, report = report)
     variable_connection_direction_ne(gm, n; report = report)
 end
@@ -53,18 +43,7 @@ Constraint 4:
 # When y = 1, w(pj - pi) <= 0, making this constraint always true (inactive when y = 1)
 # note the sign flip between pi and pj
 "
-function constraint_pipe_weymouth(
-    gm::AbstractDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    f_min,
-    f_max,
-    w,
-    pd_min,
-    pd_max,
-)
+function constraint_pipe_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -157,18 +136,7 @@ Constraint 4:
 # When zp = 1, this constraint reduces to constraint weymouth4 in constraint_pipe_weymouth, which is what we want (i.e. an active constraint)
 # When zp = 0, we have (pj - pi) <= f^2 - w*pd_min).  Since -w*pd_min is the upper bound on w*(pj-pi)--the pi and pj are flipped, this is always true.
 "
-function constraint_pipe_weymouth_ne(
-    gm::AbstractDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    w,
-    f_min,
-    f_max,
-    pd_min,
-    pd_max,
-)
+function constraint_pipe_weymouth_ne(gm::AbstractDWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     y = var(gm, n, :y_ne_pipe, k)
 
     pi = var(gm, n, :psqr, i)
@@ -184,17 +152,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(
-    gm::AbstractDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -213,14 +171,7 @@ end
 
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(
-    gm::AbstractDWPModel,
-    n::Int,
-    k::Int,
-    i::Int,
-    j::Int,
-    pd::Float64,
-)
+function constraint_loss_resistor_pressure(gm::AbstractDWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64)
     f = var(gm, n, :f_loss_resistor, k)
     y = var(gm, n, :y_loss_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
@@ -236,17 +187,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(
-    gm::AbstractDWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value_ne(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)
@@ -266,14 +207,7 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(
-    gm::AbstractDWPModel,
-    n::Int,
-    k::Int,
-    power_max,
-    m,
-    work,
-)
+function constraint_compressor_energy(gm::AbstractDWPModel, n::Int, k::Int, power_max, m, work)
     r = var(gm, n, :rsqr, k)
     f = var(gm, n, :f_compressor, k)
     _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
@@ -281,14 +215,7 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(
-    gm::AbstractDWPModel,
-    n::Int,
-    k,
-    power_max,
-    m,
-    work,
-)
+function constraint_compressor_energy_ne(gm::AbstractDWPModel, n::Int, k, power_max, m, work)
     r = var(gm, n, :rsqr_ne, k)
     f = var(gm, n, :f_ne_compressor, k)
     # f is zero when the compressor is not built, so constraint is always true then

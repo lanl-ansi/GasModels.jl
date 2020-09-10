@@ -27,27 +27,17 @@ function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, 
     y_valve = var(gm, n, :y_valve)
     y_regulator = var(gm, n, :y_regulator)
 
-    _add_constraint!(
-        gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(
-            gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) -
-            sum(fl[a] for a in deliveries) ==
-            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-            sum(f_compressor[a] for a in f_compressors) -
-            sum(f_compressor[a] for a in t_compressors) +
-            sum(f_resistor[a] for a in f_resistors) -
-            sum(f_resistor[a] for a in t_resistors) +
-            sum(f_loss_resistor[a] for a in f_loss_resistors) -
-            sum(f_loss_resistor[a] for a in t_loss_resistors) +
-            sum(f_short_pipe[a] for a in f_short_pipes) -
-            sum(f_short_pipe[a] for a in t_short_pipes) +
-            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-            sum(f_regulator[a] for a in f_regulators) -
-            sum(f_regulator[a] for a in t_regulators)
-        )
-    )
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+        sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+        sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+        sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+        sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
+        sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+        sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+        sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators)
+    ))
 
-    is_disjunction =
-        _apply_mass_flow_cuts(y_pipe, f_pipes) &&
+    is_disjunction = _apply_mass_flow_cuts(y_pipe, f_pipes) &&
         _apply_mass_flow_cuts(y_pipe, t_pipes) &&
         _apply_mass_flow_cuts(y_compressor, f_compressors) &&
         _apply_mass_flow_cuts(y_compressor, t_compressors) &&
@@ -62,32 +52,15 @@ function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, 
         _apply_mass_flow_cuts(y_regulator, f_regulators) &&
         _apply_mass_flow_cuts(y_regulator, t_regulators)
 
-    if max(fgmin, fg_constant) > 0.0 &&
-       flmin == 0.0 &&
-       flmax == 0.0 &&
-       fl_constant == 0.0 &&
-       fgmin >= 0.0 &&
-       is_disjunction
+    if max(fgmin, fg_constant) > 0.0 && flmin == 0.0 && flmax == 0.0 && fl_constant == 0.0 && fgmin >= 0.0 && is_disjunction
         constraint_source_flow(gm, i; n = n)
     end
 
-    if fgmax == 0.0 &&
-       fgmin == 0.0 &&
-       fg_constant == 0.0 &&
-       max(flmin, fl_constant) > 0.0 &&
-       flmin >= 0.0 &&
-       is_disjunction
+    if fgmax == 0.0 && fgmin == 0.0 && fg_constant == 0.0 && max(flmin, fl_constant) > 0.0 && flmin >= 0.0 && is_disjunction
         constraint_sink_flow(gm, i; n = n)
     end
 
-    if fgmax == 0 &&
-       fgmin == 0 &&
-       fg_constant == 0 &&
-       flmax == 0 &&
-       flmin == 0 &&
-       fl_constant == 0 &&
-       ref(gm, n, :degree)[i] == 2 &&
-       is_disjunction
+    if fgmax == 0 && fgmin == 0 && fg_constant == 0 && flmax == 0 && flmin == 0 && fl_constant == 0 && ref(gm, n, :degree)[i] == 2 && is_disjunction
         constraint_conserve_flow(gm, i; n = n)
     end
 end
@@ -116,31 +89,19 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
     y_ne_pipe = var(gm, n, :y_ne_pipe)
     y_ne_compressor = var(gm, n, :y_ne_compressor)
 
-    _add_constraint!(
-        gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(
-            gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) -
-            sum(fl[a] for a in deliveries) ==
-            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-            sum(f_compressor[a] for a in f_compressors) -
-            sum(f_compressor[a] for a in t_compressors) +
-            sum(f_resistor[a] for a in f_resistors) -
-            sum(f_resistor[a] for a in t_resistors) +
-            sum(f_loss_resistor[a] for a in f_loss_resistors) -
-            sum(f_loss_resistor[a] for a in t_loss_resistors) +
-            sum(f_short_pipe[a] for a in f_short_pipes) -
-            sum(f_short_pipe[a] for a in t_short_pipes) +
-            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-            sum(f_regulator[a] for a in f_regulators) -
-            sum(f_regulator[a] for a in t_regulators) +
-            sum(f_ne_pipe[a] for a in ne_pipes_fr) -
-            sum(f_ne_pipe[a] for a in ne_pipes_to) +
-            sum(f_ne_compressor[a] for a in ne_compressors_fr) -
-            sum(f_ne_compressor[a] for a in ne_compressors_to)
-        )
-    )
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+        sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+        sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
+        sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
+        sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
+        sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
+        sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
+        sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators) +
+        sum(f_ne_pipe[a] for a in ne_pipes_fr) - sum(f_ne_pipe[a] for a in ne_pipes_to) +
+        sum(f_ne_compressor[a] for a in ne_compressors_fr) - sum(f_ne_compressor[a] for a in ne_compressors_to)
+    ))
 
-    is_disjunction =
-        _apply_mass_flow_cuts(y_pipe, f_pipes) &&
+    is_disjunction = _apply_mass_flow_cuts(y_pipe, f_pipes) &&
         _apply_mass_flow_cuts(y_pipe, t_pipes) &&
         _apply_mass_flow_cuts(y_compressor, f_compressors) &&
         _apply_mass_flow_cuts(y_compressor, t_compressors) &&
@@ -379,14 +340,13 @@ function constraint_source_flow(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipe
     y_valve = var(gm, n, :y_valve)
     y_regulator = var(gm, n, :y_regulator)
 
-    _add_constraint!(gm, n, :source_flow, i, JuMP.@constraint(gm.model,
-            sum(y_pipe[a] for a in f_pipes) + sum((1 - y_pipe[a]) for a in t_pipes) +
-            sum(y_compressor[a] for a in f_compressors) + sum((1 - y_compressor[a]) for a in t_compressors) +
-            sum(y_resistor[a] for a in f_resistors) + sum((1 - y_resistor[a]) for a in t_resistors) +
-            sum(y_loss_resistor[a] for a in f_loss_resistors) + sum((1 - y_loss_resistor[a]) for a in t_loss_resistors) +
-            sum(y_short_pipe[a] for a in f_short_pipes) + sum((1 - y_short_pipe[a]) for a in t_short_pipes) +
-            sum(y_valve[a] for a in f_valves) + sum((1 - y_valve[a]) for a in t_valves) +
-            sum(y_regulator[a] for a in f_regulators) + sum((1 - y_regulator[a]) for a in t_regulators) >= 1
+    _add_constraint!(gm, n, :source_flow, i, JuMP.@constraint(gm.model, sum(y_pipe[a] for a in f_pipes) + sum((1 - y_pipe[a]) for a in t_pipes) +
+        sum(y_compressor[a] for a in f_compressors) + sum((1 - y_compressor[a]) for a in t_compressors) +
+        sum(y_resistor[a] for a in f_resistors) + sum((1 - y_resistor[a]) for a in t_resistors) +
+        sum(y_loss_resistor[a] for a in f_loss_resistors) + sum((1 - y_loss_resistor[a]) for a in t_loss_resistors) +
+        sum(y_short_pipe[a] for a in f_short_pipes) + sum((1 - y_short_pipe[a]) for a in t_short_pipes) +
+        sum(y_valve[a] for a in f_valves) + sum((1 - y_valve[a]) for a in t_valves) +
+        sum(y_regulator[a] for a in f_regulators) + sum((1 - y_regulator[a]) for a in t_regulators) >= 1
     ))
 end
 
@@ -403,8 +363,7 @@ function constraint_source_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_p
     y_ne_pipe = var(gm, n, :y_ne_pipe)
     y_ne_compressor = var(gm, n, :y_ne_compressor)
 
-    _add_constraint!(gm, n, :source_flow_ne, i, JuMP.@constraint(gm.model,
-        sum(y_pipe[a] for a in f_pipes) + sum((1 - y_pipe[a]) for a in t_pipes) +
+    _add_constraint!(gm, n, :source_flow_ne, i, JuMP.@constraint(gm.model, sum(y_pipe[a] for a in f_pipes) + sum((1 - y_pipe[a]) for a in t_pipes) +
         sum(y_compressor[a] for a in f_compressors) + sum((1 - y_compressor[a]) for a in t_compressors) +
         sum(y_resistor[a] for a in f_resistors) + sum((1 - y_resistor[a]) for a in t_resistors) +
         sum(y_loss_resistor[a] for a in f_loss_resistors) + sum((1 - y_loss_resistor[a]) for a in t_loss_resistors) +
@@ -427,8 +386,7 @@ function constraint_sink_flow(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes,
     y_valve = var(gm, n, :y_valve)
     y_regulator = var(gm, n, :y_regulator)
 
-    _add_constraint!(gm, n, :sink_flow, i, JuMP.@constraint(gm.model,
-        sum((1 - y_pipe[a]) for a in f_pipes) + sum(y_pipe[a] for a in t_pipes) +
+    _add_constraint!(gm, n, :sink_flow, i, JuMP.@constraint(gm.model, sum((1 - y_pipe[a]) for a in f_pipes) + sum(y_pipe[a] for a in t_pipes) +
         sum((1 - y_compressor[a]) for a in f_compressors) + sum(y_compressor[a] for a in t_compressors) +
         sum((1 - y_resistor[a]) for a in f_resistors) + sum(y_resistor[a] for a in t_resistors) +
         sum((1 - y_loss_resistor[a]) for a in f_loss_resistors) + sum(y_loss_resistor[a] for a in t_loss_resistors) +
@@ -451,8 +409,7 @@ function constraint_sink_flow_ne(gm::AbstractMIModels, n::Int, i, f_pipes, t_pip
     y_ne_pipe = var(gm, n, :y_ne_pipe)
     y_ne_compressor = var(gm, n, :y_ne_compressor)
 
-    _add_constraint!(gm, n, :sink_flow_ne, i, JuMP.@constraint(gm.model,
-        sum((1 - y_pipe[a]) for a in f_pipes) + sum(y_pipe[a] for a in t_pipes) +
+    _add_constraint!(gm, n, :sink_flow_ne, i, JuMP.@constraint(gm.model, sum((1 - y_pipe[a]) for a in f_pipes) + sum(y_pipe[a] for a in t_pipes) +
         sum((1 - y_compressor[a]) for a in f_compressors) + sum(y_compressor[a] for a in t_compressors) +
         sum((1 - y_resistor[a]) for a in f_resistors) + sum(y_resistor[a] for a in t_resistors) +
         sum((1 - y_loss_resistor[a]) for a in f_loss_resistors) + sum(y_loss_resistor[a] for a in t_loss_resistors) +
@@ -582,7 +539,9 @@ end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
+function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -594,8 +553,7 @@ function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_c
     y_ne_compressor = var(gm, n, :y_ne_compressor)
     y_k = y_ne_pipe[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
@@ -603,14 +561,16 @@ function constraint_ne_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_c
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
         sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) +
         sum(y_ne_pipe[i] for i in aligned_ne_pipes) + sum((1 - y_ne_pipe[i]) for i in opposite_ne_pipes) +
-        sum(y_ne_compressor[i] for i in aligned_ne_compressors) + sum((1 - y_ne_compressor[i]) for i in opposite_ne_compressors) ==
-        y_k * num_connections
+        sum(y_ne_compressor[i] for i in aligned_ne_compressors) + sum((1 - y_ne_compressor[i]) for i in opposite_ne_compressors)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
+function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators, aligned_ne_pipes, opposite_ne_pipes, aligned_ne_compressors, opposite_ne_compressors)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -622,8 +582,7 @@ function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k,
     y_ne_compressor = var(gm, n, :y_ne_comprsesor)
     y_k = y_ne_compressor[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
@@ -631,14 +590,16 @@ function constraint_ne_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k,
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
         sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) +
         sum(y_ne_pipe[i] for i in aligned_ne_pipes) + sum((1 - y_ne_pipe[i]) for i in opposite_ne_pipes) +
-        sum(y_ne_compressor[i] for i in aligned_ne_compressors) + sum((1 - y_ne_compressor[i]) for i in opposite_ne_compressors) ==
-        y_k * num_connections
+        sum(y_ne_compressor[i] for i in aligned_ne_compressors) + sum((1 - y_ne_compressor[i]) for i in opposite_ne_compressors)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_short_pipe = var(gm, n, :y_short_pipe)
@@ -649,20 +610,22 @@ function constraint_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_conn
 
     y_k = y_pipe[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -672,20 +635,22 @@ function constraint_compressor_parallel_flow(gm::AbstractMIModels, n::Int, k, nu
     y_regulator = var(gm, n, :y_regulator)
     y_k = y_compressor[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_resistor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_resistor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -695,20 +660,22 @@ function constraint_resistor_parallel_flow(gm::AbstractMIModels, n::Int, k, num_
     y_regulator = var(gm, n, :y_regulator)
     y_k = y_resistor[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_short_pipe = var(gm, n, :y_short_pipe)
@@ -718,20 +685,22 @@ function constraint_short_pipe_parallel_flow(gm::AbstractMIModels, n::Int, k, nu
     y_regulator = var(gm, n, :y_regulator)
     y_k = y_short_pipe[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_valve_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_valve_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -741,20 +710,22 @@ function constraint_valve_parallel_flow(gm::AbstractMIModels, n::Int, k, num_con
     y_regulator = var(gm, n, :y_regulator)
     y_k = y_valve[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistor[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_loss_resistor[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end
 
 
 "Constraint: ensures that parallel lines have flow in the same direction"
-function constraint_regulator_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors, aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves, aligned_regulators, opposite_regulators)
+function constraint_regulator_parallel_flow(gm::AbstractMIModels, n::Int, k, num_connections, aligned_pipes, opposite_pipes, aligned_compressors, opposite_compressors,
+    aligned_resistors, opposite_resistors, aligned_loss_resistors, opposite_loss_resistors, aligned_short_pipes, opposite_short_pipes, aligned_valves, opposite_valves,
+    aligned_regulators, opposite_regulators)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -764,13 +735,13 @@ function constraint_regulator_parallel_flow(gm::AbstractMIModels, n::Int, k, num
     y_regulator = var(gm, n, :y_regulator)
     y_k = y_regulator[k]
 
-    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model,
-        sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
+    _add_constraint!(gm, n, :parallel_flow_ne, k, JuMP.@constraint(gm.model, sum(y_pipe[i] for i in aligned_pipes) + sum((1 - y_pipe[i]) for i in opposite_pipes) +
         sum(y_compressor[i] for i in aligned_compressors) + sum((1 - y_compressor[i]) for i in opposite_compressors) +
         sum(y_resistor[i] for i in aligned_resistors) + sum((1 - y_resistance[i]) for i in opposite_resistors) +
         sum(y_loss_resistor[i] for i in aligned_loss_resistors) + sum((1 - y_resistance[i]) for i in opposite_loss_resistors) +
         sum(y_short_pipe[i] for i in aligned_short_pipes) + sum((1 - y_short_pipe[i]) for i in opposite_short_pipes) +
         sum(y_valve[i] for i in aligned_valves) + sum((1 - y_valve[i]) for i in opposite_valves) +
-        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators) == y_k * num_connections
+        sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
+        == y_k * num_connections
     ))
 end

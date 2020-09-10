@@ -200,24 +200,15 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = gm.cnw)
     nondispatch_deliveries = ref(gm, n, :nondispatchable_deliveries_in_junction, i)
     dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
     nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
-    fg = length(nondispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
-    fl = length(nondispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
-    fl += length(nondispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
-    fgmax = length(dispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
-    flmax = length(dispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
-    flmax += length(dispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
-    fgmin = length(dispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
-    flmin = length(dispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
-    flmin += length(dispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
+    fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
+    fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
+    fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
+    fgmax = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
+    flmax = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
+    flmax += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
+    fgmin = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
+    flmin = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
+    flmin += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
     constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
 end
@@ -249,24 +240,15 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = gm.cn
     nondispatch_deliveries = ref(gm, n, :nondispatchable_deliveries_in_junction, i)
     dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
     nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
-    fg = length(nondispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
-    fl = length(nondispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
-    fl += length(nondispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
-    fgmax = length(dispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
-    flmax = length(dispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
-    flmax += length(dispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
-    fgmin = length(dispatch_receipts) > 0 ?
-        sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
-    flmin = length(dispatch_deliveries) > 0 ?
-        sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
-    flmin += length(dispatch_transfers) > 0 ?
-        sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
+    fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
+    fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
+    fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
+    fgmax = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
+    flmax = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
+    flmax += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
+    fgmin = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
+    flmin = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
+    flmin += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
     ne_pipes_fr = ref(gm, n, :ne_pipes_fr, i)
     ne_pipes_to = ref(gm, n, :ne_pipes_to, i)

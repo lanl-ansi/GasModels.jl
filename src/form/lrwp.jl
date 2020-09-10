@@ -22,31 +22,11 @@ end
 
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k::Int,
-    i::Int,
-    j::Int,
-    pd::Float64,
-) end
+function constraint_loss_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64) end
 
 
 "Constraint: Compressor ratio constraints on pressure differentials--not applicable for LRWP models"
-function constraint_compressor_ratios(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    min_ratio,
-    max_ratio,
-    i_pmin,
-    i_pmax,
-    j_pmin,
-    j_pmax,
-    type,
-)
+function constraint_compressor_ratios(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_compressor, k)
@@ -123,20 +103,7 @@ end
 
 
 "constraints on pressure drop across control valves--not applicable for LRWP models"
-function constraint_on_off_regulator_pressure(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    min_ratio,
-    max_ratio,
-    f_min,
-    i_pmin,
-    i_pmax,
-    j_pmin,
-    j_pmax,
-)
+function constraint_on_off_regulator_pressure(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v = var(gm, n, :v_regulator, k)
@@ -170,37 +137,13 @@ end
 
 
 "Constraint: Weymouth equation"
-function constraint_pipe_weymouth_ne(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    w,
-    f_min,
-    f_max,
-    pd_min,
-    pd_max,
-)
+function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     #TODO Linear convex hull equations in wp.jl
 end
 
 
 "Constraint: compressor ratios on a new compressor"
-function constraint_compressor_ratios_ne(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    min_ratio,
-    max_ratio,
-    i_pmin,
-    i_pmax,
-    j_pmin,
-    j_pmax,
-    type,
-)
+function constraint_compressor_ratios_ne(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zc = var(gm, n, :zc, k)
@@ -278,17 +221,7 @@ function constraint_compressor_ratios_ne(
 end
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value(gm::AbstractLRWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -311,17 +244,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    i,
-    j,
-    type,
-    i_pmax,
-    j_pmax,
-    max_ratio,
-)
+function constraint_compressor_ratio_value_ne(gm::AbstractLRWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)
@@ -354,13 +277,6 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(
-    gm::AbstractLRWPModel,
-    n::Int,
-    k,
-    power_max,
-    m,
-    work,
-)
+function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
     #TODO Linear convex hull equations in wp.jl
 end
