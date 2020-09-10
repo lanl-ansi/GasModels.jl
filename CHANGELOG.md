@@ -2,12 +2,12 @@
 
 ## Pending
 
-- compressors are made optional components
-- fixed bug in `calc_connected_components`
-- corrected models of resistor physics
 
 ## v0.8
 
+- compressors are made optional components
+- fixed bug in `calc_connected_components`
+- corrected models of resistor physics
 - added support storage model for transient_ogf added 
 - transient_ogf constraints and variables changed for improved computation times
 - renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
