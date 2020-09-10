@@ -58,7 +58,8 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
     ft = var(gm, n, :ft)
-    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) == sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
+                                                                            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                             sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
                                                                             sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
@@ -82,7 +83,8 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, n::Int, i, f_pipe
     f_ne_compressor = var(gm, n, :f_ne_compressor)
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
-    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) == sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+                                                                                    sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                                     sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
                                                                                     sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
                                                                                     sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +

@@ -214,27 +214,13 @@ function ref_degree!(ref::Dict{Symbol,Any})
     end
 
     connections = Set()
-    for (i, j) in keys(ref[:parallel_pipes])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_compressors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_resistors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_loss_resistors])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_short_pipes])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_valves])
-        push!(connections, (i, j))
-    end
-    for (i, j) in keys(ref[:parallel_regulators])
-        push!(connections, (i, j))
-    end
+    for (i, j) in keys(ref[:parallel_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_compressors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_loss_resistors]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_short_pipes]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_valves]) push!(connections, (i, j)) end
+    for (i, j) in keys(ref[:parallel_regulators]) push!(connections, (i, j)) end
 
     for (i, j) in connections
         ref[:degree][i] = ref[:degree][i] + 1
