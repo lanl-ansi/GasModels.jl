@@ -163,11 +163,16 @@ end
 function constraint_resistor_pressure(gm::AbstractCRDWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
     p_i_sqr, p_j_sqr = var(gm, n, :psqr, i), var(gm, n, :psqr, j)
+    y = var(gm, n, :y_resistor, k)
 
     c_1 = JuMP.@constraint(gm.model, p_i^2 <= p_i_sqr)
     _add_constraint!(gm, n, :pressure_drop_1, k, c_1)
     c_2 = JuMP.@constraint(gm.model, p_j^2 <= p_j_sqr)
     _add_constraint!(gm, n, :pressure_drop_2, k, c_2)
+    c_3 = JuMP.@constraint(gm.model, (1.0 - y) * pd_min <= p_i - p_j)
+    _add_constraint!(gm, n, :on_off_pressure_drop_1, k, c_3)
+    c_4 = JuMP.@constraint(gm.model, p_i - p_j <= y * pd_max)
+    _add_constraint!(gm, n, :on_off_pressure_drop_2, k, c_4)
 end
 
 

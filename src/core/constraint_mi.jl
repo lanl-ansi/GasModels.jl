@@ -201,6 +201,18 @@ function constraint_short_pipe_mass_flow(gm::AbstractMIModels, n::Int, k, f_min,
     constraint_short_pipe_parallel_flow(gm, k; n = n)
 end
 
+#############################################################################################################
+## Constraints for modeling flow across a resistor
+############################################################################################################
+"Constraint: Constraint on flow across a resistor when there are on/off direction variables"
+function constraint_resistor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
+    y = var(gm, n, :y_resistor, k)
+    f = var(gm, n, :f_resistor, k)
+    _add_constraint!(gm, n, :on_off_resistor_flow_1, k, JuMP.@constraint(gm.model, (1.0 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_resistor_flow_2, k, JuMP.@constraint(gm.model, f <= y * f_max))
+    constraint_resistor_parallel_flow(gm, k)
+end
+
 
 ######################################################################################
 # Constraints associated with flow through a compressor
