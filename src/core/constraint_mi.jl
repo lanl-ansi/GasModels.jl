@@ -214,6 +214,18 @@ function constraint_resistor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f
 end
 
 
+#############################################################################################################
+## Constraints for modeling flow across a loss_resistor
+############################################################################################################
+"Constraint: Constraint on flow across a loss_resistor when there are on/off direction variables"
+function constraint_loss_resistor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
+    y = var(gm, n, :y_loss_resistor, k)
+    f = var(gm, n, :f_loss_resistor, k)
+    _add_constraint!(gm, n, :on_off_loss_resistor_flow_1, k, JuMP.@constraint(gm.model, (1.0 - y) * f_min <= f))
+    _add_constraint!(gm, n, :on_off_loss_resistor_flow_2, k, JuMP.@constraint(gm.model, f <= y * f_max))
+end
+
+
 ######################################################################################
 # Constraints associated with flow through a compressor
 ######################################################################################
