@@ -215,7 +215,7 @@ end
 
 
 #############################################################################################################
-## Constraints for modeling flow across a loss_resistor
+## Constraints for modeling flow across a loss resistor
 ############################################################################################################
 "Constraint: Constraint on flow across a loss_resistor when there are on/off direction variables"
 function constraint_loss_resistor_mass_flow(gm::AbstractMIModels, n::Int, k, f_min, f_max)
