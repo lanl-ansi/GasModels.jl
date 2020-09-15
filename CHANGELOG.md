@@ -2,6 +2,9 @@
 
 ## Pending
 
+## v0.8.1
+
+- strengthen variable bounds for resistors and loss resistors
 
 ## v0.8
 
