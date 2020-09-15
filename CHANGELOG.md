@@ -2,12 +2,11 @@
 
 ## Pending
 
-## v0.8.1
-
-- strengthen variable bounds for resistors and loss resistors
 
 ## v0.8
 
+
+- strengthen variable bounds for resistors and loss resistors
 - compressors are made optional components
 - fixed bug in `calc_connected_components`
 - corrected models of resistor physics
