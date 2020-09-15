@@ -18,7 +18,7 @@ ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [compat]
 Cbc = ">= 0.4"
-Dierckx = ">= 0.4"
+Dierckx = "~0.4, ~0.5"
 InfrastructureModels = "~0.5"
 Ipopt = ">= 0.4"
 JSON = "~0.18, ~0.19, ~0.20, ~0.21"
