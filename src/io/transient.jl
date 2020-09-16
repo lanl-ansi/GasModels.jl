@@ -414,6 +414,33 @@ at least 4 time series data points are available (and result in an error otherwi
             push!(time_series_block[type][id][param], itp_val)
         end
     end
-
+    _fix_time_series_block!(time_series_block)
     return time_series_block
 end
+
+function _fix_time_series_block!(block)
+    for (i, val) in get(block, "transfer", [])
+        if haskey(val, "withdrawal_max")
+            val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
+        end 
+        if haskey(val, "withdrawal_min")
+            val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
+        end 
+    end 
+    for (i, val) in get(block, "delivery", [])
+        if haskey(val, "withdrawal_max")
+            val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
+        end 
+        if haskey(val, "withdrawal_min")
+            val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
+        end 
+    end
+    for (i, val) in get(block, "receipt", [])
+        if haskey(val, "injection_max")
+            val["injection_max"] = max.(val["injection_max"], zeros(length(val["injection_max"])))
+        end 
+        if haskey(val, "injection_min")
+            val["injection_min"] = min.(val["injection_min"], zeros(length(val["injection_min"])))
+        end 
+    end
+end 

@@ -2,9 +2,11 @@
 
 ## Pending
 
+## v0.8.1 
+
+- bug fix in interpolation 
 
 ## v0.8
-
 
 - strengthen variable bounds for resistors and loss resistors
 - compressors are made optional components
