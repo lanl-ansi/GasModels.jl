@@ -2,6 +2,10 @@
 
 ## Pending
 
+## v0.8.2 
+
+- bug fix in reservoir constraints 
+
 ## v0.8.1 
 
 - bug fix in interpolation 

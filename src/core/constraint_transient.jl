@@ -151,7 +151,7 @@ end
 
 "Constraint: reservoir initial condition"
 function constraint_initial_condition_reservoir(gm::AbstractGasModel, storage_id::Int, nw::Int, initial_density)
-    rho = var(gm, nw, :reservoir_density, nw)
+    rho = var(gm, nw, :reservoir_density, storage_id)
     GasModels._add_constraint!(gm, nw, :reservoir_initial_condition, storage_id, JuMP.@constraint(gm.model, rho == initial_density))
 end
 
