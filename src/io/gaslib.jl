@@ -118,7 +118,7 @@ end
 
 function _correct_ids(data::Dict{String,<:Any})
     new_data = deepcopy(data)
-    junction_names = keys(data["junction"])
+    junction_names = sort(collect(keys(data["junction"])))
     junction_mapping = Dict(k => i for (i, k) in enumerate(junction_names))
 
     for (junction_name, junction) in data["junction"]
@@ -130,9 +130,11 @@ function _correct_ids(data::Dict{String,<:Any})
     end
 
     for node_type in ["delivery", "receipt"]
-        node_names = keys(data[node_type])
+        node_names = sort(collect(keys(data[node_type])))
+        node_mapping = Dict(k => i for (i, k) in enumerate(node_names))
 
-        for (i, node_name) in enumerate(node_names)
+        for (node_name, node) in data[node_type]
+            i = node_mapping[node_name]
             new_data[node_type][string(i)] = data[node_type][node_name]
             new_data[node_type][string(i)]["id"] = i
             new_data[node_type][string(i)]["index"] = i
@@ -150,16 +152,17 @@ function _correct_ids(data::Dict{String,<:Any})
         "valve",
         "loss_resistor",
     ]
-        edge_id = 1
+        edge_names = sort(collect(keys(data[edge_type])))
+        edge_mapping = Dict(k => a for (a, k) in enumerate(edge_names))
 
-        for (a, edge) in data[edge_type]
+        for (edge_name, edge) in data[edge_type]
+            edge_id = edge_mapping[edge_name]
             fr_junction, to_junction = edge["fr_junction"], edge["to_junction"]
             edge["fr_junction"] = junction_mapping[fr_junction]
             edge["to_junction"] = junction_mapping[to_junction]
             edge["id"] = edge["index"] = edge_id
             new_data[edge_type][string(edge_id)] = edge
-            delete!(new_data[edge_type], a)
-            edge_id += 1
+            delete!(new_data[edge_type], edge_name)
         end
     end
 
