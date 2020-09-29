@@ -4,6 +4,7 @@
 
 ## v0.8.2 
 
+- changed default interpolation to linear
 - bug fix in reservoir constraints 
 
 ## v0.8.1 

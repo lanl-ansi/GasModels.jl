@@ -383,17 +383,19 @@ at least 4 time series data points are available (and result in an error otherwi
     for (type, id, param) in fields
         if (additional_time > 0.0)
             start_val = interpolators[type][id][param]["reduced_data_points"][1]
+            #= remove cubic spline interpolation 
             end_val = interpolators[type][id][param]["reduced_data_points"][end]
             middle_time = total_time + additional_time / 2
             middle_val = (end_val + start_val) / 2
             push!(interpolators[type][id][param]["times"], middle_time)
             push!(interpolators[type][id][param]["reduced_data_points"], middle_val)
+            =# 
             push!(interpolators[type][id][param]["times"], end_time)
             push!(interpolators[type][id][param]["reduced_data_points"], start_val)
         end
         x = interpolators[type][id][param]["times"]
         y = interpolators[type][id][param]["reduced_data_points"]
-        interpolators[type][id][param]["itp"] = Spline1D(x, y, periodic = periodic)
+        interpolators[type][id][param]["itp"] = Spline1D(x, y, k = 1, periodic = periodic)
 
         if !haskey(time_series_block, type)
             time_series_block[type] = Dict{String,Any}()
