@@ -153,9 +153,9 @@ function constraint_resistor_darcy_weisbach(gm::AbstractCRDWPModel, n::Int, k, i
    _add_constraint!(gm, n, :darcy_weisbach_2, k, JuMP.@constraint(gm.model, l >= p_i - p_j))
    _add_constraint!(gm, n, :darcy_weisbach_3, k, JuMP.@constraint(gm.model, l <= p_j - p_i + pd_max*(2.0 * y)))
    _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, l <= p_i - p_j + pd_min*(2.0 * y - 2.0)))
-   _add_constraint!(gm, n, :darcy_weisbach_5, k, JuMP.@constraint(gm.model, inv(w)*l >= f^2))
-   _add_constraint!(gm, n, :darcy_weisbach_6, k, JuMP.@constraint(gm.model, inv(w)*l <= f_max * f + (1.0 - y) * (abs(f_min*f_max) + f_min^2)))
-   _add_constraint!(gm, n, :darcy_weisbach_7, k, JuMP.@constraint(gm.model, inv(w)*l <= f_min * f + y * (abs(f_min*f_max) + f_max^2)))
+   _add_constraint!(gm, n, :darcy_weisbach_5, k, JuMP.@constraint(gm.model, (1.0/w)*l >= f^2))
+   _add_constraint!(gm, n, :darcy_weisbach_6, k, JuMP.@constraint(gm.model, (1.0/w)*l <= f_max * f + (1.0 - y) * (abs(f_min*f_max) + f_min^2)))
+   _add_constraint!(gm, n, :darcy_weisbach_7, k, JuMP.@constraint(gm.model, (1.0/w)*l <= f_min * f + y * (abs(f_min*f_max) + f_max^2)))
 end
 
 
