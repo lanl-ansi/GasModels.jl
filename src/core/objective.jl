@@ -66,14 +66,6 @@ function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
     z = JuMP.@variable(gm.model)
     JuMP.@NLconstraint(gm.model, z >= sum(sum((r[n][i]^m - 1) * f[n][i] for (i, compressor) in ref(gm, n, :compressor)) for n in nws))
     JuMP.@NLobjective(gm.model, Min, z)
-
-    #obj = JuMP.@NLobjective(
-    #    gm.model,
-    #    Min,
-    #    sum(
-    #        sum((r[n][i]^m - 1) * f[n][i] for (i, compressor) in ref(gm, n, :compressor)) for n in nws
-    #    )
-    #)
 end
 
 
@@ -131,21 +123,6 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
                                           for n in nws
                                        ))
     JuMP.@NLobjective(gm.model, Min, z)
-
-
-#    JuMP.@NLobjective(
-#        gm.model,
-#        Min,
-#        sum(
-#            economic_weighting * sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) +
-#            economic_weighting *
-#            sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) +
-#            economic_weighting * sum(prod_prices[n][i] * fg[n][i] for i in prod_set[n]) +
-#            (1.0 - economic_weighting) *
-#            sum(f[n][i] * (r[n][i]^m - 1) for (i, compressor) in ref(gm, n, :compressor))
-#            for n in nws
-#        )
-#    )
 end
 
 "transient objective for minimizing a linear combination of compressor power and load shed"
