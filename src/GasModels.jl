@@ -9,6 +9,7 @@ module GasModels
     import Memento
     import Printf
     import MathOptInterface
+    import Statistics
 
     using Dates
     using Dierckx

@@ -1,7 +1,5 @@
 # tools for working with GasModels internal data format
 
-import Statistics
-
 "data getters"
 @inline get_base_pressure(data::Dict{String,Any}) = data["base_pressure"]
 @inline get_base_density(data::Dict{String,Any}) = data["base_density"]
