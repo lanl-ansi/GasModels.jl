@@ -778,29 +778,29 @@ end
 "correct minimum pressures"
 function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
-        if junction["p_min"] < 1e-5
-            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if junction["p_min"] < 0.0
+            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
             (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
         end
     end
 
     for (i, pipe) in get(data, "pipe", [])
-        if pipe["p_min"] < 1e-5
-            Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if pipe["p_min"] < 0.0
+            Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (pipe["p_min"] = si_value)
             (data["is_english_units"] == 1) && (pipe["p_min"] = english_value)
         end
     end
 
     for (i, compressor) in get(data, "compressor", [])
-        if compressor["inlet_p_min"] < 1e-5
-            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if compressor["inlet_p_min"] < 0
+            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
-        if compressor["outlet_p_min"] < 1e-5
-            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if compressor["outlet_p_min"] < 0
+            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
