@@ -1,5 +1,6 @@
 # tools for working with GasModels internal data format
 
+import Statistics
 
 "data getters"
 @inline get_base_pressure(data::Dict{String,Any}) = data["base_pressure"]
@@ -14,9 +15,14 @@
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    p_mins = filter(x -> x > 0, [junction["p_min"] for junction in values(data["junction"])])
+    p_squares = [junc["p_max"]^2 for junc in values(data["junction"])]
 
-    return isempty(p_mins) ? 1.0 : minimum(p_mins)
+    if length(p_squares) > 0
+        # Use the square root of the median max squared pressure.
+        return sqrt(Statistics.median(p_squares))
+    else
+        return 1.379e6 # In Pascals, 200 PSI.
+    end
 end
 
 "calculates the base_time"
