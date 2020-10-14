@@ -14,7 +14,7 @@ function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=t
 
     p = gm.var[:nw][nw][:p] = JuMP.@variable(gm.model, [i in ids],
         base_name="$(nw)_p_nonsq", start=comp_start_value(gm.ref[:nw][nw][:junction],
-        i, "p_start", gm.ref[:nw][nw][:junction][i]["p_min"]))
+        i, "p_start", gm.ref[:nw][nw][:junction][i]["p_max"]))
 
     if bounded
         for i in ids
@@ -85,7 +85,7 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
     f_resistor = gm.var[:nw][nw][:f_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:resistor)],
         base_name="$(nw)_f",
-        start=comp_start_value(gm.ref[:nw][nw][:resistor], i, "f_start", 0)
+        start=comp_start_value(gm.ref[:nw][nw][:resistor], i, "f_start", 1.0e-6)
     )
 
     if bounded
@@ -103,7 +103,7 @@ function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; 
     f_loss_resistor = gm.var[:nw][nw][:f_loss_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :loss_resistor)],
         base_name="$(nw)_f",
-        start=comp_start_value(gm.ref[:nw][nw][:loss_resistor], i, "f_start", 0)
+        start=comp_start_value(gm.ref[:nw][nw][:loss_resistor], i, "f_start", 1.0e-6)
     )
 
     if bounded

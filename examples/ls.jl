@@ -51,7 +51,7 @@
     #Check the wp model on load shedding
     @testset "test gaslib 40 wp ls" begin
         @info "Testing gaslib wp ls gaslib 40"
-        result = run_ls("../examples/data/matgas/gaslib-40-E-ls.m", WPGasModel, lp_solver)
+        result = run_ls("../examples/data/matgas/gaslib-40-E-ls.m", WPGasModel, nlp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         @test isapprox(result["objective"] * result["solution"]["base_flow"], 420.91; atol = 1e-1)
         @warn(result["termination_status"])

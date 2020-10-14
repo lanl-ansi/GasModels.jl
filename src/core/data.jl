@@ -1,6 +1,5 @@
 # tools for working with GasModels internal data format
 
-
 "data getters"
 @inline get_base_pressure(data::Dict{String,Any}) = data["base_pressure"]
 @inline get_base_density(data::Dict{String,Any}) = data["base_density"]
@@ -14,9 +13,14 @@
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    p_mins = filter(x -> x > 0, [junction["p_min"] for junction in values(data["junction"])])
+    p_squares = [junc["p_max"]^2 for junc in values(data["junction"])]
 
-    return isempty(p_mins) ? 1.0 : minimum(p_mins)
+    if length(p_squares) > 0
+        # Use the square root of the median max squared pressure.
+        return sqrt(Statistics.median(p_squares))
+    else
+        return 1.379e6 # In Pascals, 200 PSI.
+    end
 end
 
 "calculates the base_time"
@@ -778,29 +782,29 @@ end
 "correct minimum pressures"
 function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
-        if junction["p_min"] < 1e-5
-            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if junction["p_min"] < 0.0
+            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
             (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
         end
     end
 
     for (i, pipe) in get(data, "pipe", [])
-        if pipe["p_min"] < 1e-5
-            Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if pipe["p_min"] < 0.0
+            Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (pipe["p_min"] = si_value)
             (data["is_english_units"] == 1) && (pipe["p_min"] = english_value)
         end
     end
 
     for (i, compressor) in get(data, "compressor", [])
-        if compressor["inlet_p_min"] < 1e-5
-            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if compressor["inlet_p_min"] < 0
+            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
-        if compressor["outlet_p_min"] < 1e-5
-            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from 0")
+        if compressor["outlet_p_min"] < 0
+            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
@@ -1172,9 +1176,9 @@ function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(mf, pf_min, flow_min, 0)
+        return min(0,max(mf, pf_min, flow_min,0))
     else
-        return max(mf, pf_min, flow_min)
+        return min(0,max(mf, pf_min, flow_min))
     end
 end
 
@@ -1189,9 +1193,9 @@ function _calc_ne_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(mf, pf_max, flow_max, 0)
+        return max(0,min(mf, pf_max, flow_max, 0))
     else
-        return min(mf, pf_max, flow_max)
+        return max(0,min(mf, pf_max, flow_max))
     end
 end
 
@@ -1228,9 +1232,9 @@ function _calc_ne_compressor_flow_min(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
-        return max(mf, flow_min, 0)
+        return min(0,max(mf, flow_min, 0))
     else
-        return max(mf, flow_min)
+        return min(0,max(mf, flow_min))
     end
 end
 
@@ -1241,9 +1245,9 @@ function _calc_ne_compressor_flow_max(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(mf, flow_max, 0)
+        return max(0,min(mf, flow_max, 0))
     else
-        return min(mf, flow_max)
+        return max(0,min(mf, flow_max))
     end
 end
 
@@ -1316,10 +1320,9 @@ function _calc_valve_flow_min(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return min(0,max(0, flow_min, mf))
     end
-
-    return max(flow_min, mf)
+    return min(0,max(flow_min, mf))
 end
 
 
@@ -1329,10 +1332,10 @@ function _calc_valve_flow_max(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return max(0,min(0, flow_max, mf))
     end
 
-    return min(flow_max, mf)
+    return max(0,min(flow_max, mf))
 end
 
 
@@ -1343,10 +1346,10 @@ function _calc_regulator_flow_min(mf::Float64, regulator::Dict)
     flow_direction = get(regulator, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return min(0,max(0, flow_min, mf))
     end
 
-    return max(flow_min, mf)
+    return min(0,max(flow_min, mf))
 end
 
 
@@ -1356,10 +1359,9 @@ function _calc_regulator_flow_max(mf::Float64, regulator::Dict)
     flow_direction = get(regulator, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return max(0,min(0, flow_max, mf))
     end
-
-    return min(flow_max, mf)
+    return max(0,min(flow_max, mf))
 end
 
 

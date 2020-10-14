@@ -2,6 +2,8 @@
 
 ## Pending
 
+- bug fix in GasLib component index assignment
+
 ## v0.8.2 
 
 - changed default interpolation to linear

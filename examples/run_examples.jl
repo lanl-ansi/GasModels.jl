@@ -1,7 +1,5 @@
 using GasModels
 
-GasModels.silence()
-
 using JuMP
 using Ipopt
 using Cbc
