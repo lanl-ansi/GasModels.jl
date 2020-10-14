@@ -1176,9 +1176,9 @@ function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(mf, pf_min, flow_min, 0)
+        return min(0,max(mf, pf_min, flow_min,0))
     else
-        return max(mf, pf_min, flow_min)
+        return min(0,max(mf, pf_min, flow_min))
     end
 end
 
@@ -1193,9 +1193,9 @@ function _calc_ne_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(mf, pf_max, flow_max, 0)
+        return max(0,min(mf, pf_max, flow_max, 0))
     else
-        return min(mf, pf_max, flow_max)
+        return max(0,min(mf, pf_max, flow_max))
     end
 end
 
@@ -1232,9 +1232,9 @@ function _calc_ne_compressor_flow_min(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
-        return max(mf, flow_min, 0)
+        return min(0,max(mf, flow_min, 0))
     else
-        return max(mf, flow_min)
+        return min(0,max(mf, flow_min))
     end
 end
 
@@ -1245,9 +1245,9 @@ function _calc_ne_compressor_flow_max(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(mf, flow_max, 0)
+        return max(0,min(mf, flow_max, 0))
     else
-        return min(mf, flow_max)
+        return max(0,min(mf, flow_max))
     end
 end
 
@@ -1320,10 +1320,9 @@ function _calc_valve_flow_min(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return min(0,max(0, flow_min, mf))
     end
-
-    return max(flow_min, mf)
+    return min(0,max(flow_min, mf))
 end
 
 
@@ -1333,10 +1332,10 @@ function _calc_valve_flow_max(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return max(0,min(0, flow_max, mf))
     end
 
-    return min(flow_max, mf)
+    return max(0,min(flow_max, mf))
 end
 
 
@@ -1347,10 +1346,10 @@ function _calc_regulator_flow_min(mf::Float64, regulator::Dict)
     flow_direction = get(regulator, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return min(0,max(0, flow_min, mf))
     end
 
-    return max(flow_min, mf)
+    return min(0,max(flow_min, mf))
 end
 
 
@@ -1360,10 +1359,9 @@ function _calc_regulator_flow_max(mf::Float64, regulator::Dict)
     flow_direction = get(regulator, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return max(0,min(0, flow_max, mf))
     end
-
-    return min(flow_max, mf)
+    return max(0,min(flow_max, mf))
 end
 
 
