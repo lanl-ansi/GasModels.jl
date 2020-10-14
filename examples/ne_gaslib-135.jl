@@ -7,11 +7,11 @@
         @test isapprox(result["objective"], 0.0; atol = 1e-2)
     end
 
-    @testset "gaslib 135 200% case" begin
-        println("gaslib 135 - WP 200%")
-        result = run_ne("../examples/data/matgas/gaslib-135-F-200.m", WPGasModel, minlp_solver)
-        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == :LocalInfeasible
-    end
+#    @testset "gaslib 135 200% case" begin
+#        println("gaslib 135 - WP 200%")
+#        result = run_ne("../examples/data/matgas/gaslib-135-F-200.m", WPGasModel, minlp_solver)
+#        @test result["termination_status"] == INFEASIBLE || result["termination_status"] == :LocalInfeasible
+#    end
 
 end
 
