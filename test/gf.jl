@@ -6,8 +6,8 @@
         @test isapprox(result["objective"], 0; atol = 1e-6)
         data = GasModels.parse_file("../test/data/matgas/case-6-gf.m")
         gm = GasModels.instantiate_model(data, CRDWPGasModel, GasModels.build_gf)
-        check_pressure_status(result["solution"], gm)
-        check_compressor_ratio(result["solution"], gm)
+        check_pressure_status(result["solution"]["it"]["ng"], gm)
+        check_compressor_ratio(result["solution"]["it"]["ng"], gm)
 
         result = run_gf("../test/data/gaslib/GasLib-Integration.zip", CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL

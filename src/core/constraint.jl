@@ -4,10 +4,11 @@
 
 "Utility function for adding constraints to a gm.model"
 function _add_constraint!(gm::AbstractGasModel, n::Int, key, k, constraint)
-    if !haskey(gm.con[:nw][n], key)
-        gm.con[:nw][n][key] = Dict{Any,JuMP.ConstraintRef}()
+    if !haskey(con(gm, n), key)
+        con(gm, n)[key] = Dict{Any,JuMP.ConstraintRef}()
     end
-    gm.con[:nw][n][key][k] = constraint
+
+    con(gm, n, key)[k] = constraint
 end
 
 #################################################################################################

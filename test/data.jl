@@ -1,13 +1,13 @@
 @testset "test data handling and parsing" begin
     @testset "GasLib-Integration parsing from zip" begin
         data = GasModels.parse_file("../test/data/gaslib/GasLib-Integration.zip")
-        @test length(data["delivery"]) == 7
-        @test length(data["receipt"]) == 4
+        @test length(data["it"]["ng"]["delivery"]) == 7
+        @test length(data["it"]["ng"]["receipt"]) == 4
     end
 
     @testset "gaslib40 summary from dict" begin
         data = GasModels.parse_file("../test/data/matgas/gaslib-40-E.m")
-        output = sprint(GasModels.summary, data)
+        output = sprint(GasModels.summary, data["it"]["ng"])
 
         line_count = count(c -> c == '\n', output)
         @test line_count >= 150 && line_count <= 250
@@ -20,41 +20,40 @@
 
     @testset "check status=false components" begin
         gm = instantiate_model("../test/data/status.m", CRDWPGasModel, GasModels.build_ls)
-        @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
+
+        @test !haskey(ref(gm, gm.cnw, :pipe), 32)
 
         try
-            gm.var[:nw][gm.cnw][:pipe][32] == nothing
-            gm.var[:nw][gm.cnw][:pipe][34] == nothing
+            var(gm, gm.cnw, :pipe)[32] == nothing
+            var(gm, gm.cnw, :pipe)[34] == nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:f_pipe][14] != nothing
+        @test var(gm, gm.cnw, :f_pipe)[14] != nothing
 
         try
-            gm.var[:nw][gm.cnw][:ql][24] == nothing
-            gm.var[:nw][gm.cnw][:ql][29] == nothing
+            var(gm, gm.cnw, :ql)[24] == nothing
+            var(gm, gm.cnw, :ql)[29] == nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:fl][10004] != nothing
+        @test var(gm, gm.cnw, :fl)[10004] != nothing
 
         try
-            gm.var[:nw][gm.cnw][:fg][1] == nothing
+            var(gm, gm.cnw, :fg)[1] == nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:fg][10002] != nothing
+        @test var(gm, gm.cnw, :fg)[10002] != nothing
     end
 
     @testset "check data summary" begin
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
-
-        output = sprint(GasModels.summary, gas_data)
-
+        output = sprint(GasModels.summary, gas_data["it"]["ng"])
         line_count = count(c -> c == '\n', output)
 
         @test line_count >= 180 && line_count <= 240
@@ -71,8 +70,7 @@
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
         result = run_gf(gas_file, CRDWPGasModel, misocp_solver)
-
-        output = sprint(GasModels.summary, result["solution"])
+        output = sprint(GasModels.summary, result["solution"]["it"]["ng"])
 
         line_count = count(c -> c == '\n', output)
         @test line_count >= 100 && line_count <= 150
@@ -89,7 +87,10 @@
             gas_data = GasModels.parse_file(gas_file)
             gas_ref = GasModels.build_ref(gas_data)
 
-            @test isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), 2.3023057843927686; atol = 1e-4)
+            @test isapprox(GasModels._calc_pipe_resistance(
+                gas_data["it"]["ng"]["ne_pipe"]["26"], gas_ref[:it][:ng][:base_length],
+                gas_ref[:it][:ng][:base_pressure], gas_ref[:it][:ng][:base_flow],
+                gas_ref[:it][:ng][:sound_speed]), 2.3023057843927686; atol = 1e-4)
         end
     end
 
@@ -97,15 +98,15 @@
         gas_file = "../test/data/matgas/case-6.m"
         gas_data = GasModels.parse_file(gas_file)
 
-        gas_data["pipe"]["2"]["status"] = 0
-        gas_data["pipe"]["3"]["status"] = 0
-        connected_components = GasModels.calc_connected_components(gas_data)
+        gas_data["it"]["ng"]["pipe"]["2"]["status"] = 0
+        gas_data["it"]["ng"]["pipe"]["3"]["status"] = 0
+        connected_components = GasModels.calc_connected_components(gas_data["it"]["ng"])
         @test length(connected_components) == 2
 
-        gas_data["junction"]["3"]["status"] = 0
-        GasModels.propagate_topology_status!(gas_data)
+        gas_data["it"]["ng"]["junction"]["3"]["status"] = 0
+        GasModels.propagate_topology_status!(gas_data["it"]["ng"])
 
-        @test gas_data["pipe"]["2"]["status"] == 0
-        @test gas_data["pipe"]["4"]["status"] == 0
+        @test gas_data["it"]["ng"]["pipe"]["2"]["status"] == 0
+        @test gas_data["it"]["ng"]["pipe"]["4"]["status"] == 0
     end
 end

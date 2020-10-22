@@ -59,7 +59,7 @@ end
 function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
-    gamma = gm.data["specific_heat_capacity_ratio"]
+    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
     m = (gamma - 1) / gamma
 
     # some solvers only support support nonlinear objectives by placing them in the constraints
@@ -77,7 +77,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
     fl = Dict(n => var(gm, n, :fl) for n in nws)
     fg = Dict(n => var(gm, n, :fg) for n in nws)
     ft = Dict(n => var(gm, n, :ft) for n in nws)
-    gamma = gm.data["specific_heat_capacity_ratio"]
+    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
     m = ((gamma - 1) / gamma) / 2
     load_set = Dict(
         n => keys(Dict(
@@ -110,7 +110,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
         ) for n in nws
     )
 
-    economic_weighting = get(gm.data, "economic_weighting", 1.0)
+    economic_weighting = get(gm.data["it"]["ng"], "economic_weighting", 1.0)
 
     z = JuMP.@variable(gm.model)
     JuMP.@NLconstraint(gm.model, z >= sum(

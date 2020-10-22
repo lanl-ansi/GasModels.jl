@@ -47,21 +47,21 @@ include("common.jl")
 
     include("ls.jl")
 
-    include("nels.jl")
+    #include("nels.jl")
 
-    include("gf.jl")
+    #include("gf.jl")
 
-    include("ne.jl")
+    #include("ne.jl")
 
-    include("transient.jl")
+    #include("transient.jl")
 
-    # test gaslib-582 dwp gf
-    include("debug.jl")
+    ## test gaslib-582 dwp gf
+    #include("debug.jl")
 
-    include("direction_pipe.jl")
-    include("direction_short_pipe.jl")
-    include("direction_resistor.jl")
-    include("direction_valve.jl")
-    include("direction_regulator.jl")
-    include("direction_compressor.jl")
+    #include("direction_pipe.jl")
+    #include("direction_short_pipe.jl")
+    #include("direction_resistor.jl")
+    #include("direction_valve.jl")
+    #include("direction_regulator.jl")
+    #include("direction_compressor.jl")
 end

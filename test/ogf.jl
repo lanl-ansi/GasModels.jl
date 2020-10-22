@@ -6,8 +6,8 @@
             result = run_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
-            GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
+            GasModels.make_si_units!(result["solution"]["it"]["ng"])
+            @test isapprox(result["solution"]["it"]["ng"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
         end
 
         @testset "case 6 wp ogf binding energy constraint" begin
@@ -16,8 +16,8 @@
             result = run_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], -237.816; atol = 1e-2)
-            GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 97.33312801519526; atol = 1e-2)
+            GasModels.make_si_units!(result["solution"]["it"]["ng"])
+            @test isapprox(result["solution"]["it"]["ng"]["receipt"]["1"]["fg"], 97.33312801519526; atol = 1e-2)
         end
     end
 end

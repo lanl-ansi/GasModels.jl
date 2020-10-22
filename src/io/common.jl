@@ -18,7 +18,8 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
         correct_network_data!(pmd_data)
     end
 
-    return pmd_data
+    gm_data = Dict{String, Any}("ng" => pmd_data)
+    return Dict{String, Any}("it" => gm_data)
 end
 
 

@@ -71,7 +71,9 @@ Some of the common keys include:
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
-    _ref_add_core!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
+    _ref_add_core!(
+        refs[:it][:ng][:nw], refs[:it][:ng][:base_length], refs[:it][:ng][:base_pressure],
+        refs[:it][:ng][:base_flow], refs[:it][:ng][:sound_speed])
 end
 
 function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)

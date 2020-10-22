@@ -1,22 +1,22 @@
 function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
-    solution["is_per_unit"] = gm.data["is_per_unit"]
-    solution["multinetwork"] = ismultinetwork(gm.data)
-    solution["base_pressure"] = gm.ref[:base_pressure]
-    solution["base_flow"] = gm.ref[:base_flow]
-    solution["base_time"] = gm.ref[:base_time]
-    solution["base_length"] = gm.ref[:base_length]
-    solution["base_density"] = gm.ref[:base_density]
-    solution["base_volume"] = gm.ref[:base_volume]
-    solution["base_mass"] = gm.ref[:base_mass]
+    solution["is_per_unit"] = gm.data["it"]["ng"]["is_per_unit"]
+    solution["multinetwork"] = ismultinetwork(gm.data["it"]["ng"])
+    solution["base_pressure"] = gm.ref[:it][:ng][:base_pressure]
+    solution["base_flow"] = gm.ref[:it][:ng][:base_flow]
+    solution["base_time"] = gm.ref[:it][:ng][:base_time]
+    solution["base_length"] = gm.ref[:it][:ng][:base_length]
+    solution["base_density"] = gm.ref[:it][:ng][:base_density]
+    solution["base_volume"] = gm.ref[:it][:ng][:base_volume]
+    solution["base_mass"] = gm.ref[:it][:ng][:base_mass]
 end
 
 
 
 function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"]["ng"], "nw")
+        nws_data = solution["it"]["ng"]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"]["ng"])
     end
 
     for (n, nw_data) in nws_data
@@ -32,10 +32,10 @@ end
 
 
 function sol_rsqr_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"]["ng"], "nw")
+        nws_data = solution["it"]["ng"]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"]["ng"])
     end
 
     for (n, nw_data) in nws_data
@@ -51,10 +51,10 @@ end
 
 
 function sol_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"]["ng"], "nw")
+        nws_data = solution["it"]["ng"]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"]["ng"])
     end
 
     for (n, nw_data) in nws_data
@@ -74,10 +74,10 @@ end
 
 
 function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"]["ng"], "nw")
+        nws_data = solution["it"]["ng"]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"]["ng"])
     end
 
     for (n, nw_data) in nws_data
@@ -96,10 +96,10 @@ function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
 end
 
 function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"]["ng"], "nw")
+        nws_data = solution["it"]["ng"]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"]["ng"])
     end
 
     for (n, nw_data) in nws_data

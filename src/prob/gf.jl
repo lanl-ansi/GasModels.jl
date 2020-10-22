@@ -32,14 +32,12 @@ end
 "construct the gas flow feasbility problem"
 function build_gf(gm::AbstractGasModel)
     bounded_compressors = Dict(
-        x
-        for
-        x in ref(gm, :compressor) if
+        x for x in ref(gm, :compressor) if
         _calc_is_compressor_energy_bounded(
-            gm.data["specific_heat_capacity_ratio"],
-            gm.data["gas_specific_gravity"],
-            gm.data["temperature"],
-            x.second,
+            gm.ref[:it][:ng][:specific_heat_capacity_ratio],
+            gm.ref[:it][:ng][:gas_specific_gravity],
+            gm.ref[:it][:ng][:temperature],
+            x.second
         )
     )
 

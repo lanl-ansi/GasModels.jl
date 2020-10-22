@@ -42,8 +42,8 @@ function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=gm.c
     resistor         = ref(gm,n,:resistor,k)
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
-    density          = "standard_density" in keys(gm.data) ? gm.data["standard_density"] : _estimate_standard_density(gm.data)
-    w                = _calc_resistor_resistance(resistor, Float64(gm.ref[:base_pressure]), Float64(gm.ref[:base_flow]), density)
+    density          = "standard_density" in keys(gm.data["it"]["ng"]) ? gm.data["it"]["ng"]["standard_density"] : _estimate_standard_density(gm.data["it"]["ng"])
+    w                = _calc_resistor_resistance(resistor, Float64(gm.ref[:it][:ng][:base_pressure]), Float64(gm.ref[:it][:ng][:base_flow]), density)
     pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min            = resistor["flow_min"]
     f_max            = resistor["flow_max"]
@@ -104,7 +104,7 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
+    w = _calc_pipe_resistance(pipe, gm.ref[:it][:ng][:base_length], gm.ref[:it][:ng][:base_pressure], gm.ref[:it][:ng][:base_flow], gm.ref[:it][:ng][:sound_speed])
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -128,7 +128,7 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
+    w = _calc_pipe_resistance(pipe, gm.ref[:it][:ng][:base_length], gm.ref[:it][:ng][:base_pressure], gm.ref[:it][:ng][:base_flow], gm.ref[:it][:ng][:sound_speed])
     pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -140,7 +140,7 @@ end
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = gm.ref[:nw][n][:ne_pipe][k]
-    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
+    w = _calc_pipe_resistance(pipe, gm.ref[:it][:ng][:base_length], gm.ref[:it][:ng][:base_pressure], gm.ref[:it][:ng][:base_flow], gm.ref[:it][:ng][:sound_speed])
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -153,7 +153,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(pipe, gm.ref[:base_length], gm.ref[:base_pressure], gm.ref[:base_flow], gm.ref[:sound_speed])
+    w = _calc_pipe_resistance(pipe, gm.ref[:it][:ng][:base_length], gm.ref[:it][:ng][:base_pressure], gm.ref[:it][:ng][:base_flow], gm.ref[:it][:ng][:sound_speed])
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -168,7 +168,7 @@ end
 
 "Template: Constraints for fixing pressure at a node"
 function constraint_pressure(gm::AbstractGasModel, i; n::Int = gm.cnw)
-    junction = gm.ref[:nw][n][:junction][i]
+    junction = ref(gm, n, :junction)[i]
     p = junction["p_nominal"]
     constraint_pressure(gm, n, i, p)
 end
@@ -291,8 +291,8 @@ function constraint_on_off_valve_pressure(gm::AbstractGasModel, k; n::Int = gm.c
     valve = ref(gm, n, :valve, k)
     i = valve["fr_junction"]
     j = valve["to_junction"]
-    j_pmax = gm.ref[:nw][n][:junction][j]["p_max"]
-    i_pmax = gm.ref[:nw][n][:junction][i]["p_max"]
+    j_pmax = ref(gm, n, :junction)[j]["p_max"]
+    i_pmax = ref(gm, n, :junction)[i]["p_max"]
     constraint_on_off_valve_pressure(gm, n, k, i, j, i_pmax, j_pmax)
 end
 
@@ -380,10 +380,10 @@ end
 function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     compressor = ref(gm, n, :ne_compressor, k)
     power_max = compressor["power_max"]
-    gamma = gm.data["specific_heat_capacity_ratio"]
+    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
     m = _calc_compressor_m_sqr(gamma, compressor)
-    T = gm.data["temperature"]
-    G = gm.data["gas_specific_gravity"]
+    T = gm.data["it"]["ng"]["temperature"]
+    G = gm.data["it"]["ng"]["gas_specific_gravity"]
     work = _calc_compressor_work(gamma, G, T, compressor)
     constraint_compressor_energy_ne(gm, n, k, power_max, m, work)
 end
@@ -416,10 +416,10 @@ end
 function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = gm.cnw)
     compressor = ref(gm, n, :compressor, k)
     power_max = compressor["power_max"]
-    gamma = gm.data["specific_heat_capacity_ratio"]
+    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
     m = _calc_compressor_m_sqr(gamma, compressor)
-    T = gm.data["temperature"]
-    G = gm.data["gas_specific_gravity"]
+    T = gm.data["it"]["ng"]["temperature"]
+    G = gm.data["it"]["ng"]["gas_specific_gravity"]
     work = _calc_compressor_work(gamma, G, T, compressor)
     constraint_compressor_energy(gm, n, k, power_max, m, work)
 end

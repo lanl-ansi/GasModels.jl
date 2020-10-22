@@ -26,9 +26,9 @@ function build_ne(gm::AbstractGasModel)
         for
         x in ref(gm, :compressor) if
         _calc_is_compressor_energy_bounded(
-            gm.data["specific_heat_capacity_ratio"],
-            gm.data["gas_specific_gravity"],
-            gm.data["temperature"],
+            gm.data["it"]["ng"]["specific_heat_capacity_ratio"],
+            gm.data["it"]["ng"]["gas_specific_gravity"],
+            gm.data["it"]["ng"]["temperature"],
             x.second,
         )
     )
@@ -37,9 +37,9 @@ function build_ne(gm::AbstractGasModel)
         for
         x in ref(gm, :ne_compressor) if
         _calc_is_compressor_energy_bounded(
-            gm.data["specific_heat_capacity_ratio"],
-            gm.data["gas_specific_gravity"],
-            gm.data["temperature"],
+            gm.data["it"]["ng"]["specific_heat_capacity_ratio"],
+            gm.data["it"]["ng"]["gas_specific_gravity"],
+            gm.data["it"]["ng"]["temperature"],
             x.second,
         )
     )

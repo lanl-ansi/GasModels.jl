@@ -18,11 +18,11 @@ end
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
 function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
-    l_pipe = gm.var[:nw][nw][:l_pipe] = JuMP.@variable(
+    l_pipe = var(gm, nw)[:l_pipe] = JuMP.@variable(
             gm.model,
-            [k in keys(gm.ref[:nw][nw][:pipe])],
+            [k in ids(gm, nw, :pipe)],
             base_name = "$(nw)_l_pipe",
-            start = comp_start_value(gm.ref[:nw][nw][:pipe], k, "l_start", 0)
+            start = comp_start_value(ref(gm, nw, :pipe), k, "l_start", 0)
         )
 
     if bounded
@@ -41,11 +41,11 @@ end
 
 ""
 function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
-    l_resistor = gm.var[:nw][nw][:l_resistor] = JuMP.@variable(
+    l_resistor = var(gm, nw)[:l_resistor] = JuMP.@variable(
             gm.model,
-            [k in keys(gm.ref[:nw][nw][:resistor])],
+            [k in ids(gm, nw, :resistor)],
             base_name = "$(nw)_l_resistor",
-            start = comp_start_value(gm.ref[:nw][nw][:resistor], k, "l_start", 0)
+            start = comp_start_value(ref(gm, nw, :resistor), k, "l_start", 0)
         )
 
     if bounded
@@ -73,7 +73,7 @@ end
 function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
     max_flow = ref(gm, nw, :max_mass_flow)
 
-    l_ne_pipe = gm.var[:nw][nw][:l_ne_pipe] = JuMP.@variable(
+    l_ne_pipe = var(gm, nw)[:l_ne_pipe] = JuMP.@variable(
             gm.model,
             [k in keys(gm.ref[:nw][nw][:ne_pipe])],
             base_name = "$(nw)_l_ne_pipe",
