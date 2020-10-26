@@ -1,6 +1,7 @@
-
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _ref_add_ne!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
+    refs_ng = refs[:it][:ng]
+    _ref_add_ne!(refs_ng[:nw], refs_ng[:base_length], refs_ng[:base_pressure],
+        refs_ng[:base_flow], refs_ng[:sound_speed])
 end
 
 

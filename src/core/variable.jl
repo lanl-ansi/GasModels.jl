@@ -192,18 +192,16 @@ end
 
 "variables associated with mass flow in pipes in expansion planning"
 function variable_pipe_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
-    f_ne_pipe = var(gm, nw)[:f_ne_pipe] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:ne_pipe)],
-        base_name="$(nw)_f_ne",
-        start=comp_start_value(gm.ref[:nw][nw][:ne_pipe], i, "f_start", 0)
-    )
+    f_ne_pipe = var(gm, nw)[:f_ne_pipe] = JuMP.@variable(
+        gm.model, [i in ids(gm, nw, :ne_pipe)], base_name="$(nw)_f_ne",
+        start=comp_start_value(ref(gm, nw, :ne_pipe), i, "f_start", 0.0))
 
     if bounded
         for (i, ne_pipe) in ref(gm, nw, :ne_pipe)
-            # since valves have on/off capabilities, zero needs
-            # to be a valid value in the bounds
-            flow_min =  min(ne_pipe["flow_min"], 0)
-            flow_max =  max(ne_pipe["flow_max"], 0)
+            # Since valves have on/off capabilities, zero needs
+            # to be a valid value in the bounds.
+            flow_min = min(ne_pipe["flow_min"], 0.0)
+            flow_max = max(ne_pipe["flow_max"], 0.0)
             JuMP.set_lower_bound(f_ne_pipe[i], flow_min)
             JuMP.set_upper_bound(f_ne_pipe[i], flow_max)
         end
@@ -243,7 +241,9 @@ end
 
 "variables associated with building pipes"
 function variable_pipe_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
-    zp = var(gm, nw)[:zp] = JuMP.@variable(gm.model, [l in ids(gm,nw,:ne_pipe)], binary=true, base_name="$(nw)_zp", start=comp_start_value(gm.ref[:nw][nw][:ne_pipe], l, "zp_start", 0.0))
+    zp = var(gm, nw)[:zp] = JuMP.@variable(
+        gm.model, [l in ids(gm, nw, :ne_pipe)], binary=true, base_name="$(nw)_zp",
+        start=comp_start_value(ref(gm, nw, :ne_pipe), l, "zp_start", 0.0))
 
     report && _IM.sol_component_value(gm, nw, :ne_pipe, :z, ids(gm, nw, :ne_pipe), zp)
 end
