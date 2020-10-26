@@ -75,9 +75,9 @@ function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = gm.cn
 
     l_ne_pipe = var(gm, nw)[:l_ne_pipe] = JuMP.@variable(
             gm.model,
-            [k in keys(gm.ref[:nw][nw][:ne_pipe])],
+            [k in keys(ref(gm, nw, :ne_pipe))],
             base_name = "$(nw)_l_ne_pipe",
-            start = comp_start_value(gm.ref[:nw][nw][:ne_pipe], k, "l_start", 0)
+            start = comp_start_value(ref(gm, nw, :ne_pipe), k, "l_start", 0)
         )
 
     if bounded

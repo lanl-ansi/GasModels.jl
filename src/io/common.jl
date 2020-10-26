@@ -14,12 +14,14 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
         Memento.error(_LOGGER, "only .m and .json files are supported")
     end
 
+    gm_data = Dict{String, Any}("ng" => pmd_data)
+    it_data = Dict{String, Any}("it" => gm_data)
+
     if !skip_correct
-        correct_network_data!(pmd_data)
+        correct_network_data!(it_data)
     end
 
-    gm_data = Dict{String, Any}("ng" => pmd_data)
-    return Dict{String, Any}("it" => gm_data)
+    return it_data
 end
 
 

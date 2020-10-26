@@ -33,7 +33,7 @@ function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int 
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:base_length])
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][:ng][:base_length])
     constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
@@ -42,7 +42,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = g
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:base_length])
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][:ng][:base_length])
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
@@ -74,8 +74,8 @@ function constraint_storage_well_momentum_balance(
     num_discretizations::Int = 4, )
     well = ref(gm, nw, :storage, i)
     length_per_well_segment = well["well_depth"] / num_discretizations
-    beta = (-2.0 * gm.ref[:base_length] * 9.8 * length_per_well_segment) / gm.ref[:sound_speed] / gm.ref[:sound_speed]
-    resistance = well["well_friction_factor"] * gm.ref[:base_length] * length_per_well_segment / well["well_diameter"]
+    beta = (-2.0 * gm.ref[:it][:ng][:base_length] * 9.8 * length_per_well_segment) / gm.ref[:it][:ng][:sound_speed]^2
+    resistance = well["well_friction_factor"] * gm.ref[:it][:ng][:base_length] * length_per_well_segment / well["well_diameter"]
     constraint_storage_well_momentum_balance(gm, nw, num_discretizations, i, beta, resistance)
 end
 

@@ -5,19 +5,19 @@
 
 "function for costing expansion of pipes and compressors: ``\\sum_{k \\in ne\\_pipe} c_k zp_k  +  \\sum_{k \\in ne\\_compressor} c_k zc_k``"
 function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
-    zp = Dict(n => gm.var[:nw][n][:zp] for n in nws)
-    zc = Dict(n => gm.var[:nw][n][:zc] for n in nws)
+    zp = Dict(n => var(gm, n, :zp) for n in nws)
+    zc = Dict(n => var(gm, n, :zc) for n in nws)
 
     obj = JuMP.@objective(
         gm.model,
         Min,
         sum(
             sum(
-                gm.ref[:nw][n][:ne_pipe][i]["construction_cost"] * zp[n][i]
-                for i in keys(gm.ref[:nw][n][:ne_pipe])
+                ref(gm, n, :ne_pipe)[i]["construction_cost"] * zp[n][i]
+                for i in keys(ref(gm, n, :ne_pipe))
             ) + sum(
-                gm.ref[:nw][n][:ne_compressor][i]["construction_cost"] * zc[n][i]
-                for i in keys(gm.ref[:nw][n][:ne_compressor])
+                ref(gm, n, :ne_compressor)[i]["construction_cost"] * zc[n][i]
+                for i in keys(ref(gm, n, :ne_compressor))
             ) for n in nws
         )
     )
@@ -127,7 +127,7 @@ end
 
 "transient objective for minimizing a linear combination of compressor power and load shed"
 function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
-    econ_weight = gm.ref[:economic_weighting]
+    econ_weight = gm.ref[:it][:ng][:economic_weighting]
     load_shed_expression = 0.0
     compressor_power_expression = 0.0
     load_shed_expressions = []

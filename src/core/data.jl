@@ -1,19 +1,19 @@
 # tools for working with GasModels internal data format
 
 "data getters"
-@inline get_base_pressure(data::Dict{String,Any}) = data["base_pressure"]
-@inline get_base_density(data::Dict{String,Any}) = data["base_density"]
-@inline get_base_length(data::Dict{String,Any}) = data["base_length"]
-@inline get_base_flow(data::Dict{String,Any}) = data["base_flow"]
-@inline get_base_flux(data::Dict{String,Any}) = data["base_flux"]
-@inline get_base_time(data::Dict{String,Any}) = data["base_time"]
-@inline get_base_diameter(data::Dict{String,Any}) = data["base_diameter"]
-@inline get_base_volume(data::Dict{String,Any}) = data["base_volume"]
+@inline get_base_pressure(data::Dict{String,Any}) = data["it"]["ng"]["base_pressure"]
+@inline get_base_density(data::Dict{String,Any}) = data["it"]["ng"]["base_density"]
+@inline get_base_length(data::Dict{String,Any}) = data["it"]["ng"]["base_length"]
+@inline get_base_flow(data::Dict{String,Any}) = data["it"]["ng"]["base_flow"]
+@inline get_base_flux(data::Dict{String,Any}) = data["it"]["ng"]["base_flux"]
+@inline get_base_time(data::Dict{String,Any}) = data["it"]["ng"]["base_time"]
+@inline get_base_diameter(data::Dict{String,Any}) = data["it"]["ng"]["base_diameter"]
+@inline get_base_volume(data::Dict{String,Any}) = data["it"]["ng"]["base_volume"]
 @inline get_base_mass(data::Dict{String,Any}) = get_base_flow(data) * get_base_time(data)
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    p_squares = [junc["p_max"]^2 for junc in values(data["junction"])]
+    p_squares = [junc["p_max"]^2 for junc in values(data["it"]["ng"]["junction"])]
 
     if length(p_squares) > 0
         # Use the square root of the median max squared pressure.
@@ -25,22 +25,23 @@ end
 
 "calculates the base_time"
 function calc_base_time(data::Dict{String,<:Any})
-    return get_base_length(data) / data["sound_speed"]
+    return get_base_length(data) / data["it"]["ng"]["sound_speed"]
 end
 
 "calculates the base_flow - this is actually wrong terminology (has to be base_flux - kg/m^2/s, flow is kg/s)"
 function calc_base_flow(data::Dict{String,<:Any})
-    return get_base_pressure(data) / data["sound_speed"]
+    return get_base_pressure(data) / data["it"]["ng"]["sound_speed"]
 end
 
 "calculates the base_flux"
 function calc_base_flux(data::Dict{String,<:Any})
-    return get_base_density(data) * data["sound_speed"]
+    return get_base_density(data) * data["it"]["ng"]["sound_speed"]
 end
 
 "calculates the base density"
 function calc_base_density(data::Dict{String,<:Any})
-    return get_base_pressure(data) / data["sound_speed"] / data["sound_speed"]
+    sound_speed_sq = data["it"]["ng"]["sound_speed"]^2
+    return get_base_pressure(data) / sound_speed_sq
 end
 
 "estimates standard density from existing data"
@@ -65,18 +66,26 @@ end
 
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String,Any})
-    if get(data, "is_per_unit", false) == true
-        if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
+    ng_data = data["it"]["ng"]
+
+    if get(ng_data, "is_per_unit", false) == true
+        if get(ng_data, "base_pressure", false) == false || get(ng_data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
-            (get(data, "base_density", false) == false) &&
-                (data["base_density"] = calc_base_density(data))
-            data["base_time"] = calc_base_time(data)
-            data["base_diameter"] = 1.0
-            (get(data, "base_flow", false) == false) &&
-                (data["base_flow"] = calc_base_flow(data))
-            (get(data, "base_flux", false) == false) &&
-                (data["base_flux"] = calc_base_flux(data))
+            if get(ng_data, "base_density", false) == false
+                ng_data["base_density"] = calc_base_density(data)
+            end
+
+            ng_data["base_diameter"] = 1.0
+            ng_data["base_time"] = calc_base_time(data)
+
+            if get(ng_data, "base_flow", false) == false
+                ng_data["base_flow"] = calc_base_flow(data)
+            end
+
+            if get(ng_data, "base_flux", false) == false
+                ng_data["base_flux"] = calc_base_flux(data)
+            end
         end
     end
 end
@@ -84,29 +93,50 @@ end
 
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String,Any})
-    (get(data, "base_pressure", false) == false) &&
-        (data["base_pressure"] = calc_base_pressure(data))
-    (get(data, "base_density", false) == false) &&
-        (data["base_density"] = calc_base_density(data))
-    (get(data, "base_length", false) == false) && (data["base_length"] = 5000.0)
-    data["base_time"] = calc_base_time(data)
-    data["base_diameter"] = 1.0
-    (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
-    (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
-    (get(data, "base_volume", false) == false) &&
-        (data["base_volume"] = data["base_length"])
-    (get(data, "base_mass", false) == false) &&
-        (data["base_mass"] = data["base_density"] * data["base_volume"])
+    ng_data = data["it"]["ng"]
+
+    if get(ng_data, "base_pressure", false) == false
+        ng_data["base_pressure"] = calc_base_pressure(data)
+    end
+
+    if get(ng_data, "base_density", false) == false
+        ng_data["base_density"] = calc_base_density(data)
+    end
+
+    if get(ng_data, "base_length", false) == false
+        ng_data["base_length"] = 5000.0
+    end
+
+    ng_data["base_diameter"] = 1.0
+    ng_data["base_time"] = calc_base_time(data)
+
+    if get(ng_data, "base_flow", false) == false
+        ng_data["base_flow"] = calc_base_flow(data)
+    end
+
+    if get(ng_data, "base_flux", false) == false
+        ng_data["base_flux"] = calc_base_flux(data)
+    end
+
+    if get(ng_data, "base_volume", false) == false
+        ng_data["base_volume"] = ng_data["base_length"]
+    end
+
+    if get(ng_data, "base_mass", false) == false
+        ng_data["base_mass"] = ng_data["base_density"] * ng_data["base_volume"]
+    end
 end
 
 "make transient data to si units"
 function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::Dict{String,Any},
 )
-    if static_data["units"] == "si"
+    if static_data["it"]["ng"]["units"] == "si"
         return
     end
+
     mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(static_data)
     inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(static_data)
+
     pressure_params = [
         "p_min",
         "p_max",
@@ -122,6 +152,7 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
         "reservoir_p_max",
         "reservoir_pressure",
     ]
+
     flow_params = [
         "f",
         "fd",
@@ -145,15 +176,20 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
         "bottom_hole_flow",
         "well_head_flow",
     ]
+
     inv_flow_params = ["bid_price", "offer_price"]
+
     for line in transient_data
         param = line["parameter"]
+
         if param in pressure_params
             line["value"] = psi_to_pascal(line["value"])
         end
+
         if param in flow_params
             line["value"] = mmscfd_to_kgps(line["value"])
         end
+
         if param in inv_flow_params
             line["value"] = inv_mmscfd_to_kgps(line["value"])
         end
@@ -391,16 +427,17 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    nw_data = (id == "0") ? data["it"]["ng"] : data["it"]["ng"]["nw"][id]
     _apply_func!(nw_data, "time_point", rescale_time)
+
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && ~haskey(data["it"]["ng"], "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                comp["is_per_unit"] = data["is_per_unit"]
+            if ~haskey(comp, "is_per_unit") && haskey(data["it"]["ng"], "is_per_unit")
+                comp["is_per_unit"] = data["it"]["ng"]["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -437,19 +474,22 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    nw_data = (id == "0") ? data["it"]["ng"] : data["it"]["ng"]["nw"][id]
     _apply_func!(nw_data, "time_point", rescale_time)
+
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && ~haskey(data["it"]["ng"], "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if ~haskey(comp, "is_per_unit") && haskey(data["it"]["ng"], "is_per_unit")
+                @assert data["it"]["ng"]["is_per_unit"] == 1
+                comp["is_per_unit"] = data["it"]["ng"]["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_si_units"] == false && comp["is_per_unit"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -480,18 +520,21 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    nw_data = (id == "0") ? data["it"]["ng"] : data["it"]["ng"]["nw"][id]
+
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && ~haskey(data["it"]["ng"], "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if ~haskey(comp, "is_per_unit") && haskey(data["it"]["ng"], "is_per_unit")
+                @assert data["it"]["ng"]["is_per_unit"] == 1
+                comp["is_per_unit"] = data["it"]["ng"]["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_english_units"] == false && comp["is_si_units"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -522,19 +565,21 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    nw_data = (id == "0") ? data["it"]["ng"] : data["it"]["ng"]["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+            if ~haskey(comp, "is_per_unit") && ~haskey(data["it"]["ng"], "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if ~haskey(comp, "is_per_unit") && haskey(data["it"]["ng"], "is_per_unit")
+                @assert data["it"]["ng"]["is_per_unit"] == 1
+                comp["is_per_unit"] = data["it"]["ng"]["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_english_units"] == true && comp["is_si_units"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -545,102 +590,113 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
             end
         end
     end
-
 end
 
 "transforms data to si units"
 function make_si_units!(data::Dict{String,<:Any})
-    if get(data, "is_si_units", false) == true
+    if get(data["it"]["ng"], "is_si_units", false) == true
         return
     end
-    if get(data, "is_per_unit", false) == true
-        if _IM.ismultinetwork(data)
-            for (i, _) in data["nw"]
+
+    if get(data["it"]["ng"], "is_per_unit", false) == true
+        if _IM.ismultinetwork(data["it"]["ng"])
+            for (i, _) in data["it"]["ng"]["nw"]
                 pu_to_si!(data, id = i)
             end
         else
             pu_to_si!(data)
         end
-        if haskey(data, "time_step")
+
+        if haskey(data["it"]["ng"], "time_step")
             rescale_time = x -> x * get_base_time(data)
-            data["time_step"] = rescale_time(data["time_step"])
+            data["it"]["ng"]["time_step"] = rescale_time(data["it"]["ng"]["time_step"])
         end
-        data["is_si_units"] = 1
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 0
+
+        data["it"]["ng"]["is_si_units"] = 1
+        data["it"]["ng"]["is_english_units"] = 0
+        data["it"]["ng"]["is_per_unit"] = 0
     end
-    if get(data, "is_english_units", false) == true
-        if _IM.ismultinetwork(data)
-            for (i, _) in data["nw"]
+
+    if get(data["it"]["ng"], "is_english_units", false) == true
+        if _IM.ismultinetwork(data["it"]["ng"])
+            for (i, _) in data["it"]["ng"]["nw"]
                 english_to_si!(data, id = i)
             end
         else
             english_to_si!(data)
         end
-        data["is_si_units"] = 1
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 0
+
+        data["it"]["ng"]["is_si_units"] = 1
+        data["it"]["ng"]["is_english_units"] = 0
+        data["it"]["ng"]["is_per_unit"] = 0
     end
 end
 
 "Transforms network data into english units"
 function make_english_units!(data::Dict{String,<:Any})
-    if get(data, "is_english_units", false) == true
+    if get(data["it"]["ng"], "is_english_units", false) == true
         return
     end
-    if get(data, "is_per_unit", false) == true
+
+    if get(data["it"]["ng"], "is_per_unit", false) == true
         make_si_units!(data)
     end
-    if get(data, "is_si_units", false) == true
-        if _IM.ismultinetwork(data)
-            for (i, _) in data["nw"]
+
+    if get(data["it"]["ng"], "is_si_units", false) == true
+        if _IM.ismultinetwork(data["it"]["ng"])
+            for (i, _) in data["it"]["ng"]["nw"]
                 si_to_english!(data, id = i)
             end
         else
             si_to_english!(data)
         end
-        data["is_si_units"] = 0
-        data["is_english_units"] = 1
-        data["is_per_unit"] = 0
+
+        data["it"]["ng"]["is_si_units"] = 0
+        data["it"]["ng"]["is_english_units"] = 1
+        data["it"]["ng"]["is_per_unit"] = 0
     end
 end
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String,<:Any})
-    if get(data, "is_per_unit", false) == true
+    if get(data["it"]["ng"], "is_per_unit", false) == true
         return
     end
-    if get(data, "is_english_units", false) == true
+
+    if get(data["it"]["ng"], "is_english_units", false) == true
         make_si_units!(data)
     end
-    if get(data, "is_si_units", false) == true
-        if _IM.ismultinetwork(data)
-            for (i, _) in data["nw"]
+
+    if get(data["it"]["ng"], "is_si_units", false) == true
+        if _IM.ismultinetwork(data["it"]["ng"])
+            for (i, _) in data["it"]["ng"]["nw"]
                 si_to_pu!(data, id = i)
             end
         else
             si_to_pu!(data)
         end
-        if haskey(data, "time_step")
+
+        if haskey(data["it"]["ng"], "time_step")
             rescale_time = x -> x / get_base_time(data)
-            data["time_step"] = rescale_time(data["time_step"])
+            data["it"]["ng"]["time_step"] = rescale_time(data["it"]["ng"]["time_step"])
         end
-        data["is_si_units"] = 0
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 1
+
+        data["it"]["ng"]["is_si_units"] = 0
+        data["it"]["ng"]["is_english_units"] = 0
+        data["it"]["ng"]["is_per_unit"] = 1
     end
 end
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String,<:Any})
     for field in non_negative_metadata
-        if get(data, field, 0.0) < 0.0
+        if get(data["it"]["ng"], field, 0.0) < 0.0
             Memento.error(_LOGGER, "metadata $field is < 0")
         end
     end
 
     for field in keys(non_negative_data)
-        for (i, table) in get(data, field, [])
+        for (i, table) in get(data["it"]["ng"], field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
                     Memento.error(_LOGGER, "$field[$i][$column_name] is < 0")
@@ -653,160 +709,161 @@ end
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String,<:Any})
-    if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
-        Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
+    if get(data["it"]["ng"], "temperature", 273.15) < 260 || get(data["it"]["ng"], "temperature", 273.15) > 320
+        Memento.warn(_LOGGER, "temperature of $(data["it"]["ng"]["temperature"]) K is unrealistic")
     end
 
-    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+    if get(data["it"]["ng"], "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data["it"]["ng"], "specific_heat_capacity_ratio", 1.4) > 1.6
+        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["it"]["ng"]["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
-    if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
-        Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+    if get(data["it"]["ng"], "gas_specific_gravity", 0.6) < 0.5 || get(data["it"]["ng"], "gas_specific_gravity", 0.6) > 0.7
+        Memento.warn(_LOGGER, "gas specific gravity $(data["it"]["ng"]["gas_specific_gravity"]) is unrealistic")
     end
 
-    if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
+    if get(data["it"]["ng"], "sound_speed", 355.0) < 300.0 || get(data["it"]["ng"], "sound_speed", 355.0) > 410.0
+        Memento.warn(_LOGGER, "sound speed of $(data["it"]["ng"]["sound_speed"]) m/s is unrealistic")
     end
 
-    if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
-        Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+    if get(data["it"]["ng"], "compressibility_factor", 0.8) < 0.7 || get(data["it"]["ng"], "compressibility_factor", 0.8) > 1.0
+        Memento.warn(_LOGGER, "compressibility_factor $(data["it"]["ng"]["compressibility_factor"]) is unrealistic")
     end
 end
 
 "correct minimum pressures"
 function correct_f_bounds!(data::Dict{String,Any})
     mf = _calc_max_mass_flow(
-        data["receipt"],
-        get(data, "storage", Dict()),
-        get(data, "transfer", Dict()),
+        data["it"]["ng"]["receipt"],
+        get(data["it"]["ng"], "storage", Dict()),
+        get(data["it"]["ng"], "transfer", Dict()),
     )
 
-    for (idx, pipe) in get(data, "pipe", Dict())
+    for (idx, pipe) in get(data["it"]["ng"], "pipe", Dict())
         pipe["flow_min"] = _calc_pipe_flow_min(
             -mf,
             pipe,
-            data["junction"][string(pipe["fr_junction"])],
-            data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["it"]["ng"]["junction"][string(pipe["fr_junction"])],
+            data["it"]["ng"]["junction"][string(pipe["to_junction"])],
+            data["it"]["ng"]["base_length"],
+            data["it"]["ng"]["base_pressure"],
+            data["it"]["ng"]["base_flow"],
+            data["it"]["ng"]["sound_speed"],
         )
         pipe["flow_max"] = _calc_pipe_flow_max(
             mf,
             pipe,
-            data["junction"][string(pipe["fr_junction"])],
-            data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["it"]["ng"]["junction"][string(pipe["fr_junction"])],
+            data["it"]["ng"]["junction"][string(pipe["to_junction"])],
+            data["it"]["ng"]["base_length"],
+            data["it"]["ng"]["base_pressure"],
+            data["it"]["ng"]["base_flow"],
+            data["it"]["ng"]["sound_speed"],
         )
     end
 
-    for (idx, compressor) in get(data, "compressor", Dict())
+    for (idx, compressor) in get(data["it"]["ng"], "compressor", Dict())
         compressor["flow_min"] = _calc_compressor_flow_min(-mf, compressor)
         compressor["flow_max"] = _calc_compressor_flow_max(mf, compressor)
     end
 
-    for (idx, pipe) in get(data, "short_pipe", Dict())
+    for (idx, pipe) in get(data["it"]["ng"], "short_pipe", Dict())
         pipe["flow_min"] = _calc_short_pipe_flow_min(-mf, pipe)
         pipe["flow_max"] = _calc_short_pipe_flow_max(mf, pipe)
     end
 
-    if "standard_density" in keys(data)
-        density = data["standard_density"]
+    if "standard_density" in keys(data["it"]["ng"])
+        density = data["it"]["ng"]["standard_density"]
     else
-        density = _estimate_standard_density(data)
+        density = _estimate_standard_density(data["it"]["ng"])
     end
 
-    for (idx, resistor) in get(data, "resistor", Dict())
+    for (idx, resistor) in get(data["it"]["ng"], "resistor", Dict())
         resistor["flow_min"] = _calc_resistor_flow_min(
-            -mf, resistor, data["junction"][string(resistor["fr_junction"])],
-            data["junction"][string(resistor["to_junction"])],
-            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
+            -mf, resistor, data["it"]["ng"]["junction"][string(resistor["fr_junction"])],
+            data["it"]["ng"]["junction"][string(resistor["to_junction"])],
+            Float64(data["it"]["ng"]["base_pressure"]), Float64(data["it"]["ng"]["base_flow"]), density)
 
         resistor["flow_max"] = _calc_resistor_flow_max(
-            mf, resistor, data["junction"][string(resistor["fr_junction"])],
-            data["junction"][string(resistor["to_junction"])],
-            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
+            mf, resistor, data["it"]["ng"]["junction"][string(resistor["fr_junction"])],
+            data["it"]["ng"]["junction"][string(resistor["to_junction"])],
+            Float64(data["it"]["ng"]["base_pressure"]), Float64(data["it"]["ng"]["base_flow"]), density)
     end
 
-    for (idx, loss_resistor) in get(data, "loss_resistor", Dict())
+    for (idx, loss_resistor) in get(data["it"]["ng"], "loss_resistor", Dict())
         loss_resistor["flow_min"] = _calc_loss_resistor_flow_min(-mf, loss_resistor)
         loss_resistor["flow_max"] = _calc_loss_resistor_flow_max(mf, loss_resistor)
     end
 
-    for (idx, valve) in get(data, "valve", Dict())
+    for (idx, valve) in get(data["it"]["ng"], "valve", Dict())
         valve["flow_min"] = _calc_valve_flow_min(-mf, valve)
         valve["flow_max"] = _calc_valve_flow_max(mf, valve)
     end
 
-    for (idx, regulator) in get(data, "regulator", Dict())
+    for (idx, regulator) in get(data["it"]["ng"], "regulator", Dict())
         regulator["flow_min"] = _calc_regulator_flow_min(-mf, regulator)
         regulator["flow_max"] = _calc_regulator_flow_max(mf, regulator)
     end
 
-    for (idx, pipe) in get(data, "ne_pipe", Dict())
+    for (idx, pipe) in get(data["it"]["ng"], "ne_pipe", Dict())
         pipe["flow_min"] = _calc_ne_pipe_flow_min(
             -mf,
             pipe,
-            data["junction"][string(pipe["fr_junction"])],
-            data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["it"]["ng"]["junction"][string(pipe["fr_junction"])],
+            data["it"]["ng"]["junction"][string(pipe["to_junction"])],
+            data["it"]["ng"]["base_length"],
+            data["it"]["ng"]["base_pressure"],
+            data["it"]["ng"]["base_flow"],
+            data["it"]["ng"]["sound_speed"],
         )
+
         pipe["flow_max"] = _calc_ne_pipe_flow_max(
             mf,
             pipe,
-            data["junction"][string(pipe["fr_junction"])],
-            data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["it"]["ng"]["junction"][string(pipe["fr_junction"])],
+            data["it"]["ng"]["junction"][string(pipe["to_junction"])],
+            data["it"]["ng"]["base_length"],
+            data["it"]["ng"]["base_pressure"],
+            data["it"]["ng"]["base_flow"],
+            data["it"]["ng"]["sound_speed"],
         )
     end
 
-    for (idx, compressor) in get(data, "ne_compressor", Dict())
+    for (idx, compressor) in get(data["it"]["ng"], "ne_compressor", Dict())
         compressor["flow_min"] = _calc_ne_compressor_flow_min(-mf, compressor)
         compressor["flow_max"] = _calc_ne_compressor_flow_max(mf, compressor)
     end
-
 end
 
 
 "correct minimum pressures"
 function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
-    for (i, junction) in get(data, "junction", [])
+    for (i, junction) in get(data["it"]["ng"], "junction", [])
         if junction["p_min"] < 0.0
             Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
-            (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
+            (data["it"]["ng"]["is_si_units"] == 1) && (junction["p_min"] = si_value)
+            (data["it"]["ng"]["is_english_units"] == 1) && (junction["p_min"] = english_value)
         end
     end
 
-    for (i, pipe) in get(data, "pipe", [])
+    for (i, pipe) in get(data["it"]["ng"], "pipe", [])
         if pipe["p_min"] < 0.0
             Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (pipe["p_min"] = si_value)
-            (data["is_english_units"] == 1) && (pipe["p_min"] = english_value)
+            (data["it"]["ng"]["is_si_units"] == 1) && (pipe["p_min"] = si_value)
+            (data["it"]["ng"]["is_english_units"] == 1) && (pipe["p_min"] = english_value)
         end
     end
 
-    for (i, compressor) in get(data, "compressor", [])
+    for (i, compressor) in get(data["it"]["ng"], "compressor", [])
         if compressor["inlet_p_min"] < 0
             Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
-            (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
+            (data["it"]["ng"]["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
+            (data["it"]["ng"]["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
+
         if compressor["outlet_p_min"] < 0
             Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
-            (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
+            (data["it"]["ng"]["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
+            (data["it"]["ng"]["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
     end
 
@@ -816,42 +873,47 @@ end
 
 "add additional compressor fields - required for transient"
 function add_compressor_fields!(data::Dict{String,<:Any})
-    is_si_units = get(data, "is_si_units", 0)
-    is_english_units = get(data, "is_english_units", 0)
-    is_per_unit = get(data, "is_per_unit", false)
-    for (i, compressor) in data["compressor"]
+    is_si_units = get(data["it"]["ng"], "is_si_units", 0)
+    is_english_units = get(data["it"]["ng"], "is_english_units", 0)
+    is_per_unit = get(data["it"]["ng"], "is_per_unit", false)
+
+    for (i, compressor) in data["it"]["ng"]["compressor"]
         if is_si_units == true
             compressor["diameter"] = 1.0
             compressor["length"] = 250.0
             compressor["friction_factor"] = 0.001
         end
+
         if is_english_units == true
             compressor["diameter"] = 39.37
             compressor["length"] = 0.16
             compressor["friction_factor"] = 0.001
         end
+
         if is_per_unit == true
-            base_length = get(data, "base_length", 5000.0)
+            base_length = get(data["it"]["ng"], "base_length", 5000.0)
             compressor["diameter"] = 1.0
             compressor["length"] = 250.0 / base_length
             compressor["friction_factor"] = 0.001
         end
     end
 
-    if haskey(data, "ne_compressor")
-        for (i, compressor) in data["ne_compressor"]
+    if haskey(data["it"]["ng"], "ne_compressor")
+        for (i, compressor) in data["it"]["ng"]["ne_compressor"]
             if is_si_units == true
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0
                 compressor["friction_factor"] = 0.001
             end
+
             if is_english_units == true
                 compressor["diameter"] = 39.37
                 compressor["length"] = 0.16
                 compressor["friction_factor"] = 0.001
             end
+
             if is_per_unit == true
-                base_length = get(data, "base_length", 5000.0)
+                base_length = get(data["it"]["ng"], "base_length", 5000.0)
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0 / base_length
                 compressor["friction_factor"] = 0.001
@@ -863,12 +925,12 @@ end
 
 "checks that all buses are unique and other components link to valid buses"
 function check_connectivity(data::Dict{String,<:Any})
-    if _IM.ismultinetwork(data)
-        for (n, nw_data) in data["nw"]
+    if _IM.ismultinetwork(data["it"]["ng"])
+        for (n, nw_data) in data["it"]["ng"]["nw"]
             _check_connectivity(nw_data)
         end
     else
-        _check_connectivity(data)
+        _check_connectivity(data["it"]["ng"])
     end
 end
 
@@ -924,17 +986,17 @@ end
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String,<:Any})
-    if _IM.ismultinetwork(data)
+    if _IM.ismultinetwork(data["it"]["ng"])
         Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
     end
 
     active_junction_ids = Set(
         junction["id"]
-        for (i, junction) in data["junction"] if get(junction, "status", 1) != 0
+        for (i, junction) in data["it"]["ng"]["junction"] if get(junction, "status", 1) != 0
     )
 
     for comp_type in _gm_component_types
-        for (i, comp) in get(data, comp_type, Dict())
+        for (i, comp) in get(data["it"]["ng"], comp_type, Dict())
             for junc_key in _gm_junction_keys
                 if haskey(comp, junc_key)
                     if get(comp, "status", 1) != 0 &&
@@ -950,13 +1012,13 @@ end
 
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String,<:Any})
-    if _IM.ismultinetwork(data)
+    if _IM.ismultinetwork(data["it"]["ng"])
         Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
     end
 
     for edge_type in _gm_edge_types
-        if haskey(data, edge_type)
-            for edge in values(data[edge_type])
+        if haskey(data["it"]["ng"], edge_type)
+            for edge in values(data["it"]["ng"][edge_type])
                 if edge["fr_junction"] == edge["to_junction"]
                     Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
                 end
@@ -968,11 +1030,11 @@ end
 
 "helper function to propagate disabled status of junctions to connected components"
 function propagate_topology_status!(data::Dict{String,<:Any})
-    disabled_junctions = Set([junc["index"] for junc in values(data["junction"]) if junc["status"] == 0])
+    disabled_junctions = Set([junc["index"] for junc in values(data["it"]["ng"]["junction"]) if junc["status"] == 0])
 
     for comp_type in _gm_component_types
-        if haskey(data, comp_type) && comp_type != "junction"
-            for comp in values(data[comp_type])
+        if haskey(data["it"]["ng"], comp_type) && comp_type != "junction"
+            for comp in values(data["it"]["ng"][comp_type])
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
                         comp["status"] = 0
@@ -989,21 +1051,25 @@ end
 "Calculates max mass flow network wide using ref"
 function _calc_max_mass_flow(receipts::Dict, storages::Dict, transfers::Dict)
     max_flow = 0
+
     for (idx, receipt) in receipts
         if receipt["injection_max"] > 0
             max_flow = max_flow + receipt["injection_max"]
         end
     end
+
     for (idx, storage) in storages
         if storage["flow_injection_rate_max"] > 0
             max_flow = max_flow + storage["flow_injection_rate_max"]
         end
     end
+
     for (idx, transfer) in transfers
         if transfer["withdrawal_min"] < 0
             max_flow = max_flow - transfer["withdrawal_min"]
         end
     end
+
     return max_flow
 end
 
@@ -1104,7 +1170,7 @@ function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_len
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
-    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe,i,j)
+    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
     w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
     pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
 
@@ -1176,9 +1242,9 @@ function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return min(0,max(mf, pf_min, flow_min,0))
+        return min(0.0, max(mf, pf_min, flow_min, 0.0))
     else
-        return min(0,max(mf, pf_min, flow_min))
+        return min(0.0, max(mf, pf_min, flow_min))
     end
 end
 
@@ -1232,9 +1298,9 @@ function _calc_ne_compressor_flow_min(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
-        return min(0,max(mf, flow_min, 0))
+        return min(0.0, max(mf, flow_min, 0.0))
     else
-        return min(0,max(mf, flow_min))
+        return min(0.0, max(mf, flow_min))
     end
 end
 
@@ -1245,9 +1311,9 @@ function _calc_ne_compressor_flow_max(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
-        return max(0,min(mf, flow_max, 0))
+        return max(0.0, min(mf, flow_max, 0.0))
     else
-        return max(0,min(mf, flow_max))
+        return max(0.0, min(mf, flow_max))
     end
 end
 
@@ -1293,7 +1359,7 @@ function _calc_short_pipe_flow_min(mf::Float64, short_pipe::Dict)
     flow_direction = get(short_pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return max(0.0, flow_min, mf)
     end
 
     return max(flow_min, mf)
@@ -1306,7 +1372,7 @@ function _calc_short_pipe_flow_max(mf::Float64, short_pipe::Dict)
     flow_direction = get(short_pipe, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return min(0.0, flow_max, mf)
     end
 
     return min(flow_max, mf)
@@ -1320,9 +1386,10 @@ function _calc_valve_flow_min(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return min(0,max(0, flow_min, mf))
+        return min(0.0, max(0.0, flow_min, mf))
     end
-    return min(0,max(flow_min, mf))
+
+    return min(0.0, max(flow_min, mf))
 end
 
 
@@ -1374,9 +1441,11 @@ end
 "Helper function for determining if direction cuts can be applied"
 function _apply_mass_flow_cuts(yp, branches)
     is_disjunction = true
+
     for k in branches
         is_disjunction &= haskey(yp, k)
     end
+
     return is_disjunction
 end
 
@@ -1588,19 +1657,19 @@ computes the connected components of the network graph
 returns a set of sets of juntion ids, each set is a connected component
 """
 function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_types)
-    if _IM.ismultinetwork(data)
+    if _IM.ismultinetwork(data["it"]["ng"])
         Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
     end
 
-    active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
+    active_junction = Dict(x for x in data["it"]["ng"]["junction"] if x.second["status"] != 0)
     active_junction_ids = Set{Int64}([junction["id"] for (i, junction) in active_junction])
 
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
-        for edge in values(get(data, edge_type, Dict()))
+        for edge in values(get(data["it"]["ng"], edge_type, Dict()))
             if get(edge, "status", 1) != 0 &&
-               edge["fr_junction"] in active_junction_ids &&
-               edge["to_junction"] in active_junction_ids
+                edge["fr_junction"] in active_junction_ids &&
+                edge["to_junction"] in active_junction_ids
                 push!(neighbors[edge["fr_junction"]], edge["to_junction"])
                 push!(neighbors[edge["to_junction"]], edge["fr_junction"])
             end
@@ -1625,6 +1694,7 @@ end
 "perModels DFS on a graph"
 function _dfs(i, neighbors, component_lookup, touched)
     push!(touched, i)
+
     for j in neighbors[i]
         if !(j in touched)
             new_comp = union(component_lookup[i], component_lookup[j])

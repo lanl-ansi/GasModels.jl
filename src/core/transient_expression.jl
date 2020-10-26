@@ -2,7 +2,7 @@
 function expression_density_derivative(gm::AbstractGasModel, nw::Int, nw_prev::Int)
     var(gm, nw)[:density_derivative] = Dict{Int,Any}()
     for i in ref(gm, nw, :non_slack_junction_ids)
-        var(gm, nw, :density_derivative)[i] = (var(gm, nw, :density, i) - var(gm, nw_prev, :density, i)) / gm.ref[:time_step]
+        var(gm, nw, :density_derivative)[i] = (var(gm, nw, :density, i) - var(gm, nw_prev, :density, i)) / gm.ref[:it][:ng][:time_step]
     end
     for i in ids(gm, nw, :slack_junctions)
         var(gm, nw, :density_derivative)[i] = 0
@@ -24,7 +24,7 @@ function expression_well_density_derivative(
             var(gm, nw, :well_density_derivative, storage_id)[j] = (
                     var(gm, nw_next, :well_density, storage_id)[j] -
                     var(gm, nw, :well_density, storage_id)[j]
-                ) / gm.ref[:time_step]
+             ) / gm.ref[:it][:ng][:time_step]
         end
     end
 
@@ -51,7 +51,7 @@ function expression_reservoir_density_derivative(
         var(gm, nw, :reservoir_density_derivative)[storage_id] = (
                 var(gm, nw_next, :reservoir_density, storage_id) -
                 var(gm, nw, :reservoir_density, storage_id)
-            ) / gm.ref[:time_step]
+               ) / gm.ref[:it][:ng][:time_step]
     end
     report && _IM.sol_component_value(
         gm,
@@ -184,9 +184,9 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
     for (i, compressor) in ref(gm, nw, :compressor)
         alpha = var(gm, nw, :compressor_ratio, i)
         f = var(gm, nw, :compressor_flow, i)
-        m = (gm.ref[:specific_heat_capacity_ratio] - 1) /
-            gm.ref[:specific_heat_capacity_ratio]
-        W = 286.76 * gm.ref[:temperature] / gm.ref[:gas_specific_gravity] / m
+        m = (gm.ref[:it][:ng][:specific_heat_capacity_ratio] - 1) /
+            gm.ref[:it][:ng][:specific_heat_capacity_ratio]
+        W = 286.76 * gm.ref[:it][:ng][:temperature] / gm.ref[:it][:ng][:gas_specific_gravity] / m
         var(gm, nw, :compressor_power_expr)[i] = JuMP.@NLexpression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
 

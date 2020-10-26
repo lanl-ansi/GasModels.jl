@@ -139,7 +139,7 @@ end
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
-    pipe = gm.ref[:nw][n][:ne_pipe][k]
+    pipe = ref(gm, n, :ne_pipe, k)
     w = _calc_pipe_resistance(pipe, gm.ref[:it][:ng][:base_length], gm.ref[:it][:ng][:base_pressure], gm.ref[:it][:ng][:base_flow], gm.ref[:it][:ng][:sound_speed])
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -330,7 +330,7 @@ end
 
 "Template: Constraint for turning on or off flow through expansion compressor"
 function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
-    compressor = gm.ref[:nw][n][:ne_compressor][k]
+    compressor = ref(gm, n, :ne_compressor, k)
     f_min = compressor["flow_min"]
     f_max = compressor["flow_max"]
 
