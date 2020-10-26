@@ -3,6 +3,7 @@
 ## Pending
 
 - bug fix in GasLib component index assignment
+- updates for new multi-infrastructure conventions
 
 ## v0.8.2 
 
