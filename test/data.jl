@@ -100,11 +100,11 @@
 
         gas_data["it"]["ng"]["pipe"]["2"]["status"] = 0
         gas_data["it"]["ng"]["pipe"]["3"]["status"] = 0
-        connected_components = GasModels.calc_connected_components(gas_data["it"]["ng"])
+        connected_components = GasModels.calc_connected_components(gas_data)
         @test length(connected_components) == 2
 
         gas_data["it"]["ng"]["junction"]["3"]["status"] = 0
-        GasModels.propagate_topology_status!(gas_data["it"]["ng"])
+        GasModels.propagate_topology_status!(gas_data)
 
         @test gas_data["it"]["ng"]["pipe"]["2"]["status"] == 0
         @test gas_data["it"]["ng"]["pipe"]["4"]["status"] == 0
