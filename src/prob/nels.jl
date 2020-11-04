@@ -22,25 +22,22 @@ end
 "construct the gas flow expansion problem to maximize load"
 function build_nels(gm::AbstractGasModel)
     bounded_compressors = Dict(
-        x
-        for
-        x in ref(gm, :compressor) if
+        x for x in ref(gm, :compressor) if
         _calc_is_compressor_energy_bounded(
-            gm.data["it"]["ng"]["specific_heat_capacity_ratio"],
-            gm.data["it"]["ng"]["gas_specific_gravity"],
-            gm.data["it"]["ng"]["temperature"],
-            x.second,
+            get_specific_heat_capacity_ratio(gm.data),
+            get_gas_specific_gravity(gm.data),
+            get_temperature(gm.data),
+            x.second
         )
     )
+
     bounded_compressors_ne = Dict(
-        x
-        for
-        x in ref(gm, :ne_compressor) if
+        x for x in ref(gm, :ne_compressor) if
         _calc_is_compressor_energy_bounded(
-            gm.data["it"]["ng"]["specific_heat_capacity_ratio"],
-            gm.data["it"]["ng"]["gas_specific_gravity"],
-            gm.data["it"]["ng"]["temperature"],
-            x.second,
+            get_specific_heat_capacity_ratio(gm.data),
+            get_gas_specific_gravity(gm.data),
+            get_temperature(gm.data),
+            x.second
         )
     )
 

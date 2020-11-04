@@ -22,7 +22,7 @@
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
-    @test isapprox(set.value, 0.64266 / data["it"]["ng"]["base_flow"]; atol = 1e-4)
+    @test isapprox(set.value, 0.64266 / get_base_flow(data); atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 1
     var_ref = var(gm, :f_pipe)[128]
@@ -50,7 +50,7 @@
     constraint = JuMP.constraint_object(constraint_ref)
     func = constraint.func
     set = constraint.set
-    @test isapprox(set.value, -526.0 / data["it"]["ng"]["base_flow"]; atol = 1e-4)
+    @test isapprox(set.value, -526.0 / get_base_flow(data); atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 

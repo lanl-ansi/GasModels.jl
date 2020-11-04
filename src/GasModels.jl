@@ -2,7 +2,7 @@ module GasModels
     import InfrastructureModels
     const _IM = InfrastructureModels
 
-    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, optimize_model!, @im_fields, ismultinetwork
+    import InfrastructureModels: optimize_model!, @im_fields, ismultinetwork
 
     import JSON
     import JuMP
@@ -51,6 +51,7 @@ module GasModels
     include("io/transient.jl")
 
     include("core/base.jl")
+    include("core/helpers.jl")
     include("core/types.jl")
     include("core/unit_converters.jl")
     include("core/data.jl")

@@ -17,8 +17,8 @@
         @info "Testing regulator direction"
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 0
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["flow_direction"] = 0
+        data["regulator"]["50"]["is_bidirectional"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -33,8 +33,8 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["flow_direction"] = 1
+        data["regulator"]["50"]["is_bidirectional"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -49,8 +49,8 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = -1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["flow_direction"] = -1
+        data["regulator"]["50"]["is_bidirectional"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -65,10 +65,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 0
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = 0
+        data["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -83,11 +83,11 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 0
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
-        data["it"]["ng"]["junction"]["52"]["p_max"] = 6000000
+        data["regulator"]["50"]["flow_direction"] = 0
+        data["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
+        data["junction"]["52"]["p_max"] = 6000000
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -102,10 +102,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = 1
+        data["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -120,10 +120,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = -1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = -1
+        data["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -138,11 +138,11 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = -1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 1
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
-        data["it"]["ng"]["junction"]["52"]["p_max"] = 6000000
+        data["regulator"]["50"]["flow_direction"] = -1
+        data["regulator"]["50"]["is_bidirectional"] = 1
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
+        data["junction"]["52"]["p_max"] = 6000000
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -157,8 +157,8 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 0
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["flow_direction"] = 0
+        data["regulator"]["50"]["is_bidirectional"] = 0
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -173,8 +173,8 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["flow_direction"] = 1
+        data["regulator"]["50"]["is_bidirectional"] = 0
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
@@ -189,8 +189,8 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = -1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["flow_direction"] = -1
+        data["regulator"]["50"]["is_bidirectional"] = 0
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -205,10 +205,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 0
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = 0
+        data["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -223,10 +223,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = 1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = 1
+        data["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
@@ -241,10 +241,10 @@
 
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
-        data["it"]["ng"]["regulator"]["50"]["flow_direction"] = -1
-        data["it"]["ng"]["regulator"]["50"]["is_bidirectional"] = 0
-        data["it"]["ng"]["regulator"]["50"]["fr_junction"] = 52
-        data["it"]["ng"]["regulator"]["50"]["to_junction"] = 1
+        data["regulator"]["50"]["flow_direction"] = -1
+        data["regulator"]["50"]["is_bidirectional"] = 0
+        data["regulator"]["50"]["fr_junction"] = 52
+        data["regulator"]["50"]["to_junction"] = 1
         GasModels.correct_network_data!(data)
         result = run_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE

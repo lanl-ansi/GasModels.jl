@@ -2,11 +2,14 @@ using GasModels
 
 import InfrastructureModels
 import Memento
+import Logging
 
 # Suppress warnings during testing.
 const TESTLOG = Memento.getlogger(GasModels)
 Memento.setlevel!(TESTLOG, "error")
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
+Logging.disable_logging(Logging.Info)
+Logging.disable_logging(Logging.Warn)
 
 import JuMP
 

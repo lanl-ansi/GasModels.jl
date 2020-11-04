@@ -39,11 +39,12 @@ end
 
 "Template: Darcy-Weisbach equation for defining the relationship between pressure drop and flow across a resistor"
 function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=gm.cnw)
-    resistor         = ref(gm,n,:resistor,k)
+    resistor         = ref(gm, n, :resistor, k)
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
-    density          = "standard_density" in keys(gm.data["it"]["ng"]) ? gm.data["it"]["ng"]["standard_density"] : _estimate_standard_density(gm.data["it"]["ng"])
-    w                = _calc_resistor_resistance(resistor, Float64(gm.ref[:it][:ng][:base_pressure]), Float64(gm.ref[:it][:ng][:base_flow]), density)
+    density          = get(gm.ref[:it][:ng], :standard_density, _estimate_standard_density(gm.data))
+    w                = _calc_resistor_resistance(resistor, Float64(gm.ref[:it][:ng][:base_pressure]),
+                                                 Float64(gm.ref[:it][:ng][:base_flow]), density)
     pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min            = resistor["flow_min"]
     f_max            = resistor["flow_max"]
@@ -380,10 +381,10 @@ end
 function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
     compressor = ref(gm, n, :ne_compressor, k)
     power_max = compressor["power_max"]
-    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
+    gamma = get_specific_heat_capacity_ratio(gm.data)
     m = _calc_compressor_m_sqr(gamma, compressor)
-    T = gm.data["it"]["ng"]["temperature"]
-    G = gm.data["it"]["ng"]["gas_specific_gravity"]
+    T = get_temperature(gm.data)
+    G = get_gas_specific_gravity(gm.data)
     work = _calc_compressor_work(gamma, G, T, compressor)
     constraint_compressor_energy_ne(gm, n, k, power_max, m, work)
 end
@@ -416,10 +417,10 @@ end
 function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = gm.cnw)
     compressor = ref(gm, n, :compressor, k)
     power_max = compressor["power_max"]
-    gamma = gm.data["it"]["ng"]["specific_heat_capacity_ratio"]
+    gamma = get_specific_heat_capacity_ratio(gm.data)
     m = _calc_compressor_m_sqr(gamma, compressor)
-    T = gm.data["it"]["ng"]["temperature"]
-    G = gm.data["it"]["ng"]["gas_specific_gravity"]
+    T = get_temperature(gm.data)
+    G = get_gas_specific_gravity(gm.data)
     work = _calc_compressor_work(gamma, G, T, compressor)
     constraint_compressor_energy(gm, n, k, power_max, m, work)
 end

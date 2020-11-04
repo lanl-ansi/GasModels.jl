@@ -15,7 +15,12 @@ end
 
 ""
 function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
-    gm = instantiate_model(data, model_type, build_method; ref_extensions = ref_extensions, ext = get(kwargs, :ext, Dict{Symbol,Any}()), setting = get(kwargs, :setting, Dict{String,Any}()), jump_model = get(kwargs, :jump_model, JuMP.Model()))
+    gm = instantiate_model(
+        data, model_type, build_method; ref_extensions = ref_extensions,
+        ext = get(kwargs, :ext, Dict{Symbol,Any}()),
+        setting = get(kwargs, :setting, Dict{String,Any}()),
+        jump_model = get(kwargs, :jump_model, JuMP.Model()))
+
     result = optimize_model!(gm, optimizer = optimizer, solution_processors = solution_processors)
 
     if haskey(data, "objective_normalization")
@@ -33,8 +38,7 @@ end
 
 
 function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
-    gm = _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
-    return gm
+    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; default_it = :ng, kwargs...)
 end
 
 
@@ -44,7 +48,7 @@ dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
-    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
+    return _IM.build_ref(data, "ng", ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
 end
 
 

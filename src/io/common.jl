@@ -5,33 +5,30 @@ Parses the IOStream of a file into a GasModels data structure.
 """
 function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false)
     if filetype == "m"
-        pmd_data = GasModels.parse_matgas(io)
+        gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
-        pmd_data = GasModels.parse_json(io)
+        gm_data = GasModels.parse_json(io)
     elseif filetype == "zip"
-        pmd_data = GasModels.parse_gaslib(io)
+        gm_data = GasModels.parse_gaslib(io)
     else
         Memento.error(_LOGGER, "only .m and .json files are supported")
     end
 
-    gm_data = Dict{String, Any}("ng" => pmd_data)
-    it_data = Dict{String, Any}("it" => gm_data)
-
     if !skip_correct
-        correct_network_data!(it_data)
+        correct_network_data!(gm_data)
     end
 
-    return it_data
+    return gm_data
 end
 
 
 ""
 function parse_file(file::String; skip_correct::Bool = false)
-    pmd_data = open(file) do io
+    gm_data = open(file) do io
         parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct)
     end
 
-    return pmd_data
+    return gm_data
 end
 
 
@@ -41,22 +38,22 @@ end
 Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
-    check_non_negativity(data)
-    correct_p_mins!(data)
+    _IM.modify_data_with_function!(data, "ng", check_non_negativity)
+    _IM.modify_data_with_function!(data, "ng", correct_p_mins!)
 
-    per_unit_data_field_check!(data)
-    add_compressor_fields!(data)
+    _IM.modify_data_with_function!(data, "ng", per_unit_data_field_check!)
+    _IM.modify_data_with_function!(data, "ng", add_compressor_fields!)
 
-    make_si_units!(data)
-    add_base_values!(data)
-    make_per_unit!(data)
+    _IM.modify_data_with_function!(data, "ng", make_si_units!)
+    _IM.modify_data_with_function!(data, "ng", add_base_values!)
+    _IM.modify_data_with_function!(data, "ng", make_per_unit!)
 
-    # assumes everything is in per unit
-    correct_f_bounds!(data)
+    # Assumes everything is in per unit.
+    _IM.modify_data_with_function!(data, "ng", correct_f_bounds!)
 
-    check_connectivity(data)
-    check_status(data)
-    check_edge_loops(data)
+    _IM.modify_data_with_function!(data, "ng", check_connectivity)
+    _IM.modify_data_with_function!(data, "ng", check_status)
+    _IM.modify_data_with_function!(data, "ng", check_edge_loops)
 
-    check_global_parameters(data)
+    _IM.modify_data_with_function!(data, "ng", check_global_parameters)
 end

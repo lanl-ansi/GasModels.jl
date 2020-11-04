@@ -1,6 +1,6 @@
 function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
-    solution["it"]["ng"]["is_per_unit"] = gm.data["it"]["ng"]["is_per_unit"]
-    solution["it"]["ng"]["multinetwork"] = ismultinetwork(gm.data["it"]["ng"])
+    solution["it"]["ng"]["is_per_unit"] = _IM.get_data_with_function(gm.data, "ng", x -> return x["is_per_unit"])
+    solution["it"]["ng"]["multinetwork"] = ismultinetwork(gm)
     solution["it"]["ng"]["base_pressure"] = gm.ref[:it][:ng][:base_pressure]
     solution["it"]["ng"]["base_flow"] = gm.ref[:it][:ng][:base_flow]
     solution["it"]["ng"]["base_time"] = gm.ref[:it][:ng][:base_time]

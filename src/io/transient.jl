@@ -55,26 +55,25 @@ function parse_files(
         Memento.error(_LOGGER, "only .m and .json network data files are supported")
     end
 
-    gm_data = Dict{String, Any}("ng" => static_data)
-    static_data = Dict{String, Any}("it" => gm_data)
+    _IM.modify_data_with_function!(static_data, "ng", check_non_negativity)
+    _IM.modify_data_with_function!(static_data, "ng", correct_p_mins!)
 
-    check_non_negativity(static_data)
-    correct_p_mins!(static_data)
+    _IM.modify_data_with_function!(static_data, "ng", per_unit_data_field_check!)
+    _IM.modify_data_with_function!(static_data, "ng", add_compressor_fields!)
 
-    per_unit_data_field_check!(static_data)
-    add_compressor_fields!(static_data)
+    _IM.modify_data_with_function!(static_data, "ng", make_si_units!)
+    _IM.modify_data_with_function!(static_data, "ng", add_base_values!)
+    _IM.modify_data_with_function!(static_data, "ng", check_connectivity)
+    _IM.modify_data_with_function!(static_data, "ng", check_status)
+    _IM.modify_data_with_function!(static_data, "ng", check_edge_loops)
 
-    make_si_units!(static_data)
-    add_base_values!(static_data)
-    check_connectivity(static_data)
-    check_status(static_data)
-    check_edge_loops(static_data)
+    _IM.modify_data_with_function!(static_data, "ng", check_global_parameters)
+    _IM.modify_data_with_function!(static_data, "ng", x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
 
-    check_global_parameters(static_data)
-
-    _prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
     transient_data = parse_transient(transient_file)
+
     make_si_units!(transient_data, static_data)
+
     time_series_block = _create_time_series_block(
         transient_data,
         total_time = total_time,
@@ -94,9 +93,11 @@ end
 "function to get the maximum pipe id"
 function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     max_pipe_id = 0
+
     for (key, pipe) in pipes
         max_pipe_id = (pipe["id"] > max_pipe_id) ? pipe["id"] : max_pipe_id
     end
+
     return max_pipe_id
 end
 
