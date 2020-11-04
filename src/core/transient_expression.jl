@@ -30,6 +30,7 @@ function expression_well_density_derivative(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_density_derivative,
@@ -55,6 +56,7 @@ function expression_reservoir_density_derivative(
     end
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :reservoir_density_derivative,
@@ -93,6 +95,7 @@ function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::B
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :junction,
         :net_injection,
@@ -125,6 +128,7 @@ function expression_net_nodal_edge_out_flow(
     end
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :junction,
         :net_nodal_edge_out_flow,
@@ -192,6 +196,7 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :compressor,
         :power_expr,

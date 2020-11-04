@@ -19,9 +19,9 @@ function variable_density(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
+        _IM.sol_component_value(gm, :ng, nw, :junction, :density, ids(gm, nw, :junction), rho)
     report &&
-        _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
+        _IM.sol_component_value(gm, :ng, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
 end
 
 "variables associated with compressor mass flow (transient)"
@@ -46,7 +46,7 @@ function variable_compressor_flow(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
+        _IM.sol_component_value(gm, :ng, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
 end
 
 "variables associated with pipe flux (transient)"
@@ -70,9 +70,9 @@ function variable_pipe_flux(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
         sol_f = Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
-        _IM.sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
     end
 end
 
@@ -103,8 +103,8 @@ function variable_pipe_flux_avg(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -135,8 +135,8 @@ function variable_pipe_flux_neg(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -160,8 +160,8 @@ function variable_pipe_flux_fr(
         )
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -185,8 +185,8 @@ function variable_pipe_flux_to(
         )
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
+        _IM.sol_component_value(gm, :ng, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -212,6 +212,7 @@ function variable_c_ratio(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :compressor,
         :c_ratio,
@@ -242,6 +243,7 @@ function variable_compressor_power(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :compressor,
         :power_var,
@@ -281,6 +283,7 @@ function variable_injection(
         end
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :receipt,
             :injection,
@@ -321,6 +324,7 @@ function variable_withdrawal(
         end
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :delivery,
             :withdrawal,
@@ -378,6 +382,7 @@ function variable_transfer_flow(
         end
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :transfer,
             :injection,
@@ -386,6 +391,7 @@ function variable_transfer_flow(
         )
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :transfer,
             :withdrawal,
@@ -429,6 +435,7 @@ function variable_storage_flow(
     if report
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :storage,
             :bottom_hole_flow,
@@ -437,6 +444,7 @@ function variable_storage_flow(
         )
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :storage,
             :withdrawal,
@@ -445,6 +453,7 @@ function variable_storage_flow(
         )
         _IM.sol_component_value(
             gm,
+            :ng,
             nw,
             :storage,
             :well_head_flow,
@@ -476,6 +485,7 @@ function variable_storage_c_ratio(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :storage_compressor_ratio,
@@ -506,6 +516,7 @@ function variable_reservoir_density(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :reservoir_density,
@@ -514,6 +525,7 @@ function variable_reservoir_density(
     )
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :reservoir_pressure,
@@ -547,6 +559,7 @@ function variable_well_density(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_density,
@@ -583,6 +596,7 @@ function variable_well_flux_avg(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flux_avg,
@@ -592,6 +606,7 @@ function variable_well_flux_avg(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flow_avg,
@@ -627,6 +642,7 @@ function variable_well_flux_neg(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flux_neg,
@@ -636,6 +652,7 @@ function variable_well_flux_neg(
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flow_neg,
@@ -670,10 +687,11 @@ function variable_well_flux_fr(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
+        _IM.sol_component_value(gm, :ng, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flow_fr,
@@ -708,10 +726,11 @@ function variable_well_flux_to(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
+        _IM.sol_component_value(gm, :ng, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,
+        :ng,
         nw,
         :storage,
         :well_flow_to,

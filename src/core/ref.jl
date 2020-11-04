@@ -56,10 +56,12 @@ end
 
 "adds the additional data into the ref that is required to used to formulate the transient formulation"
 function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if _IM.ismultinetwork(data["it"]["ng"])
-        nws_data = data["it"]["ng"]["nw"]
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"]["ng"] : data
+
+    if _IM.ismultinetwork(data_it)
+        nws_data = data_it["nw"]
     else
-        nws_data = Dict("0" => data["it"]["ng"])
+        nws_data = Dict("0" => data_it)
     end
 
     for (n, nw_data) in nws_data
