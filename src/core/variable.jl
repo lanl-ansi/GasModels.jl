@@ -23,7 +23,7 @@ function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=t
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :junction, :p, ids, p)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :junction, :p, ids, p)
 end
 
 
@@ -41,7 +41,7 @@ function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bo
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :junction, :psqr, ids(gm, nw, :junction), psqr)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :junction, :psqr, ids(gm, nw, :junction), psqr)
 end
 
 "variables associated with mass flow in pipes"
@@ -59,7 +59,7 @@ function variable_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :pipe, :f, ids(gm, nw, :pipe), f_pipe)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :pipe, :f, ids(gm, nw, :pipe), f_pipe)
 end
 
 "variables associated with mass flow in compressors"
@@ -77,7 +77,7 @@ function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :compressor, :f, ids(gm, nw, :compressor), f_compressor)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :compressor, :f, ids(gm, nw, :compressor), f_compressor)
 end
 
 "variables associated with mass flow in resistors"
@@ -95,7 +95,7 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :resistor, :f, ids(gm, nw, :resistor), f_resistor)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :resistor, :f, ids(gm, nw, :resistor), f_resistor)
 end
 
 "variables associated with mass flow in loss_resistors"
@@ -113,7 +113,7 @@ function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; 
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :loss_resistor, :f, ids(gm, nw, :loss_resistor), f_loss_resistor)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :loss_resistor, :f, ids(gm, nw, :loss_resistor), f_loss_resistor)
 end
 
 "variables associated with mass flow in short pipes"
@@ -131,7 +131,7 @@ function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :short_pipe, :f, ids(gm, nw, :short_pipe), f_short_pipe)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :short_pipe, :f, ids(gm, nw, :short_pipe), f_short_pipe)
 end
 
 
@@ -154,7 +154,7 @@ function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded:
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :valve, :f, ids(gm, nw, :valve), f_valve)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :valve, :f, ids(gm, nw, :valve), f_valve)
 end
 
 "variables associated with mass flow in regulators"
@@ -176,7 +176,7 @@ function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; boun
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :regulator, :f, ids(gm, nw, :regulator), f_regulator)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :regulator, :f, ids(gm, nw, :regulator), f_regulator)
 end
 
 "all variables associated with mass flow"
@@ -207,7 +207,7 @@ function variable_pipe_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounde
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_pipe, :f, ids(gm, nw, :ne_pipe), f_ne_pipe)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_pipe, :f, ids(gm, nw, :ne_pipe), f_ne_pipe)
 end
 
 
@@ -229,7 +229,7 @@ function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_compressor, :f, ids(gm, nw, :ne_compressor), f_ne_compressor)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_compressor, :f, ids(gm, nw, :ne_compressor), f_ne_compressor)
 end
 
 "all variables associated with mass flow in expansion planning"
@@ -245,7 +245,7 @@ function variable_pipe_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=tru
         gm.model, [l in ids(gm, nw, :ne_pipe)], binary=true, base_name="$(nw)_zp",
         start=comp_start_value(ref(gm, nw, :ne_pipe), l, "zp_start", 0.0))
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_pipe, :z, ids(gm, nw, :ne_pipe), zp)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_pipe, :z, ids(gm, nw, :ne_pipe), zp)
 end
 
 
@@ -258,7 +258,7 @@ function variable_compressor_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bo
         start=comp_start_value(ref(gm, nw, :ne_compressor), l, "zc_start", 0.0)
     )
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_compressor, :z, ids(gm, nw, :ne_compressor), zc)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_compressor, :z, ids(gm, nw, :ne_compressor), zc)
 end
 
 "0-1 variables associated with operating valves"
@@ -270,7 +270,7 @@ function variable_valve_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cnw; r
         start=comp_start_value(ref(gm, nw, :valve), l, "v_start", 1.0)
     )
 
-    report && _IM.sol_component_value(gm, :ng, nw, :valve, :v, ids(gm, nw, :valve), v_valve)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :valve, :v, ids(gm, nw, :valve), v_valve)
 end
 
 
@@ -283,7 +283,7 @@ function variable_regulator_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cn
         start=comp_start_value(ref(gm, nw, :regulator), l, "v_start", 1.0)
     )
 
-    report && _IM.sol_component_value(gm, :ng, nw, :regulator, :v, ids(gm, nw, :regulator), v_regulator)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :regulator, :v, ids(gm, nw, :regulator), v_regulator)
 end
 
 "0-1 variables associated with operating edge components"
@@ -309,12 +309,12 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::
     end
 
     if report
-        _IM.sol_component_value(gm, :ng, nw, :delivery, :fd, ids(gm, nw, :dispatchable_delivery), fl)
+        _IM.sol_component_value(gm, _gm_it_sym, nw, :delivery, :fd, ids(gm, nw, :dispatchable_delivery), fl)
 
-        if _IM.get_data_with_function(gm.data, "ng", x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, "ng", x -> return x["standard_density"])
+        if _IM.get_data_with_function(gm.data, _gm_it_name, x -> return haskey(x, "standard_density"))
+            density = _IM.get_data_with_function(gm.data, _gm_it_name, x -> return x["standard_density"])
             sol_ql = Dict(i => fl[i] / density for i in ids(gm, nw, :dispatchable_delivery))
-            _IM.sol_component_value(gm, :ng, nw, :delivery, :qd, ids(gm, nw, :dispatchable_delivery), sol_ql)
+            _IM.sol_component_value(gm, _gm_it_sym, nw, :delivery, :qd, ids(gm, nw, :dispatchable_delivery), sol_ql)
         end
     end
 end
@@ -336,12 +336,12 @@ function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
     end
 
     if report
-        _IM.sol_component_value(gm, :ng, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
+        _IM.sol_component_value(gm, _gm_it_sym, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
 
-        if _IM.get_data_with_function(gm.data, "ng", x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, "ng", x -> return x["standard_density"])
+        if _IM.get_data_with_function(gm.data, _gm_it_name, x -> return haskey(x, "standard_density"))
+            density = _IM.get_data_with_function(gm.data, _gm_it_name, x -> return x["standard_density"])
             sol_qt = Dict(i => ft[i] / density for i in ids(gm, nw, :dispatchable_transfer))
-            _IM.sol_component_value(gm, :ng, nw, :transfer, :qt, ids(gm, nw, :dispatchable_transfer), sol_qt)
+            _IM.sol_component_value(gm, _gm_it_sym, nw, :transfer, :qt, ids(gm, nw, :dispatchable_transfer), sol_qt)
         end
     end
 end
@@ -363,12 +363,12 @@ function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
     end
 
     if report
-        _IM.sol_component_value(gm, :ng, nw, :receipt, :fg, ids(gm, nw, :dispatchable_receipt), fg)
+        _IM.sol_component_value(gm, _gm_it_sym, nw, :receipt, :fg, ids(gm, nw, :dispatchable_receipt), fg)
 
-        if _IM.get_data_with_function(gm.data, "ng", x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, "ng", x -> return x["standard_density"])
+        if _IM.get_data_with_function(gm.data, _gm_it_name, x -> return haskey(x, "standard_density"))
+            density = _IM.get_data_with_function(gm.data, _gm_it_name, x -> return x["standard_density"])
             sol_qg = Dict(i => fg[i] / density for i in ids(gm, nw, :dispatchable_receipt))
-            _IM.sol_component_value(gm, :ng, nw, :receipt, :qg, ids(gm, nw, :dispatchable_receipt), sol_qg)
+            _IM.sol_component_value(gm, _gm_it_sym, nw, :receipt, :qg, ids(gm, nw, :dispatchable_receipt), sol_qg)
         end
     end
 end
@@ -399,7 +399,7 @@ function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::B
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :pipe, :y, keys(pipe), y_pipe_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :pipe, :y, keys(pipe), y_pipe_var)
 end
 
 
@@ -427,7 +427,7 @@ function variable_compressor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :compressor, :y, keys(compressor), y_compressor_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :compressor, :y, keys(compressor), y_compressor_var)
 end
 
 
@@ -456,7 +456,7 @@ function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repor
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :resistor, :y, keys(resistor), y_resistor_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :resistor, :y, keys(resistor), y_resistor_var)
 end
 
 
@@ -485,7 +485,7 @@ function variable_loss_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; 
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :loss_resistor, :y, keys(loss_resistor), y_loss_resistor_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :loss_resistor, :y, keys(loss_resistor), y_loss_resistor_var)
 end
 
 
@@ -514,7 +514,7 @@ function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; rep
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :short_pipe, :y, keys(short_pipe), y_short_pipe_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :short_pipe, :y, keys(short_pipe), y_short_pipe_var)
 end
 
 
@@ -535,7 +535,7 @@ function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::
         y_valve[l] = y_valve_var[l]
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :valve, :y, keys(valve), y_valve_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :valve, :y, keys(valve), y_valve_var)
 end
 
 
@@ -556,7 +556,7 @@ function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; repo
         y_regulator[l] = y_regulator_var[l]
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :regulator, :y, keys(regulator), y_regulator_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :regulator, :y, keys(regulator), y_regulator_var)
 end
 
 
@@ -590,7 +590,7 @@ function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report
         y_ne_pipe[l] = y_ne_pipe_var[l]
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_pipe, :y, keys(ne_pipe), y_ne_pipe_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_pipe, :y, keys(ne_pipe), y_ne_pipe_var)
 end
 
 
@@ -611,7 +611,7 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
         y_ne_compressor[l] = y_ne_compressor_var[l]
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_compressor, :y, keys(ne_compressor), y_ne_compressor_var)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_compressor, :y, keys(ne_compressor), y_ne_compressor_var)
 end
 
 "variables associated with direction of flow on new connections. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
@@ -648,7 +648,7 @@ function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bou
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :compressor, :rsqr, keys(compressors), rsqr)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :compressor, :rsqr, keys(compressors), rsqr)
 end
 
 "Variable Set: variables associated with compression ratios"
@@ -677,7 +677,7 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
         end
     end
 
-    report && _IM.sol_component_value(gm, :ng, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
+    report && _IM.sol_component_value(gm, _gm_it_sym, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
 end
 
 "Support function for getting a one off y direction variable"

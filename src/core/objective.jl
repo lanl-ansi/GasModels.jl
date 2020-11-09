@@ -127,7 +127,7 @@ end
 
 "transient objective for minimizing a linear combination of compressor power and load shed"
 function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
-    econ_weight = gm.ref[:it][:ng][:economic_weighting]
+    econ_weight = gm.ref[:it][_gm_it_sym][:economic_weighting]
     load_shed_expression = 0.0
     compressor_power_expression = 0.0
     load_shed_expressions = []

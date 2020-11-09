@@ -1,5 +1,5 @@
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    refs_ng = refs[:it][:ng]
+    refs_ng = refs[:it][_gm_it_sym]
     _ref_add_ne!(refs_ng[:nw], refs_ng[:base_length], refs_ng[:base_pressure],
         refs_ng[:base_flow], refs_ng[:sound_speed])
 end
@@ -56,7 +56,7 @@ end
 
 "adds the additional data into the ref that is required to used to formulate the transient formulation"
 function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    data_it = _IM.ismultiinfrastructure(data) ? data["it"]["ng"] : data
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"][_gm_it_name] : data
 
     if _IM.ismultinetwork(data_it)
         nws_data = data_it["nw"]
@@ -66,10 +66,10 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
     for (n, nw_data) in nws_data
         nw_id = parse(Int, n)
-        nw_ref = ref[:it][:ng][:nw][nw_id]
+        nw_ref = ref[:it][_gm_it_sym][:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            resistance = _calc_pipe_resistance_rho_phi_space(pipe, ref[:it][:ng][:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, ref[:it][_gm_it_sym][:base_length])
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]

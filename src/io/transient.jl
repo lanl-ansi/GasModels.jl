@@ -55,31 +55,31 @@ function parse_files(
         Memento.error(_LOGGER, "only .m and .json network data files are supported")
     end
 
-    _IM.modify_data_with_function!(static_data, "ng", check_non_negativity; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", correct_p_mins!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, check_non_negativity; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, correct_p_mins!; apply_to_nws = false)
 
-    _IM.modify_data_with_function!(static_data, "ng", per_unit_data_field_check!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", add_compressor_fields!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, per_unit_data_field_check!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, add_compressor_fields!; apply_to_nws = false)
 
-    _IM.modify_data_with_function!(static_data, "ng", make_si_units!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", add_base_values!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", check_connectivity; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", check_status; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", check_edge_loops; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, make_si_units!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, add_base_values!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, check_connectivity; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, check_status; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, check_edge_loops; apply_to_nws = false)
 
-    _IM.modify_data_with_function!(static_data, "ng", check_global_parameters; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, "ng", x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
+    _IM.modify_data_with_function!(static_data, _gm_it_name, check_global_parameters; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
 
     transient_data = parse_transient(transient_file)
-    _IM.modify_data_with_function!(transient_data, static_data, "ng", make_si_units!; apply_to_nws = false)
+    _IM.modify_data_with_function!(transient_data, static_data, _gm_it_name, make_si_units!; apply_to_nws = false)
 
     time_series_block = _create_time_series_block(
         transient_data, total_time = total_time, time_step = time_step,
         additional_time = additional_time, periodic = periodic)
 
-    _IM.modify_data_with_function!(static_data, "ng", x -> x["time_series"] = deepcopy(time_series_block); apply_to_nws = false)
-    mn_data = _IM.make_multinetwork(static_data, "ng", _gm_global_keys)
-    _IM.modify_data_with_function!(mn_data, "ng", make_per_unit!; apply_to_nws = false)
+    _IM.modify_data_with_function!(static_data, _gm_it_name, x -> x["time_series"] = deepcopy(time_series_block); apply_to_nws = false)
+    mn_data = _IM.make_multinetwork(static_data, _gm_it_name, _gm_global_keys)
+    _IM.modify_data_with_function!(mn_data, _gm_it_name, make_per_unit!; apply_to_nws = false)
 
     return mn_data
 end
