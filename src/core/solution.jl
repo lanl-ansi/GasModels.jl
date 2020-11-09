@@ -1,13 +1,13 @@
 function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
     solution["it"][_gm_it_name]["is_per_unit"] = _IM.get_data_with_function(gm.data, _gm_it_name, x -> return x["is_per_unit"])
     solution["it"][_gm_it_name]["multinetwork"] = ismultinetwork(gm)
-    solution["it"][_gm_it_name]["base_pressure"] = gm.ref[:it][:ng][:base_pressure]
-    solution["it"][_gm_it_name]["base_flow"] = gm.ref[:it][:ng][:base_flow]
-    solution["it"][_gm_it_name]["base_time"] = gm.ref[:it][:ng][:base_time]
-    solution["it"][_gm_it_name]["base_length"] = gm.ref[:it][:ng][:base_length]
-    solution["it"][_gm_it_name]["base_density"] = gm.ref[:it][:ng][:base_density]
-    solution["it"][_gm_it_name]["base_volume"] = gm.ref[:it][:ng][:base_volume]
-    solution["it"][_gm_it_name]["base_mass"] = gm.ref[:it][:ng][:base_mass]
+    solution["it"][_gm_it_name]["base_pressure"] = gm.ref[:it][_gm_it_sym][:base_pressure]
+    solution["it"][_gm_it_name]["base_flow"] = gm.ref[:it][_gm_it_sym][:base_flow]
+    solution["it"][_gm_it_name]["base_time"] = gm.ref[:it][_gm_it_sym][:base_time]
+    solution["it"][_gm_it_name]["base_length"] = gm.ref[:it][_gm_it_sym][:base_length]
+    solution["it"][_gm_it_name]["base_density"] = gm.ref[:it][_gm_it_sym][:base_density]
+    solution["it"][_gm_it_name]["base_volume"] = gm.ref[:it][_gm_it_sym][:base_volume]
+    solution["it"][_gm_it_name]["base_mass"] = gm.ref[:it][_gm_it_sym][:base_mass]
 end
 
 
