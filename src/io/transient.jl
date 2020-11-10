@@ -55,23 +55,23 @@ function parse_files(
         Memento.error(_LOGGER, "only .m and .json network data files are supported")
     end
 
-    _IM.modify_data_with_function!(static_data, _gm_it_name, check_non_negativity; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, correct_p_mins!; apply_to_nws = false)
+    check_non_negativity(static_data)
+    correct_p_mins!(static_data)
 
-    _IM.modify_data_with_function!(static_data, _gm_it_name, per_unit_data_field_check!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, add_compressor_fields!; apply_to_nws = false)
+    per_unit_data_field_check!(static_data)
+    add_compressor_fields!(static_data)
 
-    _IM.modify_data_with_function!(static_data, _gm_it_name, make_si_units!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, add_base_values!; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, check_connectivity; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, check_status; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, check_edge_loops; apply_to_nws = false)
+    make_si_units!(static_data)
+    add_base_values!(static_data)
+    check_connectivity(static_data)
+    check_status(static_data)
+    check_edge_loops(static_data)
 
-    _IM.modify_data_with_function!(static_data, _gm_it_name, check_global_parameters; apply_to_nws = false)
-    _IM.modify_data_with_function!(static_data, _gm_it_name, x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
+    check_global_parameters(static_data)
+    prep_transient_data!(static_data)
 
     transient_data = parse_transient(transient_file)
-    _IM.modify_data_with_function!(transient_data, static_data, _gm_it_name, make_si_units!; apply_to_nws = false)
+    make_si_units!(transient_data, static_data)
 
     time_series_block = _create_time_series_block(
         transient_data, total_time = total_time, time_step = time_step,
@@ -79,7 +79,7 @@ function parse_files(
 
     _IM.modify_data_with_function!(static_data, _gm_it_name, x -> x["time_series"] = deepcopy(time_series_block); apply_to_nws = false)
     mn_data = _IM.make_multinetwork(static_data, _gm_it_name, _gm_global_keys)
-    _IM.modify_data_with_function!(mn_data, _gm_it_name, make_per_unit!; apply_to_nws = false)
+    make_per_unit!(mn_data)
 
     return mn_data
 end
@@ -142,6 +142,11 @@ function update_lat_lon!(data::Dict{String,Any})
         end
     end
 end
+" discretizes the pipes and takes care of renumbering junctions and pipes"
+function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Float64 = 10000.0)
+    _IM.modify_data_with_function!(data, _gm_it_name, x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
+end
+
 
 " discretizes the pipes and takes care of renumbering junctions and pipes"
 function _prep_transient_data!(

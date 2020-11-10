@@ -38,22 +38,21 @@ end
 Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, check_non_negativity)
-    _IM.modify_data_with_function!(data, _gm_it_name, correct_p_mins!)
+    check_non_negativity(data)
+    correct_p_mins!(data)
 
-    _IM.modify_data_with_function!(data, _gm_it_name, per_unit_data_field_check!)
-    _IM.modify_data_with_function!(data, _gm_it_name, add_compressor_fields!)
+    per_unit_data_field_check!(data)
+    add_compressor_fields!(data)
 
-    _IM.modify_data_with_function!(data, _gm_it_name, make_si_units!)
-    _IM.modify_data_with_function!(data, _gm_it_name, add_base_values!)
-    _IM.modify_data_with_function!(data, _gm_it_name, make_per_unit!)
+    make_si_units!(data)
+    add_base_values!(data)
+    make_per_unit!(data)
 
     # Assumes everything is in per unit.
-    _IM.modify_data_with_function!(data, _gm_it_name, correct_f_bounds!)
+    correct_f_bounds!(data)
 
-    _IM.modify_data_with_function!(data, _gm_it_name, check_connectivity)
-    _IM.modify_data_with_function!(data, _gm_it_name, check_status)
-    _IM.modify_data_with_function!(data, _gm_it_name, check_edge_loops)
-
-    _IM.modify_data_with_function!(data, _gm_it_name, check_global_parameters)
+    check_connectivity(data)
+    check_status(data)
+    check_edge_loops(data)
+    check_global_parameters(data)
 end
