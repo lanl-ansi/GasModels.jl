@@ -11,7 +11,6 @@ function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
 end
 
 
-
 function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
     if haskey(solution["it"][_gm_it_name], "nw")
         nws_data = solution["it"][_gm_it_name]["nw"]
