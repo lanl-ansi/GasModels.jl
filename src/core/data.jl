@@ -1012,7 +1012,7 @@ const _gm_component_types = [
     "receipt",
 ]
 
-const _gm_junction_keys = ["fr_junction", "to_junction", "junction"]
+const _gm_junction_keys = ["fr_junction", "to_junction", "junction", "junction_id"]
 
 const _gm_edge_types = [
     "pipe",
