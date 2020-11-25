@@ -8,7 +8,7 @@ function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
     zp = Dict(n => var(gm, n, :zp) for n in nws)
     zc = Dict(n => var(gm, n, :zc) for n in nws)
 
-    obj = JuMP.@objective(
+    return JuMP.@objective(
         gm.model,
         Min,
         sum(
@@ -44,9 +44,9 @@ function objective_max_load(gm::AbstractGasModel, nws = [gm.cnw])
         end
     end
     if length(load_set) == 0
-        obj = 0
+        return 0
     else
-        obj = JuMP.@objective(
+        return JuMP.@objective(
             gm.model,
             Max,
             sum(sum(priorities[n][i] * fl[n][i] for i in load_set[n]) for n in nws)
@@ -65,7 +65,7 @@ function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
     # some solvers only support support nonlinear objectives by placing them in the constraints
     z = JuMP.@variable(gm.model)
     JuMP.@NLconstraint(gm.model, z >= sum(sum((r[n][i]^m - 1) * f[n][i] for (i, compressor) in ref(gm, n, :compressor)) for n in nws))
-    JuMP.@NLobjective(gm.model, Min, z)
+    return JuMP.@NLobjective(gm.model, Min, z)
 end
 
 
@@ -122,7 +122,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
                                           sum(f[n][i] * (r[n][i]^m - 1) for (i, compressor) in ref(gm, n, :compressor))
                                           for n in nws
                                        ))
-    JuMP.@NLobjective(gm.model, Min, z)
+    return JuMP.@NLobjective(gm.model, Min, z)
 end
 
 "transient objective for minimizing a linear combination of compressor power and load shed"
@@ -149,7 +149,7 @@ function objective_min_transient_economic_costs(gm::AbstractGasModel, time_point
             compressor_power_expression += var(gm, nw, :compressor_power_var, i)
         end
     end
-    JuMP.@objective(
+    return JuMP.@objective(
         gm.model,
         Min,
         econ_weight * load_shed_expression +
@@ -174,16 +174,19 @@ function objective_min_transient_load_shed(gm::AbstractGasModel, time_points)
             )
         end
     end
-    JuMP.@objective(gm.model, Min, load_shed_expression)
+
+    return JuMP.@objective(gm.model, Min, load_shed_expression)
 end
 
 "minium compressor power objective for transient OGF problem"
 function objective_min_transient_compressor_power(gm::AbstractGasModel, time_points)
     compressor_power_expression = 0
+
     for nw in time_points[1:end-1]
         for (i, compressor) in ref(gm, nw, :compressor)
             compressor_power_expression += var(gm, nw, :compressor_power_var)[i]
         end
     end
-    JuMP.@objective(gm.model, Min, compressor_power_expression)
+
+    return JuMP.@objective(gm.model, Min, compressor_power_expression)
 end
