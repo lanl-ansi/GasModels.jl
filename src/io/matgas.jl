@@ -18,6 +18,7 @@ const _mg_data_names = Vector{String}([
     "mgc.base_length",
     "mgc.units",
     "mgc.is_per_unit",
+    "mgc.sources",
     "mgc.junction",
     "mgc.pipe",
     "mgc.compressor",
@@ -31,6 +32,12 @@ const _mg_data_names = Vector{String}([
     "mgc.storage",
     "mgc.ne_pipe",
     "mgc.ne_compressor",
+])
+
+const _mg_sources_columns = Vector{Tuple{String,Type}}([
+    ("name", String),
+    ("agreement_year", Int),
+    ("description", String),
 ])
 
 const _mg_junction_columns = Vector{Tuple{String,Type}}([
@@ -339,6 +346,7 @@ function parse_m_string(data_string::String)
         "mgc.temperature",
         "mgc.compressibility_factor",
         "mgc.units",
+        "mgc.name",
     ]
 
     optional_metadata_names = [
@@ -751,6 +759,7 @@ end
 
 "order data types should appear in matlab format"
 const _matlab_data_order = [
+    "sources",
     "junction",
     "pipe",
     "compressor",
@@ -769,6 +778,7 @@ const _matlab_data_order = [
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
+    "sources" => [key for (key, dtype) in _mg_sources_columns],
     "junction" => [key for (key, dtype) in _mg_junction_columns],
     "pipe" => [key for (key, dtype) in _mg_pipe_columns],
     "compressor" => [key for (key, dtype) in _mg_compressor_columns],
@@ -787,6 +797,7 @@ const _matlab_field_order = Dict{String,Array}(
 
 "order of required global parameters"
 const _matlab_global_params_order_required = [
+    "name",
     "gas_specific_gravity",
     "specific_heat_capacity_ratio",
     "temperature",
