@@ -14,7 +14,7 @@ function parse_gaslib(zip_path::Union{IO,String})
 
     # Parse the compressor XML file.
     fid = findfirst(x -> occursin(".cs", x), file_paths)
-    compressor_xml = fid != nothing ? _parse_xml_file(zip_reader, fid) : Dict()
+    compressor_xml = fid !== nothing ? _parse_xml_file(zip_reader, fid) : Dict()
 
     # Parse the nomination XML file(s).
     fids = findall(x -> occursin(".scn", x), file_paths)

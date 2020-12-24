@@ -318,7 +318,7 @@ function parse_m_string(data_string::String)
 
     case = Dict{String,Any}()
 
-    if func_name != nothing
+    if func_name !== nothing
         case["name"] = func_name
     else
         Memento.warn(_LOGGER, "no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
@@ -871,7 +871,7 @@ function _gasmodels_to_matgas_string(
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -890,7 +890,7 @@ function _gasmodels_to_matgas_string(
     )
     for param in _matlab_global_params_order_optional
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -932,7 +932,7 @@ function _gasmodels_to_matgas_string(
                             elseif isa(data[data_type]["$i"][field], Float64)
                                 push!(
                                     entries,
-                                    Printf.@sprintf "%.4f" data[data_type]["$i"][field]
+                                    Printf.@sprintf "%.12g" data[data_type]["$i"][field]
                                 )
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")

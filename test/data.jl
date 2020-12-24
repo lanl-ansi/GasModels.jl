@@ -24,30 +24,30 @@
         @test !haskey(ref(gm, gm.cnw, :pipe), 32)
 
         try
-            var(gm, gm.cnw, :pipe)[32] == nothing
-            var(gm, gm.cnw, :pipe)[34] == nothing
+            var(gm, gm.cnw, :pipe)[32] === nothing
+            var(gm, gm.cnw, :pipe)[34] === nothing
             @test true == false
         catch
         end
 
-        @test var(gm, gm.cnw, :f_pipe)[14] != nothing
+        @test var(gm, gm.cnw, :f_pipe)[14] !== nothing
 
         try
-            var(gm, gm.cnw, :ql)[24] == nothing
-            var(gm, gm.cnw, :ql)[29] == nothing
+            var(gm, gm.cnw, :ql)[24] === nothing
+            var(gm, gm.cnw, :ql)[29] === nothing
             @test true == false
         catch
         end
 
-        @test var(gm, gm.cnw, :fl)[10004] != nothing
+        @test var(gm, gm.cnw, :fl)[10004] !== nothing
 
         try
-            var(gm, gm.cnw, :fg)[1] == nothing
+            var(gm, gm.cnw, :fg)[1] === nothing
             @test true == false
         catch
         end
 
-        @test var(gm, gm.cnw, :fg)[10002] != nothing
+        @test var(gm, gm.cnw, :fg)[10002] !== nothing
     end
 
     @testset "check data summary" begin
