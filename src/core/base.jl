@@ -48,7 +48,7 @@ dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
-    return _IM.build_ref(data, gm_it_name, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
+    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, gm_it_name; ref_extensions = ref_extensions)
 end
 
 

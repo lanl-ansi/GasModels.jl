@@ -6,6 +6,12 @@ function apply_gm!(func!::Function, data::Dict{String, <:Any}; is_multinetwork_f
 end
 
 
+"GasModels wrapper for the InfrastructureModels `get_data` function."
+function get_data_gm(func::Function, data::Dict{String, <:Any}; is_multinetwork_function::Bool = true)
+    return _IM.get_data(func, data, gm_it_name; is_multinetwork_function = is_multinetwork_function)
+end
+
+
 "Convenience function for retrieving the gas-only portion of network data."
 function get_gm_data(data::Dict{String, <:Any})
     return _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
@@ -13,23 +19,21 @@ end
 
 
 "data getters"
-@inline get_base_pressure(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_pressure"])
-@inline get_base_density(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_density"])
-@inline get_base_length(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_length"])
-@inline get_base_flow(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_flow"])
-@inline get_base_flux(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_flux"])
-@inline get_base_time(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_time"])
-@inline get_base_diameter(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_diameter"])
-@inline get_base_volume(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_volume"])
-@inline get_sound_speed(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "sound_speed", 371.6643))
-@inline get_specific_heat_capacity_ratio(data::Dict{String,Any}) =
-    _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "specific_heat_capacity_ratio", 0.6))
-@inline get_gas_specific_gravity(data::Dict{String,Any}) =
-    _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "gas_specific_gravity", 0.6))
-@inline get_gas_constant(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "R", 8.314))
-@inline get_temperature(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "temperature", 288.7060))
-@inline get_base_mass(data::Dict{String,Any}) = get_base_flow(data) * get_base_time(data)
-@inline get_economic_weighting(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "economic_weighting", 1.0))
+@inline get_base_pressure(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_pressure"]), data; is_multinetwork_function = false)
+@inline get_base_density(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_density"]), data; is_multinetwork_function = false)
+@inline get_base_length(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_length"]), data; is_multinetwork_function = false)
+@inline get_base_flow(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flow"]), data; is_multinetwork_function = false)
+@inline get_base_flux(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flux"]), data; is_multinetwork_function = false)
+@inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; is_multinetwork_function = false)
+@inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; is_multinetwork_function = false)
+@inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; is_multinetwork_function = false)
+@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; is_multinetwork_function = false)
+@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; is_multinetwork_function = false)
+@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; is_multinetwork_function = false)
+@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; is_multinetwork_function = false)
+@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; is_multinetwork_function = false)
+@inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
+@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; is_multinetwork_function = false)
 
 
 "calculates base_pressure"
@@ -157,15 +161,15 @@ end
 
 
 "make transient data to si units"
-function make_si_units!(transient_data::Array{Dict{String, Any}, 1}, static_data_all::Dict{String,Any})
-    static_data = _IM.ismultiinfrastructure(static_data_all) ? static_data_all["it"][gm_it_name] : static_data_all
+function make_si_units!(transient_data::Array{Dict{String, Any}, 1}, static_data::Dict{String,Any})
+    gm_static_data = get_gm_data(static_data)
 
-    if static_data["units"] == "si"
+    if gm_static_data["units"] == "si"
         return
     end
 
-    mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(static_data)
-    inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(static_data)
+    mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(gm_static_data)
+    inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(gm_static_data)
 
     pressure_params = [
         "p_min",
@@ -459,17 +463,18 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
-    _apply_func!(nw_data, "time_point", rescale_time)
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
+    _apply_func!(gm_nw_data, "time_point", rescale_time)
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                comp["is_per_unit"] = data["is_per_unit"]
+            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -507,18 +512,19 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
-    _apply_func!(nw_data, "time_point", rescale_time)
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
+    _apply_func!(gm_nw_data, "time_point", rescale_time)
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -554,17 +560,18 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -600,17 +607,18 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -946,8 +954,6 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
             (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
     end
-
-    return
 end
 
 
@@ -1755,16 +1761,18 @@ computes the connected components of the network graph
 returns a set of sets of juntion ids, each set is a connected component
 """
 function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_types)
-    if _IM.ismultinetwork(data)
+    gm_data = get_gm_data(data)
+
+    if _IM.ismultinetwork(gm_data)
         Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
     end
 
-    active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
+    active_junction = Dict(x for x in gm_data["junction"] if x.second["status"] != 0)
     active_junction_ids = Set{Int64}([junction["id"] for (i, junction) in active_junction])
 
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
-        for edge in values(get(data, edge_type, Dict()))
+        for edge in values(get(gm_data, edge_type, Dict()))
             if get(edge, "status", 1) != 0 &&
                 edge["fr_junction"] in active_junction_ids &&
                 edge["to_junction"] in active_junction_ids

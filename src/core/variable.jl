@@ -311,8 +311,8 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::
     if report
         _IM.sol_component_value(gm, gm_it_sym, nw, :delivery, :fd, ids(gm, nw, :dispatchable_delivery), fl)
 
-        if _IM.get_data_with_function(gm.data, gm_it_name, x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, gm_it_name, x -> return x["standard_density"])
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data)
             sol_ql = Dict(i => fl[i] / density for i in ids(gm, nw, :dispatchable_delivery))
             _IM.sol_component_value(gm, gm_it_sym, nw, :delivery, :qd, ids(gm, nw, :dispatchable_delivery), sol_ql)
         end
@@ -338,8 +338,8 @@ function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
     if report
         _IM.sol_component_value(gm, gm_it_sym, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
 
-        if _IM.get_data_with_function(gm.data, gm_it_name, x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, gm_it_name, x -> return x["standard_density"])
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data)
             sol_qt = Dict(i => ft[i] / density for i in ids(gm, nw, :dispatchable_transfer))
             _IM.sol_component_value(gm, gm_it_sym, nw, :transfer, :qt, ids(gm, nw, :dispatchable_transfer), sol_qt)
         end
@@ -365,8 +365,8 @@ function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
     if report
         _IM.sol_component_value(gm, gm_it_sym, nw, :receipt, :fg, ids(gm, nw, :dispatchable_receipt), fg)
 
-        if _IM.get_data_with_function(gm.data, gm_it_name, x -> return haskey(x, "standard_density"))
-            density = _IM.get_data_with_function(gm.data, gm_it_name, x -> return x["standard_density"])
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data)
             sol_qg = Dict(i => fg[i] / density for i in ids(gm, nw, :dispatchable_receipt))
             _IM.sol_component_value(gm, gm_it_sym, nw, :receipt, :qg, ids(gm, nw, :dispatchable_receipt), sol_qg)
         end
