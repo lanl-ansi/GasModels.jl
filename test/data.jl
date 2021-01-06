@@ -88,9 +88,9 @@
             gas_ref = GasModels.build_ref(gas_data)
 
             @test isapprox(GasModels._calc_pipe_resistance(
-                gas_data["ne_pipe"]["26"], gas_ref[:it][GasModels._gm_it_sym][:base_length],
-                gas_ref[:it][GasModels._gm_it_sym][:base_pressure], gas_ref[:it][GasModels._gm_it_sym][:base_flow],
-                gas_ref[:it][GasModels._gm_it_sym][:sound_speed]), 2.3023057843927686; atol = 1e-4)
+                gas_data["ne_pipe"]["26"], gas_ref[:it][GasModels.gm_it_sym][:base_length],
+                gas_ref[:it][GasModels.gm_it_sym][:base_pressure], gas_ref[:it][GasModels.gm_it_sym][:base_flow],
+                gas_ref[:it][GasModels.gm_it_sym][:sound_speed]), 2.3023057843927686; atol = 1e-4)
         end
     end
 

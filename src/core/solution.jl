@@ -1,21 +1,21 @@
 function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
-    solution["it"][_gm_it_name]["is_per_unit"] = _IM.get_data_with_function(gm.data, _gm_it_name, x -> return x["is_per_unit"])
-    solution["it"][_gm_it_name]["multinetwork"] = ismultinetwork(gm)
-    solution["it"][_gm_it_name]["base_pressure"] = gm.ref[:it][_gm_it_sym][:base_pressure]
-    solution["it"][_gm_it_name]["base_flow"] = gm.ref[:it][_gm_it_sym][:base_flow]
-    solution["it"][_gm_it_name]["base_time"] = gm.ref[:it][_gm_it_sym][:base_time]
-    solution["it"][_gm_it_name]["base_length"] = gm.ref[:it][_gm_it_sym][:base_length]
-    solution["it"][_gm_it_name]["base_density"] = gm.ref[:it][_gm_it_sym][:base_density]
-    solution["it"][_gm_it_name]["base_volume"] = gm.ref[:it][_gm_it_sym][:base_volume]
-    solution["it"][_gm_it_name]["base_mass"] = gm.ref[:it][_gm_it_sym][:base_mass]
+    solution["it"][gm_it_name]["is_per_unit"] = _IM.get_data_with_function(gm.data, gm_it_name, x -> return x["is_per_unit"])
+    solution["it"][gm_it_name]["multinetwork"] = ismultinetwork(gm)
+    solution["it"][gm_it_name]["base_pressure"] = gm.ref[:it][gm_it_sym][:base_pressure]
+    solution["it"][gm_it_name]["base_flow"] = gm.ref[:it][gm_it_sym][:base_flow]
+    solution["it"][gm_it_name]["base_time"] = gm.ref[:it][gm_it_sym][:base_time]
+    solution["it"][gm_it_name]["base_length"] = gm.ref[:it][gm_it_sym][:base_length]
+    solution["it"][gm_it_name]["base_density"] = gm.ref[:it][gm_it_sym][:base_density]
+    solution["it"][gm_it_name]["base_volume"] = gm.ref[:it][gm_it_sym][:base_volume]
+    solution["it"][gm_it_name]["base_mass"] = gm.ref[:it][gm_it_sym][:base_mass]
 end
 
 
 function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution["it"][_gm_it_name], "nw")
-        nws_data = solution["it"][_gm_it_name]["nw"]
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution["it"][_gm_it_name])
+        nws_data = Dict("0" => solution["it"][gm_it_name])
     end
 
     for (n, nw_data) in nws_data
@@ -31,10 +31,10 @@ end
 
 
 function sol_rsqr_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution["it"][_gm_it_name], "nw")
-        nws_data = solution["it"][_gm_it_name]["nw"]
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution["it"][_gm_it_name])
+        nws_data = Dict("0" => solution["it"][gm_it_name])
     end
 
     for (n, nw_data) in nws_data
@@ -50,10 +50,10 @@ end
 
 
 function sol_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution["it"][_gm_it_name], "nw")
-        nws_data = solution["it"][_gm_it_name]["nw"]
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution["it"][_gm_it_name])
+        nws_data = Dict("0" => solution["it"][gm_it_name])
     end
 
     for (n, nw_data) in nws_data
@@ -73,10 +73,10 @@ end
 
 
 function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution["it"][_gm_it_name], "nw")
-        nws_data = solution["it"][_gm_it_name]["nw"]
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution["it"][_gm_it_name])
+        nws_data = Dict("0" => solution["it"][gm_it_name])
     end
 
     for (n, nw_data) in nws_data
@@ -95,10 +95,10 @@ function sol_ne_compressor_p_to_r!(gm::AbstractGasModel, solution::Dict)
 end
 
 function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
-    if haskey(solution["it"][_gm_it_name], "nw")
-        nws_data = solution["it"][_gm_it_name]["nw"]
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution["it"][_gm_it_name])
+        nws_data = Dict("0" => solution["it"][gm_it_name])
     end
 
     for (n, nw_data) in nws_data

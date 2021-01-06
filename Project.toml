@@ -2,7 +2,7 @@ name = "GasModels"
 uuid = "5e113713-6c35-5477-b766-e1109486666f"
 authors = ["Russell Bent <rbent@lanl.gov>", "Kaarthik Sundar <kaarthik@lanl.gov>", "David Fobes <dfobes@lanl.gov>"]
 repo = "https://github.com/lanl-ansi/GasModels.jl.git"
-version = "0.9.0"
+version = "0.8.2"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -20,7 +20,7 @@ ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 [compat]
 Cbc = ">= 0.4"
 Dierckx = "~0.4, ~0.5"
-InfrastructureModels = "~0.6"
+InfrastructureModels = "~0.5"
 Ipopt = ">= 0.4"
 JSON = "~0.18, ~0.19, ~0.20, ~0.21"
 JuMP = "~0.20, ~0.21"

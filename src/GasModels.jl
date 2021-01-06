@@ -44,8 +44,8 @@ module GasModels
         "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
         "economic_weighting"])
 
-    const _gm_it_name = "ng"
-    const _gm_it_sym = :ng
+    const gm_it_name = "ng"
+    const gm_it_sym = Symbol(gm_it_name)
 
     include("io/json.jl")
     include("io/common.jl")

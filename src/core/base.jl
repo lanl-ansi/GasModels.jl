@@ -38,7 +38,7 @@ end
 
 
 function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
-    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; default_it = _gm_it_sym, kwargs...)
+    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; it = gm_it_sym, kwargs...)
 end
 
 
@@ -48,7 +48,7 @@ dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
-    return _IM.build_ref(data, _gm_it_name, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
+    return _IM.build_ref(data, gm_it_name, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
 end
 
 
@@ -76,8 +76,8 @@ Some of the common keys include:
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
     _ref_add_core!(
-        refs[:it][_gm_it_sym][:nw], refs[:it][_gm_it_sym][:base_length], refs[:it][_gm_it_sym][:base_pressure],
-        refs[:it][_gm_it_sym][:base_flow], refs[:it][_gm_it_sym][:sound_speed])
+        refs[:it][gm_it_sym][:nw], refs[:it][gm_it_sym][:base_length], refs[:it][gm_it_sym][:base_pressure],
+        refs[:it][gm_it_sym][:base_flow], refs[:it][gm_it_sym][:sound_speed])
 end
 
 function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)

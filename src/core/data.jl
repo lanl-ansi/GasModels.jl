@@ -1,23 +1,23 @@
 # tools for working with GasModels internal data format
 
 "data getters"
-@inline get_base_pressure(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_pressure"])
-@inline get_base_density(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_density"])
-@inline get_base_length(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_length"])
-@inline get_base_flow(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_flow"])
-@inline get_base_flux(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_flux"])
-@inline get_base_time(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_time"])
-@inline get_base_diameter(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_diameter"])
-@inline get_base_volume(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return x["base_volume"])
-@inline get_sound_speed(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "sound_speed", 371.6643))
+@inline get_base_pressure(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_pressure"])
+@inline get_base_density(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_density"])
+@inline get_base_length(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_length"])
+@inline get_base_flow(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_flow"])
+@inline get_base_flux(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_flux"])
+@inline get_base_time(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_time"])
+@inline get_base_diameter(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_diameter"])
+@inline get_base_volume(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_volume"])
+@inline get_sound_speed(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "sound_speed", 371.6643))
 @inline get_specific_heat_capacity_ratio(data::Dict{String,Any}) =
-    _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "specific_heat_capacity_ratio", 0.6))
+    _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "specific_heat_capacity_ratio", 0.6))
 @inline get_gas_specific_gravity(data::Dict{String,Any}) =
-    _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "gas_specific_gravity", 0.6))
-@inline get_gas_constant(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "R", 8.314))
-@inline get_temperature(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "temperature", 288.7060))
+    _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "gas_specific_gravity", 0.6))
+@inline get_gas_constant(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "R", 8.314))
+@inline get_temperature(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "temperature", 288.7060))
 @inline get_base_mass(data::Dict{String,Any}) = get_base_flow(data) * get_base_time(data)
-@inline get_economic_weighting(data::Dict{String,Any}) = _IM.get_data_with_function(data, _gm_it_name, x -> return get(x, "economic_weighting", 1.0))
+@inline get_economic_weighting(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return get(x, "economic_weighting", 1.0))
 
 
 "calculates base_pressure"
@@ -74,7 +74,7 @@ end
 
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _per_unit_data_field_check!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _per_unit_data_field_check!; apply_to_nws = false)
 end
 
 
@@ -105,7 +105,7 @@ end
 
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _add_base_values!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _add_base_values!; apply_to_nws = false)
 end
 
 
@@ -146,7 +146,7 @@ end
 
 "make transient data to si units"
 function make_si_units!(transient_data::Array{Dict{String, Any}, 1}, static_data_all::Dict{String,Any})
-    static_data = _IM.ismultiinfrastructure(static_data_all) ? static_data_all["it"][_gm_it_name] : static_data_all
+    static_data = _IM.ismultiinfrastructure(static_data_all) ? static_data_all["it"][gm_it_name] : static_data_all
 
     if static_data["units"] == "si"
         return
@@ -618,7 +618,7 @@ end
 
 "transforms data to si units"
 function make_si_units!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _make_si_units!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _make_si_units!; apply_to_nws = false)
 end
 
 
@@ -665,7 +665,7 @@ end
 
 "Transforms network data into English units"
 function make_english_units!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _make_english_units!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _make_english_units!; apply_to_nws = false)
 end
 
 "Transforms network data into English units"
@@ -696,7 +696,7 @@ end
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _make_per_unit!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _make_per_unit!; apply_to_nws = false)
 end
 
 
@@ -733,7 +733,7 @@ end
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _check_non_negativity; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _check_non_negativity; apply_to_nws = false)
 end
 
 
@@ -759,7 +759,7 @@ end
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _check_global_parameters; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _check_global_parameters; apply_to_nws = false)
 end
 
 
@@ -789,7 +789,7 @@ end
 
 "Correct mass flow bounds"
 function correct_f_bounds!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _correct_f_bounds!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _correct_f_bounds!; apply_to_nws = false)
 end
 
 "Correct mass flow bounds"
@@ -899,7 +899,7 @@ end
 
 "Correct minimum pressures"
 function correct_p_mins!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _correct_p_mins!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _correct_p_mins!; apply_to_nws = false)
 end
 
 
@@ -941,7 +941,7 @@ end
 
 "add additional compressor fields - required for transient"
 function add_compressor_fields!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _add_compressor_fields!; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _add_compressor_fields!; apply_to_nws = false)
 end
 
 
@@ -1029,7 +1029,7 @@ const _gm_edge_types = [
 
 "checks that all junctions are unique and other components link to valid junctions"
 function check_connectivity(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _check_connectivity)
+    _IM.modify_data_with_function!(data, gm_it_name, _check_connectivity)
 end
 
 
@@ -1054,7 +1054,7 @@ end
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _check_status; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _check_status; apply_to_nws = false)
 end
 
 
@@ -1086,7 +1086,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _check_edge_loops; apply_to_nws = false)
+    _IM.modify_data_with_function!(data, gm_it_name, _check_edge_loops; apply_to_nws = false)
 end
 
 
@@ -1110,7 +1110,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function propagate_topology_status!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, _gm_it_name, _propagate_topology_status!)
+    _IM.modify_data_with_function!(data, gm_it_name, _propagate_topology_status!)
 end
 
 
