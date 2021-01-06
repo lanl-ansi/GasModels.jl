@@ -54,7 +54,6 @@ module GasModels
     include("io/transient.jl")
 
     include("core/base.jl")
-    include("core/helpers.jl")
     include("core/types.jl")
     include("core/unit_converters.jl")
     include("core/data.jl")

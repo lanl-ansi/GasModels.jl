@@ -1,5 +1,17 @@
 # tools for working with GasModels internal data format
 
+"GasModels wrapper for the InfrastructureModels `apply!` function."
+function apply_gm!(func!::Function, data::Dict{String, <:Any}; is_multinetwork_function::Bool = true)
+    _IM.apply!(func!, data, gm_it_name; is_multinetwork_function = is_multinetwork_function)
+end
+
+
+"Convenience function for retrieving the gas-only portion of network data."
+function get_gm_data(data::Dict{String, <:Any})
+    return _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
+end
+
+
 "data getters"
 @inline get_base_pressure(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_pressure"])
 @inline get_base_density(data::Dict{String,Any}) = _IM.get_data_with_function(data, gm_it_name, x -> return x["base_density"])
@@ -74,7 +86,7 @@ end
 
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _per_unit_data_field_check!; apply_to_nws = false)
+    apply_gm!(_per_unit_data_field_check!, data; is_multinetwork_function = false)
 end
 
 
@@ -105,7 +117,7 @@ end
 
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _add_base_values!; apply_to_nws = false)
+    apply_gm!(_add_base_values!, data; is_multinetwork_function = false)
 end
 
 
@@ -618,7 +630,7 @@ end
 
 "transforms data to si units"
 function make_si_units!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _make_si_units!; apply_to_nws = false)
+    apply_gm!(_make_si_units!, data; is_multinetwork_function = false)
 end
 
 
@@ -665,7 +677,7 @@ end
 
 "Transforms network data into English units"
 function make_english_units!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _make_english_units!; apply_to_nws = false)
+    apply_gm!(_make_english_units!, data; is_multinetwork_function = false)
 end
 
 "Transforms network data into English units"
@@ -696,7 +708,7 @@ end
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _make_per_unit!; apply_to_nws = false)
+    apply_gm!(_make_per_unit!, data; is_multinetwork_function = false)
 end
 
 
@@ -733,7 +745,7 @@ end
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _check_non_negativity; apply_to_nws = false)
+    apply_gm!(_check_non_negativity, data; is_multinetwork_function = false)
 end
 
 
@@ -759,7 +771,7 @@ end
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _check_global_parameters; apply_to_nws = false)
+    apply_gm!(_check_global_parameters, data; is_multinetwork_function = false)
 end
 
 
@@ -789,7 +801,7 @@ end
 
 "Correct mass flow bounds"
 function correct_f_bounds!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _correct_f_bounds!; apply_to_nws = false)
+    apply_gm!(_correct_f_bounds!, data; is_multinetwork_function = false)
 end
 
 "Correct mass flow bounds"
@@ -899,7 +911,7 @@ end
 
 "Correct minimum pressures"
 function correct_p_mins!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _correct_p_mins!; apply_to_nws = false)
+    apply_gm!(_correct_p_mins!, data; is_multinetwork_function = false)
 end
 
 
@@ -941,7 +953,7 @@ end
 
 "add additional compressor fields - required for transient"
 function add_compressor_fields!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _add_compressor_fields!; apply_to_nws = false)
+    apply_gm!(_add_compressor_fields!, data; is_multinetwork_function = false)
 end
 
 
@@ -1029,7 +1041,7 @@ const _gm_edge_types = [
 
 "checks that all junctions are unique and other components link to valid junctions"
 function check_connectivity(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _check_connectivity)
+    apply_gm!(_check_connectivity, data; is_multinetwork_function = true)
 end
 
 
@@ -1054,7 +1066,7 @@ end
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _check_status; apply_to_nws = false)
+    apply_gm!(_check_status, data; is_multinetwork_function = false)
 end
 
 
@@ -1086,7 +1098,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _check_edge_loops; apply_to_nws = false)
+    apply_gm!(_check_edge_loops, data; is_multinetwork_function = false)
 end
 
 
@@ -1110,7 +1122,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function propagate_topology_status!(data::Dict{String, <:Any})
-    _IM.modify_data_with_function!(data, gm_it_name, _propagate_topology_status!)
+    apply_gm!(_propagate_topology_status!, data; is_multinetwork_function = true)
 end
 
 

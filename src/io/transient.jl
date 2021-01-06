@@ -77,7 +77,7 @@ function parse_files(
         transient_data, total_time = total_time, time_step = time_step,
         additional_time = additional_time, periodic = periodic)
 
-    _IM.modify_data_with_function!(static_data, gm_it_name, x -> x["time_series"] = deepcopy(time_series_block); apply_to_nws = false)
+    apply_gm!(x -> x["time_series"] = deepcopy(time_series_block), static_data; is_multinetwork_function = false)
     mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
     make_per_unit!(mn_data)
 
@@ -144,7 +144,7 @@ function update_lat_lon!(data::Dict{String,Any})
 end
 " discretizes the pipes and takes care of renumbering junctions and pipes"
 function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Float64 = 10000.0)
-    _IM.modify_data_with_function!(data, gm_it_name, x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization))
+    apply_gm!(x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization), data; is_multinetwork_function = true)
 end
 
 
