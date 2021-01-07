@@ -35,7 +35,7 @@ function parse_files(static_file::AbstractString, transient_file::AbstractString
 
     open(static_file, "r") do static_io
         open(transient_file, "r") do transient_io
-            return parse_files(static_io, transient_io; static_filetype=static_filetype)
+            return parse_files(static_io, transient_io; static_filetype=static_filetype, kwargs...)
         end
     end
 end
