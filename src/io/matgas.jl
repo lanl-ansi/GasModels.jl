@@ -18,6 +18,7 @@ const _mg_data_names = Vector{String}([
     "mgc.base_length",
     "mgc.units",
     "mgc.is_per_unit",
+    "mgc.sources",
     "mgc.junction",
     "mgc.pipe",
     "mgc.compressor",
@@ -31,6 +32,12 @@ const _mg_data_names = Vector{String}([
     "mgc.storage",
     "mgc.ne_pipe",
     "mgc.ne_compressor",
+])
+
+const _mg_sources_columns = Vector{Tuple{String,Type}}([
+    ("name", Union{String,SubString{String}}),
+    ("agreement_year", Int),
+    ("description", Union{String,SubString{String}}),
 ])
 
 const _mg_junction_columns = Vector{Tuple{String,Type}}([
@@ -264,6 +271,7 @@ const _mg_storage_columns = Vector{Tuple{String,Type}}([
 ])
 
 const _mg_dtype_lookup = Dict{String,Dict{String,Type}}(
+    "mgc.sources" => Dict{String,Type}(_mg_sources_columns),
     "mgc.junction" => Dict{String,Type}(_mg_junction_columns),
     "mgc.pipe" => Dict{String,Type}(_mg_pipe_columns),
     "mgc.compressor" => Dict{String,Type}(_mg_compressor_columns),
@@ -302,7 +310,6 @@ end
 function parse_m_string(data_string::String)
     matlab_data, func_name, colnames = _IM.parse_matlab_string(data_string, extended = true)
 
-
     _colnames = Dict{String,Vector{Tuple{String,Type}}}()
     for (component_type, cols) in colnames
         _colnames[component_type] = Vector{Tuple{String,Type}}([])
@@ -318,7 +325,7 @@ function parse_m_string(data_string::String)
 
     case = Dict{String,Any}()
 
-    if func_name != nothing
+    if func_name !== nothing
         case["name"] = func_name
     else
         Memento.warn(_LOGGER, "no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
@@ -342,6 +349,7 @@ function parse_m_string(data_string::String)
     ]
 
     optional_metadata_names = [
+        "mgc.name",
         "mgc.sound_speed",
         "mgc.R",
         "mgc.base_pressure",
@@ -356,7 +364,7 @@ function parse_m_string(data_string::String)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            Memento.error(_LOGGER, string("no $constant found in .m file"))
+            Memento.error(_LOGGER, string("no $data_name found in .m file"))
         end
     end
 
@@ -435,6 +443,15 @@ This value will be auto-assigned based on the pressure limits provided in the da
 objective is economic_weighting * (load shed) +
 (1-economic_weighting) * (compressor power)",
         )
+    end
+
+    if haskey(matlab_data, "mgc.sources")
+        sources = []
+        for source_row in matlab_data["mgc.sources"]
+            source_data = _IM.row_to_typed_dict(source_row, get(_colnames, "mgc.sources", _mg_sources_columns))
+            push!(sources, source_data)
+        end
+        case["sources"] = sources
     end
 
     if haskey(matlab_data, "mgc.junction")
@@ -694,6 +711,10 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     # use once available
     _IM.arrays_to_dicts!(gm_data)
 
+    if haskey(gm_data, "sources") && isa(gm_data, Dict)
+        gm_data["sources"] = Vector{Dict{String,Any}}([source for source in values(gm_data["sources"])])
+    end
+
     return gm_data
 end
 
@@ -751,6 +772,7 @@ end
 
 "order data types should appear in matlab format"
 const _matlab_data_order = [
+    "sources",
     "junction",
     "pipe",
     "compressor",
@@ -769,6 +791,7 @@ const _matlab_data_order = [
 
 "order data fields should appear in matlab format"
 const _matlab_field_order = Dict{String,Array}(
+    "sources" => [key for (key, dtype) in _mg_sources_columns],
     "junction" => [key for (key, dtype) in _mg_junction_columns],
     "pipe" => [key for (key, dtype) in _mg_pipe_columns],
     "compressor" => [key for (key, dtype) in _mg_compressor_columns],
@@ -787,6 +810,7 @@ const _matlab_field_order = Dict{String,Array}(
 
 "order of required global parameters"
 const _matlab_global_params_order_required = [
+    "name",
     "gas_specific_gravity",
     "specific_heat_capacity_ratio",
     "temperature",

@@ -1,5 +1,5 @@
 "parses transient data format CSV into list of dictionarys"
-function parse_transient(file::String)::Array{Dict{String,Any},1}
+function parse_transient(file::AbstractString)::Array{Dict{String,Any},1}
     return open(file, "r") do io
         parse_transient(io)
     end
@@ -28,28 +28,38 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
     return data
 end
 
+
+""
+function parse_files(static_file::AbstractString, transient_file::AbstractString; kwargs...)::Dict{String,Any}
+    static_filetype = split(lowercase(static_file), '.')[end]
+
+    open(static_file, "r") do static_io
+        open(transient_file, "r") do transient_io
+            return parse_files(static_io, transient_io; static_filetype=static_filetype, kwargs...)
+        end
+    end
+end
+
+
 """
 Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments:
 (i) `total_time` (defaults to 86400 seconds or 24 hours) - this is the total time for which transient optimization needs to be solved (ii) `time_step` (defaults to 3600 seconds or 1 hours) - this argument specifies the time discretization step (iii) `spatial_discretization` (defaults to 10000 m or 10 km) - this argument specifies the spatial discretization step (iv) `additional_time` (defaults to 21600 seconds or 6 hours) - this argument decides the time horizon that needs to be padded to the total time to in case the user wishes to perform a moving horizon transient optimization.
 """
 function parse_files(
-    static_file::String,
-    transient_file::String;
+    static_io::IO,
+    transient_io::IO;
+    static_filetype::AbstractString="m",
     total_time = 86400.0,
     time_step = 3600.0,
     spatial_discretization = 10000.0,
     additional_time = 21600.0,
 )
     periodic = true
-    static_filetype = split(lowercase(static_file), '.')[end]
+
     if static_filetype == "m"
-        static_data = open(static_file) do io
-            GasModels.parse_matgas(io)
-        end
+        static_data = GasModels.parse_matgas(static_io)
     elseif static_filetype == "json"
-        static_data = open(static_file) do io
-            GasModels.parse_json(io)
-        end
+        static_data = GasModels.parse_json(static_io)
     else
         Memento.error(_LOGGER, "only .m and .json network data files are supported")
     end
@@ -69,7 +79,7 @@ function parse_files(
     check_global_parameters(static_data)
 
     _prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
-    transient_data = parse_transient(transient_file)
+    transient_data = parse_transient(transient_io)
     make_si_units!(transient_data, static_data)
     time_series_block = _create_time_series_block(
         transient_data,
@@ -383,13 +393,13 @@ at least 4 time series data points are available (and result in an error otherwi
     for (type, id, param) in fields
         if (additional_time > 0.0)
             start_val = interpolators[type][id][param]["reduced_data_points"][1]
-            #= remove cubic spline interpolation 
+            #= remove cubic spline interpolation
             end_val = interpolators[type][id][param]["reduced_data_points"][end]
             middle_time = total_time + additional_time / 2
             middle_val = (end_val + start_val) / 2
             push!(interpolators[type][id][param]["times"], middle_time)
             push!(interpolators[type][id][param]["reduced_data_points"], middle_val)
-            =# 
+            =#
             push!(interpolators[type][id][param]["times"], end_time)
             push!(interpolators[type][id][param]["reduced_data_points"], start_val)
         end
@@ -424,25 +434,25 @@ function _fix_time_series_block!(block)
     for (i, val) in get(block, "transfer", [])
         if haskey(val, "withdrawal_max")
             val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
-        end 
+        end
         if haskey(val, "withdrawal_min")
             val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
-        end 
-    end 
+        end
+    end
     for (i, val) in get(block, "delivery", [])
         if haskey(val, "withdrawal_max")
             val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
-        end 
+        end
         if haskey(val, "withdrawal_min")
             val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
-        end 
+        end
     end
     for (i, val) in get(block, "receipt", [])
         if haskey(val, "injection_max")
             val["injection_max"] = max.(val["injection_max"], zeros(length(val["injection_max"])))
-        end 
+        end
         if haskey(val, "injection_min")
             val["injection_min"] = min.(val["injection_min"], zeros(length(val["injection_min"])))
-        end 
+        end
     end
-end 
+end
