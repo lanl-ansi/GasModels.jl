@@ -3,15 +3,16 @@
 ## Pending
 
 - bug fix in GasLib component index assignment
+- add mgc.sources to the matgas format to keep track of data source metadata
 
-## v0.8.2 
+## v0.8.2
 
 - changed default interpolation to linear
-- bug fix in reservoir constraints 
+- bug fix in reservoir constraints
 
-## v0.8.1 
+## v0.8.1
 
-- bug fix in interpolation 
+- bug fix in interpolation
 
 ## v0.8
 
@@ -19,7 +20,7 @@
 - compressors are made optional components
 - fixed bug in `calc_connected_components`
 - corrected models of resistor physics
-- added support storage model for transient_ogf added 
+- added support storage model for transient_ogf added
 - transient_ogf constraints and variables changed for improved computation times
 - renamed variable_valve_operation to be variable_on_off_operation to reflect the name change from control_valve to regulator (breaking)
 - removed explicit direction function calls. These are now handled automatically based on data
