@@ -346,10 +346,10 @@ function parse_m_string(data_string::String)
         "mgc.temperature",
         "mgc.compressibility_factor",
         "mgc.units",
-        "mgc.name",
     ]
 
     optional_metadata_names = [
+        "mgc.name",
         "mgc.sound_speed",
         "mgc.R",
         "mgc.base_pressure",
