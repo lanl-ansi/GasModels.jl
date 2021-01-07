@@ -1,5 +1,5 @@
 "parses transient data format CSV into list of dictionarys"
-function parse_transient(file::String)::Array{Dict{String,Any},1}
+function parse_transient(file::AbstractString)::Array{Dict{String,Any},1}
     return open(file, "r") do io
         parse_transient(io)
     end
@@ -30,7 +30,7 @@ end
 
 
 ""
-function parse_files(static_file::String, transient_file::String; kwargs...)::Dict{String,Any}
+function parse_files(static_file::AbstractString, transient_file::AbstractString; kwargs...)::Dict{String,Any}
     static_filetype = split(lowercase(static_file), '.')[end]
 
     open(static_file, "r") do static_io
@@ -48,7 +48,7 @@ Parses two files - a static file and a transient csv file and prepares the data 
 function parse_files(
     static_io::IO,
     transient_io::IO;
-    static_filetype::String="m",
+    static_filetype::AbstractString="m",
     total_time = 86400.0,
     time_step = 3600.0,
     spatial_discretization = 10000.0,
