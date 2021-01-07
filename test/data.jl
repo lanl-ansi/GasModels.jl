@@ -108,4 +108,13 @@
         @test gas_data["pipe"]["2"]["status"] == 0
         @test gas_data["pipe"]["4"]["status"] == 0
     end
+
+    @testset "check data sources table" begin
+        gas_file = "../test/data/matgas/case-6.m"
+        gas_data = GasModels.parse_file(gas_file)
+
+        @test haskey(gas_data, "sources")
+        @test length(gas_data["sources"]) == 1
+        @test gas_data["sources"][1]["name"] == "test" && gas_data["sources"][1]["agreement_year"] == 2020
+    end
 end

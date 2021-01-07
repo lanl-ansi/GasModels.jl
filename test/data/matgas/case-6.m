@@ -13,6 +13,13 @@ mgc.is_per_unit                  = 0;
 mgc.economic_weighting           = 0.95;
 mgc.sound_speed                  = 371.6643;
 
+
+%% sources data
+%column_names% name agreement_year description
+mgc.sources = [
+    'test' 2020 'test data source'
+]
+
 %% junction data
 % id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
 mgc.junction = [
