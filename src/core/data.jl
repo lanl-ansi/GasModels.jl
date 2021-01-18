@@ -1,14 +1,14 @@
 # tools for working with GasModels internal data format
 
 "GasModels wrapper for the InfrastructureModels `apply!` function."
-function apply_gm!(func!::Function, data::Dict{String, <:Any}; is_multinetwork_function::Bool = true)
-    _IM.apply!(func!, data, gm_it_name; is_multinetwork_function = is_multinetwork_function)
+function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
+    _IM.apply!(func!, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
 end
 
 
 "GasModels wrapper for the InfrastructureModels `get_data` function."
-function get_data_gm(func::Function, data::Dict{String, <:Any}; is_multinetwork_function::Bool = true)
-    return _IM.get_data(func, data, gm_it_name; is_multinetwork_function = is_multinetwork_function)
+function get_data_gm(func::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
+    return _IM.get_data(func, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
 end
 
 
@@ -19,21 +19,21 @@ end
 
 
 "data getters"
-@inline get_base_pressure(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_pressure"]), data; is_multinetwork_function = false)
-@inline get_base_density(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_density"]), data; is_multinetwork_function = false)
-@inline get_base_length(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_length"]), data; is_multinetwork_function = false)
-@inline get_base_flow(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flow"]), data; is_multinetwork_function = false)
-@inline get_base_flux(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flux"]), data; is_multinetwork_function = false)
-@inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; is_multinetwork_function = false)
-@inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; is_multinetwork_function = false)
-@inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; is_multinetwork_function = false)
-@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; is_multinetwork_function = false)
-@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; is_multinetwork_function = false)
-@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; is_multinetwork_function = false)
-@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; is_multinetwork_function = false)
-@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; is_multinetwork_function = false)
+@inline get_base_pressure(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_pressure"]), data; apply_to_subnetworks = false)
+@inline get_base_density(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_density"]), data; apply_to_subnetworks = false)
+@inline get_base_length(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_length"]), data; apply_to_subnetworks = false)
+@inline get_base_flow(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flow"]), data; apply_to_subnetworks = false)
+@inline get_base_flux(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flux"]), data; apply_to_subnetworks = false)
+@inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; apply_to_subnetworks = false)
+@inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; apply_to_subnetworks = false)
+@inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; apply_to_subnetworks = false)
+@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; apply_to_subnetworks = false)
+@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; apply_to_subnetworks = false)
+@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
+@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; apply_to_subnetworks = false)
+@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; apply_to_subnetworks = false)
 @inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
-@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; is_multinetwork_function = false)
+@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
 
 
 "calculates base_pressure"
@@ -90,7 +90,7 @@ end
 
 "if original data is in per-unit ensure it has base values"
 function per_unit_data_field_check!(data::Dict{String, <:Any})
-    apply_gm!(_per_unit_data_field_check!, data; is_multinetwork_function = false)
+    apply_gm!(_per_unit_data_field_check!, data; apply_to_subnetworks = false)
 end
 
 
@@ -121,7 +121,7 @@ end
 
 "adds additional non-dimensional constants to data dictionary"
 function add_base_values!(data::Dict{String, <:Any})
-    apply_gm!(_add_base_values!, data; is_multinetwork_function = false)
+    apply_gm!(_add_base_values!, data; apply_to_subnetworks = false)
 end
 
 
@@ -638,7 +638,7 @@ end
 
 "transforms data to si units"
 function make_si_units!(data::Dict{String, <:Any})
-    apply_gm!(_make_si_units!, data; is_multinetwork_function = false)
+    apply_gm!(_make_si_units!, data; apply_to_subnetworks = false)
 end
 
 
@@ -685,7 +685,7 @@ end
 
 "Transforms network data into English units"
 function make_english_units!(data::Dict{String, <:Any})
-    apply_gm!(_make_english_units!, data; is_multinetwork_function = false)
+    apply_gm!(_make_english_units!, data; apply_to_subnetworks = false)
 end
 
 "Transforms network data into English units"
@@ -716,7 +716,7 @@ end
 
 "Transforms network data into per unit"
 function make_per_unit!(data::Dict{String, <:Any})
-    apply_gm!(_make_per_unit!, data; is_multinetwork_function = false)
+    apply_gm!(_make_per_unit!, data; apply_to_subnetworks = false)
 end
 
 
@@ -753,7 +753,7 @@ end
 
 "checks for non-negativity of certain fields in the data"
 function check_non_negativity(data::Dict{String, <:Any})
-    apply_gm!(_check_non_negativity, data; is_multinetwork_function = false)
+    apply_gm!(_check_non_negativity, data; apply_to_subnetworks = false)
 end
 
 
@@ -779,7 +779,7 @@ end
 
 "checks validity of global-level parameters"
 function check_global_parameters(data::Dict{String, <:Any})
-    apply_gm!(_check_global_parameters, data; is_multinetwork_function = false)
+    apply_gm!(_check_global_parameters, data; apply_to_subnetworks = false)
 end
 
 
@@ -809,7 +809,7 @@ end
 
 "Correct mass flow bounds"
 function correct_f_bounds!(data::Dict{String, <:Any})
-    apply_gm!(_correct_f_bounds!, data; is_multinetwork_function = false)
+    apply_gm!(_correct_f_bounds!, data; apply_to_subnetworks = false)
 end
 
 "Correct mass flow bounds"
@@ -919,7 +919,7 @@ end
 
 "Correct minimum pressures"
 function correct_p_mins!(data::Dict{String, <:Any})
-    apply_gm!(_correct_p_mins!, data; is_multinetwork_function = false)
+    apply_gm!(_correct_p_mins!, data; apply_to_subnetworks = false)
 end
 
 
@@ -959,7 +959,7 @@ end
 
 "add additional compressor fields - required for transient"
 function add_compressor_fields!(data::Dict{String, <:Any})
-    apply_gm!(_add_compressor_fields!, data; is_multinetwork_function = false)
+    apply_gm!(_add_compressor_fields!, data; apply_to_subnetworks = false)
 end
 
 
@@ -1047,7 +1047,7 @@ const _gm_edge_types = [
 
 "checks that all junctions are unique and other components link to valid junctions"
 function check_connectivity(data::Dict{String, <:Any})
-    apply_gm!(_check_connectivity, data; is_multinetwork_function = true)
+    apply_gm!(_check_connectivity, data; apply_to_subnetworks = true)
 end
 
 
@@ -1072,7 +1072,7 @@ end
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function check_status(data::Dict{String, <:Any})
-    apply_gm!(_check_status, data; is_multinetwork_function = false)
+    apply_gm!(_check_status, data; apply_to_subnetworks = false)
 end
 
 
@@ -1104,7 +1104,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function check_edge_loops(data::Dict{String, <:Any})
-    apply_gm!(_check_edge_loops, data; is_multinetwork_function = false)
+    apply_gm!(_check_edge_loops, data; apply_to_subnetworks = false)
 end
 
 
@@ -1128,7 +1128,7 @@ end
 
 "checks that all edges connect two distinct junctions"
 function propagate_topology_status!(data::Dict{String, <:Any})
-    apply_gm!(_propagate_topology_status!, data; is_multinetwork_function = true)
+    apply_gm!(_propagate_topology_status!, data; apply_to_subnetworks = true)
 end
 
 
