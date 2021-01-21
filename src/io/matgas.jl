@@ -7,6 +7,7 @@ end
 
 
 const _mg_data_names = Vector{String}([
+    "mgc.name",
     "mgc.gas_specific_gravity",
     "mgc.specific_heat_capacity_ratio",
     "mgc.temperature",
@@ -573,7 +574,7 @@ objective is economic_weighting * (load shed) +
     end
 
     if haskey(matlab_data, "mgc.transfer")
-        transfers = []
+        transfers = Array{Dict,1}([])
         for transfer_row in matlab_data["mgc.transfer"]
             transfer_data = _IM.row_to_typed_dict(
                 transfer_row,
@@ -960,6 +961,12 @@ function _gasmodels_to_matgas_string(
                                 )
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")
+                            end
+                        else
+                            if field == "edi_id"
+                                push!(entries, Int(0))
+                            else
+                                Memento.error(_LOGGER, string("$(data_type) $(i) is missing field $(field)"))
                             end
                         end
                     end
