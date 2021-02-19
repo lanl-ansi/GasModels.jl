@@ -4,7 +4,7 @@
 
 
 "variables associated with (nonsquared) pressure"
-function variable_pressure(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pressure(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     # Set to be used in the construction of pressures along resistors.
     fr_ids_1 = [x["fr_junction"] for (i, x) in ref(gm, nw, :resistor)]
     to_ids_1 = [x["to_junction"] for (i, x) in ref(gm, nw, :resistor)]
@@ -28,7 +28,7 @@ end
 
 
 "variables associated with pressure squared"
-function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     psqr = var(gm, nw)[:psqr] = JuMP.@variable(
         gm.model, [i in ids(gm, nw, :junction)], base_name="$(nw)_p",
         start=comp_start_value(ref(gm, nw, :junction), i, "p_start",
@@ -45,7 +45,7 @@ function variable_pressure_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bo
 end
 
 "variables associated with mass flow in pipes"
-function variable_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pipe_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_pipe = var(gm, nw)[:f_pipe] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :pipe)],
         base_name="$(nw)_f",
@@ -63,7 +63,7 @@ function variable_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::
 end
 
 "variables associated with mass flow in compressors"
-function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_compressor = var(gm, nw)[:f_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:compressor)],
         base_name="$(nw)_f",
@@ -81,7 +81,7 @@ function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 end
 
 "variables associated with mass flow in resistors"
-function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_resistor = var(gm, nw)[:f_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:resistor)],
         base_name="$(nw)_f",
@@ -99,7 +99,7 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bound
 end
 
 "variables associated with mass flow in loss_resistors"
-function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_loss_resistor = var(gm, nw)[:f_loss_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :loss_resistor)],
         base_name="$(nw)_f",
@@ -117,7 +117,7 @@ function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; 
 end
 
 "variables associated with mass flow in short pipes"
-function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_short_pipe = var(gm, nw)[:f_short_pipe] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:short_pipe)],
         base_name="$(nw)_f",
@@ -136,7 +136,7 @@ end
 
 
 "variables associated with mass flow in valves"
-function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_valve = var(gm, nw)[:f_valve] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:valve)],
         base_name="$(nw)_f",
@@ -158,7 +158,7 @@ function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded:
 end
 
 "variables associated with mass flow in regulators"
-function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_regulator = var(gm, nw)[:f_regulator] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:regulator)],
         base_name="$(nw)_f",
@@ -180,7 +180,7 @@ function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; boun
 end
 
 "all variables associated with mass flow"
-function variable_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_pipe_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_compressor_mass_flow(gm, nw; bounded=bounded, report=report)
     variable_resistor_mass_flow(gm, nw; bounded=bounded, report=report)
@@ -191,7 +191,7 @@ function variable_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=
 end
 
 "variables associated with mass flow in pipes in expansion planning"
-function variable_pipe_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_pipe_mass_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_ne_pipe = var(gm, nw)[:f_ne_pipe] = JuMP.@variable(
         gm.model, [i in ids(gm, nw, :ne_pipe)], base_name="$(nw)_f_ne",
         start=comp_start_value(ref(gm, nw, :ne_pipe), i, "f_start", 0.0))
@@ -212,7 +212,7 @@ end
 
 
 "variables associated with mass flow in compressors in expansion planning"
-function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_ne_compressor = var(gm, nw)[:f_ne_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:ne_compressor)],
         base_name="$(nw)_f_ne",
@@ -233,14 +233,14 @@ function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 end
 
 "all variables associated with mass flow in expansion planning"
-function variable_mass_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_mass_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_pipe_mass_flow_ne(gm, nw; bounded=bounded, report=report)
     variable_compressor_mass_flow_ne(gm, nw; bounded=bounded, report=report)
 end
 
 
 "variables associated with building pipes"
-function variable_pipe_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_pipe_ne(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     zp = var(gm, nw)[:zp] = JuMP.@variable(
         gm.model, [l in ids(gm, nw, :ne_pipe)], binary=true, base_name="$(nw)_zp",
         start=comp_start_value(ref(gm, nw, :ne_pipe), l, "zp_start", 0.0))
@@ -250,7 +250,7 @@ end
 
 
 "variables associated with building compressors"
-function variable_compressor_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_compressor_ne(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     zc = var(gm, nw)[:zc] = JuMP.@variable(gm.model,
         [l in ids(gm,nw,:ne_compressor)],
         binary=true,
@@ -262,7 +262,7 @@ function variable_compressor_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bo
 end
 
 "0-1 variables associated with operating valves"
-function variable_valve_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_valve_on_off_operation(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     v_valve = var(gm, nw)[:v_valve] = JuMP.@variable(gm.model,
         [l in ids(gm,nw,:valve)],
         binary=true,
@@ -275,7 +275,7 @@ end
 
 
 "0-1 variables associated with operating regulators"
-function variable_regulator_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_regulator_on_off_operation(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     v_regulator = var(gm, nw)[:v_regulator] = JuMP.@variable(gm.model,
         [l in keys(ref(gm, nw, :regulator))],
         binary=true,
@@ -287,14 +287,14 @@ function variable_regulator_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cn
 end
 
 "0-1 variables associated with operating edge components"
-function variable_on_off_operation(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_on_off_operation(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     variable_valve_on_off_operation(gm, nw; report=report)
     variable_regulator_on_off_operation(gm, nw; report=report)
 end
 
 
 "variables associated with demand"
-function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     fl = var(gm, nw)[:fl] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_delivery)],
         base_name="$(nw)_fl",
@@ -321,7 +321,7 @@ end
 
 
 "variables associated with transfer"
-function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_transfer)],
         base_name="$(nw)_ft",
@@ -348,7 +348,7 @@ end
 
 
 "variables associated with production"
-function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     fg = var(gm, nw)[:fg] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_receipt)],
         base_name="$(nw)_fg",
@@ -376,7 +376,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_pipe_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     pipe = Dict(x for x in ref(gm,nw,:pipe) if x.second["flow_max"] >= 0 && x.second["flow_min"] <= 0)
 
     y_pipe_var =  JuMP.@variable(gm.model,
@@ -405,7 +405,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_compressor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_compressor_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     compressor = Dict(x for x in ref(gm,nw,:compressor) if x.second["flow_min"] <= 0 && x.second["flow_max"] >= 0)
 
     y_compressor_var = JuMP.@variable(gm.model,
@@ -433,7 +433,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_resistor_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     resistor = Dict(x for x in ref(gm,nw,:resistor) if x.second["flow_max"] >= 0 && x.second["flow_min"] <= 0)
 
     y_resistor_var = JuMP.@variable(gm.model,
@@ -461,7 +461,7 @@ end
 
 
 "variables associated with direction of flow on on loss_resistors. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_loss_resistor_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_loss_resistor_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     loss_resistor = Dict(x for x in ref(gm,nw,:loss_resistor) if x.second["flow_max"] >= 0 && x.second["flow_min"] <= 0)
 
     y_loss_resistor_var = JuMP.@variable(gm.model,
@@ -491,7 +491,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_short_pipe_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     short_pipe = Dict(x for x in ref(gm,nw,:short_pipe) if x.second["flow_max"] >= 0 && x.second["flow_min"] <= 0)
 
     y_short_pipe_var = JuMP.@variable(gm.model,
@@ -520,7 +520,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_valve_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_valve_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     valve = ref(gm,nw,:valve)
 
     y_valve_var = JuMP.@variable(gm.model,
@@ -541,7 +541,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_regulator_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_regulator_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     regulator  = ref(gm,nw,:regulator)
 
     y_regulator_var = JuMP.@variable(gm.model,
@@ -562,7 +562,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_connection_direction(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_connection_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     variable_pipe_direction(gm, nw; report=report)
     variable_compressor_direction(gm, nw; report=report)
     variable_resistor_direction(gm, nw; report=report)
@@ -575,7 +575,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_pipe_direction_ne(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     ne_pipe = ref(gm,nw,:ne_pipe)
 
     y_ne_pipe_var = JuMP.@variable(gm.model,
@@ -596,7 +596,7 @@ end
 
 "variables associated with direction of flow on the connections. y = 1 imples flow goes from f_junction to t_junction.
  y = 0 imples flow goes from t_junction to f_junction. O flow can have y = 0 or 1"
-function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     ne_compressor = ref(gm,nw,:ne_compressor)
 
     y_ne_compressor_var = JuMP.@variable(gm.model,
@@ -615,26 +615,26 @@ function variable_compressor_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; 
 end
 
 "variables associated with direction of flow on new connections. y = 1 imples flow goes from f_junction to t_junction. y = 0 imples flow goes from t_junction to f_junction"
-function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=gm.cnw; report::Bool=true)
+function variable_connection_direction_ne(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
     variable_pipe_direction_ne(gm, nw; report=report)
     variable_compressor_direction_ne(gm, nw; report=report)
 end
 
 
 "Variable Set: Define variables needed for modeling flow across connections"
-function variable_flow(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_mass_flow(gm,nw,bounded=bounded,report=report)
 end
 
 
 "Variable Set: Define variables needed for modeling flow across connections that are expansions"
-function variable_flow_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true)
+function variable_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_mass_flow_ne(gm,nw; bounded=bounded,report=report)
 end
 
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
+function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
     rsqr = var(gm, nw)[:rsqr] = JuMP.@variable(gm.model,
         [i in keys(compressors)],
         base_name="$(nw)_r",
@@ -652,7 +652,7 @@ function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=gm.cnw; bou
 end
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=gm.cnw; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :ne_compressor))
+function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :ne_compressor))
     rsqr = var(gm, nw)[:rsqr_ne] = JuMP.@variable(gm.model,
         [k in keys(compressors)],
         base_name="$(nw)_r",

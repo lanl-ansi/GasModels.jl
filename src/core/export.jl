@@ -25,8 +25,8 @@ end
 # `using GasModels`
 
 # so that users do not need to import JuMP to use a optimizer with GasModels
-import JuMP: with_optimizer
-export with_optimizer
+import JuMP: optimizer_with_attributes
+export optimizer_with_attributes
 
 import MathOptInterface: TerminationStatusCode
 export TerminationStatusCode

@@ -4,7 +4,7 @@
 
 
 "function for costing expansion of pipes and compressors: ``\\sum_{k \\in ne\\_pipe} c_k zp_k  +  \\sum_{k \\in ne\\_compressor} c_k zc_k``"
-function objective_min_ne_cost(gm::AbstractGasModel, nws = [gm.cnw])
+function objective_min_ne_cost(gm::AbstractGasModel, nws = [nw_id_default])
     zp = Dict(n => var(gm, n, :zp) for n in nws)
     zc = Dict(n => var(gm, n, :zc) for n in nws)
 
@@ -25,7 +25,7 @@ end
 
 
 "function for maximizing prioritzed load: ``\\max \\sum_{i \\in {\\cal D }} \\omega_i \\boldsymbol{d}_i``"
-function objective_max_load(gm::AbstractGasModel, nws = [gm.cnw])
+function objective_max_load(gm::AbstractGasModel, nws = [nw_id_default])
     load_set = Dict(
         n => collect(keys(Dict(
             x for x in ref(gm, n, :delivery) if x.second["is_dispatchable"] == 1
@@ -56,7 +56,7 @@ end
 
 
 "function for minimizing compressor energy"
-function objective_min_compressor_energy(gm::AbstractGasModel, nws = [gm.cnw])
+function objective_min_compressor_energy(gm::AbstractGasModel, nws = [nw_id_default])
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     gamma = get_specific_heat_capacity_ratio(gm.data)
@@ -71,7 +71,7 @@ end
 
 "function for minimizing economic costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j -
     \\sum_{ijk \\in {\\cal C}} \\boldsymbol{f}_{ijk} (\\boldsymbol{\\alpha}_{ijk}^m - 1)``"
-function objective_min_economic_costs(gm::AbstractGasModel, nws = [gm.cnw])
+function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default])
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     fl = Dict(n => var(gm, n, :fl) for n in nws)

@@ -22,8 +22,8 @@ scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer)
 ecos_solver = JuMP.optimizer_with_attributes(ECOS.Optimizer, "verbose" => false, "maxit" => 10000)
 scs_solver = JuMP.optimizer_with_attributes(SCS.Optimizer)
 cplex_solver = JuMP.optimizer_with_attributes(CPLEX.Optimizer, "CPX_PARAM_SCRIND" => 0)
-couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "couenne.exe")
-bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer, "bonmin.exe")
+couenne_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer("couenne.exe"))
+bonmin_solver = JuMP.with_optimizer(AmplNLWriter.Optimizer("bonmin.exe"))
 
 misocp_solver = gurobi_solver
 mip_solver = gurobi_solver

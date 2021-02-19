@@ -1,7 +1,7 @@
 # Define CRDWP implementations of Gas Models
 
 "Variables needed for modeling flow in MI models"
-function variable_flow(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_flow(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     variable_pressure_difference(gm, nw; bounded = bounded, report = report)
     variable_mass_flow(gm, nw; bounded = bounded, report = report)
     variable_connection_direction(gm, nw; report = report)
@@ -9,7 +9,7 @@ end
 
 
 "Variables needed for modeling flow in MI models"
-function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     variable_pressure_difference_ne(gm, nw; bounded = bounded, report = report)
     variable_mass_flow_ne(gm, nw; bounded = bounded, report = report)
     variable_connection_direction_ne(gm, nw; report = report)
@@ -17,7 +17,7 @@ end
 
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
-function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     l_pipe = var(gm, nw)[:l_pipe] = JuMP.@variable(
             gm.model,
             [k in ids(gm, nw, :pipe)],
@@ -40,7 +40,7 @@ function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.
 end
 
 ""
-function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     l_resistor = var(gm, nw)[:l_resistor] = JuMP.@variable(
             gm.model,
             [k in ids(gm, nw, :resistor)],
@@ -63,14 +63,14 @@ function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int =
 end
 
 ""
-function variable_pressure_difference(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     variable_pipe_pressure_difference(gm, nw; bounded = bounded, report = report)
     variable_resistor_pressure_difference(gm, nw; bounded = bounded, report = report)
 end
 
 
 ""
-function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     max_flow = ref(gm, nw, :max_mass_flow)
 
     l_ne_pipe = var(gm, nw)[:l_ne_pipe] = JuMP.@variable(

@@ -15,7 +15,7 @@
 ###############################################################################################
 
 "Template: Constraint on mass flow across a pipe"
-function constraint_resistor_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_resistor_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :resistor, k)
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -25,7 +25,7 @@ end
 
 
 "Template: Pressure drop across resistor with on/off direction variables"
-function constraint_resistor_pressure(gm::AbstractGasModel, k; n::Int=gm.cnw)
+function constraint_resistor_pressure(gm::AbstractGasModel, k; n::Int=nw_id_default)
     resistor         = ref(gm, n, :resistor, k)
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
@@ -38,7 +38,7 @@ end
 
 
 "Template: Darcy-Weisbach equation for defining the relationship between pressure drop and flow across a resistor"
-function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=gm.cnw)
+function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=nw_id_default)
     resistor         = ref(gm, n, :resistor, k)
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
@@ -58,7 +58,7 @@ end
 ###############################################################################################
 
 "Template: Constraint on mass flow across a loss_resistor"
-function constraint_loss_resistor_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_loss_resistor_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     loss_resistor = ref(gm, n, :loss_resistor, k)
     f_min = loss_resistor["flow_min"]
     f_max = loss_resistor["flow_max"]
@@ -68,7 +68,7 @@ end
 
 
 "Template: Pressure drop across loss_resistor with on/off direction variables"
-function constraint_loss_resistor_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_loss_resistor_pressure(gm::AbstractGasModel, k; n::Int = nw_id_default)
     loss_resistor = ref(gm, n, :loss_resistor, k)
     i, j = loss_resistor["fr_junction"], loss_resistor["to_junction"]
     pd = loss_resistor["p_loss"]
@@ -82,7 +82,7 @@ end
 #################################################################################################
 
 "Template: Constraint on mass flow across a pipe"
-function constraint_pipe_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :pipe, k)
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -92,7 +92,7 @@ end
 
 
 "Template: Pressure drop across pipes"
-function constraint_pipe_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_pressure(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
@@ -103,7 +103,7 @@ end
 
 
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
-function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
     w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
     f_min = pipe["flow_min"]
@@ -114,7 +114,7 @@ end
 
 
 "Template: Constraints on pressure drop across pipes"
-function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_pressure_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
@@ -125,7 +125,7 @@ end
 
 
 "Template: Weymouth equation for defining the relationship between pressure drop and flow across a pipe"
-function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
@@ -139,7 +139,7 @@ end
 
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
-function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
     w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
     f_min = pipe["flow_min"]
@@ -150,7 +150,7 @@ end
 
 
 "Template: Weymouth equation for expansion pipes"
-function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
@@ -168,7 +168,7 @@ end
 #################################################################################################
 
 "Template: Constraints for fixing pressure at a node"
-function constraint_pressure(gm::AbstractGasModel, i; n::Int = gm.cnw)
+function constraint_pressure(gm::AbstractGasModel, i; n::Int = nw_id_default)
     junction = ref(gm, n, :junction)[i]
     p = junction["p_nominal"]
     constraint_pressure(gm, n, i, p)
@@ -176,7 +176,7 @@ end
 
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = gm.cnw)
+function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default)
     junction = ref(gm, n, :junction, i)
     f_pipes = ref(gm, n, :pipes_fr, i)
     t_pipes = ref(gm, n, :pipes_to, i)
@@ -216,7 +216,7 @@ end
 
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables and there are expansion connections"
-function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = gm.cnw)
+function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = nw_id_default)
     junction = ref(gm, n, :junction, i)
     f_pipes = ref(gm, n, :pipes_fr, i)
     t_pipes = ref(gm, n, :pipes_to, i)
@@ -265,7 +265,7 @@ end
 #################################################################################################
 
 "Template: Constraint on pressure drop across a short pipe"
-function constraint_short_pipe_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_short_pipe_pressure(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :short_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
@@ -274,7 +274,7 @@ end
 
 
 "Constraint: constraints on flow across a short pipe"
-function constraint_short_pipe_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_short_pipe_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :short_pipe, k)
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
@@ -288,7 +288,7 @@ end
 #################################################################################################
 
 "Template: Constraint on pressure drop across valves, where the valve may be closed or opened"
-function constraint_on_off_valve_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_on_off_valve_pressure(gm::AbstractGasModel, k; n::Int = nw_id_default)
     valve = ref(gm, n, :valve, k)
     i = valve["fr_junction"]
     j = valve["to_junction"]
@@ -299,7 +299,7 @@ end
 
 
 "Template: constraints on flow across valves modeled with on/off direction variables"
-function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_on_off_valve_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     valve = ref(gm, n, :valve, k)
     f_min = valve["flow_min"]
     f_max = valve["flow_max"]
@@ -313,7 +313,7 @@ end
 #################################################################################################
 
 "Template: Compression ratios for a compressor"
-function constraint_compressor_ratios(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_ratios(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :compressor, k)
     i = compressor["fr_junction"]
     j = compressor["to_junction"]
@@ -330,7 +330,7 @@ end
 
 
 "Template: Constraint for turning on or off flow through expansion compressor"
-function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :ne_compressor, k)
     f_min = compressor["flow_min"]
     f_max = compressor["flow_max"]
@@ -340,7 +340,7 @@ end
 
 
 "Template: constraints on flow across a compressor"
-function constraint_compressor_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :compressor, k)
     f_min = compressor["flow_min"]
     f_max = compressor["flow_max"]
@@ -350,7 +350,7 @@ end
 
 
 "Template: constraints on flow across compressors where direction"
-function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :ne_compressor, k)
     i = compressor["fr_junction"]
     j = compressor["to_junction"]
@@ -362,7 +362,7 @@ end
 
 
 "Template: constraints on pressure drop across a compressor"
-function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :ne_compressor, k)
     i = compressor["fr_junction"]
     j = compressor["to_junction"]
@@ -378,7 +378,7 @@ function constraint_compressor_ratios_ne(gm::AbstractGasModel, k; n::Int = gm.cn
 end
 
 "Template: Constraints on the compressor energy"
-function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :ne_compressor, k)
     power_max = compressor["power_max"]
     gamma = get_specific_heat_capacity_ratio(gm.data)
@@ -390,7 +390,7 @@ function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = gm.cn
 end
 
 "Template: Constraints on the compressor ratio value"
-function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :compressor, k)
     i = compressor["fr_junction"]
     j = compressor["to_junction"]
@@ -402,7 +402,7 @@ function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int = gm.
 end
 
 "Template: Constraints on the ne_compressor ratio value"
-function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :ne_compressor, k)
     i = compressor["fr_junction"]
     j = compressor["to_junction"]
@@ -414,7 +414,7 @@ function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int = 
 end
 
 "Template: Constraints on the compressor energy"
-function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :compressor, k)
     power_max = compressor["power_max"]
     gamma = get_specific_heat_capacity_ratio(gm.data)
@@ -431,7 +431,7 @@ end
 #################################################################################################
 
 "Template: constraints on flow across control valves with on/off direction variables"
-function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_on_off_regulator_mass_flow(gm::AbstractGasModel, k; n::Int = nw_id_default)
     valve = ref(gm, n, :regulator, k)
     f_min = valve["flow_min"]
     f_max = valve["flow_max"]
@@ -441,7 +441,7 @@ end
 
 
 "Constraint Enforces pressure changes bounds that obey decompression ratios for"
-function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int = gm.cnw)
+function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int = nw_id_default)
     regulator = ref(gm, n, :regulator, k)
     i = regulator["fr_junction"]
     j = regulator["to_junction"]
