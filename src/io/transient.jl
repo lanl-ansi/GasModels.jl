@@ -338,7 +338,7 @@ provide a time step that exactly divides 3600.0",
         )
     end
 
-    if time_step < 3600.0 && ~isinteger(3600.0 / time_step)
+    if time_step < 3600.0 && !isinteger(3600.0 / time_step)
         Memento.error(_LOGGER, "time step should divide 3600.0 exactly when < 3600.0")
     end
 

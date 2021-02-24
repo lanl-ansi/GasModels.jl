@@ -19,9 +19,9 @@ function variable_density(
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :junction, :density, ids(gm, nw, :junction), rho)
+        sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
+        sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
 end
 
 "variables associated with compressor mass flow (transient)"
@@ -46,7 +46,7 @@ function variable_compressor_flow(
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
+        sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
 end
 
 "variables associated with pipe flux (transient)"
@@ -70,9 +70,9 @@ function variable_pipe_flux(
     end
 
     if report
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
         sol_f = Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
+        sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
     end
 end
 
@@ -103,8 +103,8 @@ function variable_pipe_flux_avg(
     end
 
     if report
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -135,8 +135,8 @@ function variable_pipe_flux_neg(
     end
 
     if report
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -160,8 +160,8 @@ function variable_pipe_flux_fr(
         )
 
     if report
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -185,8 +185,8 @@ function variable_pipe_flux_to(
         )
 
     if report
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
     end
 end
 
@@ -687,7 +687,7 @@ function variable_well_flux_fr(
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
+        sol_component_value(gm, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,
@@ -726,7 +726,7 @@ function variable_well_flux_to(
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
+        sol_component_value(gm, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,

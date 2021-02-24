@@ -28,9 +28,8 @@ function expression_well_density_derivative(
         end
     end
 
-    report && _IM.sol_component_value(
+    report && sol_component_value(
         gm,
-        gm_it_sym,
         nw,
         :storage,
         :well_density_derivative,
@@ -54,9 +53,8 @@ function expression_reservoir_density_derivative(
                 var(gm, nw, :reservoir_density, storage_id)
                ) / gm.ref[:it][gm_it_sym][:time_step]
     end
-    report && _IM.sol_component_value(
+    report && sol_component_value(
         gm,
-        gm_it_sym,
         nw,
         :storage,
         :reservoir_density_derivative,
@@ -93,9 +91,8 @@ function expression_net_nodal_injection(gm::AbstractGasModel, nw::Int; report::B
         end
     end
 
-    report && _IM.sol_component_value(
+    report && sol_component_value(
         gm,
-        gm_it_sym,
         nw,
         :junction,
         :net_injection,
@@ -126,9 +123,8 @@ function expression_net_nodal_edge_out_flow(
             var(gm, nw, :net_nodal_edge_out_flow)[i] -= var(gm, nw, :compressor_flow, j)
         end
     end
-    report && _IM.sol_component_value(
+    report && sol_component_value(
         gm,
-        gm_it_sym,
         nw,
         :junction,
         :net_nodal_edge_out_flow,
@@ -194,9 +190,8 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
         var(gm, nw, :compressor_power_expr)[i] = JuMP.@NLexpression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
 
-    report && _IM.sol_component_value(
+    report && sol_component_value(
         gm,
-        gm_it_sym,
         nw,
         :compressor,
         :power_expr,

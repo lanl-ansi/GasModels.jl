@@ -36,7 +36,7 @@ function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_
         end
     end
 
-    report && _IM.sol_component_value(gm, gm_it_sym, nw, :pipe, :l, ids(gm, nw, :pipe), l_pipe)
+    report && sol_component_value(gm, nw, :pipe, :l, ids(gm, nw, :pipe), l_pipe)
 end
 
 ""
@@ -59,7 +59,7 @@ function variable_resistor_pressure_difference(gm::AbstractCRDWPModel, nw::Int =
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :resistor, :l, ids(gm, nw, :resistor), l_resistor)
+        sol_component_value(gm, nw, :resistor, :l, ids(gm, nw, :resistor), l_resistor)
 end
 
 ""
@@ -90,7 +90,7 @@ function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = nw_id
     end
 
     report &&
-        _IM.sol_component_value(gm, gm_it_sym, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
+        sol_component_value(gm, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
 end
 
 

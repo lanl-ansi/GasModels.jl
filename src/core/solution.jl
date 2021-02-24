@@ -11,6 +11,12 @@ function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
 end
 
 
+"GasModels wrapper for the InfrastructureModels `sol_component_value` function."
+function sol_component_value(aim::AbstractGasModel, n::Int, comp_name::Symbol, field_name::Symbol, comp_ids, variables)
+    return _IM.sol_component_value(aim, gm_it_sym, n, comp_name, field_name, comp_ids, variables)
+end
+
+
 function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
     if haskey(solution["it"][gm_it_name], "nw")
         nws_data = solution["it"][gm_it_name]["nw"]

@@ -469,11 +469,11 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
                 comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
@@ -518,11 +518,11 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
                 @assert gm_data["is_per_unit"] == 1
                 comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
@@ -565,11 +565,11 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
                 @assert gm_data["is_per_unit"] == 1
                 comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
@@ -612,11 +612,11 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
                 @assert gm_data["is_per_unit"] == 1
                 comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
