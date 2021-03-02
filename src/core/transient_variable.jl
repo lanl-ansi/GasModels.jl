@@ -1,7 +1,7 @@
 "variables associated with density (transient)"
 function variable_density(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -19,15 +19,15 @@ function variable_density(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
+        sol_component_value(gm, nw, :junction, :density, ids(gm, nw, :junction), rho)
     report &&
-        _IM.sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
+        sol_component_value(gm, nw, :junction, :pressure, ids(gm, nw, :junction), rho)
 end
 
 "variables associated with compressor mass flow (transient)"
 function variable_compressor_flow(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -46,13 +46,13 @@ function variable_compressor_flow(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
+        sol_component_value(gm, nw, :compressor, :flow, ids(gm, nw, :compressor), f)
 end
 
 "variables associated with pipe flux (transient)"
 function variable_pipe_flux(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -70,16 +70,16 @@ function variable_pipe_flux(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flux, ids(gm, nw, :pipe), phi)
         sol_f = Dict(i => phi[i] * ref(gm, nw, :pipe, i)["area"] for i in ids(gm, nw, :pipe))
-        _IM.sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
+        sol_component_value(gm, nw, :pipe, :flow, ids(gm, nw, :pipe), sol_f)
     end
 end
 
 "variables associated with pipe flux average (transient)"
 function variable_pipe_flux_avg(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -103,15 +103,15 @@ function variable_pipe_flux_avg(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_avg, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_avg, ids(gm, nw, :pipe), flow)
     end
 end
 
 "variables associated with pipe flux negative (transient)"
 function variable_pipe_flux_neg(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -135,15 +135,15 @@ function variable_pipe_flux_neg(
     end
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_neg, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_neg, ids(gm, nw, :pipe), flow)
     end
 end
 
 "variables associated with pipe flux (from)"
 function variable_pipe_flux_fr(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -160,15 +160,15 @@ function variable_pipe_flux_fr(
         )
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_fr, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_fr, ids(gm, nw, :pipe), flow)
     end
 end
 
 "variables associated with pipe flux (to)"
 function variable_pipe_flux_to(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -185,15 +185,15 @@ function variable_pipe_flux_to(
         )
 
     if report
-        _IM.sol_component_value(gm, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
-        _IM.sol_component_value(gm, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
+        sol_component_value(gm, nw, :pipe, :flux_to, ids(gm, nw, :pipe), phi)
+        sol_component_value(gm, nw, :pipe, :flow_to, ids(gm, nw, :pipe), flow)
     end
 end
 
 "variables associated with compression ratio (transient)"
 function variable_c_ratio(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -212,6 +212,7 @@ function variable_c_ratio(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :compressor,
         :c_ratio,
@@ -223,7 +224,7 @@ end
 "variables associated with compression power (transient)"
 function variable_compressor_power(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -242,6 +243,7 @@ function variable_compressor_power(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :compressor,
         :power_var,
@@ -253,7 +255,7 @@ end
 "variables associated with injection in receipts (transient)"
 function variable_injection(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -281,6 +283,7 @@ function variable_injection(
         end
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :receipt,
             :injection,
@@ -293,7 +296,7 @@ end
 "variables associated with withdrawal in deliveries (transient)"
 function variable_withdrawal(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -321,6 +324,7 @@ function variable_withdrawal(
         end
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :delivery,
             :withdrawal,
@@ -333,7 +337,7 @@ end
 "variables associated with net withdrawal in transfers (transient)"
 function variable_transfer_flow(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -378,6 +382,7 @@ function variable_transfer_flow(
         end
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :transfer,
             :injection,
@@ -386,6 +391,7 @@ function variable_transfer_flow(
         )
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :transfer,
             :withdrawal,
@@ -398,7 +404,7 @@ end
 "variables associated with storage flows"
 function variable_storage_flow(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -429,6 +435,7 @@ function variable_storage_flow(
     if report
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :storage,
             :bottom_hole_flow,
@@ -437,6 +444,7 @@ function variable_storage_flow(
         )
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :storage,
             :withdrawal,
@@ -445,6 +453,7 @@ function variable_storage_flow(
         )
         _IM.sol_component_value(
             gm,
+            gm_it_sym,
             nw,
             :storage,
             :well_head_flow,
@@ -457,7 +466,7 @@ end
 "variables associated with well compressor/regulator ratio"
 function variable_storage_c_ratio(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -476,6 +485,7 @@ function variable_storage_c_ratio(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :storage_compressor_ratio,
@@ -487,7 +497,7 @@ end
 "variables associated with reservoir density"
 function variable_reservoir_density(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     bounded::Bool = true,
     report::Bool = true,
 )
@@ -506,6 +516,7 @@ function variable_reservoir_density(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :reservoir_density,
@@ -514,6 +525,7 @@ function variable_reservoir_density(
     )
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :reservoir_pressure,
@@ -525,7 +537,7 @@ end
 "variables associated with the nodal densities of the well"
 function variable_well_density(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
+    nw::Int = nw_id_default;
     num_discretizations::Int = 4,
     bounded::Bool = true,
     report::Bool = true,
@@ -547,6 +559,7 @@ function variable_well_density(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_density,
@@ -559,8 +572,8 @@ end
 "variables associated with the average well fluxes for the storages"
 function variable_well_flux_avg(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = gm.cnw,
+    nw::Int = nw_id_default;
+    num_discretizations::Int = nw_id_default,
     report::Bool = true,
 )
     phi = var(gm, nw)[:well_flux_avg] = Dict{Int,Any}()
@@ -583,6 +596,7 @@ function variable_well_flux_avg(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flux_avg,
@@ -592,6 +606,7 @@ function variable_well_flux_avg(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flow_avg,
@@ -603,8 +618,8 @@ end
 "variables associated with the neg. well fluxes for the storages"
 function variable_well_flux_neg(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = gm.cnw,
+    nw::Int = nw_id_default;
+    num_discretizations::Int = nw_id_default,
     report::Bool = true,
 )
     phi = var(gm, nw)[:well_flux_neg] = Dict{Int,Any}()
@@ -627,6 +642,7 @@ function variable_well_flux_neg(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flux_neg,
@@ -636,6 +652,7 @@ function variable_well_flux_neg(
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flow_neg,
@@ -647,8 +664,8 @@ end
 "variables associated with the (from) well fluxes for the storages"
 function variable_well_flux_fr(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = gm.cnw,
+    nw::Int = nw_id_default;
+    num_discretizations::Int = nw_id_default,
     report::Bool = true,
 )
     phi = var(gm, nw)[:well_flux_fr] = Dict{Int,Any}()
@@ -670,10 +687,11 @@ function variable_well_flux_fr(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
+        sol_component_value(gm, nw, :storage, :well_flux_fr, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flow_fr,
@@ -685,8 +703,8 @@ end
 "variables associated with the (to) well fluxes for the storages"
 function variable_well_flux_to(
     gm::AbstractGasModel,
-    nw::Int = gm.cnw;
-    num_discretizations::Int = gm.cnw,
+    nw::Int = nw_id_default;
+    num_discretizations::Int = nw_id_default,
     report::Bool = true,
 )
     phi = var(gm, nw)[:well_flux_to] = Dict{Int,Any}()
@@ -708,10 +726,11 @@ function variable_well_flux_to(
     end
 
     report &&
-        _IM.sol_component_value(gm, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
+        sol_component_value(gm, nw, :storage, :well_flux_to, ids(gm, nw, :storage), phi)
 
     report && _IM.sol_component_value(
         gm,
+        gm_it_sym,
         nw,
         :storage,
         :well_flow_to,

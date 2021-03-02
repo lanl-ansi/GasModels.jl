@@ -5,7 +5,7 @@ function constraint_slack_junction_density(gm::AbstractGasModel, nw::Int, slack_
 end
 
 "Constraint: nodal balance"
-function constraint_nodal_balance(gm::AbstractGasModel, junction_id::Int, nw::Int = gm.cnw)
+function constraint_nodal_balance(gm::AbstractGasModel, junction_id::Int, nw::Int = nw_id_default)
     net_in = var(gm, nw, :net_nodal_injection, junction_id)
     net_out = var(gm, nw, :net_nodal_edge_out_flow, junction_id)
     _add_constraint!(gm, nw, :nodal_balance, junction_id, JuMP.@constraint(gm.model, net_in == net_out))
@@ -47,7 +47,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, nw::Int, pipe_id::I
 end
 
 "Constraint: aggregate withdrawal at transfer points computation"
-function constraint_transfer_separation(gm::AbstractGasModel, transfer_id::Int, nw::Int = gm.cnw)
+function constraint_transfer_separation(gm::AbstractGasModel, transfer_id::Int, nw::Int = nw_id_default)
     s = var(gm, nw, :transfer_injection)[transfer_id]
     d = var(gm, nw, :transfer_withdrawal)[transfer_id]
     t = var(gm, nw, :transfer_effective)[transfer_id]
@@ -103,7 +103,7 @@ end
 
 "Constraint: storage well nodal balance"
 function constraint_storage_well_nodal_balance(
-    gm::AbstractGasModel, storage_id::Int, nw::Int = gm.cnw;
+    gm::AbstractGasModel, storage_id::Int, nw::Int = nw_id_default;
     num_discretizations::Int = 4, )
 
     f_wh = var(gm, nw, :well_head_flow, storage_id)
@@ -127,7 +127,7 @@ end
 
 "Constraint: equivalence of bottom hole density and reservoir density"
 function constraint_storage_bottom_hole_reservoir_density(
-    gm::AbstractGasModel, storage_id::Int, nw::Int = gm.cnw;
+    gm::AbstractGasModel, storage_id::Int, nw::Int = nw_id_default;
     num_discretizations::Int = 4, )
     rho_bh = var(gm, nw, :well_density, storage_id)[num_discretizations+1]
     rho_reservoir = var(gm, nw, :reservoir_density, storage_id)
@@ -137,7 +137,7 @@ end
 
 "Constraint: reservoir physics"
 function constraint_storage_reservoir_physics(
-    gm::AbstractGasModel, storage_id::Int, nw::Int = gm.cnw;
+    gm::AbstractGasModel, storage_id::Int, nw::Int = nw_id_default;
     is_end::Bool = false, )
     volume = ref(gm, nw, :storage, storage_id)["reservoir_volume"]
     rho_dot = var(gm, nw, :reservoir_density_derivative, storage_id)

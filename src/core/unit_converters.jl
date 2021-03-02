@@ -10,9 +10,6 @@
 @inline m_to_inches(m) = m / 0.0254
 @inline get_universal_R() = 8.314
 @inline get_universal_R(data::Dict{String,Any}) = get(data, "R", get_universal_R())
-@inline get_gas_specific_gravity(data::Dict{String,Any}) = get(data, "gas_specific_gravity", 0.6)
-@inline get_temperature(data::Dict{String,Any}) = get(data, "temperature", 288.7060)
-@inline get_sound_speed(data::Dict{String,Any}) = get(data, "sound_speed", 371.6643)
 @inline get_molecular_mass_of_air() = 0.02896
 @inline get_one_atm_in_pascal() = 101325.0
 @inline get_one_atm_in_psi() = pascal_to_psi(101325)

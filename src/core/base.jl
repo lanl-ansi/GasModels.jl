@@ -14,9 +14,17 @@ function run_model(file::String, model_type, optimizer, build_method; ref_extens
 end
 
 ""
-function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], kwargs...)
-    gm = instantiate_model(data, model_type, build_method; ref_extensions = ref_extensions, ext = get(kwargs, :ext, Dict{Symbol,Any}()), setting = get(kwargs, :setting, Dict{String,Any}()), jump_model = get(kwargs, :jump_model, JuMP.Model()))
-    result = optimize_model!(gm, optimizer = optimizer, solution_processors = solution_processors)
+function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method; ref_extensions = [], solution_processors = [], relax_integrality::Bool=false, kwargs...)
+    gm = instantiate_model(
+        data, model_type, build_method; ref_extensions = ref_extensions,
+        ext = get(kwargs, :ext, Dict{Symbol,Any}()),
+        setting = get(kwargs, :setting, Dict{String,Any}()),
+        jump_model = get(kwargs, :jump_model, JuMP.Model()))
+
+    result = optimize_model!(
+        gm, optimizer = optimizer,
+        relax_integrality = relax_integrality,
+        solution_processors = solution_processors)
 
     if haskey(data, "objective_normalization")
         result["objective"] *= data["objective_normalization"]
@@ -33,8 +41,7 @@ end
 
 
 function instantiate_model(data::Dict{String,<:Any}, model_type::Type, build_method; kwargs...)
-    gm = _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys; kwargs...)
-    return gm
+    return _IM.instantiate_model(data, model_type, build_method, ref_add_core!, _gm_global_keys, gm_it_sym; kwargs...)
 end
 
 
@@ -44,7 +51,7 @@ dictionary would contain fields populated by the optional vector of
 ref_extensions provided as a keyword argument.
 """
 function build_ref(data::Dict{String,<:Any}; ref_extensions = [])
-    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, ref_extensions = ref_extensions)
+    return _IM.build_ref(data, ref_add_core!, _gm_global_keys, gm_it_name; ref_extensions = ref_extensions)
 end
 
 
@@ -71,7 +78,9 @@ Some of the common keys include:
 * `:degree` -- the degree of junction i using existing connections (see `ref_degree!`)),
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
-    _ref_add_core!(refs[:nw], refs[:base_length], refs[:base_pressure], refs[:base_flow], refs[:sound_speed])
+    _ref_add_core!(
+        refs[:it][gm_it_sym][:nw], refs[:it][gm_it_sym][:base_length], refs[:it][gm_it_sym][:base_pressure],
+        refs[:it][gm_it_sym][:base_flow], refs[:it][gm_it_sym][:sound_speed])
 end
 
 function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
@@ -240,3 +249,35 @@ function ref_storage!(ref::Dict{Symbol,Any})
         storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
     end
 end
+
+
+nw_ids(gm::AbstractGasModel) = _IM.nw_ids(gm, gm_it_sym)
+nws(gm::AbstractGasModel) = _IM.nws(gm, gm_it_sym)
+
+ids(gm::AbstractGasModel, nw::Int, key::Symbol) = _IM.ids(gm, gm_it_sym, nw, key)
+ids(gm::AbstractGasModel, key::Symbol; nw::Int=nw_id_default) = _IM.ids(gm, gm_it_sym, key; nw = nw)
+
+ref(gm::AbstractGasModel, nw::Int = nw_id_default) = _IM.ref(gm, gm_it_sym, nw)
+ref(gm::AbstractGasModel, nw::Int, key::Symbol) = _IM.ref(gm, gm_it_sym, nw, key)
+ref(gm::AbstractGasModel, nw::Int, key::Symbol, idx) = _IM.ref(gm, gm_it_sym, nw, key, idx)
+ref(gm::AbstractGasModel, nw::Int, key::Symbol, idx, param::String) = _IM.ref(gm, gm_it_sym, nw, key, idx, param)
+ref(gm::AbstractGasModel, key::Symbol; nw::Int = nw_id_default) = _IM.ref(gm, gm_it_sym, key; nw = nw)
+ref(gm::AbstractGasModel, key::Symbol, idx; nw::Int = nw_id_default) = _IM.ref(gm, gm_it_sym, key, idx; nw = nw)
+ref(gm::AbstractGasModel, key::Symbol, idx, param::String; nw::Int = nw_id_default) = _IM.ref(gm, gm_it_sym, key, idx, param; nw = nw)
+
+var(gm::AbstractGasModel, nw::Int = nw_id_default) = _IM.var(gm, gm_it_sym, nw)
+var(gm::AbstractGasModel, nw::Int, key::Symbol) = _IM.var(gm, gm_it_sym, nw, key)
+var(gm::AbstractGasModel, nw::Int, key::Symbol, idx) = _IM.var(gm, gm_it_sym, nw, key, idx)
+var(gm::AbstractGasModel, key::Symbol; nw::Int = nw_id_default) = _IM.var(gm, gm_it_sym, key; nw = nw)
+var(gm::AbstractGasModel, key::Symbol, idx; nw::Int = nw_id_default) = _IM.var(gm, gm_it_sym, key, idx; nw = nw)
+
+con(gm::AbstractGasModel, nw::Int = nw_id_default) = _IM.con(gm, gm_it_sym; nw = nw)
+con(gm::AbstractGasModel, nw::Int, key::Symbol) = _IM.con(gm, gm_it_sym, nw, key)
+con(gm::AbstractGasModel, nw::Int, key::Symbol, idx) = _IM.con(gm, gm_it_sym, nw, key, idx)
+con(gm::AbstractGasModel, key::Symbol; nw::Int = nw_id_default) = _IM.con(gm, gm_it_sym, key; nw = nw)
+con(gm::AbstractGasModel, key::Symbol, idx; nw::Int = nw_id_default) = _IM.con(gm, gm_it_sym, key, idx; nw = nw)
+
+sol(gm::AbstractGasModel, nw::Int, args...) = _IM.sol(gm, gm_it_sym, nw)
+sol(gm::AbstractGasModel, args...; nw::Int = nw_id_default) = _IM.sol(gm, gm_it_sym; nw = nw)
+
+ismultinetwork(gm::AbstractGasModel) = _IM.ismultinetwork(gm, gm_it_sym)

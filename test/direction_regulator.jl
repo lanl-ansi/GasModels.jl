@@ -256,6 +256,5 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, LRWPGasModel, mip_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-
     end
 end

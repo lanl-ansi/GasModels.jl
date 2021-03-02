@@ -7,6 +7,7 @@ end
 
 
 const _mg_data_names = Vector{String}([
+    "mgc.name",
     "mgc.gas_specific_gravity",
     "mgc.specific_heat_capacity_ratio",
     "mgc.temperature",
@@ -573,7 +574,7 @@ objective is economic_weighting * (load shed) +
     end
 
     if haskey(matlab_data, "mgc.transfer")
-        transfers = []
+        transfers = Array{Dict,1}([])
         for transfer_row in matlab_data["mgc.transfer"]
             transfer_data = _IM.row_to_typed_dict(
                 transfer_row,
@@ -895,7 +896,7 @@ function _gasmodels_to_matgas_string(
     push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -914,7 +915,7 @@ function _gasmodels_to_matgas_string(
     )
     for param in _matlab_global_params_order_optional
         if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.4f;" param data[param]
+            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
         else
             line = "mgc.$(param) = $(data[param]);"
         end
@@ -956,10 +957,16 @@ function _gasmodels_to_matgas_string(
                             elseif isa(data[data_type]["$i"][field], Float64)
                                 push!(
                                     entries,
-                                    Printf.@sprintf "%.4f" data[data_type]["$i"][field]
+                                    Printf.@sprintf "%.12g" data[data_type]["$i"][field]
                                 )
                             else
                                 push!(entries, "$(data[data_type]["$i"][field])")
+                            end
+                        else
+                            if field == "edi_id"
+                                push!(entries, Int(0))
+                            else
+                                Memento.error(_LOGGER, string("$(data_type) $(i) is missing field $(field)"))
                             end
                         end
                     end

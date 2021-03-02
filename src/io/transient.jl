@@ -77,30 +77,31 @@ function parse_files(
     check_edge_loops(static_data)
 
     check_global_parameters(static_data)
+    prep_transient_data!(static_data)
 
     _prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
     transient_data = parse_transient(transient_io)
     make_si_units!(transient_data, static_data)
-    time_series_block = _create_time_series_block(
-        transient_data,
-        total_time = total_time,
-        time_step = time_step,
-        additional_time = additional_time,
-        periodic = periodic,
-    )
 
-    static_data["time_series"] = deepcopy(time_series_block)
-    mn_data = _IM.make_multinetwork(static_data, _gm_global_keys)
+    time_series_block = _create_time_series_block(
+        transient_data, total_time = total_time, time_step = time_step,
+        additional_time = additional_time, periodic = periodic)
+
+    apply_gm!(x -> x["time_series"] = deepcopy(time_series_block), static_data; apply_to_subnetworks = false)
+    mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
     make_per_unit!(mn_data)
+
     return mn_data
 end
 
 "function to get the maximum pipe id"
 function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     max_pipe_id = 0
+
     for (key, pipe) in pipes
         max_pipe_id = (pipe["id"] > max_pipe_id) ? pipe["id"] : max_pipe_id
     end
+
     return max_pipe_id
 end
 
@@ -151,6 +152,11 @@ function update_lat_lon!(data::Dict{String,Any})
         end
     end
 end
+" discretizes the pipes and takes care of renumbering junctions and pipes"
+function prep_transient_data!(data::Dict{String,Any}; spatial_discretization::Float64 = 10000.0)
+    apply_gm!(x -> _prep_transient_data!(x, spatial_discretization = spatial_discretization), data; apply_to_subnetworks = true)
+end
+
 
 " discretizes the pipes and takes care of renumbering junctions and pipes"
 function _prep_transient_data!(
@@ -161,6 +167,7 @@ function _prep_transient_data!(
     num_sub_pipes = Dict()
     short_pipes = []
     long_pipes = []
+
     for (key, pipe) in data["pipe"]
         (pipe["length"] < spatial_discretization) && (push!(short_pipes, key); continue)
         push!(long_pipes, key)
@@ -211,6 +218,7 @@ function _prep_transient_data!(
     # saving the original_pipe and original_junctions separately in the data dictionary
     data["original_pipe"] = Dict{String,Any}()
     data["original_junction"] = Dict{String,Any}()
+
     for (key, pipe) in data["pipe"]
         data["original_pipe"][key] = pipe
     end
@@ -241,14 +249,18 @@ function _prep_transient_data!(
                 "is_english_units",
                 "is_per_unit",
             ]
+
             data["pipe"][key] = Dict{String,Any}()
+
             for field in pipe_fields
                 if haskey(pipe, field)
                     data["pipe"][key][field] = pipe[field]
                 end
             end
+
             data["original_pipe"][key]["fr_pipe"] = pipe["id"]
             data["original_pipe"][key]["to_pipe"] = pipe["id"]
+
             continue
         end
 
@@ -256,11 +268,13 @@ function _prep_transient_data!(
         to_junction = data["junction"][string(pipe["to_junction"])]
         sub_pipe_count = pipe["num_sub_pipes"]
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
+
         data["original_pipe"][key]["fr_pipe"] = max_pipe_id + pipe["id"] * 1000 + 1
         data["original_pipe"][key]["to_pipe"] = max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
             id = max_pipe_id + pipe["id"] * 1000 + i
+
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
                 "p_min" => min(fr_junction["p_min"], to_junction["p_min"]),
@@ -281,6 +295,7 @@ function _prep_transient_data!(
             new_length = pipe["length"] / sub_pipe_count
             fr_id = (i == 1) ? fr_junction["id"] : (id - 1)
             to_id = (i == sub_pipe_count) ? to_junction["id"] : id
+
             data["pipe"][string(id)] = Dict{String,Any}(
                 "id" => id,
                 "fr_junction" => fr_id,
@@ -314,6 +329,7 @@ function _create_time_series_block(
     # create time information
     time_series_block = Dict{String,Any}()
     end_time = total_time + additional_time
+
     if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
         Memento.error(
             _LOGGER,
@@ -321,9 +337,11 @@ function _create_time_series_block(
 provide a time step that exactly divides 3600.0",
         )
     end
-    if time_step < 3600.0 && ~isinteger(3600.0 / time_step)
+
+    if time_step < 3600.0 && !isinteger(3600.0 / time_step)
         Memento.error(_LOGGER, "time step should divide 3600.0 exactly when < 3600.0")
     end
+
     if total_time > 86400.0
         Memento.warn(
             _LOGGER,
@@ -332,6 +350,7 @@ transient optimization problems for more than a day's worth of data; if it takes
 converge, please restrict the final time horizon to a day or less",
         )
     end
+
     if (additional_time == 0.0)
         Memento.warn(
             _LOGGER,
@@ -341,6 +360,7 @@ if the data is not time-periodic GasModels will perform a time-periodic spline i
 at least 4 time series data points are available (and result in an error otherwise)",
         )
     end
+
     num_time_points = Int(ceil(end_time / time_step)) + 1
     num_physical_time_points = Int(ceil(total_time / time_step)) + 1
     time_points = collect(LinRange(0.0, end_time, num_time_points))
@@ -384,6 +404,7 @@ at least 4 time series data points are available (and result in an error otherwi
                 interpolators[type][id][param]["timestamps"][end] -
                 interpolators[type][id][param]["timestamps"][1]
             ) / Millisecond(1) * 1 / 1000.0
+
         if (time_val <= total_time)
             push!(interpolators[type][id][param]["times"], time_val)
             push!(interpolators[type][id][param]["reduced_data_points"], val)
@@ -420,12 +441,14 @@ at least 4 time series data points are available (and result in an error otherwi
         end
 
         itp = interpolators[type][id][param]["itp"]
+
         for t in time_series_block["time_point"]
             itp_val = round(itp(t), digits = 2)
             (abs(itp_val) <= 1e-4) && (itp_val = 0.0)
             push!(time_series_block[type][id][param], itp_val)
         end
     end
+
     _fix_time_series_block!(time_series_block)
     return time_series_block
 end
@@ -447,6 +470,7 @@ function _fix_time_series_block!(block)
             val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
         end
     end
+
     for (i, val) in get(block, "receipt", [])
         if haskey(val, "injection_max")
             val["injection_max"] = max.(val["injection_max"], zeros(length(val["injection_max"])))

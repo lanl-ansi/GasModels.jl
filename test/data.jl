@@ -18,43 +18,42 @@
         @test occursin("Table: delivery", output)
     end
 
-    @testset "check status=false components" begin
+    @testset "check status = false components" begin
         gm = instantiate_model("../test/data/status.m", CRDWPGasModel, GasModels.build_ls)
-        @test !haskey(gm.ref[:nw][gm.cnw][:pipe], 32)
+
+        @test !haskey(ref(gm, nw_id_default, :pipe), 32)
 
         try
-            gm.var[:nw][gm.cnw][:pipe][32] == nothing
-            gm.var[:nw][gm.cnw][:pipe][34] == nothing
+            var(gm, nw_id_default, :pipe)[32] === nothing
+            var(gm, nw_id_default, :pipe)[34] === nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:f_pipe][14] != nothing
+        @test var(gm, nw_id_default, :f_pipe)[14] !== nothing
 
         try
-            gm.var[:nw][gm.cnw][:ql][24] == nothing
-            gm.var[:nw][gm.cnw][:ql][29] == nothing
+            var(gm, nw_id_default, :ql)[24] === nothing
+            var(gm, nw_id_default, :ql)[29] === nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:fl][10004] != nothing
+        @test var(gm, nw_id_default, :fl)[10004] !== nothing
 
         try
-            gm.var[:nw][gm.cnw][:fg][1] == nothing
+            var(gm, nw_id_default, :fg)[1] === nothing
             @test true == false
         catch
         end
 
-        @test gm.var[:nw][gm.cnw][:fg][10002] != nothing
+        @test var(gm, nw_id_default, :fg)[10002] !== nothing
     end
 
     @testset "check data summary" begin
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
-
         output = sprint(GasModels.summary, gas_data)
-
         line_count = count(c -> c == '\n', output)
 
         @test line_count >= 180 && line_count <= 240
@@ -71,7 +70,6 @@
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
         result = run_gf(gas_file, CRDWPGasModel, misocp_solver)
-
         output = sprint(GasModels.summary, result["solution"])
 
         line_count = count(c -> c == '\n', output)
@@ -89,7 +87,10 @@
             gas_data = GasModels.parse_file(gas_file)
             gas_ref = GasModels.build_ref(gas_data)
 
-            @test isapprox(GasModels._calc_pipe_resistance(gas_data["ne_pipe"]["26"], gas_ref[:base_length], gas_ref[:base_pressure], gas_ref[:base_flow], gas_ref[:sound_speed]), 2.3023057843927686; atol = 1e-4)
+            @test isapprox(GasModels._calc_pipe_resistance(
+                gas_data["ne_pipe"]["26"], gas_ref[:it][GasModels.gm_it_sym][:base_length],
+                gas_ref[:it][GasModels.gm_it_sym][:base_pressure], gas_ref[:it][GasModels.gm_it_sym][:base_flow],
+                gas_ref[:it][GasModels.gm_it_sym][:sound_speed]), 2.3023057843927686; atol = 1e-4)
         end
     end
 

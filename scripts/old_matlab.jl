@@ -124,7 +124,7 @@ function parse_old_m_string(data_string::String)
 
     case = Dict{String,Any}()
 
-    if func_name != nothing
+    if func_name !== nothing
         case["name"] = func_name
     else
         @warn "no case name found in .m file.  The file seems to be missing \"function mgc = ...\""

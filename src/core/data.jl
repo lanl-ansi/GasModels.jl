@@ -1,15 +1,40 @@
 # tools for working with GasModels internal data format
 
+"GasModels wrapper for the InfrastructureModels `apply!` function."
+function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
+    _IM.apply!(func!, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
+end
+
+
+"GasModels wrapper for the InfrastructureModels `get_data` function."
+function get_data_gm(func::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
+    return _IM.get_data(func, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
+end
+
+
+"Convenience function for retrieving the gas-only portion of network data."
+function get_gm_data(data::Dict{String, <:Any})
+    return _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
+end
+
+
 "data getters"
-@inline get_base_pressure(data::Dict{String,Any}) = data["base_pressure"]
-@inline get_base_density(data::Dict{String,Any}) = data["base_density"]
-@inline get_base_length(data::Dict{String,Any}) = data["base_length"]
-@inline get_base_flow(data::Dict{String,Any}) = data["base_flow"]
-@inline get_base_flux(data::Dict{String,Any}) = data["base_flux"]
-@inline get_base_time(data::Dict{String,Any}) = data["base_time"]
-@inline get_base_diameter(data::Dict{String,Any}) = data["base_diameter"]
-@inline get_base_volume(data::Dict{String,Any}) = data["base_volume"]
-@inline get_base_mass(data::Dict{String,Any}) = get_base_flow(data) * get_base_time(data)
+@inline get_base_pressure(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_pressure"]), data; apply_to_subnetworks = false)
+@inline get_base_density(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_density"]), data; apply_to_subnetworks = false)
+@inline get_base_length(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_length"]), data; apply_to_subnetworks = false)
+@inline get_base_flow(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flow"]), data; apply_to_subnetworks = false)
+@inline get_base_flux(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flux"]), data; apply_to_subnetworks = false)
+@inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; apply_to_subnetworks = false)
+@inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; apply_to_subnetworks = false)
+@inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; apply_to_subnetworks = false)
+@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; apply_to_subnetworks = false)
+@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; apply_to_subnetworks = false)
+@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
+@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; apply_to_subnetworks = false)
+@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; apply_to_subnetworks = false)
+@inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
+@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
+
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
@@ -25,31 +50,31 @@ end
 
 "calculates the base_time"
 function calc_base_time(data::Dict{String,<:Any})
-    return get_base_length(data) / data["sound_speed"]
+    return get_base_length(data) / get_sound_speed(data)
 end
 
 "calculates the base_flow - this is actually wrong terminology (has to be base_flux - kg/m^2/s, flow is kg/s)"
 function calc_base_flow(data::Dict{String,<:Any})
-    return get_base_pressure(data) / data["sound_speed"]
+    return get_base_pressure(data) / get_sound_speed(data)
 end
 
 "calculates the base_flux"
 function calc_base_flux(data::Dict{String,<:Any})
-    return get_base_density(data) * data["sound_speed"]
+    return get_base_density(data) * get_sound_speed(data)
 end
 
 "calculates the base density"
 function calc_base_density(data::Dict{String,<:Any})
-    return get_base_pressure(data) / data["sound_speed"] / data["sound_speed"]
+    return get_base_pressure(data) / get_sound_speed(data)^2
 end
 
 "estimates standard density from existing data"
 function _estimate_standard_density(data::Dict{String,<:Any})
     standard_pressure = 101325.0 # 1 atm in Pascals
     molecular_mass_of_air = 0.02896
-    temperature = get(data, "temperature", 288.7060)
-    specific_gravity = get(data, "gas_specific_gravity", 0.6)
-    gas_constant = get(data, "R", 8.314)
+    temperature = get_temperature(data)
+    specific_gravity = get_gas_specific_gravity(data)
+    gas_constant = get_gas_constant(data)
 
     return standard_pressure * specific_gravity *
         molecular_mass_of_air * inv(temperature * gas_constant)
@@ -64,49 +89,88 @@ end
 
 
 "if original data is in per-unit ensure it has base values"
-function per_unit_data_field_check!(data::Dict{String,Any})
+function per_unit_data_field_check!(data::Dict{String, <:Any})
+    apply_gm!(_per_unit_data_field_check!, data; apply_to_subnetworks = false)
+end
+
+
+"if original data is in per-unit ensure it has base values"
+function _per_unit_data_field_check!(data::Dict{String,Any})
     if get(data, "is_per_unit", false) == true
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
-            (get(data, "base_density", false) == false) &&
-                (data["base_density"] = calc_base_density(data))
-            data["base_time"] = calc_base_time(data)
+            if get(data, "base_density", false) == false
+                data["base_density"] = calc_base_density(data)
+            end
+
             data["base_diameter"] = 1.0
-            (get(data, "base_flow", false) == false) &&
-                (data["base_flow"] = calc_base_flow(data))
-            (get(data, "base_flux", false) == false) &&
-                (data["base_flux"] = calc_base_flux(data))
+            data["base_time"] = calc_base_time(data)
+
+            if get(data, "base_flow", false) == false
+                data["base_flow"] = calc_base_flow(data)
+            end
+
+            if get(data, "base_flux", false) == false
+                data["base_flux"] = calc_base_flux(data)
+            end
         end
     end
 end
 
 
 "adds additional non-dimensional constants to data dictionary"
-function add_base_values!(data::Dict{String,Any})
-    (get(data, "base_pressure", false) == false) &&
-        (data["base_pressure"] = calc_base_pressure(data))
-    (get(data, "base_density", false) == false) &&
-        (data["base_density"] = calc_base_density(data))
-    (get(data, "base_length", false) == false) && (data["base_length"] = 5000.0)
-    data["base_time"] = calc_base_time(data)
-    data["base_diameter"] = 1.0
-    (get(data, "base_flow", false) == false) && (data["base_flow"] = calc_base_flow(data))
-    (get(data, "base_flux", false) == false) && (data["base_flux"] = calc_base_flux(data))
-    (get(data, "base_volume", false) == false) &&
-        (data["base_volume"] = data["base_length"])
-    (get(data, "base_mass", false) == false) &&
-        (data["base_mass"] = data["base_density"] * data["base_volume"])
+function add_base_values!(data::Dict{String, <:Any})
+    apply_gm!(_add_base_values!, data; apply_to_subnetworks = false)
 end
 
+
+"adds additional non-dimensional constants to data dictionary"
+function _add_base_values!(data::Dict{String,Any})
+    if get(data, "base_pressure", false) == false
+        data["base_pressure"] = calc_base_pressure(data)
+    end
+
+    if get(data, "base_density", false) == false
+        data["base_density"] = calc_base_density(data)
+    end
+
+    if get(data, "base_length", false) == false
+        data["base_length"] = 5000.0
+    end
+
+    data["base_diameter"] = 1.0
+    data["base_time"] = calc_base_time(data)
+
+    if get(data, "base_flow", false) == false
+        data["base_flow"] = calc_base_flow(data)
+    end
+
+    if get(data, "base_flux", false) == false
+        data["base_flux"] = calc_base_flux(data)
+    end
+
+    if get(data, "base_volume", false) == false
+        data["base_volume"] = data["base_length"]
+    end
+
+    if get(data, "base_mass", false) == false
+        data["base_mass"] = data["base_density"] * data["base_volume"]
+    end
+end
+
+
 "make transient data to si units"
-function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::Dict{String,Any},
-)
-    if static_data["units"] == "si"
+function make_si_units!(transient_data::Array{Dict{String, Any}, 1}, static_data::Dict{String,Any})
+    gm_static_data = get_gm_data(static_data)
+
+    if gm_static_data["units"] == "si"
         return
     end
-    mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(static_data)
-    inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(static_data)
+
+    mmscfd_to_kgps = x -> x * get_mmscfd_to_kgps_conversion_factor(gm_static_data)
+    inv_mmscfd_to_kgps = x -> x / get_mmscfd_to_kgps_conversion_factor(gm_static_data)
+
     pressure_params = [
         "p_min",
         "p_max",
@@ -122,6 +186,7 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
         "reservoir_p_max",
         "reservoir_pressure",
     ]
+
     flow_params = [
         "f",
         "fd",
@@ -145,15 +210,20 @@ function make_si_units!(transient_data::Array{Dict{String,Any},1}, static_data::
         "bottom_hole_flow",
         "well_head_flow",
     ]
+
     inv_flow_params = ["bid_price", "offer_price"]
+
     for line in transient_data
         param = line["parameter"]
+
         if param in pressure_params
             line["value"] = psi_to_pascal(line["value"])
         end
+
         if param in flow_params
             line["value"] = mmscfd_to_kgps(line["value"])
         end
+
         if param in inv_flow_params
             line["value"] = inv_mmscfd_to_kgps(line["value"])
         end
@@ -371,6 +441,8 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "offer_price" => rescale_inv_flow,
     )
 end
+
+
 "Transforms data to si units"
 function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x / get_base_flow(data)
@@ -391,16 +463,18 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
-    _apply_func!(nw_data, "time_point", rescale_time)
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
+    _apply_func!(gm_nw_data, "time_point", rescale_time)
+
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                comp["is_per_unit"] = data["is_per_unit"]
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
@@ -417,6 +491,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
         end
     end
 end
+
 
 function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_base_flow(data)
@@ -437,19 +512,23 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
-    _apply_func!(nw_data, "time_point", rescale_time)
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
+    _apply_func!(gm_nw_data, "time_point", rescale_time)
+
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_si_units"] == false && comp["is_per_unit"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -461,6 +540,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
         end
     end
 end
+
 
 function si_to_english!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_kgps_to_mmscfd_conversion_factor(data)
@@ -480,18 +560,22 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
+
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_english_units"] == false && comp["is_si_units"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -503,6 +587,7 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
         end
     end
 end
+
 
 function english_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_mmscfd_to_kgps_conversion_factor(data)
@@ -522,19 +607,22 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
         rescale_inv_flow,
     )
 
-    nw_data = (id == "0") ? data : data["nw"][id]
+    gm_data = get_gm_data(data)
+    gm_nw_data = (id == "0") ? gm_data : gm_data["nw"][id]
 
     for (component, parameters) in _params_for_unit_conversions
-        for (i, comp) in get(nw_data, component, [])
-            if ~haskey(comp, "is_per_unit") && ~haskey(data, "is_per_unit")
+        for (i, comp) in get(gm_nw_data, component, [])
+            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
-            if ~haskey(comp, "is_per_unit") && haskey(data, "is_per_unit")
-                @assert data["is_per_unit"] == 1
-                comp["is_per_unit"] = data["is_per_unit"]
+
+            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
+                @assert gm_data["is_per_unit"] == 1
+                comp["is_per_unit"] = gm_data["is_per_unit"]
                 comp["is_si_units"] = 0
                 comp["is_english_units"] = 0
             end
+
             if comp["is_english_units"] == true && comp["is_si_units"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
@@ -545,14 +633,21 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
             end
         end
     end
-
 end
 
+
 "transforms data to si units"
-function make_si_units!(data::Dict{String,<:Any})
+function make_si_units!(data::Dict{String, <:Any})
+    apply_gm!(_make_si_units!, data; apply_to_subnetworks = false)
+end
+
+
+"transforms data to si units"
+function _make_si_units!(data::Dict{String,<:Any})
     if get(data, "is_si_units", false) == true
         return
     end
+
     if get(data, "is_per_unit", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
@@ -561,14 +656,17 @@ function make_si_units!(data::Dict{String,<:Any})
         else
             pu_to_si!(data)
         end
+
         if haskey(data, "time_step")
             rescale_time = x -> x * get_base_time(data)
             data["time_step"] = rescale_time(data["time_step"])
         end
+
         data["is_si_units"] = 1
         data["is_english_units"] = 0
         data["is_per_unit"] = 0
     end
+
     if get(data, "is_english_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
@@ -577,20 +675,29 @@ function make_si_units!(data::Dict{String,<:Any})
         else
             english_to_si!(data)
         end
+
         data["is_si_units"] = 1
         data["is_english_units"] = 0
         data["is_per_unit"] = 0
     end
 end
 
-"Transforms network data into english units"
-function make_english_units!(data::Dict{String,<:Any})
+
+"Transforms network data into English units"
+function make_english_units!(data::Dict{String, <:Any})
+    apply_gm!(_make_english_units!, data; apply_to_subnetworks = false)
+end
+
+"Transforms network data into English units"
+function _make_english_units!(data::Dict{String, <:Any})
     if get(data, "is_english_units", false) == true
         return
     end
+
     if get(data, "is_per_unit", false) == true
         make_si_units!(data)
     end
+
     if get(data, "is_si_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
@@ -599,20 +706,30 @@ function make_english_units!(data::Dict{String,<:Any})
         else
             si_to_english!(data)
         end
+
         data["is_si_units"] = 0
         data["is_english_units"] = 1
         data["is_per_unit"] = 0
     end
 end
 
+
 "Transforms network data into per unit"
-function make_per_unit!(data::Dict{String,<:Any})
+function make_per_unit!(data::Dict{String, <:Any})
+    apply_gm!(_make_per_unit!, data; apply_to_subnetworks = false)
+end
+
+
+"Transforms network data into per unit"
+function _make_per_unit!(data::Dict{String,<:Any})
     if get(data, "is_per_unit", false) == true
         return
     end
+
     if get(data, "is_english_units", false) == true
         make_si_units!(data)
     end
+
     if get(data, "is_si_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
@@ -621,21 +738,30 @@ function make_per_unit!(data::Dict{String,<:Any})
         else
             si_to_pu!(data)
         end
+
         if haskey(data, "time_step")
             rescale_time = x -> x / get_base_time(data)
             data["time_step"] = rescale_time(data["time_step"])
         end
+
         data["is_si_units"] = 0
         data["is_english_units"] = 0
         data["is_per_unit"] = 1
     end
 end
 
+
 "checks for non-negativity of certain fields in the data"
-function check_non_negativity(data::Dict{String,<:Any})
+function check_non_negativity(data::Dict{String, <:Any})
+    apply_gm!(_check_non_negativity, data; apply_to_subnetworks = false)
+end
+
+
+"checks for non-negativity of certain fields in the data"
+function _check_non_negativity(data::Dict{String, <:Any})
     for field in non_negative_metadata
         if get(data, field, 0.0) < 0.0
-            Memento.error(_LOGGER, "metadata $field is < 0")
+            Memento.error(_LOGGER, "Metadata $field is less than zero.")
         end
     end
 
@@ -643,7 +769,7 @@ function check_non_negativity(data::Dict{String,<:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
-                    Memento.error(_LOGGER, "$field[$i][$column_name] is < 0")
+                    Memento.error(_LOGGER, "$field[$i][$column_name] is less than zero.")
                 end
             end
         end
@@ -652,7 +778,13 @@ end
 
 
 "checks validity of global-level parameters"
-function check_global_parameters(data::Dict{String,<:Any})
+function check_global_parameters(data::Dict{String, <:Any})
+    apply_gm!(_check_global_parameters, data; apply_to_subnetworks = false)
+end
+
+
+"checks validity of global-level parameters"
+function _check_global_parameters(data::Dict{String, <:Any})
     if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
         Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
     end
@@ -674,8 +806,14 @@ function check_global_parameters(data::Dict{String,<:Any})
     end
 end
 
-"correct minimum pressures"
-function correct_f_bounds!(data::Dict{String,Any})
+
+"Correct mass flow bounds"
+function correct_f_bounds!(data::Dict{String, <:Any})
+    apply_gm!(_correct_f_bounds!, data; apply_to_subnetworks = false)
+end
+
+"Correct mass flow bounds"
+function _correct_f_bounds!(data::Dict{String,Any})
     mf = _calc_max_mass_flow(
         data["receipt"],
         get(data, "storage", Dict()),
@@ -759,6 +897,7 @@ function correct_f_bounds!(data::Dict{String,Any})
             data["base_flow"],
             data["sound_speed"],
         )
+
         pipe["flow_max"] = _calc_ne_pipe_flow_max(
             mf,
             pipe,
@@ -775,12 +914,17 @@ function correct_f_bounds!(data::Dict{String,Any})
         compressor["flow_min"] = _calc_ne_compressor_flow_min(-mf, compressor)
         compressor["flow_max"] = _calc_ne_compressor_flow_max(mf, compressor)
     end
-
 end
 
 
-"correct minimum pressures"
-function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
+"Correct minimum pressures"
+function correct_p_mins!(data::Dict{String, <:Any})
+    apply_gm!(_correct_p_mins!, data; apply_to_subnetworks = false)
+end
+
+
+"Correct minimum pressures"
+function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 0.0
             Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
@@ -803,33 +947,41 @@ function correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_valu
             (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
         end
+
         if compressor["outlet_p_min"] < 0
             Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
             (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
         end
     end
-
-    return
 end
 
 
 "add additional compressor fields - required for transient"
-function add_compressor_fields!(data::Dict{String,<:Any})
+function add_compressor_fields!(data::Dict{String, <:Any})
+    apply_gm!(_add_compressor_fields!, data; apply_to_subnetworks = false)
+end
+
+
+"add additional compressor fields - required for transient"
+function _add_compressor_fields!(data::Dict{String,<:Any})
     is_si_units = get(data, "is_si_units", 0)
     is_english_units = get(data, "is_english_units", 0)
     is_per_unit = get(data, "is_per_unit", false)
+
     for (i, compressor) in data["compressor"]
         if is_si_units == true
             compressor["diameter"] = 1.0
             compressor["length"] = 250.0
             compressor["friction_factor"] = 0.001
         end
+
         if is_english_units == true
             compressor["diameter"] = 39.37
             compressor["length"] = 0.16
             compressor["friction_factor"] = 0.001
         end
+
         if is_per_unit == true
             base_length = get(data, "base_length", 5000.0)
             compressor["diameter"] = 1.0
@@ -845,11 +997,13 @@ function add_compressor_fields!(data::Dict{String,<:Any})
                 compressor["length"] = 250.0
                 compressor["friction_factor"] = 0.001
             end
+
             if is_english_units == true
                 compressor["diameter"] = 39.37
                 compressor["length"] = 0.16
                 compressor["friction_factor"] = 0.001
             end
+
             if is_per_unit == true
                 base_length = get(data, "base_length", 5000.0)
                 compressor["diameter"] = 1.0
@@ -857,18 +1011,6 @@ function add_compressor_fields!(data::Dict{String,<:Any})
                 compressor["friction_factor"] = 0.001
             end
         end
-    end
-end
-
-
-"checks that all buses are unique and other components link to valid buses"
-function check_connectivity(data::Dict{String,<:Any})
-    if _IM.ismultinetwork(data)
-        for (n, nw_data) in data["nw"]
-            _check_connectivity(nw_data)
-        end
-    else
-        _check_connectivity(data)
     end
 end
 
@@ -888,7 +1030,7 @@ const _gm_component_types = [
     "receipt",
 ]
 
-const _gm_junction_keys = ["fr_junction", "to_junction", "junction"]
+const _gm_junction_keys = ["fr_junction", "to_junction", "junction", "junction_id"]
 
 const _gm_edge_types = [
     "pipe",
@@ -901,6 +1043,12 @@ const _gm_edge_types = [
     "ne_pipe",
     "ne_compressor",
 ]
+
+
+"checks that all junctions are unique and other components link to valid junctions"
+function check_connectivity(data::Dict{String, <:Any})
+    apply_gm!(_check_connectivity, data; apply_to_subnetworks = true)
+end
 
 
 "checks that all buses are unique and other components link to valid buses"
@@ -923,7 +1071,13 @@ end
 
 
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
-function check_status(data::Dict{String,<:Any})
+function check_status(data::Dict{String, <:Any})
+    apply_gm!(_check_status, data; apply_to_subnetworks = false)
+end
+
+
+"checks that active components are not connected to inactive buses, otherwise prints warnings"
+function _check_status(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
     end
@@ -949,7 +1103,13 @@ end
 
 
 "checks that all edges connect two distinct junctions"
-function check_edge_loops(data::Dict{String,<:Any})
+function check_edge_loops(data::Dict{String, <:Any})
+    apply_gm!(_check_edge_loops, data; apply_to_subnetworks = false)
+end
+
+
+"checks that all edges connect two distinct junctions"
+function _check_edge_loops(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
     end
@@ -966,8 +1126,14 @@ function check_edge_loops(data::Dict{String,<:Any})
 end
 
 
+"checks that all edges connect two distinct junctions"
+function propagate_topology_status!(data::Dict{String, <:Any})
+    apply_gm!(_propagate_topology_status!, data; apply_to_subnetworks = true)
+end
+
+
 "helper function to propagate disabled status of junctions to connected components"
-function propagate_topology_status!(data::Dict{String,<:Any})
+function _propagate_topology_status!(data::Dict{String,<:Any})
     disabled_junctions = Set([junc["index"] for junc in values(data["junction"]) if junc["status"] == 0])
 
     for comp_type in _gm_component_types
@@ -989,21 +1155,25 @@ end
 "Calculates max mass flow network wide using ref"
 function _calc_max_mass_flow(receipts::Dict, storages::Dict, transfers::Dict)
     max_flow = 0
+
     for (idx, receipt) in receipts
         if receipt["injection_max"] > 0
             max_flow = max_flow + receipt["injection_max"]
         end
     end
+
     for (idx, storage) in storages
         if storage["flow_injection_rate_max"] > 0
             max_flow = max_flow + storage["flow_injection_rate_max"]
         end
     end
+
     for (idx, transfer) in transfers
         if transfer["withdrawal_min"] < 0
             max_flow = max_flow - transfer["withdrawal_min"]
         end
     end
+
     return max_flow
 end
 
@@ -1104,7 +1274,7 @@ function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_len
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
-    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe,i,j)
+    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
     w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
     pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
 
@@ -1176,9 +1346,9 @@ function _calc_ne_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_
     flow_direction = get(pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return min(0,max(mf, pf_min, flow_min,0))
+        return min(0.0, max(mf, pf_min, flow_min, 0.0))
     else
-        return min(0,max(mf, pf_min, flow_min))
+        return min(0.0, max(mf, pf_min, flow_min))
     end
 end
 
@@ -1232,9 +1402,9 @@ function _calc_ne_compressor_flow_min(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if directionality == 1 || flow_direction == 1
-        return min(0,max(mf, flow_min, 0))
+        return min(0.0, max(mf, flow_min, 0.0))
     else
-        return min(0,max(mf, flow_min))
+        return min(0.0, max(mf, flow_min))
     end
 end
 
@@ -1245,9 +1415,9 @@ function _calc_ne_compressor_flow_max(mf::Float64, compressor::Dict)
     flow_direction = get(compressor, "flow_direction", 0)
 
     if flow_direction == -1
-        return max(0,min(mf, flow_max, 0))
+        return max(0.0, min(mf, flow_max, 0.0))
     else
-        return max(0,min(mf, flow_max))
+        return max(0.0, min(mf, flow_max))
     end
 end
 
@@ -1293,7 +1463,7 @@ function _calc_short_pipe_flow_min(mf::Float64, short_pipe::Dict)
     flow_direction = get(short_pipe, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(0, flow_min, mf)
+        return max(0.0, flow_min, mf)
     end
 
     return max(flow_min, mf)
@@ -1306,7 +1476,7 @@ function _calc_short_pipe_flow_max(mf::Float64, short_pipe::Dict)
     flow_direction = get(short_pipe, "flow_direction", 0)
 
     if flow_direction == -1
-        return min(0, flow_max, mf)
+        return min(0.0, flow_max, mf)
     end
 
     return min(flow_max, mf)
@@ -1320,9 +1490,10 @@ function _calc_valve_flow_min(mf::Float64, valve::Dict)
     flow_direction = get(valve, "flow_direction", 0)
 
     if is_bidirectional == 0 || flow_direction == 1
-        return min(0,max(0, flow_min, mf))
+        return min(0.0, max(0.0, flow_min, mf))
     end
-    return min(0,max(flow_min, mf))
+
+    return min(0.0, max(flow_min, mf))
 end
 
 
@@ -1374,9 +1545,11 @@ end
 "Helper function for determining if direction cuts can be applied"
 function _apply_mass_flow_cuts(yp, branches)
     is_disjunction = true
+
     for k in branches
         is_disjunction &= haskey(yp, k)
     end
+
     return is_disjunction
 end
 
@@ -1588,19 +1761,21 @@ computes the connected components of the network graph
 returns a set of sets of juntion ids, each set is a connected component
 """
 function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_types)
-    if _IM.ismultinetwork(data)
+    gm_data = get_gm_data(data)
+
+    if _IM.ismultinetwork(gm_data)
         Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
     end
 
-    active_junction = Dict(x for x in data["junction"] if x.second["status"] != 0)
+    active_junction = Dict(x for x in gm_data["junction"] if x.second["status"] != 0)
     active_junction_ids = Set{Int64}([junction["id"] for (i, junction) in active_junction])
 
     neighbors = Dict(i => [] for i in active_junction_ids)
     for edge_type in edges
-        for edge in values(get(data, edge_type, Dict()))
+        for edge in values(get(gm_data, edge_type, Dict()))
             if get(edge, "status", 1) != 0 &&
-               edge["fr_junction"] in active_junction_ids &&
-               edge["to_junction"] in active_junction_ids
+                edge["fr_junction"] in active_junction_ids &&
+                edge["to_junction"] in active_junction_ids
                 push!(neighbors[edge["fr_junction"]], edge["to_junction"])
                 push!(neighbors[edge["to_junction"]], edge["fr_junction"])
             end
@@ -1625,6 +1800,7 @@ end
 "perModels DFS on a graph"
 function _dfs(i, neighbors, component_lookup, touched)
     push!(touched, i)
+
     for j in neighbors[i]
         if !(j in touched)
             new_comp = union(component_lookup[i], component_lookup[j])

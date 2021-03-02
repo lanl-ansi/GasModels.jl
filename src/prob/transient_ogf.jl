@@ -1,6 +1,8 @@
 "entry point for the transient optimal gas flow model"
 function run_transient_ogf(data, model_type, optimizer; kwargs...)
-    @assert _IM.ismultinetwork(data) == true
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
+    @assert _IM.ismultinetwork(data_it) == true
+
     return run_model(
         data,
         model_type,
@@ -159,7 +161,8 @@ function build_transient_ogf(gm::AbstractGasModel)
         end
     end
 
-    econ_weight = gm.ref[:economic_weighting]
+    econ_weight = gm.ref[:it][gm_it_sym][:economic_weighting]
+
     if econ_weight == 1.0
         objective_min_transient_load_shed(gm, time_points)
     elseif econ_weight == 0.0

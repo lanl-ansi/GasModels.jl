@@ -2,14 +2,14 @@
 
 
 "Variables needed for modeling flow in LRDWP models"
-function variable_flow(gm::AbstractLRDWPModel, n::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_flow(gm::AbstractLRDWPModel, n::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     variable_mass_flow(gm, n; bounded = bounded, report = report)
     variable_connection_direction(gm, n; report = report)
 end
 
 
 "Variables needed for modeling flow in LRDWP models"
-function variable_flow_ne(gm::AbstractLRDWPModel, n::Int = gm.cnw; bounded::Bool = true, report::Bool = true)
+function variable_flow_ne(gm::AbstractLRDWPModel, n::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
     variable_mass_flow_ne(gm, n; bounded = bounded, report = report)
     variable_connection_direction_ne(gm, n; report = report)
 end

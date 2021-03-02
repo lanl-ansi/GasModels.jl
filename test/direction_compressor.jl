@@ -267,7 +267,6 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
 
 
-
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
         data["compressor"]["20"]["flow_direction"] = 0
         data["compressor"]["20"]["directionality"] = 2
@@ -359,6 +358,5 @@
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
         result = run_gf(data, LRWPGasModel, mip_solver)
         @test result["termination_status"] == INFEASIBLE || result["termination_status"] == LOCALLY_INFEASIBLE
-
     end
 end

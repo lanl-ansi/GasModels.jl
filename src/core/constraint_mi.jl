@@ -19,6 +19,7 @@ function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, 
     f_regulator = var(gm, n, :f_regulator)
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
+    ft = var(gm, n, :ft)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -27,7 +28,8 @@ function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, 
     y_valve = var(gm, n, :y_valve)
     y_regulator = var(gm, n, :y_regulator)
 
-    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+    _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) -
+                                                                             sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
         sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
         sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
         sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
@@ -79,6 +81,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
     f_ne_compressor = var(gm, n, :f_ne_compressor)
     fg = var(gm, n, :fg)
     fl = var(gm, n, :fl)
+    ft = var(gm, n, :ft)
     y_pipe = var(gm, n, :y_pipe)
     y_compressor = var(gm, n, :y_compressor)
     y_resistor = var(gm, n, :y_resistor)
@@ -89,7 +92,8 @@ function constraint_mass_flow_balance_ne(gm::AbstractMIModels, n::Int, i, f_pipe
     y_ne_pipe = var(gm, n, :y_ne_pipe)
     y_ne_compressor = var(gm, n, :y_ne_compressor)
 
-    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) ==
+    _add_constraint!(gm, n, :junction_mass_flow_balance_ne_ls, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) -
+                                                                                   sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) ==
         sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
         sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
         sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +

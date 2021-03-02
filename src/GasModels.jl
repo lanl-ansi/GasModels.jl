@@ -2,7 +2,7 @@ module GasModels
     import InfrastructureModels
     const _IM = InfrastructureModels
 
-    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, optimize_model!, @im_fields, ismultinetwork
+    import InfrastructureModels: optimize_model!, @im_fields, ismultinetwork, nw_id_default
 
     import JSON
     import JuMP
@@ -43,6 +43,9 @@ module GasModels
         "units", "is_per_unit", "is_english_units", "is_si_units",
         "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
         "economic_weighting"])
+
+    const gm_it_name = "gm"
+    const gm_it_sym = Symbol(gm_it_name)
 
     include("io/json.jl")
     include("io/common.jl")
