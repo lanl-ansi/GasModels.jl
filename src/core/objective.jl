@@ -122,7 +122,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
                                           sum(f[n][i] * (r[n][i]^m - 1) for (i, compressor) in ref(gm, n, :compressor))
                                           for n in nws
                                        ))
-    return JuMP.@NLobjective(gm.model, Min, z)
+    return JuMP.@objective(gm.model, Min, z)
 end
 
 "transient objective for minimizing a linear combination of compressor power and load shed"
