@@ -23,4 +23,10 @@ Long term, the plan is to move the examples out of the `GasModels` repository an
 
 [2] Conrado Borraz-Sanchez, Russell Bent, Scott Backhaus, Hassan Hijazi and Pascal Van Hentenryck. "Convex Relaxations for Gas Expansion Planning". *INFORMS Journal on Computing*, 28 (4): 645-656, 2016.
 
-[3] C. Brosig, S. Fassbender, E. Waffenschmidt, S. Janocha and B. Klaassen, "Benchmark gas distribution network for cross-sectoral applications," 2017 International Energy and Sustainability Conference (IESC), Farmingdale, NY, 2017, pp. 1-5, doi: 10.1109/IESC.2017.8283183.
+[3] C. Brosig, S. Fassbender, E. Waffenschmidt, S. Janocha and B. Klaassen, "Benchmark gas distribution network for cross-sectoral applications," 2017 International Energy and Sustainability Conference (IESC), Farmingdale, NY, 2017, pp. 1-5, doi: 10.1109/IESC.2017.8283183. *
+
+* This benchmark was modified for GasModels in the following ways
+(i) properties of the gas were modified to reflect standard methanes
+(ii) friction factors were computed using the formula stated in https://arxiv.org/pdf/2009.14726.pdf - (2 ln ((3.7*diameter) / roughness))^-2
+(iii) MW load values (for gas) conversion.  MW to Joules per second (multiply MW by 1,000,000). Joules per second to BTU per second  (multiply J/s by 0.00095). BTU per second to ft^3/s
+(there are 1,030 BTUs per cubic foot for natural gas, so divide by 1030 to get ft^3). ft^3/s to m^3/s (multiply by 0.0283168) m^3/s to kg/ s (multiply by density of gas - used .68 as a "standard density")

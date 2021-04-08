@@ -969,24 +969,26 @@ function _add_compressor_fields!(data::Dict{String,<:Any})
     is_english_units = get(data, "is_english_units", 0)
     is_per_unit = get(data, "is_per_unit", false)
 
-    for (i, compressor) in data["compressor"]
-        if is_si_units == true
-            compressor["diameter"] = 1.0
-            compressor["length"] = 250.0
-            compressor["friction_factor"] = 0.001
-        end
+    if haskey(data, "compressor")
+        for (i, compressor) in data["compressor"]
+            if is_si_units == true
+                compressor["diameter"] = 1.0
+                compressor["length"] = 250.0
+                compressor["friction_factor"] = 0.001
+            end
 
-        if is_english_units == true
-            compressor["diameter"] = 39.37
-            compressor["length"] = 0.16
-            compressor["friction_factor"] = 0.001
-        end
+            if is_english_units == true
+                compressor["diameter"] = 39.37
+                compressor["length"] = 0.16
+                compressor["friction_factor"] = 0.001
+            end
 
-        if is_per_unit == true
-            base_length = get(data, "base_length", 5000.0)
-            compressor["diameter"] = 1.0
-            compressor["length"] = 250.0 / base_length
-            compressor["friction_factor"] = 0.001
+            if is_per_unit == true
+                base_length = get(data, "base_length", 5000.0)
+                compressor["diameter"] = 1.0
+                compressor["length"] = 250.0 / base_length
+                compressor["friction_factor"] = 0.001
+            end
         end
     end
 
