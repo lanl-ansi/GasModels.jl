@@ -883,6 +883,17 @@ const non_negative_data = Dict{String,Vector{String}}(
     ],
 )
 
+const rouge_junction_id_fields = Dict{String,Vector{String}}(
+    "pipe" => ["fr_junction", "to_junction"],
+    "compressor" => ["fr_junction", "to_junction"],
+    "resistor" => ["fr_junction", "to_junction"],
+    "valve" => ["fr_junction", "to_junction"],
+    "transfer" => ["junction_id"],
+    "receipt" => ["junction_id"],
+    "delivery" => ["junction_id"],
+    "storage" => ["junction_id"],
+)
+
 
 "write to matgas"
 function _gasmodels_to_matgas_string(
