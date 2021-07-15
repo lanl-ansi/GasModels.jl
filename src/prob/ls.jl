@@ -37,6 +37,7 @@ function build_ls(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
+    variable_mass_storage_flow(gm)
 
     objective_max_load(gm)
 

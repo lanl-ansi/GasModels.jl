@@ -53,6 +53,7 @@ function build_ne(gm::AbstractGasModel)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
     variable_compressor_ratio_sqr_ne(gm; compressors = bounded_compressors_ne)
+    variable_mass_storage_flow(gm)
 
     # expansion cost objective
     objective_min_ne_cost(gm)
