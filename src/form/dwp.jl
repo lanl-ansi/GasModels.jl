@@ -14,6 +14,12 @@ function variable_flow_ne(gm::AbstractDWPModel, n::Int = nw_id_default; bounded:
 end
 
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+    variable_storage_direction(gm,nw,report=report)
+end
+
 "Weymouth equation with discrete direction variables
 
 Constraint 1:

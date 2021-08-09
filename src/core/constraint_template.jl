@@ -457,3 +457,17 @@ function constraint_on_off_regulator_pressure(gm::AbstractGasModel, k; n::Int = 
 
     constraint_on_off_regulator_pressure(gm, n, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
 end
+
+
+"Template: (De)Compression ratios for a well"
+function constraint_well_compressor_ratios(gm::AbstractGasModel, i; n::Int = nw_id_default)
+    storage          = ref(gm, n, :storage, i)
+    j                = storage["junction"]
+    max_ratio        = compressor["c_ratio_max"]
+    min_ratio        = compressor["reduction_factor_max"]
+    j_pmax           = ref(gm, n, :junction, j)["p_max"]
+    j_pmin           = ref(gm, n, :junction, j)["p_min"]
+    initial_pressure = storage["initial_pressure"]
+
+    constraint_well_compressor_ratios(gm, n, j, min_ratio, max_ratio, initial_pressure, j_pmin, j_pmax)
+end

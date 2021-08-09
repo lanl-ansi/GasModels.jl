@@ -15,6 +15,11 @@ function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bound
     variable_connection_direction_ne(gm, nw; report = report)
 end
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractCRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+    variable_storage_direction(gm,nw,report=report)
+end
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
 function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)

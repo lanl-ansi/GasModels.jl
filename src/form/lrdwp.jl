@@ -14,6 +14,13 @@ function variable_flow_ne(gm::AbstractLRDWPModel, n::Int = nw_id_default; bounde
     variable_connection_direction_ne(gm, n; report = report)
 end
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractLRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+    variable_storage_direction(gm,nw,report=report)
+end
+
+
 ######################################################################################################
 ## Constraints
 ######################################################################################################

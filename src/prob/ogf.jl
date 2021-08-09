@@ -49,7 +49,7 @@ function build_ogf(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm)
-    variable_mass_storage_flow(gm)
+    variable_storage(gm)
 
     objective_min_economic_costs(gm)
 
@@ -101,5 +101,9 @@ function build_ogf(gm::AbstractGasModel)
     for i in ids(gm, :regulator)
         constraint_on_off_regulator_mass_flow(gm, i)
         constraint_on_off_regulator_pressure(gm, i)
+    end
+
+    for i in ids(gm, :storage)
+        constraint_well_compressor_ratios(gm,i)
     end
 end

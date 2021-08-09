@@ -164,7 +164,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         _add_edges_to_junction_map!(ref[:valves_fr], ref[:valves_to], ref[:valve])
 
         ref_degree!(ref)
-        ref_storage!(ref)
+        ref_storage!(ref, sound_speed)
 
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
@@ -239,7 +239,9 @@ end
 
 
 "Add reference information for storage facilities"
-function ref_storage!(ref::Dict{Symbol,Any})
+function ref_storage!(ref::Dict{Symbol,Any}, sound_speed)
+    a_sqr = sound_speed^2
+
     for (i, storage) in ref[:storage]
         storage["reservoir_density_max"] = storage["reservoir_p_max"]
         storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"]
@@ -247,6 +249,7 @@ function ref_storage!(ref::Dict{Symbol,Any})
         storage["reservoir_density_min"] = storage["reservoir_p_min"]
         storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
         storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
+        storage["initial_pressure"] = a_sqr * storage["initial_density"] # assumes universal temperature
     end
 end
 
