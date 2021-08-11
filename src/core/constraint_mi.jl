@@ -6,8 +6,6 @@
 # Constraints for modeling junction_nondispatchable_deliveries
 #############################################################################################################
 
-
-
 "Constraint: standard flow balance equation where demand and production are variables"
 function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, storages, flmin, flmax, fgmin, fgmax)
     f_pipe = var(gm, n, :f_pipe)
@@ -30,7 +28,7 @@ function constraint_mass_flow_balance(gm::AbstractMIModels, n::Int, i, f_pipes, 
     y_regulator = var(gm, n, :y_regulator)
 
     _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) -
-                                                                             sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) - sum(fl[a] for a in storages) ==
+                                                                             sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) - sum(fs[a] for a in storages) ==
         sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
         sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
         sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
@@ -774,24 +772,4 @@ function constraint_regulator_parallel_flow(gm::AbstractMIModels, n::Int, k, num
         sum(y_regulator[i] for i in aligned_regulators) + sum((1 - y_regulator[i]) for i in opposite_regulators)
         == y_k * num_connections
     ))
-end
-
-
-"Enforces pressure changes bounds that obey (de)compression ratios depending on direction of flow for a well."
-function constraint_well_compressor_ratios(gm::AbstractMIModels, n::Int, j, min_ratio, max_ratio, initial_pressure_sqr, j_pmin, j_pmax)
-    pi     = initial_pressure_sqr
-    i_pmax = initial_pressure_sqr
-    pj     = var(gm, n, :psqr, j)
-    fs     = var(gm, n, :well_head_flow, j)
-    y      = var(gm, n, :well_y, j)
-
-    if (min_ratio == 1.0/max_ratio)
-        _add_constraint!(gm, n, :well_compressor_ratio1, j, JuMP.@constraint(gm.model, pj <= max_ratio^2 * pi))
-        _add_constraint!(gm, n, :well_compressor_ratio2, j, JuMP.@constraint(gm.model, min_ratio^2 * pi <= pj))
-    else
-        _add_constraint!(gm, n, :well_compressor_ratios1, k, JuMP.@constraint(gm.model, pj - max_ratio^2 * pi <= (1 - y) * (j_pmax^2)))
-        _add_constraint!(gm, n, :well_compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pj <= (1 - y) * (min_ratio^2 * i_pmax^2)))
-        _add_constraint!(gm, n, :well_compressor_ratios3, k, JuMP.@constraint(gm.model, pi - max_ratio^2 * pj <= y * (i_pmax^2)))
-        _add_constraint!(gm, n, :well_compressor_ratios4, k, JuMP.@constraint(gm.model, min_ratio^2 * pj - pi <= y * (min_ratio^2 * j_pmax^2)))
-    end
 end

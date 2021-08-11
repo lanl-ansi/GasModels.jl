@@ -726,24 +726,29 @@ end
 
 "variables associated with storage flows"
 function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true,report::Bool = true)
-    f_bh = var(gm, nw)[:bottom_hole_flow] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_bottom_hole")
-    f_wh = var(gm, nw)[:well_head_flow] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
+    f_wh = var(gm, nw)[:well_head_flow]             = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
+    p_wh = var(gm, nw)[:well_intermediate_pressure] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_intermediate_pressure")
 
     if bounded
         for (i, storage) in ref(gm, nw, :storage)
             lb = min(-storage["flow_injection_rate_max"], 0.0)
             ub = max(storage["flow_withdrawal_rate_max"], 0.0)
-            JuMP.set_lower_bound(f_bh[i], lb)
-            JuMP.set_upper_bound(f_bh[i], ub)
             JuMP.set_lower_bound(f_wh[i], lb)
             JuMP.set_upper_bound(f_wh[i], ub)
+        end
+
+        for (i, storage) in ref(gm, nw, :storage)
+            k = storage["junction_id"]
+
+            lb = min(ref(gm, nw, :junction)[k]["p_min"]^2, storage["initial_pressure"]^2)
+            ub = max(ref(gm, nw, :junction)[k]["p_max"]^2, storage["initial_pressure"]^2)
+            JuMP.set_lower_bound(p_wh[i], lb)
+            JuMP.set_upper_bound(p_wh[i], ub)
         end
     end
 
     if report
-        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:bottom_hole_flow,ids(gm, nw, :storage),f_bh)
         _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:withdrawal,ids(gm, nw, :storage),f_wh)
-        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:well_head_flow,ids(gm, nw, :storage),f_wh)
     end
 end
 
@@ -765,9 +770,9 @@ function variable_storage_direction(gm::AbstractGasModel, nw::Int=nw_id_default;
     end
 
     for (k,storage) in ref(gm,nw,:storage)
-        if pipe["flow_injection_rate_min"] < 0
+        if storage["flow_injection_rate_min"] < 0
             y_storage[k] = 1
-        elseif pipe["flow_withdrawal_rate_max"] < 0
+        elseif storage["flow_withdrawal_rate_max"] < 0
             y_storage[k] = 0
         end
     end

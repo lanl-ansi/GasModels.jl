@@ -249,7 +249,7 @@ function ref_storage!(ref::Dict{Symbol,Any}, sound_speed)
         storage["reservoir_density_min"] = storage["reservoir_p_min"]
         storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
         storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
-        storage["initial_pressure"] = a_sqr * storage["initial_density"] # assumes universal temperature
+        storage["initial_pressure"] = storage["initial_density"] 
     end
 end
 

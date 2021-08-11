@@ -232,3 +232,35 @@ function constraint_compressor_energy_ne(gm::AbstractDWPModel, n::Int, k, power_
     # f is zero when the compressor is not built, so constraint is always true then
     _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
 end
+
+"Enforces pressure changes bounds that obey (de)compression ratios depending on direction of flow for a well.
+k is the well head
+j is the compressor
+i is the well bottom
+"
+function constraint_well_compressor_ratios(gm::AbstractDWPModel, n::Int, i, k, min_ratio, max_ratio, initial_pressure, k_pmin, k_pmax, w, j_pmin, j_pmax, f_min, f_max)
+    pi     = initial_pressure^2
+    i_pmax = initial_pressure^2
+    pk     = var(gm, n, :psqr, k)
+    pj     = var(gm, n, :well_intermediate_pressure, i)
+    fs     = var(gm, n, :well_head_flow, i)
+    y      = var(gm, n, :y_storage, i)
+    pd_max = pi - j_pmin^2
+    pd_min = -(j_pmax^2-pi)
+
+
+    if (min_ratio == 1.0/max_ratio)
+        _add_constraint!(gm, n, :well_compressor_ratio1, i, JuMP.@constraint(gm.model, pk <= max_ratio^2 * pj))
+        _add_constraint!(gm, n, :well_compressor_ratio2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj <= pk))
+    else
+        _add_constraint!(gm, n, :well_compressor_ratios1, i, JuMP.@constraint(gm.model, pk - max_ratio^2 * pj <= (1 - y) * (k_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj - pk <= (1 - y) * (min_ratio^2 * j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios3, i, JuMP.@constraint(gm.model, pj - max_ratio^2 * pk <= y * (j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios4, i, JuMP.@constraint(gm.model, min_ratio^2 * pk - pj <= y * (min_ratio^2 * k_pmax^2)))
+    end
+
+    _add_constraint!(gm, n, :well_compressor_ratios10, i, JuMP.@constraint(gm.model, w * (pi - pj) >= fs^2 - (1 - y) * (f_min^2 - w * pd_min)))
+    _add_constraint!(gm, n, :well_compressor_ratios11, i, JuMP.@constraint(gm.model, w * (pi - pj) <= fs^2))
+    _add_constraint!(gm, n, :well_compressor_ratios12, i, JuMP.@constraint(gm.model, w * (pj - pi) >= fs^2 - y * (f_max^2 + w * pd_max)))
+    _add_constraint!(gm, n, :well_compressor_ratios13, i, JuMP.@constraint(gm.model, w * (pj - pi) <= fs^2))
+end

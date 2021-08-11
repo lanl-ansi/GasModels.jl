@@ -759,23 +759,23 @@ end
 "checks for rouge junction ids in data"
 function check_rouge_junction_ids(data::Dict{String, <:Any})
     apply_gm!(_check_rouge_junction_ids, data; apply_to_subnetworks = false)
-end 
+end
 
 "checks for rouge junction ids in data"
 function _check_rouge_junction_ids(data::Dict{String,<:Any})
     junction_ids = []
     for (i, junction) in get(data, "junction", [])
         push!(junction_ids, junction["id"])
-    end 
+    end
     for field in keys(rouge_junction_id_fields)
         for (i, table) in get(data, field, [])
             for column_name in get(rouge_junction_id_fields, field, [])
                 if !(table[column_name] in junction_ids)
                     Memento.error(_LOGGER, "junction_id of $field[$i] does not exist in junction table.")
-                end 
-            end 
-        end 
-    end 
+                end
+            end
+        end
+    end
 end
 
 "checks for non-negativity of certain fields in the data"
@@ -1272,6 +1272,16 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     a_sqr = sound_speed^2
     A = pi * D^2 / 4.0 # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
+    return resistance
+end
+
+"Calculates the resistance of the well associated with as storage component"
+function _calc_well_resistance(storage::Dict{String,Any}, base_length)
+    lambda = storage["well_friction_factor"]
+    D = storage["well_diameter"]
+    L = storage["well_depth"] * base_length
+
+    resistance = (lambda * D) \ L
     return resistance
 end
 

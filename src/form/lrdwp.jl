@@ -111,3 +111,29 @@ end
 function constraint_compressor_energy_ne(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work)
     #TODO - lrdwp relaxation
 end
+
+"Enforces pressure changes bounds that obey (de)compression ratios depending on direction of flow for a well.
+k is the well head
+j is the compressor
+i is the well bottom
+"
+function constraint_well_compressor_ratios(gm::AbstractLRDWPModel, n::Int, i, k, min_ratio, max_ratio, initial_pressure, k_pmin, k_pmax, w, j_pmin, j_pmax, f_min, f_max)
+    pi     = initial_pressure^2
+    i_pmax = initial_pressure^2
+    pk     = var(gm, n, :psqr, k)
+    pj     = var(gm, n, :well_intermediate_pressure, i)
+    fs     = var(gm, n, :well_head_flow, i)
+    y      = var(gm, n, :y_storage, i)
+
+    if (min_ratio == 1.0/max_ratio)
+        _add_constraint!(gm, n, :well_compressor_ratio1, i, JuMP.@constraint(gm.model, pk <= max_ratio^2 * pj))
+        _add_constraint!(gm, n, :well_compressor_ratio2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj <= pk))
+    else
+        _add_constraint!(gm, n, :well_compressor_ratios1, i, JuMP.@constraint(gm.model, pk - max_ratio^2 * pj <= (1 - y) * (k_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj - pk <= (1 - y) * (min_ratio^2 * j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios3, i, JuMP.@constraint(gm.model, pj - max_ratio^2 * pk <= y * (j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios4, i, JuMP.@constraint(gm.model, min_ratio^2 * pk - pj <= y * (min_ratio^2 * k_pmax^2)))
+    end
+
+    #TODO Linear convex hull of the weymouth equations in crdwp.jl
+end

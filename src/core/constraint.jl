@@ -60,6 +60,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
     fl = var(gm, n, :fl)
     ft = var(gm, n, :ft)
     fs = var(gm, n, :well_head_flow)
+
     _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) - sum(fs[a] for a in storages) ==
                                                                             sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
                                                                             sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +

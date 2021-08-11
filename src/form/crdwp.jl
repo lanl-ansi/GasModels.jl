@@ -18,6 +18,7 @@ end
 "Variable Set: Define variables needed for modeling flow across storage"
 function variable_storage(gm::AbstractCRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+    variable_storage_pressure_difference(gm, nw; bounded = bounded, report = report)
     variable_storage_direction(gm,nw,report=report)
 end
 
@@ -98,6 +99,31 @@ function variable_pressure_difference_ne(gm::AbstractCRDWPModel, nw::Int = nw_id
         sol_component_value(gm, nw, :ne_pipe, :l, ids(gm, nw, :ne_pipe), l_ne_pipe)
 end
 
+"Variables needed for modeling storage pressure difference in the lifted CRDWP space"
+function variable_storage_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
+    l_storage = var(gm, nw)[:l_storage] = JuMP.@variable(
+            gm.model,
+            [k in ids(gm, nw, :storage)],
+            base_name = "$(nw)_l_storage",
+            start = comp_start_value(ref(gm, nw, :storage), k, "l_storage", 0)
+        )
+
+    if bounded
+        for (k, storage) in ref(gm, nw, :storage)
+            j      = storage["junction_id"]
+            pi     = storage["initial_pressure"]^2
+            j_pmin = ref(gm, nw, :junction)[j]["p_min"]^2
+            j_pmax = ref(gm, nw, :junction)[j]["p_max"]^2
+            pd_max = pi - j_pmin
+            pd_min = -(j_pmax-pi)
+
+            JuMP.set_lower_bound(l_storage[k], 0.0)
+            JuMP.set_upper_bound(l_storage[k], max(abs(pd_min), abs(pd_max)))
+        end
+    end
+
+    report && sol_component_value(gm, nw, :storage, :l_storage, ids(gm, nw, :storage), l_storage)
+end
 
 "Weymouth equation for a pipe"
 function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
@@ -106,7 +132,6 @@ function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min
     pj = var(gm, n, :psqr, j)
     l = var(gm, n, :l_pipe, k)
     f = var(gm, n, :f_pipe, k)
-
 
     # constraints weymouth1 - weymouth4 are designed to enforce constraint l == abs(pi-pj)
     # constraints weymouth1 and weymouth2 make sure that l >= max(pi-pj,pj-pi) (one is always <=0)
@@ -291,3 +316,39 @@ end
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work) end
+
+"Enforces pressure changes bounds that obey (de)compression ratios depending on direction of flow for a well.
+k is the well head
+j is the compressor
+i is the well bottom
+"
+function constraint_well_compressor_ratios(gm::AbstractCRDWPModel, n::Int, i, k, min_ratio, max_ratio, initial_pressure, k_pmin, k_pmax, w, j_pmin, j_pmax, f_min, f_max)
+    pi     = initial_pressure^2
+    i_pmax = initial_pressure^2
+    pk     = var(gm, n, :psqr, k)
+    pj     = var(gm, n, :well_intermediate_pressure, i)
+    fs     = var(gm, n, :well_head_flow, i)
+    y      = var(gm, n, :y_storage, i)
+    l      = var(gm, n, :l_storage, i)
+    pd_max = pi - j_pmin^2
+    pd_min = -(j_pmax^2-pi)
+
+    if (min_ratio == 1.0/max_ratio)
+        _add_constraint!(gm, n, :well_compressor_ratio1, i, JuMP.@constraint(gm.model, pk <= max_ratio^2 * pj))
+        _add_constraint!(gm, n, :well_compressor_ratio2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj <= pk))
+    else
+        _add_constraint!(gm, n, :well_compressor_ratios1, i, JuMP.@constraint(gm.model, pk - max_ratio^2 * pj <= (1 - y) * (k_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj - pk <= (1 - y) * (min_ratio^2 * j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios3, i, JuMP.@constraint(gm.model, pj - max_ratio^2 * pk <= y * (j_pmax^2)))
+        _add_constraint!(gm, n, :well_compressor_ratios4, i, JuMP.@constraint(gm.model, min_ratio^2 * pk - pj <= y * (min_ratio^2 * k_pmax^2)))
+    end
+
+    _add_constraint!(gm, n, :well_compressor_ratios10, i, JuMP.@constraint(gm.model, l >= pj - pi))
+    _add_constraint!(gm, n, :well_compressor_ratios11, i, JuMP.@constraint(gm.model, l >= pi - pj))
+    _add_constraint!(gm, n, :well_compressor_ratios12, i, JuMP.@constraint(gm.model, l <= pj - pi + pd_max * (2 * y)))
+    _add_constraint!(gm, n, :well_compressor_ratios13, i, JuMP.@constraint(gm.model, l <= pi - pj + pd_min * (2 * y - 2)))
+    _add_constraint!(gm, n, :well_compressor_ratios14, i, JuMP.@constraint(gm.model, w * l >= fs^2))
+
+    _add_constraint!(gm, n, :well_compressor_ratios15, i, JuMP.@constraint(gm.model, w * l <= f_max * fs + (1 - y) * (abs(f_min * f_max) + f_min^2)))
+    _add_constraint!(gm, n, :well_compressor_ratios16, i, JuMP.@constraint(gm.model, w * l <= f_min * fs + y * (abs(f_min * f_max) + f_max^2)))
+end

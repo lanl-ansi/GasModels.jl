@@ -202,6 +202,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_de
     dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
     nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
     storages = ref(gm, n, :storages_in_junction, i)
+
     fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
     fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
     fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
@@ -462,12 +463,18 @@ end
 "Template: (De)Compression ratios for a well"
 function constraint_well_compressor_ratios(gm::AbstractGasModel, i; n::Int = nw_id_default)
     storage          = ref(gm, n, :storage, i)
-    j                = storage["junction"]
-    max_ratio        = compressor["c_ratio_max"]
-    min_ratio        = compressor["reduction_factor_max"]
-    j_pmax           = ref(gm, n, :junction, j)["p_max"]
-    j_pmin           = ref(gm, n, :junction, j)["p_min"]
-    initial_pressure = storage["initial_pressure"]
+    k                = storage["junction_id"]
+    max_ratio        = storage["c_ratio_max"]
+    min_ratio        = storage["reduction_factor_max"]
+    k_pmax           = ref(gm, n, :junction, k)["p_max"]
+    k_pmin           = ref(gm, n, :junction, k)["p_min"]
+    j_pmin           = min(k_pmin, storage["initial_pressure"])
+    j_pmax           = max(k_pmax, storage["initial_pressure"])
+    f_min            = -storage["flow_injection_rate_max"]
+    f_max            = storage["flow_withdrawal_rate_max"]
 
-    constraint_well_compressor_ratios(gm, n, j, min_ratio, max_ratio, initial_pressure, j_pmin, j_pmax)
+    initial_pressure = storage["initial_pressure"]
+    resistance       = _calc_well_resistance(storage,gm.ref[:it][gm_it_sym][:base_length])
+
+    constraint_well_compressor_ratios(gm, n, i, k, min_ratio, max_ratio, initial_pressure, k_pmin, k_pmax, resistance, j_pmin, j_pmax, f_min, f_max)
 end
