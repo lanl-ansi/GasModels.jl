@@ -40,7 +40,12 @@ function variable_compressor_flow(
 
     if bounded
         for (i, compressor) in ref(gm, nw, :compressor)
-            JuMP.set_lower_bound(f[i], -max_mass_flow)
+            type = get(compressor, "directionality", 0)
+            if (type == 1)
+                JuMP.set_lower_bound(f[i], 0.0)
+            else 
+                JuMP.set_lower_bound(f[i], -max_mass_flow)
+            end
             JuMP.set_upper_bound(f[i], max_mass_flow)
         end
     end
