@@ -65,15 +65,20 @@ function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
             pk = JuMP.@variable(gm.model)
+            alpha_1 = JuMP.@variable(gm.model)
+            alpha_2 = JuMP.@variable(gm.model)
             JuMP.set_lower_bound(pk, 0.0)
+            JuMP.set_lower_bound(alpha_1, 1.0)
+            JuMP.set_lower_bound(alpha_2, 1.0)
             _add_constraint!(gm, n, :compressor_physics_ratios_1, k, JuMP.@constraint(gm.model, pk - max_ratio^2 * p_fr^2 <= 0))
             _add_constraint!(gm, n, :compressor_physics_ratios_2, k, JuMP.@constraint(gm.model, min_ratio^2 * p_fr^2 - pk <= 0))
             _add_constraint!(gm, n, :compressor_physics_ratios_3, k, JuMP.@constraint(gm.model, f * (p_fr - pk) <= 0))
             _add_constraint!(gm, n, :compressor_physics_ratios_4, k, JuMP.@constraint(gm.model, pk - max_ratio^2 * p_to^2 <= 0))
             _add_constraint!(gm, n, :compressor_physics_ratios_5, k, JuMP.@constraint(gm.model, min_ratio^2 * p_to^2 - pk <= 0))
             _add_constraint!(gm, n, :compressor_physics_ratios_6, k, JuMP.@constraint(gm.model, -f * (p_to - pk) <= 0))
-            _add_constraint!(gm, n, :compressor_physics_ratios_7, k, JuMP.@constraint(gm.model,  p_to * alpha >= p_fr))
-            _add_constraint!(gm, n, :compressor_physics_ratios_8, k, JuMP.@constraint(gm.model,  p_fr * alpha >= p_to))
+            _add_constraint!(gm, n, :compressor_physics_ratios_7, k, JuMP.@constraint(gm.model,  p_fr * alpha_1 == p_k))
+            _add_constraint!(gm, n, :compressor_physics_ratios_8, k, JuMP.@constraint(gm.model,  p_to * alpha_2 == p_k))
+            _add_constraint!(gm, n, :compressor_physics_ratios_9, k, JuMP.@constraint(gm.model,  alpha == alpha_1 + alpha_2 - 1))
             # There is a disjunction, so we have to use a binary variable for this one
         else
             Memento.error(_LOGGER, "For bidirectional compressor c_ratio_min needs to be <= 1.0 and c_ratio_max needs to be >= 1.0")
