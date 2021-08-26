@@ -216,7 +216,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -255,7 +255,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)

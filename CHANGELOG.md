@@ -5,6 +5,7 @@
 - bug fix in GasLib component index assignment
 - updates for new multi-infrastructure conventions
 - add mgc.sources to the matgas format to keep track of data source metadata
+- Added storage to steady-state model
 
 ## v0.8.2
 

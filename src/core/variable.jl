@@ -698,6 +698,32 @@ function get_compressor_y(gm::AbstractGasModel, n::Int, k)
     return var(gm, n)[:y_compressor][k]
 end
 
+"Support function for getting a one off auxilleary pressure variable"
+function get_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
+    if !haskey(var(gm, n),:pressure_aux_compressor)
+        var(gm, n)[:pressure_aux_compressor] = Dict()
+    end
+
+    if !haskey(var(gm, n)[:pressure_aux_compressor],k)
+        var(gm, n)[:pressure_aux_compressor][k] = JuMP.@variable(gm.model)
+    end
+
+    return var(gm, n)[:pressure_aux_compressor][k]
+end
+
+
+"Support function for getting a one off auxilleary pressure variable"
+function get_ne_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
+    if !haskey(var(gm, n),:ne_pressure_aux_compressor)
+        var(gm, n)[:ne_pressure_aux_compressor] = Dict()
+    end
+
+    if !haskey(var(gm, n)[:ne_pressure_aux_compressor],k)
+        var(gm, n)[:ne_pressure_aux_compressor][k] = JuMP.@variable(gm.model)
+    end
+
+    return var(gm, n)[:ne_pressure_aux_compressor][k]
+end
 
 "Support function for getting a one off y direction variable"
 function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)

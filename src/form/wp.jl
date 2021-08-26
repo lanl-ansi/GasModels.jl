@@ -92,7 +92,7 @@ function constraint_compressor_ratios(gm::AbstractWPModel, n::Int, k, i, j, min_
     # compression in both directions
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
-            pk = JuMP.@variable(gm.model)
+            pk = get_compressor_pressure_aux(gm, n, k)
             _add_constraint!(gm, n, :compressor_ratios1, k, JuMP.@constraint(gm.model, pk - max_ratio^2 * pi <= 0))
             _add_constraint!(gm, n, :compressor_ratios2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pk <= 0))
             _add_constraint!(gm, n, :compressor_ratios3, k, JuMP.@constraint(gm.model, f * (pi - pk) <= 0))
@@ -141,7 +141,7 @@ function constraint_compressor_ratios_ne(gm::AbstractWPModel, n::Int, k, i, j, m
     # compression in both directions
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
-            pk = JuMP.@variable(gm.model)
+            pk = get_ne_compressor_pressure_aux(gm, n, k)
             k_pmax = max(i_pmax, j_pmax)
             _add_constraint!(gm, n, :compressor_ratios_ne1, k, JuMP.@constraint(gm.model, pk - max_ratio^2 * pi <= (1 - zc) * k_pmax^2))
             _add_constraint!(gm, n, :compressor_ratios_ne2, k, JuMP.@constraint(gm.model, min_ratio^2 * pi - pk <= (1 - zc) * i_pmax^2 * min_ratio^2))
@@ -211,17 +211,22 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value(gm::AbstractWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
 
     if type == 0
-        y = get_compressor_y(gm, n, k)
-        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj - (1 - y) * j_pmax^2))
-        _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, r * pj <= pi + y * j_pmax^2 * max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, r * pj >= pi - y * i_pmax^2))
+        if (min_ratio <= 1.0 && max_ratio >= 1)
+            pk = get_compressor_pressure_aux(gm, n, k)
+            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r == pk/pi + pk/pj - 1))
+        else
+            y = get_compressor_y(gm, n, k)
+            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
+            _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj - (1 - y) * j_pmax^2))
+            _add_constraint!(gm, n, :compressor_ratio_value3, k, JuMP.@constraint(gm.model, r * pj <= pi + y * j_pmax^2 * max_ratio^2))
+            _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, r * pj >= pi - y * i_pmax^2))
+        end
     else
         _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj))
         _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj))
@@ -230,18 +235,23 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value_ne(gm::AbstractWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)
     z = var(gm, n, :zc, k)
 
     if type == 0
-        y = get_ne_compressor_y_wp(gm, n, k)
-        _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, r * pi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, r * pi >= pj - (2 - y - z) * j_pmax^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, r * pj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
-        _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, r * pj >= pi - (1 + y - z) * i_pmax^2))
+        if (min_ratio <= 1.0 && max_ratio >= 1)
+            pk = get_ne_compressor_pressure_aux(gm, n, k)
+            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r == pk/pi + pk/pj - 1))
+        else
+            y = get_ne_compressor_y_wp(gm, n, k)
+            _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, r * pi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
+            _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, r * pi >= pj - (2 - y - z) * j_pmax^2))
+            _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, r * pj <= pi + (1 + y - z) * j_pmax^2 * max_ratio^2))
+            _add_constraint!(gm, n, :compressor_ratio_value_ne3, k, JuMP.@constraint(gm.model, r * pj >= pi - (1 + y - z) * i_pmax^2))
+        end
     else
         _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - z) * i_pmax^2 * max_ratio^2))
         _add_constraint!(gm, n, :compressor_ratio_value_ne2, k, JuMP.@constraint(gm.model, r * pi >= pj - (1 - z) * j_pmax^2))
