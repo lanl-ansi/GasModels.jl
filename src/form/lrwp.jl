@@ -280,25 +280,3 @@ end
 function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
     #TODO Linear convex hull equations in wp.jl
 end
-
-"Enforces pressure changes bounds that obey (de)compression ratios depending on direction of flow for a well.
-k is the well head
-j is the compressor
-i is the well bottom
-"
-function constraint_well_compressor_ratios(gm::AbstractLRWPModel, n::Int, i, k, min_ratio, max_ratio, initial_pressure, k_pmin, k_pmax, w, j_pmin, j_pmax, f_min, f_max)
-    pi     = initial_pressure^2
-    i_pmax = initial_pressure^2
-    pk     = var(gm, n, :psqr, k)
-    pj     = var(gm, n, :well_intermediate_pressure, i)
-    fs     = var(gm, n, :well_head_flow, i)
-
-    if (min_ratio == 1.0/max_ratio)
-        _add_constraint!(gm, n, :well_compressor_ratio1, i, JuMP.@constraint(gm.model, pk <= max_ratio^2 * pj))
-        _add_constraint!(gm, n, :well_compressor_ratio2, i, JuMP.@constraint(gm.model, min_ratio^2 * pj <= pk))
-    else
-        #TODO Linear convex hull of the weymouth equations in crdwp.jl
-    end
-    #TODO Linear convex hull of the weymouth equations in crdwp.jl
-
-end

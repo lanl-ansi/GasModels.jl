@@ -101,7 +101,4 @@ function build_gf(gm::AbstractGasModel)
         constraint_on_off_regulator_pressure(gm, i)
     end
 
-    for i in ids(gm, :storage)
-        constraint_well_compressor_ratios(gm,i)
-    end
 end

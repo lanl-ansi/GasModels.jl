@@ -698,18 +698,6 @@ function get_compressor_y(gm::AbstractGasModel, n::Int, k)
     return var(gm, n)[:y_compressor][k]
 end
 
-"Support function for getting a one off y direction variable"
-function get_storage_y(gm::AbstractGasModel, n::Int, k)
-    if !haskey(var(gm, n),:y_storage)
-        var(gm, n)[:y_storage] = Dict()
-    end
-
-    if !haskey(var(gm, n)[:y_storage],k)
-        var(gm, n)[:y_storage][k] = JuMP.@variable(gm.model, binary=true)
-    end
-
-    return var(gm, n)[:y_storage][k]
-end
 
 "Support function for getting a one off y direction variable"
 function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)
@@ -727,7 +715,6 @@ end
 "variables associated with storage flows"
 function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true,report::Bool = true)
     f_wh = var(gm, nw)[:well_head_flow]             = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
-    p_wh = var(gm, nw)[:well_intermediate_pressure] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_intermediate_pressure")
 
     if bounded
         for (i, storage) in ref(gm, nw, :storage)
@@ -736,46 +723,9 @@ function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default
             JuMP.set_lower_bound(f_wh[i], lb)
             JuMP.set_upper_bound(f_wh[i], ub)
         end
-
-        for (i, storage) in ref(gm, nw, :storage)
-            k = storage["junction_id"]
-
-            lb = min(ref(gm, nw, :junction)[k]["p_min"]^2, storage["initial_pressure"]^2)
-            ub = max(ref(gm, nw, :junction)[k]["p_max"]^2, storage["initial_pressure"]^2)
-            JuMP.set_lower_bound(p_wh[i], lb)
-            JuMP.set_upper_bound(p_wh[i], ub)
-        end
     end
 
     if report
         _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:withdrawal,ids(gm, nw, :storage),f_wh)
     end
-end
-
-"variables associated with direction of flow on a well. y = 1 imples flow is leaving storage.
- y = 0 imples flow goes into storage"
-function variable_storage_direction(gm::AbstractGasModel, nw::Int=nw_id_default; report::Bool=true)
-    storage = Dict(x for x in ref(gm,nw,:storage) if x.second["flow_withdrawal_rate_max"] >= 0 && x.second["flow_injection_rate_min"] >= 0)
-
-    y_storage_var =  JuMP.@variable(gm.model,
-        [k in keys(storage)],
-        binary=true,
-        base_name="$(nw)_y_storage",
-        start=comp_start_value(storage, k, "y_start", 1)
-    )
-
-    y_storage = var(gm, nw)[:y_storage] = Dict()
-    for k in keys(storage)
-        y_storage[k] = y_storage_var[k]
-    end
-
-    for (k,storage) in ref(gm,nw,:storage)
-        if storage["flow_injection_rate_min"] < 0
-            y_storage[k] = 1
-        elseif storage["flow_withdrawal_rate_max"] < 0
-            y_storage[k] = 0
-        end
-    end
-
-    report && sol_component_value(gm, nw, :storage, :y, keys(storage), y_storage_var)
 end
