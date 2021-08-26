@@ -1275,16 +1275,6 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     return resistance
 end
 
-"Calculates the resistance of the well associated with as storage component"
-function _calc_well_resistance(storage::Dict{String,Any}, base_length)
-    lambda = storage["well_friction_factor"]
-    D = storage["well_diameter"]
-    L = storage["well_depth"] * base_length
-
-    resistance = (lambda * D) \ L
-    return resistance
-end
-
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley.
 Unsteady and transient flow of compressible
