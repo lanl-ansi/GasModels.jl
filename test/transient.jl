@@ -10,6 +10,12 @@
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", spatial_discretization = 1e4, additional_time = 0.0)
     @test length(mn_data["nw"]) == 25
     @test isapprox(mn_data["time_step"] * mn_data["base_time"], 3600.0; atol = 1e-3)
+
+    ss_data = parse_file("../test/data/matgas/case-6.m")
+    pipe_ids = collect(keys(ss_data["pipe"]))
+
+    @test length(first(mn_data["nw"]).second["original_pipe"]) == length(pipe_ids)
+    @test all(k in pipe_ids for k in keys(first(mn_data["nw"]).second["original_pipe"]))
 end
 
 @testset "transient (steady state replicate) case" begin
