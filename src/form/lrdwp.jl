@@ -14,6 +14,12 @@ function variable_flow_ne(gm::AbstractLRDWPModel, n::Int = nw_id_default; bounde
     variable_connection_direction_ne(gm, n; report = report)
 end
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractLRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+end
+
+
 ######################################################################################################
 ## Constraints
 ######################################################################################################
@@ -46,7 +52,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractLRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value(gm::AbstractLRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -69,7 +75,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractLRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value_ne(gm::AbstractLRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)

@@ -201,6 +201,8 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_de
     nondispatch_deliveries = ref(gm, n, :nondispatchable_deliveries_in_junction, i)
     dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
     nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
+    storages = ref(gm, n, :storages_in_junction, i)
+
     fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
     fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
     fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
@@ -211,7 +213,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_de
     flmin = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
     flmin += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
 
-    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -241,6 +243,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = nw_id
     nondispatch_deliveries = ref(gm, n, :nondispatchable_deliveries_in_junction, i)
     dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
     nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
+    storages = ref(gm, n, :storages_in_junction, i)
     fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
     fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
     fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
@@ -256,7 +259,7 @@ function constraint_mass_flow_balance_ne(gm::AbstractGasModel, i; n::Int = nw_id
     ne_compressors_fr = ref(gm, n, :ne_compressors_fr, i)
     ne_compressors_to = ref(gm, n, :ne_compressors_to, i)
 
-    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, flmin, flmax, fgmin, fgmax)
+    constraint_mass_flow_balance_ne(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, ne_pipes_fr, ne_pipes_to, ne_compressors_fr, ne_compressors_to, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
 end
 
 
@@ -398,7 +401,8 @@ function constraint_compressor_ratio_value(gm::AbstractGasModel, k; n::Int = nw_
     j_pmax = ref(gm, n, :junction, j)["p_max"]
     type = get(compressor, "directionality", 0)
     max_ratio = compressor["c_ratio_max"]
-    constraint_compressor_ratio_value(gm, n, k, i, j, type, i_pmax, j_pmax, max_ratio)
+    min_ratio = compressor["c_ratio_min"]
+    constraint_compressor_ratio_value(gm, n, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
 end
 
 "Template: Constraints on the ne_compressor ratio value"
@@ -408,9 +412,10 @@ function constraint_compressor_ratio_value_ne(gm::AbstractGasModel, k; n::Int = 
     j = compressor["to_junction"]
     type = get(compressor, "directionality", 0)
     max_ratio = compressor["c_ratio_max"]
+    min_ratio = compressor["c_ratio_min"]
     i_pmax = ref(gm, n, :junction, i)["p_max"]
     j_pmax = ref(gm, n, :junction, j)["p_max"]
-    constraint_compressor_ratio_value_ne(gm, n, k, i, j, type, i_pmax, j_pmax, max_ratio)
+    constraint_compressor_ratio_value_ne(gm, n, k, i, j, type, i_pmax, j_pmax, min_ratio,  max_ratio)
 end
 
 "Template: Constraints on the compressor energy"

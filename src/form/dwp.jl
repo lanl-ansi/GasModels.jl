@@ -14,6 +14,11 @@ function variable_flow_ne(gm::AbstractDWPModel, n::Int = nw_id_default; bounded:
 end
 
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+end
+
 "Weymouth equation with discrete direction variables
 
 Constraint 1:
@@ -157,7 +162,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -192,7 +197,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value_ne(gm::AbstractDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)

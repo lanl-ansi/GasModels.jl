@@ -15,6 +15,10 @@ function variable_flow_ne(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bound
     variable_connection_direction_ne(gm, nw; report = report)
 end
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractCRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+end
 
 "Variables needed for modeling pipe difference in the lifted CRDWP space"
 function variable_pipe_pressure_difference(gm::AbstractCRDWPModel, nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
@@ -101,7 +105,6 @@ function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min
     pj = var(gm, n, :psqr, j)
     l = var(gm, n, :l_pipe, k)
     f = var(gm, n, :f_pipe, k)
-
 
     # constraints weymouth1 - weymouth4 are designed to enforce constraint l == abs(pi-pj)
     # constraints weymouth1 and weymouth2 make sure that l >= max(pi-pj,pj-pi) (one is always <=0)
@@ -213,7 +216,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr, k)
@@ -252,7 +255,7 @@ end
 
 
 "Constraint: constrains the ratio to be ``p_i \\cdot \\alpha = p_j``"
-function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, max_ratio)
+function constraint_compressor_ratio_value_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, type, i_pmax, j_pmax, min_ratio, max_ratio)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     r = var(gm, n, :rsqr_ne, k)

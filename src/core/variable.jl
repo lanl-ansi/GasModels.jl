@@ -627,6 +627,11 @@ function variable_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Boo
 end
 
 
+"Variable Set: Define variables needed for modeling flow across storage"
+function variable_storage(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+end
+
 "Variable Set: Define variables needed for modeling flow across connections that are expansions"
 function variable_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     variable_mass_flow_ne(gm,nw; bounded=bounded,report=report)
@@ -693,6 +698,33 @@ function get_compressor_y(gm::AbstractGasModel, n::Int, k)
     return var(gm, n)[:y_compressor][k]
 end
 
+"Support function for getting a one off auxilleary pressure variable"
+function get_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
+    if !haskey(var(gm, n),:pressure_aux_compressor)
+        var(gm, n)[:pressure_aux_compressor] = Dict()
+    end
+
+    if !haskey(var(gm, n)[:pressure_aux_compressor],k)
+        var(gm, n)[:pressure_aux_compressor][k] = JuMP.@variable(gm.model)
+    end
+
+    return var(gm, n)[:pressure_aux_compressor][k]
+end
+
+
+"Support function for getting a one off auxilleary pressure variable"
+function get_ne_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
+    if !haskey(var(gm, n),:ne_pressure_aux_compressor)
+        var(gm, n)[:ne_pressure_aux_compressor] = Dict()
+    end
+
+    if !haskey(var(gm, n)[:ne_pressure_aux_compressor],k)
+        var(gm, n)[:ne_pressure_aux_compressor][k] = JuMP.@variable(gm.model)
+    end
+
+    return var(gm, n)[:ne_pressure_aux_compressor][k]
+end
+
 "Support function for getting a one off y direction variable"
 function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)
     if !haskey(var(gm, n),:y_ne_compressor)
@@ -704,4 +736,22 @@ function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)
     end
 
     return var(gm, n)[:y_ne_compressor][k]
+end
+
+"variables associated with storage flows"
+function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true,report::Bool = true)
+    f_wh = var(gm, nw)[:well_head_flow]             = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
+
+    if bounded
+        for (i, storage) in ref(gm, nw, :storage)
+            lb = min(-storage["flow_injection_rate_max"], 0.0)
+            ub = max(storage["flow_withdrawal_rate_max"], 0.0)
+            JuMP.set_lower_bound(f_wh[i], lb)
+            JuMP.set_upper_bound(f_wh[i], ub)
+        end
+    end
+
+    if report
+        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:withdrawal,ids(gm, nw, :storage),f_wh)
+    end
 end

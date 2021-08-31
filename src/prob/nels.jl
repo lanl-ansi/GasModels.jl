@@ -50,6 +50,7 @@ function build_nels(gm::AbstractGasModel)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
     variable_compressor_ratio_sqr_ne(gm; compressors = bounded_compressors_ne)
+    variable_storage(gm)
 
     # expansion variables
     variable_pipe_ne(gm)
@@ -127,4 +128,5 @@ function build_nels(gm::AbstractGasModel)
         constraint_on_off_regulator_mass_flow(gm, i)
         constraint_on_off_regulator_pressure(gm, i)
     end
+
 end

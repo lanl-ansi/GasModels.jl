@@ -759,23 +759,23 @@ end
 "checks for rouge junction ids in data"
 function check_rouge_junction_ids(data::Dict{String, <:Any})
     apply_gm!(_check_rouge_junction_ids, data; apply_to_subnetworks = false)
-end 
+end
 
 "checks for rouge junction ids in data"
 function _check_rouge_junction_ids(data::Dict{String,<:Any})
     junction_ids = []
     for (i, junction) in get(data, "junction", [])
         push!(junction_ids, junction["id"])
-    end 
+    end
     for field in keys(rouge_junction_id_fields)
         for (i, table) in get(data, field, [])
             for column_name in get(rouge_junction_id_fields, field, [])
                 if !(table[column_name] in junction_ids)
                     Memento.error(_LOGGER, "junction_id of $field[$i] does not exist in junction table.")
-                end 
-            end 
-        end 
-    end 
+                end
+            end
+        end
+    end
 end
 
 "checks for non-negativity of certain fields in the data"
