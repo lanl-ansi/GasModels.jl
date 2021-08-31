@@ -2,6 +2,7 @@
 
 ## Pending
 
+- bug fix in `parse_files` where `prep_transient_data!` was called twice, overwriting `"original_pipe"` and `"original_junction"`
 - bug fix in GasLib component index assignment
 - updates for new multi-infrastructure conventions
 - add mgc.sources to the matgas format to keep track of data source metadata

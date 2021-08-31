@@ -77,9 +77,8 @@ function parse_files(
     check_edge_loops(static_data)
 
     check_global_parameters(static_data)
-    prep_transient_data!(static_data)
+    prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
 
-    _prep_transient_data!(static_data, spatial_discretization = spatial_discretization)
     transient_data = parse_transient(transient_io)
     make_si_units!(transient_data, static_data)
 
