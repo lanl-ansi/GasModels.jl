@@ -51,7 +51,10 @@ function constraint_compressor_physics(gm::AbstractGasModel, i::Int, nw::Int = n
     compressor = ref(gm, nw, :compressor, i)
     fr_junction = compressor["fr_junction"]
     to_junction = compressor["to_junction"]
-    constraint_compressor_physics(gm, nw, i, fr_junction, to_junction)
+    type = get(compressor, "directionality", 0)
+    min_ratio = compressor["c_ratio_min"]
+    max_ratio = compressor["c_ratio_max"]
+    constraint_compressor_physics(gm, nw, i, fr_junction, to_junction, type, min_ratio, max_ratio)
 end
 
 "Template: compressor power"

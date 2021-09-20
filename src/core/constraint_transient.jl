@@ -56,13 +56,40 @@ function constraint_transfer_separation(gm::AbstractGasModel, transfer_id::Int, 
 end
 
 "Constraint: compressor physics"
-function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor_id::Int, fr_junction::Int, to_junction::Int)
+function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor_id::Int, fr_junction::Int, to_junction::Int, type::Int, min_ratio::Float64, max_ratio::Float64)
     p_fr = var(gm, nw, :density, fr_junction)
     p_to = var(gm, nw, :density, to_junction)
     alpha = var(gm, nw, :compressor_ratio, compressor_id)
     f = var(gm, nw, :compressor_flow, compressor_id)
+    
+    if type == 0
+        if (min_ratio <= 1.0 && max_ratio >= 1)
+            pk = JuMP.@variable(gm.model)
+            alpha_1 = JuMP.@variable(gm.model)
+            alpha_2 = JuMP.@variable(gm.model)
+            JuMP.set_lower_bound(pk, 0.0)
+            JuMP.set_lower_bound(alpha_1, 1.0)
+            JuMP.set_lower_bound(alpha_2, 1.0)
+            _add_constraint!(gm, nw, :compressor_physics_ratios_1, compressor_id, JuMP.@constraint(gm.model, pk - max_ratio^2 * p_fr^2 <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_2, compressor_id, JuMP.@constraint(gm.model, min_ratio^2 * p_fr^2 - pk <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_3, compressor_id, JuMP.@constraint(gm.model, f * (p_fr - pk) <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_4, compressor_id, JuMP.@constraint(gm.model, pk - max_ratio^2 * p_to^2 <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_5, compressor_id, JuMP.@constraint(gm.model, min_ratio^2 * p_to^2 - pk <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_6, compressor_id, JuMP.@constraint(gm.model, -f * (p_to - pk) <= 0))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_7, compressor_id, JuMP.@constraint(gm.model,  p_fr * alpha_1 == pk))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_8, compressor_id, JuMP.@constraint(gm.model,  p_to * alpha_2 == pk))
+            _add_constraint!(gm, nw, :compressor_physics_ratios_9, compressor_id, JuMP.@constraint(gm.model,  alpha == alpha_1 + alpha_2 - 1))
+            # There is a disjunction, so we have to use a binary variable for this one
+        else
+            Memento.error(_LOGGER, "For bidirectional compressor c_ratio_min needs to be <= 1.0 and c_ratio_max needs to be >= 1.0")
+        end
+        return 
+    end 
     _add_constraint!(gm, nw, :compressor_physics_boost, compressor_id, JuMP.@constraint(gm.model, p_to == alpha * p_fr))
-    _add_constraint!(gm, nw, :compressor_physics_flow, compressor_id, JuMP.@constraint(gm.model, f * (p_fr - p_to) <= 0))
+    (type == 1) && (return)
+    if (type == 2) 
+        _add_constraint!(gm, nw, :compressor_physics_flow, compressor_id, JuMP.@constraint(gm.model, f * (p_fr - p_to) <= 0))
+    end
 end
 
 "Constraint: compressor power"
