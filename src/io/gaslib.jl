@@ -69,7 +69,7 @@ function parse_gaslib(zip_path::Union{IO,String})
     receipts = _read_gaslib_receipts(topology_xml, nomination_xml, density)
 
     # Add auxiliary nodes for bidirectional regulators.
-    _add_auxiliary_junctions!(junctions, regulators)
+    # _add_auxiliary_junctions!(junctions, regulators)
 
     # Get additional metadata.
     name = topology_xml["information"]["title"]
