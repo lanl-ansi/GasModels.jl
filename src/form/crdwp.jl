@@ -282,10 +282,10 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     #TODO - convex relaxation
 end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work) end
+function constraint_compressor_energy_ne(gm::AbstractCRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max) end

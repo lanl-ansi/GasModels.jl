@@ -102,11 +102,11 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     #TODO - lrdwp relaxation
 end
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy_ne(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     #TODO - lrdwp relaxation
 end

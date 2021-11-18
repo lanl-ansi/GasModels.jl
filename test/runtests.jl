@@ -21,7 +21,7 @@ ipopt_solver = JuMP.optimizer_with_attributes(
     Ipopt.Optimizer,
     "print_level" => 0,
     "sb" => "yes",
-    "max_iter" => 50000,
+    "max_iter" => 60000,
     "acceptable_tol" => 1.0e-8,
 )
 cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
