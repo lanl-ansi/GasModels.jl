@@ -714,6 +714,15 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
 
     check_fields = ["receipt", "delivery", "transfer", "storage"]
 
+    receipts = haskey(gm_data, "receipt") ? length(gm_data["receipt"]) : 0
+    transfers = haskey(gm_data, "transfer") ? length(gm_data["transfer"]) : 0
+    storages = haskey(gm_data, "storage") ? length(gm_data["storage"]) : 0
+
+    num_supplies = receipts + transfers + storages 
+    if num_supplies == 0
+        Memento.warn(_LOGGER, "no supply points are present in the data file")
+    end 
+
     for field in check_fields
         if haskey(gm_data, field) && length(gm_data[field]) == 0
             gm_data[field] = Dict() 
