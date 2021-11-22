@@ -712,6 +712,15 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     # use once available
     _IM.arrays_to_dicts!(gm_data)
 
+    check_fields = ["receipt", "delivery", "transfer", "storage"]
+
+    for field in check_fields
+        if haskey(gm_data, field) && length(gm_data[field]) == 0
+            gm_data[field] = Dict() 
+        end 
+    end
+
+
     if haskey(gm_data, "sources") && isa(gm_data, Dict)
         gm_data["sources"] = Vector{Dict{String,Any}}([source for source in values(gm_data["sources"])])
     end
