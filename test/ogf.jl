@@ -15,9 +15,9 @@
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = run_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-            @test isapprox(result["objective"], -237.816; atol = 1e-2)
+            @test isapprox(result["objective"], -167.190; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 97.33312801519526; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887353509726; atol = 1e-2)
         end
     end
 end

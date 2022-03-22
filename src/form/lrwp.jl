@@ -271,12 +271,12 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy(gm::AbstractLRWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     #TODO Linear convex hull equations in wp.jl
 end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     #TODO Linear convex hull equations in wp.jl
 end

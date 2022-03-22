@@ -388,8 +388,11 @@ function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = nw_id
     m = _calc_compressor_m_sqr(gamma, compressor)
     T = get_temperature(gm.data)
     G = get_gas_specific_gravity(gm.data)
-    work = _calc_compressor_work(gamma, G, T, compressor)
-    constraint_compressor_energy_ne(gm, n, k, power_max, m, work)
+    work = _calc_compressor_work(gamma, G, T)
+    flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+    ratio_max = compressor["c_ratio_max"]
+
+    constraint_compressor_energy_ne(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
 "Template: Constraints on the compressor ratio value"
@@ -426,8 +429,10 @@ function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = nw_id_de
     m = _calc_compressor_m_sqr(gamma, compressor)
     T = get_temperature(gm.data)
     G = get_gas_specific_gravity(gm.data)
-    work = _calc_compressor_work(gamma, G, T, compressor)
-    constraint_compressor_energy(gm, n, k, power_max, m, work)
+    work = _calc_compressor_work(gamma, G, T)
+    flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+    ratio_max = compressor["c_ratio_max"]
+    constraint_compressor_energy(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
 

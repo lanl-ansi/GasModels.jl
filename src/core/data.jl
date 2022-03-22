@@ -836,7 +836,7 @@ end
 "Correct mass flow bounds"
 function _correct_f_bounds!(data::Dict{String,Any})
     mf = _calc_max_mass_flow(
-        data["receipt"],
+        get(data, "receipt", Dict()),
         get(data, "storage", Dict()),
         get(data, "transfer", Dict()),
     )
@@ -1177,22 +1177,22 @@ end
 
 "Calculates max mass flow network wide using ref"
 function _calc_max_mass_flow(receipts::Dict, storages::Dict, transfers::Dict)
-    max_flow = 0
+    max_flow = 0.0
 
     for (idx, receipt) in receipts
-        if receipt["injection_max"] > 0
+        if receipt["injection_max"] > 0.0
             max_flow = max_flow + receipt["injection_max"]
         end
     end
 
     for (idx, storage) in storages
-        if storage["flow_injection_rate_max"] > 0
+        if storage["flow_injection_rate_max"] > 0.0
             max_flow = max_flow + storage["flow_injection_rate_max"]
         end
     end
 
     for (idx, transfer) in transfers
-        if transfer["withdrawal_min"] < 0
+        if transfer["withdrawal_min"] < 0.0
             max_flow = max_flow - transfer["withdrawal_min"]
         end
     end
@@ -1836,7 +1836,7 @@ function _dfs(i, neighbors, component_lookup, touched)
 end
 
 "Calculate the work of a compressor"
-function _calc_compressor_work(gamma, G, T, compressor::Dict)
+function _calc_compressor_work(gamma, G, T)
     magic_num = 286.76
     return ((magic_num / G) * T * (gamma / (gamma - 1)))
 end
@@ -1852,7 +1852,7 @@ function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
     max_ratio = compressor["c_ratio_max"]
     f_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
 
-    work = _calc_compressor_work(gamma, G, T, compressor)
+    work = _calc_compressor_work(gamma, G, T)
     m = _calc_compressor_m_sqr(gamma, compressor)
 
     return f_max * (max_ratio^2^m - 1) > power_max / work

@@ -261,16 +261,17 @@ end
 
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy(gm::AbstractWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy(gm::AbstractWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     r = var(gm, n, :rsqr, k)
     f = var(gm, n, :f_compressor, k)
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
 end
 
+
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_energy_ne(gm::AbstractWPModel, n::Int, k, power_max, m, work)
+function constraint_compressor_energy_ne(gm::AbstractWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     r = var(gm, n, :rsqr_ne, k)
     f = var(gm, n, :f_ne_compressor, k)
     # when the compressor is not built, f = 0, so this is always true
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1) <= power_max / work))
+    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@NLconstraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
 end
