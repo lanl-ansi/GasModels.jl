@@ -39,6 +39,7 @@ Data integrity checks
 """
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)
+    check_non_zero(data)
     check_rouge_junction_ids(data)
     correct_p_mins!(data)
 

@@ -23,7 +23,11 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == (f * abs(f)) / w))
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == 0.0))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == (f * abs(f)) / w))
+    end
 end
 
 
