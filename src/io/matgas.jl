@@ -718,15 +718,15 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
     transfers = haskey(gm_data, "transfer") ? length(gm_data["transfer"]) : 0
     storages = haskey(gm_data, "storage") ? length(gm_data["storage"]) : 0
 
-    num_supplies = receipts + transfers + storages 
+    num_supplies = receipts + transfers + storages
     if num_supplies == 0
         Memento.warn(_LOGGER, "no supply points are present in the data file")
-    end 
+    end
 
     for field in check_fields
         if haskey(gm_data, field) && length(gm_data[field]) == 0
-            gm_data[field] = Dict() 
-        end 
+            gm_data[field] = Dict()
+        end
     end
 
 
@@ -876,7 +876,19 @@ const non_negative_metadata = [
 const non_negative_data = Dict{String,Vector{String}}(
     "junction" => ["p_min", "p_max", "p_nominal"],
     "pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"],
+    "ne_pipe" => ["diameter", "length", "friction_factor", "p_min", "p_max"],
     "compressor" => [
+        "c_ratio_min",
+        "c_ratio_max",
+        "power_max",
+        "flow_max",
+        "inlet_p_min",
+        "inlet_p_max",
+        "outlet_p_min",
+        "outlet_p_max",
+        "operating_cost",
+    ],
+    "ne_compressor" => [
         "c_ratio_min",
         "c_ratio_max",
         "power_max",
@@ -899,6 +911,12 @@ const non_negative_data = Dict{String,Vector{String}}(
         "flow_withdrawal_rate_max",
         "capacity",
     ],
+)
+
+const non_zero_data = Dict{String,Vector{String}}(
+    "pipe" => ["diameter", "length", "friction_factor"],
+    "ne_pipe" => ["diameter", "length", "friction_factor"],
+    "resistor" => ["drag", "diameter"],
 )
 
 const rouge_junction_id_fields = Dict{String,Vector{String}}(

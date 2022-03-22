@@ -54,10 +54,14 @@ function constraint_pipe_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, 
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2))
-    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max)))
-    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2))
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == 0.0))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
+        _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2))
+        _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max)))
+        _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2))
+    end
 end
 
 
@@ -154,10 +158,15 @@ function constraint_pipe_weymouth_ne(gm::AbstractDWPModel, n::Int, k, i, j, w, f
     zp = var(gm, n, :zp, k)
     f = var(gm, n, :f_ne_pipe, k)
 
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min) - (1 - zp) * abs(w * pd_min)))
-    _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2 + (1 - zp) * w * pd_max))
-    _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max) - (1 - zp) * abs(w * pd_max)))
-    _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2 - (1 - zp) * w * pd_min))
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
+    else
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min) - (1 - zp) * abs(w * pd_min)))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2 + (1 - zp) * w * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max) - (1 - zp) * abs(w * pd_max)))
+        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2 - (1 - zp) * w * pd_min))
+    end
 end
 
 

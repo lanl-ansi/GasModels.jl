@@ -31,6 +31,6 @@
         @info "Testing wp ne"
         result = run_ne("../test/data/matgas/case-6-ne.m", WPGasModel, minlp_solver)
         @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-        @test isapprox(result["objective"], 1326; atol = 1e-1)
+        @test isapprox(result["objective"], 1476; atol = 1e-1)
     end
 end

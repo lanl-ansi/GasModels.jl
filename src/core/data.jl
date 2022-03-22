@@ -756,6 +756,11 @@ function check_non_negativity(data::Dict{String, <:Any})
     apply_gm!(_check_non_negativity, data; apply_to_subnetworks = false)
 end
 
+"checks for non-zero of certain fields in the data"
+function check_non_zero(data::Dict{String, <:Any})
+    apply_gm!(_check_non_zero, data; apply_to_subnetworks = false)
+end
+
 "checks for rouge junction ids in data"
 function check_rouge_junction_ids(data::Dict{String, <:Any})
     apply_gm!(_check_rouge_junction_ids, data; apply_to_subnetworks = false)
@@ -791,6 +796,20 @@ function _check_non_negativity(data::Dict{String, <:Any})
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
                     Memento.error(_LOGGER, "$field[$i][$column_name] is less than zero.")
+                end
+            end
+        end
+    end
+end
+
+
+"checks for zero in certain fields in the data"
+function _check_non_zero(data::Dict{String, <:Any})
+    for field in keys(non_zero_data)
+        for (i, table) in get(data, field, [])
+            for column_name in get(non_negative_data, field, [])
+                if get(table, column_name, 0.0) < 0.0
+                    Memento.error(_LOGGER, "$field[$i][$column_name] is zero.")
                 end
             end
         end
@@ -1272,6 +1291,10 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     a_sqr = sound_speed^2
     A = pi * D^2 / 4.0 # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
+    if lambda == 0.0 || D == 0.0 || L == 0.0
+        resistance = 0.0
+    end
+
     return resistance
 end
 
@@ -1288,6 +1311,10 @@ function _calc_pipe_resistance_rho_phi_space(pipe::Dict{String,Any}, base_length
     L = pipe["length"]
 
     resistance = lambda * L * base_length / D
+    if D == 0.0 || lambda == 0.0 || L == 0.0
+        resistance = 0.0
+    end
+
     return resistance
 end
 

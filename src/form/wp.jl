@@ -23,7 +23,11 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == (f * abs(f)) / w))
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == 0.0))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == (f * abs(f)) / w))
+    end
 end
 
 
@@ -74,8 +78,14 @@ function constraint_pipe_weymouth_ne(gm::AbstractWPModel, n::Int, k, i, j, w, f_
     # when z = 0 f is also 0.  Therefore, the big M we need is just the smallest and largest pressure difference that is possible
     aux = JuMP.@variable(gm.model)
     JuMP.@NLconstraint(gm.model, aux == f * abs(f))
-    _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= aux / w + (1 - zp) * pd_max))
-    _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= aux / w + (1 - zp) * pd_min))
+
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
+    else
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= aux / w + (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= aux / w + (1 - zp) * pd_min))
+    end
 end
 
 
