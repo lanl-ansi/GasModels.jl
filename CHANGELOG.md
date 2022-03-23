@@ -2,6 +2,8 @@
 
 ## Staged
 
+## v0.9.1
+
 - fixes bug for data with no receipts 
 - non-dimensionalization of compressor power objective
 - bug fix in `parse_files` where `prep_transient_data!` was called twice, overwriting `"original_pipe"` and `"original_junction"`
