@@ -33,6 +33,7 @@ const _mg_data_names = Vector{String}([
     "mgc.storage",
     "mgc.ne_pipe",
     "mgc.ne_compressor",
+    "mgc.g",
 ])
 
 const _mg_sources_columns = Vector{Tuple{String,Type}}([
@@ -43,6 +44,7 @@ const _mg_sources_columns = Vector{Tuple{String,Type}}([
 
 const _mg_junction_columns = Vector{Tuple{String,Type}}([
     ("id", Int),
+    ("elevation", Float64),
     ("p_min", Float64),
     ("p_max", Float64),
     ("p_nominal", Float64),
@@ -358,6 +360,7 @@ function parse_m_string(data_string::String)
         "mgc.is_per_unit",
         "mgc.gas_molar_mass",
         "mgc.economic_weighting",
+        "mgc.g",
     ]
 
     for data_name in required_metadata_names
@@ -416,6 +419,12 @@ This value will be auto-assigned based on the pressure limits provided in the da
         case["R"] = matlab_data["mgc.R"]
     else
         case["R"] = 8.314
+    end
+
+    if haskey(matlab_data, "mgc.g")
+        case["g"] = matlab_data["mgc.g"]
+    else
+        case["g"] = 9.81
     end
 
     if haskey(matlab_data, "mgc.gas_molar_mass")
@@ -838,7 +847,7 @@ const _matlab_global_params_order_required = [
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit", "g"]
 
 
 "list of units of meta data fields"
@@ -849,6 +858,7 @@ const _units = Dict{String,Dict{String,String}}(
         "temperature" => "K",
         "compressibility_factor" => "unitless",
         "R" => "J/(mol K)",
+        "g" => "m/s/s",
         "sound_speed" => "m/s",
         "base_pressure" => "Pa",
         "base_length" => "m",
