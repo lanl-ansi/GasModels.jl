@@ -1298,6 +1298,24 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     return resistance
 end
 
+"Calculates the constants required for the pressure drop along inclined pipes.
+Refer to the following paper for the derivation of the equation:
+S.K.K. Hari et al., Operation of Natural Gas Pipeline Networks With Storage Under Transient Flow Conditions"
+function _calc_inclined_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed, g)
+    a_sqr = sound_speed^2
+    lambda = pipe["friction_factor"]
+    D = pipe["diameter"]
+    theta = pipe["theta"]
+    L = pipe["length"]*base_length
+
+    A = pi * D^2 / 4.0 #cross sectional area
+    resistance_1 = ((a_sqr^2*lambda)/(2*g*D*A^2*sin(theta))) * (base_flow^2/base_pressure^2)
+    resistance_2 = -2*g*L*sin(theta)/a_sqr
+
+    #Note: r_1*r_2 = 1/w (relation between the resistance values for inclined and horizontal pipes)
+    return resistance_1, resistance_2
+end
+
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley.
 Unsteady and transient flow of compressible

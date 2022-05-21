@@ -165,6 +165,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
 
         ref_degree!(ref)
         ref_storage!(ref, sound_speed)
+        ref_theta!(ref,base_length)
 
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
@@ -249,10 +250,21 @@ function ref_storage!(ref::Dict{Symbol,Any}, sound_speed)
         storage["reservoir_density_min"] = storage["reservoir_p_min"]
         storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
         storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
-        storage["initial_pressure"] = storage["initial_density"] 
+        storage["initial_pressure"] = storage["initial_density"]
     end
 end
 
+function ref_theta!(ref::Dict{Symbol,Any}, base_length)
+    for (i, pipe) in ref[:pipe]
+        fr = pipe["fr_junction"]
+        to = pipe["to_junction"]
+        h1 = ref[:junction][fr]["elevation"]
+        h2 = ref[:junction][to]["elevation"]
+        L = pipe["length"]*base_length
+        @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length")
+        pipe["theta"] = asin((h2 - h1)/L) #value in radians
+    end
+end
 
 nw_ids(gm::AbstractGasModel) = _IM.nw_ids(gm, gm_it_sym)
 nws(gm::AbstractGasModel) = _IM.nws(gm, gm_it_sym)

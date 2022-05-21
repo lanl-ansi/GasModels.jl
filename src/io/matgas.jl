@@ -881,6 +881,7 @@ const non_negative_metadata = [
     "temperature",
     "sound_speed",
     "compressibility_factor",
+    "g"
 ]
 
 const non_negative_data = Dict{String,Vector{String}}(
