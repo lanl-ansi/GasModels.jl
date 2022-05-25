@@ -100,6 +100,7 @@ function parse_gaslib(zip_path::Union{IO,String})
         "standard_density" => density,
         "specific_heat_capacity_ratio" => isentropic_exponent,
         "gas_molar_mass" => molar_mass,
+        "g" => 9.81,
     )
 
     # Assign nodal IDs in place of string IDs.
@@ -348,7 +349,7 @@ function _get_junction_entry(junction)
     lon_sym = :geoWGS84Long in keys(junction) ? :geoWGS84Long : :y
     lon = parse(Float64, junction[lon_sym])
 
-    height = parse(Float64, junction["height"][:value])
+    elevation = parse(Float64, junction["height"][:value])
     p_min = parse(Float64, junction["pressureMin"][:value]) * 1.0e5
     p_max = parse(Float64, junction["pressureMax"][:value]) * 1.0e5
 
@@ -357,7 +358,7 @@ function _get_junction_entry(junction)
         "lon" => lon,
         "p_min" => p_min,
         "p_max" => p_max,
-        "height" => height,
+        "elevation" => elevation,
         "is_dispatchable" => 0,
         "status" => 1,
         "junction_type" => 0,

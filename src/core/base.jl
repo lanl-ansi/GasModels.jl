@@ -258,11 +258,15 @@ function ref_theta!(ref::Dict{Symbol,Any}, base_length)
     for (i, pipe) in ref[:pipe]
         fr = pipe["fr_junction"]
         to = pipe["to_junction"]
-        h1 = ref[:junction][fr]["elevation"]
-        h2 = ref[:junction][to]["elevation"]
-        L = pipe["length"]*base_length
-        @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length")
-        pipe["theta"] = asin((h2 - h1)/L) #value in radians
+        if(!haskey(ref[:junction][fr],"elevation")||!haskey(ref[:junction][to],"elevation"))
+            pipe["theta"] = 0
+        else
+            h1 = ref[:junction][fr]["elevation"]
+            h2 = ref[:junction][to]["elevation"]
+            L = pipe["length"]*base_length
+            @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length")
+            pipe["theta"] = asin((h2 - h1)/L) #value in radians
+        end
     end
 end
 
