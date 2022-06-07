@@ -21,14 +21,14 @@ mgc.sources = [
 ]
 
 %% junction data
-% id elevation p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
+% id p_min p_max p_nominal junction_type status pipeline_name edi_id lat lon
 mgc.junction = [
-1 10000 3000000	6000000 4000000 1  1  'synthetic6'  '1'  -0.6550  0
-2	10000 3000000	6000000 3000000	0  1  'synthetic6'  '2'  -0.0421  0
-3	0 3000000	6000000 3000000	0  1	'synthetic6'  '3'  0.6400   0.5
-4	0 3000000	6000000 3000000	0  1	'synthetic6'  '4'  0.9600   -0.5
-5	10000 3000000	6000000 3000000	0  1	'synthetic6'  '5'  -0.6050  0
-6	0 3000000	6000000 3000000	0  1	'synthetic6'  '6'  -0.0021  -0.04
+1 3000000	6000000 4000000 1  1  'synthetic6'  '1'  -0.6550  0
+2	3000000	6000000 3000000	0  1  'synthetic6'  '2'  -0.0421  0
+3	3000000	6000000 3000000	0  1	'synthetic6'  '3'  0.6400   0.5
+4	3000000	6000000 3000000	0  1	'synthetic6'  '4'  0.9600   -0.5
+5	3000000	6000000 3000000	0  1	'synthetic6'  '5'  -0.6050  0
+6	3000000	6000000 3000000	0  1	'synthetic6'  '6'  -0.0021  -0.04
 ];
 
 %% pipeline data
@@ -72,3 +72,14 @@ mgc.delivery = [
 4    5    0 2.0  0  0  1  0
 5    6    0 1.0  0  0  1  0
 ];
+
+%% junction data (extended)
+%column_names% elevation
+mgc.junction_data = [
+10000
+10000
+0
+0
+10000
+0
+]

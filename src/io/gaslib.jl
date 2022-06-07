@@ -100,7 +100,6 @@ function parse_gaslib(zip_path::Union{IO,String})
         "standard_density" => density,
         "specific_heat_capacity_ratio" => isentropic_exponent,
         "gas_molar_mass" => molar_mass,
-        "g" => 9.81,
     )
 
     # Assign nodal IDs in place of string IDs.

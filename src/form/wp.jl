@@ -30,7 +30,10 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
     end
 end
 
-"Pressure drop equation for inclined pipes"
+"Pressure drop equation for inclined pipes is given by:
+``p_j - e^{r_2} \\cdot p_i = (e^{r_2} - 1) \\cdot r_1 \\cdot f \\cdot |f|``
+This is based on work presented in the following paper:
+S.K.K. Hari et al., Operation of Natural Gas Pipeline Networks With Storage Under Transient Flow Conditions"
 function constraint_inclined_pipe_pressure_drop(gm::AbstractWPModel, n::Int, k, i, j, r_1, r_2)
     pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
     pj = var(gm, n, :psqr, j)

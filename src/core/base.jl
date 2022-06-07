@@ -165,7 +165,7 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
 
         ref_degree!(ref)
         ref_storage!(ref, sound_speed)
-        ref_theta!(ref,base_length)
+        ref_pipe_theta!(ref,base_length)
 
         for (idx, pipe) in ref[:pipe]
             i = pipe["fr_junction"]
@@ -254,7 +254,8 @@ function ref_storage!(ref::Dict{Symbol,Any}, sound_speed)
     end
 end
 
-function ref_theta!(ref::Dict{Symbol,Any}, base_length)
+"Add reference information for the inclination of pipes"
+function ref_pipe_theta!(ref::Dict{Symbol,Any}, base_length)
     for (i, pipe) in ref[:pipe]
         fr = pipe["fr_junction"]
         to = pipe["to_junction"]
