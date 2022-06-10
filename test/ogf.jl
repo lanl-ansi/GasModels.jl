@@ -19,5 +19,15 @@
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887353509726; atol = 1e-2)
         end
+
+        @testset "case 6 wp ogf elevation constraint" begin
+            @info "Testing OGF Elevation Cosntraint"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            result = run_ogf(data, WPGasModel, nlp_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test isapprox(result["objective"], -191.166; atol = 1e-2)
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275616368388; atol = 1e-2)
+        end
     end
 end
