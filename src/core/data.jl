@@ -1301,7 +1301,7 @@ end
 "Calculates the constants required for the pressure drop along inclined pipes.
 The constants after non-dimensionalization are given as follows:
 ``r_1 = \\frac{a^4 \\lambda}{2 g D A^2 \\sin(\\theta)} \\cdot \\frac{f_0^2}{p_0^2}``
-``r_2 = \\frac{2gL \\sin(\\theta)}{a^4}``"
+``r_2 = -\\frac{2gL \\sin(\\theta)}{a^2}``"
 function _calc_inclined_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed)
     a_sqr = sound_speed^2
     lambda = pipe["friction_factor"]
@@ -1338,6 +1338,22 @@ function _calc_pipe_resistance_rho_phi_space(pipe::Dict{String,Any}, base_length
     return resistance
 end
 
+"Calculates the constants/resistances required for the momentum balance constraint
+in the presence of inclined pipes. The constants can be computed as:
+``r_1 = \\frac{\\lambda}{2gD \\sin(\\theta)} \\frac{\\phi_0^2}{\\rho_0^2}``
+``r_2 = -\\frac{2gL \\sin(\\theta)}{a^2}``"
+function  _calc_inclined_pipe_resistance_rho_phi_space(pipe::Dict{String,Any}, base_length, base_flux, base_density, sound_speed)
+    lambda = pipe["friction_factor"]
+    L = pipe["length"]*base_length
+    g = acceleration_gravity
+    D = pipe["diameter"]
+    theta = pipe["theta"]
+    a_sqr = sound_speed^2
+
+    resistance_1 = (lambda/(2*g*D*sin(theta))) * (base_flux^2/base_density^2)
+    resistance_2 = -2*g*L*sin(theta)/a_sqr
+    return resistance_1, resistance_2
+end
 
 "calculates the minimum flow on a pipe"
 function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)

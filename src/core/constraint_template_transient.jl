@@ -28,13 +28,22 @@ function constraint_pipe_mass_balance(gm::AbstractGasModel, i::Int, nw::Int = nw
     constraint_pipe_mass_balance(gm, nw, i, fr_junction, to_junction, L)
 end
 
-"Templage: pipe momentum balance"
+"Template: pipe momentum balance"
 function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int = nw_id_default)
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
-    constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
+    D = pipe["diameter"]
+    theta = pipe["theta"]
+    if(D!=0.0)
+        if(rad2deg(abs(theta)) <= 5)
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
+            constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
+        else
+            resistance_1, resistance_2 = _calc_inclined_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:sound_speed])
+            constraint_inclined_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance_1, resistance_2)
+        end
+    end
 end
 
 "Template: pipe physics with ideal gas assumption"
@@ -77,7 +86,8 @@ function constraint_storage_well_momentum_balance(
     num_discretizations::Int = 4, )
     well = ref(gm, nw, :storage, i)
     length_per_well_segment = well["well_depth"] / num_discretizations
-    beta = (-2.0 * gm.ref[:it][gm_it_sym][:base_length] * 9.8 * length_per_well_segment) / gm.ref[:it][gm_it_sym][:sound_speed]^2
+    g = acceleration_gravity
+    beta = (-2.0 * gm.ref[:it][gm_it_sym][:base_length] * g * length_per_well_segment) / gm.ref[:it][gm_it_sym][:sound_speed]^2
     resistance = well["well_friction_factor"] * gm.ref[:it][gm_it_sym][:base_length] * length_per_well_segment / well["well_diameter"]
     constraint_storage_well_momentum_balance(gm, nw, num_discretizations, i, beta, resistance)
 end

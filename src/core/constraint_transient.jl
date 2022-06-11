@@ -33,6 +33,22 @@ function constraint_pipe_momentum_balance(gm::AbstractGasModel, nw::Int, pipe_id
     _add_constraint!(gm, nw, :pipe_momentum_balance, pipe_id, JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0))
 end
 
+"Constraint: inclined pipe momentum balance.
+The constraint takes the following form:
+`` \\rho_to^2 - e^{r_2} \\cdot \\rho_fr^2 = r_1 \\cdot (e^{r_2} - 1) \\cdot f \\cdot |f|``
+This is based on the work presented in the following paper:
+S.K.K. Hari et al., Operation of Natural Gas Pipeline Networks With Storage Under Transient Flow Conditions"
+
+function constraint_inclined_pipe_momentum_balance(gm::AbstractGasModel, nw::Int, pipe_id::Int, fr_junction::Int, to_junction::Int, resistance_1::Float64, resistance_2::Float64)
+    p_fr = var(gm, nw, :density, fr_junction)
+    p_to = var(gm, nw, :density, to_junction)
+    f = var(gm, nw, :pipe_flux_avg, pipe_id)
+
+    r_1 = resistance_1
+    r_2 = resistance_2
+    _add_constraint!(gm, nw, :inclined_pipe_momentum_balance, pipe_id, JuMP.@NLconstraint(gm.model, p_to^2 - exp(r_2)*p_fr^2 == r_1*(exp(r_2) - 1)*f*abs(f)))
+end
+
 "Constraint: non-slack junction mass balance"
 function constraint_non_slack_junction_mass_balance(gm::AbstractGasModel, nw::Int, slack_junction_id::Int, derivative, net_injection, net_edge_out_flow)
     _add_constraint!(gm, nw, :non_slack_junction_mass_balance, slack_junction_id, JuMP.@constraint(gm.model, derivative + 4.0 * (net_edge_out_flow - net_injection) == 0))
@@ -61,7 +77,7 @@ function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor
     p_to = var(gm, nw, :density, to_junction)
     alpha = var(gm, nw, :compressor_ratio, compressor_id)
     f = var(gm, nw, :compressor_flow, compressor_id)
-    
+
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
             pk = JuMP.@variable(gm.model)
@@ -83,11 +99,11 @@ function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor
         else
             Memento.error(_LOGGER, "For bidirectional compressor c_ratio_min needs to be <= 1.0 and c_ratio_max needs to be >= 1.0")
         end
-        return 
-    end 
+        return
+    end
     _add_constraint!(gm, nw, :compressor_physics_boost, compressor_id, JuMP.@constraint(gm.model, p_to == alpha * p_fr))
     (type == 1) && (return)
-    if (type == 2) 
+    if (type == 2)
         _add_constraint!(gm, nw, :compressor_physics_flow, compressor_id, JuMP.@constraint(gm.model, f * (p_fr - p_to) <= 0))
     end
 end
