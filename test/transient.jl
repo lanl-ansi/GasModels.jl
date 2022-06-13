@@ -63,12 +63,13 @@ end
 end
 
 @testset "transient (steady state replicate) case with elevation" begin
-    mn_data = parse_files("../test/data/matgas/case-6-elevation.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 3600.0)
+    mn_data = parse_files("../test/data/matgas/case-6-elevation.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 7200.0)
     result = run_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
     make_si_units!(result["solution"])
     @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 69.27, atol = 1e-1)
     @test isapprox(result["solution"]["nw"]["3"]["receipt"]["1"]["injection"], 69.27, atol = 1e-1)
+    @test isapprox(resu;t["solution"]["nw"]["1"]["transfer"]["1"]["withdrawal"], 9.27, atol = 1e-1)
     @test isapprox(result["solution"]["nw"]["2"]["compressor"]["1"]["power_var"], 0.0, atol = 10)
 end
 
@@ -78,7 +79,7 @@ end
     @test result["termination_status"] == LOCALLY_SOLVED
     make_si_units!(result["solution"])
     @test isapprox(result["solution"]["nw"]["1"]["receipt"]["1"]["injection"], 69.40, atol = 1e-1)
-    @test isapprox(result["solution"]["nw"]["1"]["receipt"]["1"]["injection"], 69.47, atol = 1e-1)
+    @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 69.47, atol = 1e-1)
     @test isapprox(resu;t["solution"]["nw"]["1"]["transfer"]["1"]["withdrawal"], 18.08, atol = 1e-1)
     @test isapprox(resu;t["solution"]["nw"]["2"]["transfer"]["1"]["withdrawal"], 19.75, atol = 1e-1)
 end
