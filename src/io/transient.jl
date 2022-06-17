@@ -265,6 +265,18 @@ function _prep_transient_data!(
 
         fr_junction = data["junction"][string(pipe["fr_junction"])]
         to_junction = data["junction"][string(pipe["to_junction"])]
+        if(haskey(fr_junction,"elevation"))
+            h1 = fr_junction["elevation"]
+        else
+            h1 = 0
+        end
+        if(haskey(to_junction,"elevation"))
+            h2 = to_junction["elevation"]
+        else
+            h2 = 0
+        end
+        elevation_difference = h2 - h1
+
         sub_pipe_count = pipe["num_sub_pipes"]
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
 
@@ -286,6 +298,7 @@ function _prep_transient_data!(
                 "is_si_units" => data["is_si_units"],
                 "is_english_units" => data["is_english_units"],
                 "is_per_unit" => data["is_english_units"],
+                "elevation" => h1 + (elevation_difference)*i/sub_pipe_count,
             )
         end
 
