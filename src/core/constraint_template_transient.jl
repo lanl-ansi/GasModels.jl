@@ -108,3 +108,14 @@ function constraint_initial_condition_reservoir(gm::AbstractGasModel, i::Int, nw
     initial_density = ref(gm, nw, :storage, i)["initial_density"]
     constraint_initial_condition_reservoir(gm, i, nw, initial_density)
 end
+
+function constraint_storage_flow_bounds(gm::AbstractGasModel, i::Int, nw::Int = nw_id_default)
+    storage = ref(gm, nw, :storage, i)
+    j = storage["junction_id"]
+    junction = ref(gm, nw, :junction, j)
+    rho_top_max = junction["p_max"]*storage["c_ratio_max"]
+    rho_top_min = junction["p_min"]*storage["reduction_factor_max"]
+    b0w, b1w = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "withdrawal", gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:sound_speed]; n_disc=100)
+    b0i, b1i = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "injection", gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:sound_speed]; n_disc=100)
+    constraint_storage_flow_bounds(gm, i, nw, b0w, b1w, b0i, b1i)
+end

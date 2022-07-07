@@ -205,10 +205,7 @@ function make_si_units!(transient_data::Array{Dict{String, Any}, 1}, static_data
         "flow_injection_rate_max",
         "flow_withdrawal_rate_min",
         "flow_withdrawal_rate_max",
-        "well_flux_avg",
-        "well_flux_neg",
-        "bottom_hole_flow",
-        "well_head_flow",
+        "storage_flow"
     ]
 
     inv_flow_params = ["bid_price", "offer_price"]
@@ -331,21 +328,10 @@ const _params_for_unit_conversions = Dict(
         "flow_withdrawal_rate_max",
         "base_gas_capacity",
         "total_field_capacity",
-        "bottom_hole_flow",
-        "well_head_flow",
-        "well_flux_avg",
-        "well_flux_neg",
-        "well_flux_fr",
-        "well_flux_to",
-        "well_flow_avg",
-        "well_flow_neg",
-        "well_flow_fr",
-        "well_flow_to",
         "reservoir_density",
         "reservoir_pressure",
-        "well_density",
         "well_pressure",
-        "withdrawal"
+        "storage_flow"
     ],
     "loss_resistor" => [
         "f",
@@ -427,16 +413,7 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "flow_withdrawal_rate_max" => rescale_flow,
         "base_gas_capacity" => rescale_mass,
         "total_field_capacity" => rescale_mass,
-        "well_flux_avg" => rescale_flow,
-        "well_flux_neg" => rescale_flow,
-        "well_flux_fr" => rescale_flow,
-        "well_flux_to" => rescale_flow,
-        "well_flow_avg" => rescale_flow,
-        "well_flow_neg" => rescale_flow,
-        "well_flow_fr" => rescale_flow,
-        "well_flow_to" => rescale_flow,
-        "well_head_flow" => rescale_flow,
-        "bottom_hole_flow" => rescale_flow,
+        "storage_flow" => rescale_flow,
         "bid_price" => rescale_inv_flow,
         "offer_price" => rescale_inv_flow,
     )
@@ -1296,6 +1273,44 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     end
 
     return resistance
+end
+
+"Computes the constants required to impose bounds on
+the injection and withdrawal rates of storage"
+
+function _calc_storage_parameters(storage::Dict{String,Any}, rho_top_max::Float64, rho_top_min::Float64, phase::String, base_flux, base_density, base_length, sound_speed; n_disc=100)
+
+    L = storage["well_depth"]*base_length
+    D = storage["well_diameter"]
+    lambda = storage["well_friction_factor"]
+    g = acceleration_gravity
+    a_sqr = sound_speed^2
+    A = pi * D^2 / 4.0
+
+    r_1 = (lambda/(2*g*D)) * (base_flux^2/base_density^2)
+    r_2 = -2*g*L/a_sqr
+
+    reservoir_density_max = storage["reservoir_density_max"]
+    reservoir_density_min = storage["reservoir_density_min"]
+
+    rho_top = 0;
+    if(phase == "injection") #into the reservoir
+        global rho_top = rho_top_max
+    elseif(phase == "withdrawal") #from the reservoir
+        global rho_top = rho_top_min
+    end
+
+    rho_bottom_values = range(reservoir_density_min, reservoir_density_max, length = n_disc)
+    flow_values = zeros(n_disc)
+    for i in 1:n_disc
+        rho_bottom = rho_bottom_values[i]
+        phi_2 = (rho_top^2 - exp(r_2)*rho_bottom^2)/(r_1*(exp(r_2) - 1))
+        flow_values[i] = sign(phi_2) * sqrt(abs(phi_2)) * A;
+    end
+
+    linreg(x,y) = hcat(fill!(similar(x),1),x)\y
+    (b0,b1) = linreg(rho_bottom_values,flow_values)
+    return b0, b1
 end
 
 "Calculates the constants required for the pressure drop along inclined pipes.

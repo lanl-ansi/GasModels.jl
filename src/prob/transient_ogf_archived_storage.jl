@@ -1,5 +1,5 @@
 "entry point for the transient optimal gas flow model"
-function run_transient_ogf(data, model_type, optimizer; kwargs...)
+function run_transient_ogf_archived_storage(data, model_type, optimizer; kwargs...)
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
     @assert _IM.ismultinetwork(data_it) == true
 
@@ -7,14 +7,14 @@ function run_transient_ogf(data, model_type, optimizer; kwargs...)
         data,
         model_type,
         optimizer,
-        build_transient_ogf;
+        build_transient_ogf_archived_storage;
         ref_extensions = [ref_add_transient!],
         kwargs...,
     )
 end
 
 "Builds the transient optimal gas flow Nonlinear problem"
-function build_transient_ogf(gm::AbstractGasModel)
+function build_transient_ogf_archived_storage(gm::AbstractGasModel)
     time_points = sort(collect(nw_ids(gm)))
     start_t = time_points[1]
     end_t = time_points[end]
@@ -44,8 +44,14 @@ function build_transient_ogf(gm::AbstractGasModel)
         end
 
         # storage variables
-        variable_storage_flow(gm, n)
+        variable_storage_flow_archived(gm, n)
+        variable_storage_c_ratio(gm, n)
         variable_reservoir_density(gm, n)
+        variable_well_density(gm, n, num_discretizations = num_well_discretizations)
+        variable_well_flux_avg(gm, n, num_discretizations = num_well_discretizations)
+        variable_well_flux_neg(gm, n, num_discretizations = num_well_discretizations)
+        variable_well_flux_fr(gm, n, num_discretizations = num_well_discretizations)
+        variable_well_flux_to(gm, n, num_discretizations = num_well_discretizations)
 
         if n != end_t
             expression_net_nodal_injection(gm, n)
@@ -85,6 +91,12 @@ function build_transient_ogf(gm::AbstractGasModel)
     for n in time_points[1:end]
         (n == end_t) && (continue)
         next = n + 1
+        expression_well_density_derivative(
+            gm,
+            n,
+            next,
+            num_discretizations = num_well_discretizations,
+        )
         expression_reservoir_density_derivative(gm, n, next)
     end
 
@@ -116,9 +128,35 @@ function build_transient_ogf(gm::AbstractGasModel)
         end
 
         for i in ids(gm, n, :storage)
-            constraint_storage_flow_bounds(gm, i, n)
+            constraint_storage_compressor_regulator(gm, i, n)
+            constraint_storage_well_momentum_balance(
+                gm,
+                i,
+                n,
+                num_discretizations = num_well_discretizations,
+            )
             if n != end_t
-                constraint_storage_reservoir_physics(gm, i, n)
+                constraint_storage_well_mass_balance(
+                    gm,
+                    i,
+                    n,
+                    num_discretizations = num_well_discretizations,
+                )
+            end
+            constraint_storage_well_nodal_balance(
+                gm,
+                i,
+                n,
+                num_discretizations = num_well_discretizations,
+            )
+            constraint_storage_bottom_hole_reservoir_density(
+                gm,
+                i,
+                n,
+                num_discretizations = num_well_discretizations,
+            )
+            if n != end_t
+                constraint_storage_reservoir_physics_archived(gm, i, n)
             end
         end
     end
