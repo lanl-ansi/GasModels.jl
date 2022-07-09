@@ -44,7 +44,7 @@ function build_transient_ogf_archived_storage(gm::AbstractGasModel)
         end
 
         # storage variables
-        variable_storage_flow_archived(gm, n)
+        variable_storage_flow(gm, n)
         variable_storage_c_ratio(gm, n)
         variable_reservoir_density(gm, n)
         variable_well_density(gm, n, num_discretizations = num_well_discretizations)
@@ -103,6 +103,7 @@ function build_transient_ogf_archived_storage(gm::AbstractGasModel)
 
     for i in ids(gm, start_t, :storage)
         constraint_initial_condition_reservoir(gm, i, start_t)
+        constraint_wh_flow_time_periodicity(gm, i, start_t, end_t)
     end
 
     for n in time_points[1:end]
@@ -156,7 +157,7 @@ function build_transient_ogf_archived_storage(gm::AbstractGasModel)
                 num_discretizations = num_well_discretizations,
             )
             if n != end_t
-                constraint_storage_reservoir_physics_archived(gm, i, n)
+                constraint_storage_reservoir_physics(gm, i, n)
             end
         end
     end

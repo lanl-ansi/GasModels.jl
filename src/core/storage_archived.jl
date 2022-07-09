@@ -2,7 +2,7 @@
 # Variables
 # *******************************************************
 "variables associated with storage flows"
-function variable_storage_flow_archived(
+function variable_storage_flow(
     gm::AbstractGasModel,
     nw::Int = nw_id_default;
     bounded::Bool = true,
@@ -421,7 +421,7 @@ function constraint_storage_bottom_hole_reservoir_density(
 end
 
 "Constraint: reservoir physics"
-function constraint_storage_reservoir_physics_archived(
+function constraint_storage_reservoir_physics(
     gm::AbstractGasModel, storage_id::Int, nw::Int = nw_id_default;
     is_end::Bool = false, )
     volume = ref(gm, nw, :storage, storage_id)["reservoir_volume"]
@@ -435,7 +435,7 @@ function constraint_storage_reservoir_physics_archived(
 end
 
 "Constraint: time periodicity of well head flow"
-function constraint_wh_flow_time_periodicity_archived(gm::AbstractGasModel, storage_id::Int, nw_start::Int, nw_end::Int)
+function constraint_wh_flow_time_periodicity(gm::AbstractGasModel, storage_id::Int, nw_start::Int, nw_end::Int)
     f_wh_start = var(gm, nw_start, :well_head_flow, storage_id)
     f_wh_end = var(gm, nw_end, :well_head_flow, storage_id)
     GasModels._add_constraint!(gm, nw_start, :wh_flow_periodicity, storage_id, JuMP.@constraint(gm.model, f_wh_start == f_wh_end))

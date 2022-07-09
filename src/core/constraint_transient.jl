@@ -121,7 +121,7 @@ function constraint_initial_condition_reservoir(gm::AbstractGasModel, storage_id
 end
 
 "Constraint: reservoir physics"
-function constraint_storage_reservoir_physics(
+function constraint_storage_reservoir_physics_simplified(
     gm::AbstractGasModel, storage_id::Int, nw::Int = nw_id_default;
     is_end::Bool = false, )
     volume = ref(gm, nw, :storage, storage_id)["reservoir_volume"]
@@ -142,4 +142,11 @@ function constraint_storage_flow_bounds(gm::AbstractGasModel, storage_id::Int, n
     GasModels._add_constraint!(gm, nw, :storage_flow_bounds_1, storage_id, JuMP.@constraint(gm.model, f <= b0w + b1w * rho))
     GasModels._add_constraint!(gm, nw, :storage_flow_bounds_2, storage_id, JuMP.@constraint(gm.model, f >= b0i + b1i * rho))
 
+end
+
+"Constraint: time periodicity of well head flow"
+function constraint_storage_flow_time_periodicity(gm::AbstractGasModel, storage_id::Int, nw_start::Int, nw_end::Int)
+    f_s_start = var(gm, nw_start, :storage_flow, storage_id)
+    f_s_end = var(gm, nw_end, :storage_flow, storage_id)
+    GasModels._add_constraint!(gm, nw_start, :storage_flow_periodicity, storage_id, JuMP.@constraint(gm.model, f_s_start == f_s_end))
 end

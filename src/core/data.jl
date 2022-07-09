@@ -1276,7 +1276,9 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
 end
 
 "Computes the constants required to impose bounds on
-the injection and withdrawal rates of storage"
+the injection and withdrawal rates of storage.
+This function samples points from the (archived) nonlinear well momentum balance constraint
+and fits a linear regression"
 
 function _calc_storage_parameters(storage::Dict{String,Any}, rho_top_max::Float64, rho_top_min::Float64, phase::String, base_flux, base_density, base_length, sound_speed; n_disc=100)
 

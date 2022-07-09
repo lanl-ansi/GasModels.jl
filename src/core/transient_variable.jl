@@ -407,7 +407,7 @@ function variable_transfer_flow(
 end
 
 "variables associated with storage flows"
-function variable_storage_flow(
+function variable_storage_flow_simplified(
     gm::AbstractGasModel,
     nw::Int = nw_id_default;
     bounded::Bool = true,

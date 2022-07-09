@@ -47,8 +47,8 @@ end
     make_si_units!(result["solution"])
     @test isapprox(result["solution"]["nw"]["1"]["receipt"]["1"]["injection"], 41, atol = 1)
     @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 41, atol = 1)
-    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["withdrawal"], 88, atol = 1)
-    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["withdrawal"], 88, atol = 1)
+    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["storage_flow"], 88, atol = 1)
+    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["storage_flow"], 88, atol = 1)
 end
 
 @testset "transient time-periodic withdrawal case with storage" begin
@@ -58,8 +58,8 @@ end
     make_si_units!(result["solution"])
     @test isapprox(result["solution"]["nw"]["1"]["receipt"]["1"]["injection"], 0.0, atol = 1e-1)
     @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 0.0, atol = 1e-1)
-    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["withdrawal"], 88, atol = 1)
-    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["withdrawal"], 88, atol = 1)
+    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["storage_flow"], 88, atol = 1)
+    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["storage_flow"], 88, atol = 1)
 end
 
 @testset "transient (steady state replicate) case with elevation" begin
@@ -91,8 +91,8 @@ end
     make_si_units!(result["solution"])
     @test isapprox(result["solution"]["nw"]["1"]["receipt"]["1"]["injection"], 44, atol = 1)
     @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 44, atol = 1)
-    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["withdrawal"], 86, atol = 1)
-    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["withdrawal"], 86, atol = 1)
+    @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["storage_flow"], 86, atol = 1)
+    @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["storage_flow"], 86, atol = 1)
 end
 
 @testset "transient time-periodic withdrawal case with storage" begin

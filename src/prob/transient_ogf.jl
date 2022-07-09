@@ -44,7 +44,7 @@ function build_transient_ogf(gm::AbstractGasModel)
         end
 
         # storage variables
-        variable_storage_flow(gm, n)
+        variable_storage_flow_simplified(gm, n)
         variable_reservoir_density(gm, n)
 
         if n != end_t
@@ -91,7 +91,9 @@ function build_transient_ogf(gm::AbstractGasModel)
 
     for i in ids(gm, start_t, :storage)
         constraint_initial_condition_reservoir(gm, i, start_t)
+        constraint_storage_flow_time_periodicity(gm, i, start_t, end_t)
     end
+
 
     for n in time_points[1:end]
         if n != end_t
@@ -115,10 +117,12 @@ function build_transient_ogf(gm::AbstractGasModel)
 
         end
 
+# **********add constraint for time periodicity (new and old)
+
         for i in ids(gm, n, :storage)
             constraint_storage_flow_bounds(gm, i, n)
             if n != end_t
-                constraint_storage_reservoir_physics(gm, i, n)
+                constraint_storage_reservoir_physics_simplified(gm, i, n)
             end
         end
     end
