@@ -70,6 +70,8 @@ module GasModels
     include("core/objective.jl")
     include("core/solution.jl")
     include("core/ref.jl")
+    include("core/storage_archived.jl")
+
 
     include("form/lrdwp.jl")
     include("form/lrwp.jl")
@@ -83,6 +85,8 @@ module GasModels
     include("prob/nels.jl")
     include("prob/ogf.jl")
     include("prob/transient_ogf.jl")
+    include("prob/transient_ogf_archived_storage.jl")
+
 
     include("io/diagnostics.jl")
 
