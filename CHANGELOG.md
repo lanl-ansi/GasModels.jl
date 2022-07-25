@@ -8,6 +8,7 @@
 - update JuMP version 
 - simplified storage model
 - archive old storage model
+- add elevation models to pipes
 
 ## v0.9.1
 
