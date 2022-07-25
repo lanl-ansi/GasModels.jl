@@ -2,6 +2,11 @@
 
 ## Staged
 
+
+## v0.9.2 
+- update JuMP version 
+- simplified storage model
+
 ## v0.9.1
 
 - fixes bug for data with no receipts 

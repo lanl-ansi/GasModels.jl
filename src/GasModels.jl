@@ -8,14 +8,11 @@ module GasModels
     import JuMP
     import Memento
     import Printf
-    import MathOptInterface
     import Statistics
 
     using Dates
     using Dierckx
 
-    const MOI = MathOptInterface
-    const MOIU = MathOptInterface.Utilities
 
     # Create our module level logger (this will get precompiled)
     const _LOGGER = Memento.getlogger(@__MODULE__)

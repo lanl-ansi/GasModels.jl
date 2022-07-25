@@ -2,7 +2,7 @@ using GasModels
 
 using JuMP
 using Ipopt
-using Cbc
+using HiGHS
 using Juniper
 using Gurobi
 using SCIP
@@ -13,8 +13,8 @@ using Test
 #using AmplNLWriter
 
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6, "print_level" => 0, "sb" => "yes")
-cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
-juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => ipopt_solver, "mip_solver" => cbc_solver, "log_levels" => [])
+highs_solver = JuMP.optimizer_with_attributes(HiGHS.Optimizer, "output_flag"=>false)
+juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => ipopt_solver, "mip_solver" => highs_solver, "log_levels" => [])
 
 env = Gurobi.Env()
 gurobi_solver = JuMP.optimizer_with_attributes(() -> Gurobi.Optimizer(env))

@@ -14,21 +14,25 @@ Logging.disable_logging(Logging.Warn)
 import JuMP
 
 import Ipopt
-import Cbc
+import HiGHS
 import Juniper
+
+using MathOptInterface 
+
+const MOI = MathOptInterface
 
 ipopt_solver = JuMP.optimizer_with_attributes(
     Ipopt.Optimizer,
     "print_level" => 0,
     "sb" => "yes",
-    "max_iter" => 1000,
+    "mu_init" => 1e-2,
     "acceptable_tol" => 1.0e-2,
 )
-cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
+highs_solver = JuMP.optimizer_with_attributes(HiGHS.Optimizer, "output_flag"=>false)
 juniper_solver = JuMP.optimizer_with_attributes(
     Juniper.Optimizer,
     "nl_solver" => ipopt_solver,
-    "mip_solver" => cbc_solver,
+    "mip_solver" => highs_solver,
     "log_levels" => [],
 )
 

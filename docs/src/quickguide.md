@@ -6,12 +6,12 @@ Once Gas Models is installed, Juniper is installed, and a network data file (e.g
 using GasModels
 using Juniper
 using Ipopt
-using Cbc
+using HiGHS
 using JuMP
 
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
     "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"),
-    "mip_solver" => cbc_solver, "log_levels" => [])
+    "mip_solver" => highs_solver, "log_levels" => [])
 GasModels.run_soc_gf("test/data/matgas/gaslib-40.m", juniper_solver)
 ```
 
@@ -24,7 +24,7 @@ using JuMP
 
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer,
     "nl_solver" => JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"),
-    "mip_solver" => cbc_solver, "log_levels" => [])
+    "mip_solver" => highs_solver, "log_levels" => [])
 GasModels.run_dwp_gf("test/data/matgas/gaslib-40.m", juniper_solver)
 
 ```
