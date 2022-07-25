@@ -245,12 +245,23 @@ function ref_storage!(ref::Dict{Symbol,Any}, sound_speed)
 
     for (i, storage) in ref[:storage]
         storage["reservoir_density_max"] = storage["reservoir_p_max"]
-        storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"]
-        storage["reservoir_p_min"] = storage["base_gas_capacity"] / storage["total_field_capacity"] * storage["reservoir_p_max"]
-        storage["reservoir_density_min"] = storage["reservoir_p_min"]
         storage["initial_capacity"] = storage["total_field_capacity"] * storage["initial_field_capacity_percent"]
-        storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
+        if(storage["total_field_capacity"]==0.0 || storage["reservoir_density_max"] == 0.0)
+            storage["status"] = 0
+            storage["base_gas_capacity"] = 0.0
+            storage["reservoir_volume"] = 0.0
+            storage["reservoir_p_min"] = 0.0
+            storage["initial_density"] = 0.0
+
+        else
+            storage["reservoir_volume"] = storage["total_field_capacity"] / storage["reservoir_density_max"]
+            storage["reservoir_p_min"] = storage["base_gas_capacity"] / storage["total_field_capacity"] * storage["reservoir_p_max"]
+            storage["initial_density"] = storage["initial_capacity"] / storage["reservoir_volume"]
+        end
+
+        storage["reservoir_density_min"] = storage["reservoir_p_min"]
         storage["initial_pressure"] = storage["initial_density"]
+
     end
 end
 
@@ -265,7 +276,7 @@ function ref_pipe_theta!(ref::Dict{Symbol,Any}, base_length)
             h1 = ref[:junction][fr]["elevation"]
             h2 = ref[:junction][to]["elevation"]
             L = pipe["length"]*base_length
-            @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length")
+            @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length. Check pipe with id = $(pipe["id"])")
             pipe["theta"] = asin((h2 - h1)/L) #value in radians
         end
     end
