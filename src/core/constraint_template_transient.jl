@@ -109,6 +109,7 @@ function constraint_initial_condition_reservoir(gm::AbstractGasModel, i::Int, nw
     constraint_initial_condition_reservoir(gm, i, nw, initial_density)
 end
 
+"Template: upper and lower bounds for storage flow rate (replaces constraints related to wells)"
 function constraint_storage_flow_bounds(gm::AbstractGasModel, i::Int, nw::Int = nw_id_default)
     storage = ref(gm, nw, :storage, i)
     j = storage["junction_id"]
