@@ -7,6 +7,7 @@
 - Move Cbc to HiGHS
 - update JuMP version 
 - simplified storage model
+- archive old storage model
 
 ## v0.9.1
 
