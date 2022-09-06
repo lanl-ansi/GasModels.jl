@@ -130,8 +130,7 @@ function constraint_storage_reservoir_physics_simplified(
     if is_end
         f = 0.5 * (var(gm, nw, :storage_flow, storage_id) + var(gm, nw + 1, :storage_flow, storage_id))
     end
-
-    GasModels._add_constraint!(gm, nw, :reservoir_physics, storage_id, JuMP.@constraint(gm.model, volume * rho_dot == f))
+    GasModels._add_constraint!(gm, nw, :reservoir_physics, storage_id, JuMP.@constraint(gm.model, volume * rho_dot == -f))
 end
 
 "Constraint: flow bounds imposed by injection/withdrawal well"
