@@ -4,6 +4,7 @@
 
 
 ## v0.9.2 
+- update Memento dependency version
 - Move Cbc to HiGHS
 - update JuMP version 
 - simplified storage model
