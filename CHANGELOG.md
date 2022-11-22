@@ -1,10 +1,10 @@
 # GasModels.jl Change Log
 
 ## Staged
+- update Memento dependency version
 
 
 ## v0.9.2 
-- update Memento dependency version
 - Move Cbc to HiGHS
 - update JuMP version 
 - simplified storage model
