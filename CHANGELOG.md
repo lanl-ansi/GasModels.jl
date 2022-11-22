@@ -1,6 +1,7 @@
 # GasModels.jl Change Log
 
 ## Staged
+- update Memento dependency version
 
 
 ## v0.9.2 
