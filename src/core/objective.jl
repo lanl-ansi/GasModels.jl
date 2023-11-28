@@ -206,7 +206,7 @@ end
 "function for minimizing new economic costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j -
     \\sum_{k \\in {\\cal C}} \\boldsymbol{p^2}_{jk} - \\boldsymbol{p^2}_{ik} ``"
 function objective_min_new_economic_costs(gm::AbstractGasModel, nws = [nw_id_default])
-    r = Dict(n => var(gm, n, :rsqr) for n in nws)
+    mpp = Dict(n => var(gm, n, :min_power_proxy) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     p2 = Dict(n => var(gm, n, :psqr) for n in nws)
     fl = Dict(n => var(gm, n, :fl) for n in nws)
@@ -260,7 +260,7 @@ function objective_min_new_economic_costs(gm::AbstractGasModel, nws = [nw_id_def
                                           sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) +
                                           economic_weighting * sum(prod_prices[n][i] * fg[n][i] for i in prod_set[n]) +
                                           (1.0 - economic_weighting) *
-                                          sum( (p2[n][compressor["to_junction"]] - p2[n][compressor["fr_junction"]]) for (i, compressor) in ref(gm, n, :compressor))
+                                          sum(mpp[n][i] for (i, compressor) in ref(gm, n, :compressor))
                                           for n in nws
                                        ))
     return JuMP.@objective(gm.model, Min, z)

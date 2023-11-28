@@ -1,7 +1,7 @@
 # Definitions for running the new optimal gas flow (ogf) (with a proxy compressor power term in the objective)
 
 "entry point into running the new ogf problem"
-function run_nw_ogf(file, model_type, optimizer; kwargs...)
+function run_new_ogf(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
@@ -49,6 +49,7 @@ function build_new_ogf(gm::AbstractGasModel)
     variable_production_mass_flow(gm)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm)
+    variable_compressor_minpower_proxy(gm)
     variable_storage(gm)
     variable_form_specific(gm)
 
@@ -88,6 +89,7 @@ function build_new_ogf(gm::AbstractGasModel)
         constraint_compressor_ratios(gm, i)
         constraint_compressor_mass_flow(gm, i)
         constraint_compressor_ratio_value(gm, i)
+        constraint_compressor_minpower_proxy(gm, i)
     end
 
     for i in keys(bounded_compressors)
