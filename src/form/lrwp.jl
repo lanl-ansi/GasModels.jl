@@ -1,12 +1,37 @@
 # Define LRWP implementations of Gas Models
-
+function variable_form_specific(gm::AbstractLRWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    # pipe f|f\ relaxation
+    fmf_l_pipe = var(gm, nw)[:fmf_l_pipe] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :pipe)],
+        base_name="$(nw)_fmf_l")
+    report && sol_component_value(gm, nw, :pipe, :fmf_l, ids(gm, nw, :pipe), fmf_l_pipe)
+end
 ######################################################################################################
 ## Constraints
 ######################################################################################################
 
 "Constraint: Weymouth equation--not applicable for LRWP models"
 function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    # TODO Linear convex hull of the weymouth equations in wp.jl
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+    fmf_l = var(gm, n, :fmf_l_pipe, k)
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
+    elseif f_min == f_max
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == fmf_l))
+        # fmf_f incorporates the univariate relaxation for f*(abs(f))
+        if(f_min<0 && f_max>0)
+            partition = [f_min, 0, f_max]
+            # partition = [f_min,3*f_min/4,f_min/2,f_min/4,0,f_max/4,f_max/2,3*f_max/4,f_max]
+        else
+            partition = [f_min, f_max]
+        end
+        construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
+    end
+
 end
 
 

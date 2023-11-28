@@ -50,6 +50,7 @@ function build_ogf(gm::AbstractGasModel)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm)
     variable_storage(gm)
+    variable_form_specific(gm)
 
     objective_min_economic_costs(gm)
 

@@ -3,7 +3,9 @@
 #############################################################################################################
 ## Constraints for modeling flow across a pipe
 ############################################################################################################
-
+function variable_form_specific(gm::AbstractWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    # NONE
+end
 
 "Constraint: Constraints which define pressure drop across a resistor"
 function constraint_resistor_pressure(gm::AbstractWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)

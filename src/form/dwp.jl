@@ -1,4 +1,7 @@
 # Define DWP implementations of Gas Models
+function variable_form_specific(gm::AbstractDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    # NONE
+end
 
 "Variables needed for modeling flow in MI models"
 function variable_flow(gm::AbstractDWPModel, n::Int = nw_id_default; bounded::Bool = true, report::Bool = true)
