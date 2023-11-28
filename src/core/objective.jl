@@ -204,7 +204,7 @@ end
 
 
 "function for minimizing new economic costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j -
-    \\sum_{k \\in {\\cal C}} \\boldsymbol{p^2}_{jk} - \\boldsymbol{p^2}_{ik} ``"
+    \\sum_{k \\in {\\cal C}} |\\boldsymbol{p^2}_{jk} - \\boldsymbol{p^2}_{ik}| ``"
 function objective_min_new_economic_costs(gm::AbstractGasModel, nws = [nw_id_default])
     mpp = Dict(n => var(gm, n, :min_power_proxy) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
