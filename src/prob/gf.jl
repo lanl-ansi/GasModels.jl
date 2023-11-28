@@ -50,6 +50,7 @@ function build_gf(gm::AbstractGasModel)
     variable_transfer_mass_flow(gm)
     variable_compressor_ratio_sqr(gm; compressors = bounded_compressors)
     variable_storage(gm)
+    variable_form_specific(gm)
 
     for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)

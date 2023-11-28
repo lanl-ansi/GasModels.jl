@@ -12,6 +12,8 @@ module GasModels
 
     using Dates
     using Dierckx
+    using PolyhedralRelaxations
+
 
 
     # Create our module level logger (this will get precompiled)

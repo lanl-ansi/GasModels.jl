@@ -10,6 +10,17 @@
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
         end
 
+        @testset "case 6 ogf weymouth lin rel" begin
+            @info "Testing OGF Linear Relaxation of Pipe Weymouth Physics"
+            data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
+            result = run_ogf(data, LRWPGasModel, nlp_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test isapprox(result["objective"], -260.001; atol = 1e-2)
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 130.00040358725565; atol = 1e-2)
+        end
+
+
         @testset "case 6 wp ogf binding energy constraint" begin
             @info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
