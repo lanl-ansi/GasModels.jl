@@ -444,7 +444,14 @@ function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = nw_id_de
     constraint_compressor_energy(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
+"Template: Constraints to support the proxy for minimizing the compressor power"
+function constraint_compressor_minpower_proxy(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    compressor = ref(gm, n, :compressor, k)
+    i = compressor["fr_junction"]
+    j = compressor["to_junction"]
 
+    constraint_compressor_minpower_proxy(gm, n, k, i, j)
+end
 #################################################################################################
 # Templates for control valves
 #################################################################################################
