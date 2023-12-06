@@ -2,7 +2,7 @@ name = "GasModels"
 uuid = "5e113713-6c35-5477-b766-e1109486666f"
 authors = ["Russell Bent <rbent@lanl.gov>", "Kaarthik Sundar <kaarthik@lanl.gov>", "David Fobes <dfobes@lanl.gov>"]
 repo = "https://github.com/lanl-ansi/GasModels.jl.git"
-version = "0.9.2"
+version = "0.9.3"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

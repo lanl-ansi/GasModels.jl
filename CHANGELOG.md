@@ -5,7 +5,7 @@
 
 ## v0.9.3
 - update Memento dependency version
-- adds linear relaxation for steady state OGF
+- adds linear relaxation formulation for steady state OGF
 
 
 ## v0.9.2 
