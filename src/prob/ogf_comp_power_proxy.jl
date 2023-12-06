@@ -1,12 +1,12 @@
 # Definitions for running the new optimal gas flow (ogf) (with a proxy compressor power term in the objective)
 
 "entry point into running the new ogf problem"
-function run_new_ogf(file, model_type, optimizer; kwargs...)
+function run_ogf_comp_power_proxy(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
         optimizer,
-        build_new_ogf;
+        build_ogf_comp_power_proxy;
         solution_processors = [
             sol_psqr_to_p!,
             sol_compressor_p_to_r!,
@@ -19,18 +19,18 @@ end
 
 ""
 function run_soc_new_ogf(file, optimizer; kwargs...)
-    return run_new_ogf(file, CRDWPGasModel, optimizer; kwargs...)
+    return run_ogf_comp_power_proxy(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
 function run_dwp_new_ogf(file, optimizer; kwargs...)
-    return run_new_ogf(file, DWPGasModel, optimizer; kwargs...)
+    return run_ogf_comp_power_proxy(file, DWPGasModel, optimizer; kwargs...)
 end
 
 
 "construct the new ogf problem"
-function build_new_ogf(gm::AbstractGasModel)
+function build_ogf_comp_power_proxy(gm::AbstractGasModel)
     bounded_compressors = Dict(
         x for x in ref(gm, :compressor) if
         _calc_is_compressor_energy_bounded(
@@ -53,7 +53,7 @@ function build_new_ogf(gm::AbstractGasModel)
     variable_storage(gm)
     variable_form_specific(gm)
 
-    objective_min_new_economic_costs(gm)
+    objective_min_proxy_economic_costs(gm)
 
     for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)

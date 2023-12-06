@@ -52,7 +52,7 @@ include("common.jl")
 
     include("ogf.jl")
 
-    include("new_ogf.jl")
+    include("ogf_comp_power_proxy.jl")
 
     include("ls.jl")
 
