@@ -211,6 +211,15 @@ end
 function constraint_compressor_mass_flow_ne(gm::AbstractGasModel, n::Int, k, f_min, f_max)
 end
 
+"Constraint: constraints to serve as a proxy for minimizing the compressor power"
+function constraint_compressor_minpower_proxy(gm::AbstractGasModel, n::Int, k, i, j)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    mpp = var(gm, n, :min_power_proxy, k)
+
+    _add_constraint!(gm, n, :compressor_minpower_proxy1, k, JuMP.@constraint(gm.model, mpp >= pi - pj ))
+    _add_constraint!(gm, n, :compressor_minpower_proxy2, k, JuMP.@constraint(gm.model, mpp >= pj - pi ))
+end
 
 #################################################################################################
 # Constraints associated with control valves

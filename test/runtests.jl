@@ -17,7 +17,7 @@ import Ipopt
 import HiGHS
 import Juniper
 
-using MathOptInterface 
+using MathOptInterface
 
 const MOI = MathOptInterface
 
@@ -51,6 +51,8 @@ include("common.jl")
     include("data.jl")
 
     include("ogf.jl")
+
+    include("ogf_comp_power_proxy.jl")
 
     include("ls.jl")
 

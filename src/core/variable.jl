@@ -685,6 +685,24 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_de
     report && sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
 end
 
+"Variable Set: variables associated with proxy for minimizing compression power"
+function variable_compressor_minpower_proxy(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
+    mpp = var(gm, nw)[:min_power_proxy] = JuMP.@variable(gm.model,
+        [i in keys(compressors)],
+        base_name="$(nw)_mpp",
+        start=comp_start_value(ref(gm, nw, :compressor), i, "min_power_proxy_start", 0.0)
+    )
+
+    if bounded
+        for (i, compressor) in compressors
+            JuMP.set_lower_bound(mpp[i], 0)
+        end
+    end
+
+    report && sol_component_value(gm, nw, :compressor, :min_power_proxy, keys(compressors), mpp)
+end
+
+
 "Support function for getting a one off y direction variable"
 function get_compressor_y(gm::AbstractGasModel, n::Int, k)
     if !haskey(var(gm, n),:y_compressor)
