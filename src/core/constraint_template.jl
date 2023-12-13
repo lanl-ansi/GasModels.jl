@@ -146,6 +146,28 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_defaul
     end
 end
 
+"Template: Weymouth equation for defining the relationship between pressure drop and flow across a pipe"
+function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    pipe = ref(gm, n, :pipe, k)
+    i = pipe["fr_junction"]
+    j = pipe["to_junction"]
+    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
+    f_min = pipe["flow_min"]
+    f_max = pipe["flow_max"]
+    theta = pipe["theta"]
+    D = pipe["diameter"]
+
+    if(D!=0.0)
+        if(rad2deg(abs(theta)) <= 5)
+            w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
+        else
+            r_1,r_2 = _calc_inclined_pipe_resistance(pipe,gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2)
+        end
+    end
+end
+
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
