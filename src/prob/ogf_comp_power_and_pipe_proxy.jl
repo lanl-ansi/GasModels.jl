@@ -1,12 +1,12 @@
 # Definitions for running the new optimal gas flow (ogf) (with a proxy compressor power term in the objective)
 
 "entry point into running the new ogf problem"
-function run_ogf_comp_power_proxy(file, model_type, optimizer; kwargs...)
+function run_ogf_comp_power_and_pipe_proxy(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
         optimizer,
-        build_ogf_comp_power_proxy;
+        build_ogf_comp_power_and_pipe_proxy;
         solution_processors = [
             sol_psqr_to_p!,
             sol_compressor_p_to_r!,
@@ -19,18 +19,18 @@ end
 
 ""
 function run_soc_new_ogf(file, optimizer; kwargs...)
-    return run_ogf_comp_power_proxy(file, CRDWPGasModel, optimizer; kwargs...)
+    return run_ogf_comp_power_and_pipe_proxy(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
 function run_dwp_new_ogf(file, optimizer; kwargs...)
-    return run_ogf_comp_power_proxy(file, DWPGasModel, optimizer; kwargs...)
+    return run_ogf_comp_power_and_pipe_proxy(file, DWPGasModel, optimizer; kwargs...)
 end
 
 
 "construct the new ogf problem"
-function build_ogf_comp_power_proxy(gm::AbstractGasModel)
+function build_ogf_comp_power_and_pipe_proxy(gm::AbstractGasModel)
     bounded_compressors = Dict(
         x for x in ref(gm, :compressor) if
         _calc_is_compressor_energy_bounded(
@@ -66,7 +66,8 @@ function build_ogf_comp_power_proxy(gm::AbstractGasModel)
     for i in ids(gm, :pipe)
         constraint_pipe_pressure(gm, i)
         constraint_pipe_mass_flow(gm, i)
-        constraint_pipe_weymouth(gm, i)
+        # constraint_pipe_weymouth(gm, i)
+        constraint_pipe_weymouth_linear_approx(gm, i)
     end
 
     for i in ids(gm, :resistor)
