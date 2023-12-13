@@ -1,6 +1,13 @@
 # GasModels.jl Change Log
 
-## Staged
+## Staged 
+
+
+## v0.9.3
+- update Memento dependency version
+- adds linear relaxation formulation for steady state OGF
+- adds a new `run_ogf_comp_power_proxy` problem formulation 
+- the `LRWPGasModel` now is populated
 
 
 ## v0.9.2 
