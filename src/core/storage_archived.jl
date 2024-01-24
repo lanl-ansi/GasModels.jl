@@ -366,7 +366,7 @@ function constraint_storage_well_momentum_balance(gm::AbstractGasModel, nw::Int,
         rho_top = var(gm, nw, :well_density, storage_id)[i]
         rho_bottom = var(gm, nw, :well_density, storage_id)[i+1]
         phi_avg = var(gm, nw, :well_flux_avg, storage_id)[i]
-        GasModels._add_constraint!(gm, nw, :well_ideal_momentum_balance, storage_id * 1000 + i, JuMP.@NLconstraint(gm.model, exp(beta) * rho_bottom^2 - rho_top^2 == (-resistance * phi_avg * abs(phi_avg)) * (exp(beta) - 1) / beta))
+        GasModels._add_constraint!(gm, nw, :well_ideal_momentum_balance, storage_id * 1000 + i, JuMP.@constraint(gm.model, exp(beta) * rho_bottom^2 - rho_top^2 == (-resistance * phi_avg * abs(phi_avg)) * (exp(beta) - 1) / beta))
     end
 end
 

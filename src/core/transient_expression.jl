@@ -159,7 +159,7 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
         m = (gm.ref[:it][gm_it_sym][:specific_heat_capacity_ratio] - 1) /
             gm.ref[:it][gm_it_sym][:specific_heat_capacity_ratio]
         W = 286.76 * gm.ref[:it][gm_it_sym][:temperature] / gm.ref[:it][gm_it_sym][:gas_specific_gravity] / m
-        var(gm, nw, :compressor_power_expr)[i] = JuMP.@NLexpression(gm.model, W * abs(f) * (alpha^m - 1.0))
+        var(gm, nw, :compressor_power_expr)[i] = JuMP.@expression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
 
     report && sol_component_value(

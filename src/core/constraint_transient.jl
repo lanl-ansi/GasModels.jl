@@ -30,7 +30,7 @@ function constraint_pipe_momentum_balance(gm::AbstractGasModel, nw::Int, pipe_id
     p_fr = var(gm, nw, :density, fr_junction)
     p_to = var(gm, nw, :density, to_junction)
     f = var(gm, nw, :pipe_flux_avg, pipe_id)
-    _add_constraint!(gm, nw, :pipe_momentum_balance, pipe_id, JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0))
+    _add_constraint!(gm, nw, :pipe_momentum_balance, pipe_id, JuMP.@constraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0))
 end
 
 "Constraint: inclined pipe momentum balance.
@@ -46,7 +46,7 @@ function constraint_inclined_pipe_momentum_balance(gm::AbstractGasModel, nw::Int
 
     r_1 = resistance_1
     r_2 = resistance_2
-    _add_constraint!(gm, nw, :inclined_pipe_momentum_balance, pipe_id, JuMP.@NLconstraint(gm.model, p_to^2 - exp(r_2)*p_fr^2 == r_1*(exp(r_2) - 1)*f*abs(f)))
+    _add_constraint!(gm, nw, :inclined_pipe_momentum_balance, pipe_id, JuMP.@constraint(gm.model, p_to^2 - exp(r_2)*p_fr^2 == r_1*(exp(r_2) - 1)*f*abs(f)))
 end
 
 "Constraint: non-slack junction mass balance"
@@ -59,7 +59,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, nw::Int, pipe_id::I
     p_fr = var(gm, nw, :density, fr_junction)
     p_to = var(gm, nw, :density, to_junction)
     f = var(gm, nw, :pipe_flux, pipe_id)
-    _add_constraint!(gm, nw, :pipe_physics_ideal, pipe_id, JuMP.@NLconstraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0))
+    _add_constraint!(gm, nw, :pipe_physics_ideal, pipe_id, JuMP.@constraint(gm.model, p_fr^2 - p_to^2 - resistance * f * abs(f) == 0))
 end
 
 "Constraint: aggregate withdrawal at transfer points computation"
@@ -110,7 +110,7 @@ end
 
 "Constraint: compressor power"
 function constraint_compressor_power(gm::AbstractGasModel, nw::Int, compressor_id::Int, compressor_power_expr, compressor_power_var)
-    _add_constraint!(gm, nw, :compressor_power, compressor_id, JuMP.@NLconstraint(gm.model, compressor_power_var == compressor_power_expr))
+    _add_constraint!(gm, nw, :compressor_power, compressor_id, JuMP.@constraint(gm.model, compressor_power_var == compressor_power_expr))
 end
 
 
