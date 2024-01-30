@@ -1,6 +1,7 @@
 using Documenter, GasModels
 
 makedocs(
+    warnonly = Documenter.except(:linkcheck),
     modules = [GasModels],
     format = Documenter.HTML(analytics = "UA-367975-10", mathengine = Documenter.MathJax()),
     sitename = "GasModels",
