@@ -2,12 +2,11 @@
 
 <img src="https://lanl-ansi.github.io/GasModels.jl/dev/assets/logo.svg" align="left" width="200" alt="GasModels logo">
 
-Release: [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/GasModels.jl/stable)
-
-Dev:
-[![Build Status](https://travis-ci.org/lanl-ansi/GasModels.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/GasModels.jl)
+Status:
+[![CI](https://github.com/lanl-ansi/GasModels.jl/workflows/CI/badge.svg)](https://github.com/lanl-ansi/GasModels.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/lanl-ansi/GasModels.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/GasModels.jl)
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://lanl-ansi.github.io/GasModels.jl/latest)
+[![Documentation](https://github.com/lanl-ansi/GasModels.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/GasModels.jl/stable/)
+</p>
 
 GasModels.jl is a Julia/JuMP package for Steady-State Gas Network Optimization.
 It is designed to enable computational evaluation of emerging Gas network formulations and algorithms in a common platform.
