@@ -1,7 +1,11 @@
 # GasModels.jl Change Log
 
-## Staged 
+## Staged
+- nothing
 
+## v0.10.0
+- update to new JuMP nonlinear interface (breaking)
+- drop support for JuMP v0.22 and v0.23 (breaking)
 
 ## v0.9.3
 - update Memento dependency version

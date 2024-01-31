@@ -236,8 +236,8 @@ function constraint_compressor_energy(gm::AbstractDWPModel, n::Int, k::Int, powe
 
     M = abs(flow_max) * abs(ratio_max^2^m - 1) # working in the space of r^2
 
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1)  <= power_max / work + ((1-y) * M)))
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, -f * (r^m - 1) <= power_max / work + (y * M) ))
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, f * (r^m - 1)  <= power_max / work + ((1-y) * M)))
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, -f * (r^m - 1) <= power_max / work + (y * M) ))
 end
 
 
@@ -250,6 +250,6 @@ function constraint_compressor_energy_ne(gm::AbstractDWPModel, n::Int, k, power_
     M = abs(flow_max) * abs(ratio_max^2^m - 1) # working in the space of r^2
 
     # f is zero when the compressor is not built, so constraint is always true then
-    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@NLconstraint(gm.model, f * (r^m - 1)  <= power_max / work + ((1-y) * M)))
-    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@NLconstraint(gm.model, -f * (r^m - 1) <= power_max / work + (y * M) ))
+    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@constraint(gm.model, f * (r^m - 1)  <= power_max / work + ((1-y) * M)))
+    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@constraint(gm.model, -f * (r^m - 1) <= power_max / work + (y * M) ))
 end

@@ -26,9 +26,9 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
     f = var(gm, n, :f_pipe, k)
 
     if w == 0.0
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == 0.0))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
     else
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@NLconstraint(gm.model, (pi - pj) == (f * abs(f)) / w))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == (f * abs(f)) / w))
     end
 end
 
@@ -41,7 +41,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractWPModel, n::Int, k, 
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@NLconstraint(gm.model, pj - exp(r_2)*pii== (exp(r_2) - 1)*r_1*f*abs(f)))
+    _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, pj - exp(r_2)*pii== (exp(r_2) - 1)*r_1*f*abs(f)))
 end
 
 
@@ -50,7 +50,7 @@ function constraint_resistor_darcy_weisbach(gm::AbstractWPModel, n::Int, k, i, j
     f = var(gm, n, :f_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@NLconstraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
+    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
 end
 
 
@@ -91,14 +91,14 @@ function constraint_pipe_weymouth_ne(gm::AbstractWPModel, n::Int, k, i, j, w, f_
     # when z = 1, constraint is active
     # when z = 0 f is also 0.  Therefore, the big M we need is just the smallest and largest pressure difference that is possible
     aux = JuMP.@variable(gm.model)
-    JuMP.@NLconstraint(gm.model, aux == f * abs(f))
+    JuMP.@constraint(gm.model, aux == f * abs(f))
 
     if w == 0.0
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else
-        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@NLconstraint(gm.model, (pi - pj) <= aux / w + (1 - zp) * pd_max))
-        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@NLconstraint(gm.model, (pi - pj) >= aux / w + (1 - zp) * pd_min))
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, (pi - pj) <= aux / w + (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, (pi - pj) >= aux / w + (1 - zp) * pd_min))
     end
 end
 
@@ -243,7 +243,7 @@ function constraint_compressor_ratio_value(gm::AbstractWPModel, n::Int, k, i, j,
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
             pk = get_compressor_pressure_aux(gm, n, k)
-            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@NLconstraint(gm.model, pi*pj*r == pk*pj + pk*pi - pj*pi))
+            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, pi*pj*r == pk*pj + pk*pi - pj*pi))
         else
             y = get_compressor_y(gm, n, k)
             _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj + (1 - y) * i_pmax^2 * max_ratio^2))
@@ -268,7 +268,7 @@ function constraint_compressor_ratio_value_ne(gm::AbstractWPModel, n::Int, k, i,
     if type == 0
         if (min_ratio <= 1.0 && max_ratio >= 1)
             pk = get_ne_compressor_pressure_aux(gm, n, k)
-            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@NLconstraint(gm.model, pi*pj*r == pk*pj + pk*pi - pj*pi))
+            _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, pi*pj*r == pk*pj + pk*pi - pj*pi))
         else
             y = get_ne_compressor_y_wp(gm, n, k)
             _add_constraint!(gm, n, :compressor_ratio_value_ne1, k, JuMP.@constraint(gm.model, r * pi <= pj + (2 - y - z) * i_pmax^2 * max_ratio^2))
@@ -288,7 +288,7 @@ end
 function constraint_compressor_energy(gm::AbstractWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
     r = var(gm, n, :rsqr, k)
     f = var(gm, n, :f_compressor, k)
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@NLconstraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
 end
 
 
@@ -297,5 +297,5 @@ function constraint_compressor_energy_ne(gm::AbstractWPModel, n::Int, k, power_m
     r = var(gm, n, :rsqr_ne, k)
     f = var(gm, n, :f_ne_compressor, k)
     # when the compressor is not built, f = 0, so this is always true
-    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@NLconstraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
+    _add_constraint!(gm, n, :ne_compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
 end
