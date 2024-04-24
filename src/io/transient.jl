@@ -104,6 +104,17 @@ function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     return max_pipe_id
 end
 
+"function to get the maximum junction id"
+function _get_max_junction_id(junctions::Dict{String,Any})::Int
+    max_junction_id = 0
+
+    for (key, junction) in junctions
+        max_junction_id = (junction["id"] > max_junction_id) ? junction["id"] : max_junction_id
+    end
+
+    return max_junction_id
+end
+
 "function to calculate bearing given 2 lat lon values"
 function _calc_bearing(fr, to)
     y = cos(to[1] * pi / 180) * sin(abs(to[2] - fr[2]) * pi / 180)
@@ -163,6 +174,8 @@ function _prep_transient_data!(
     spatial_discretization::Float64 = 10000.0,
 )
     max_pipe_id = _get_max_pipe_id(data["pipe"])
+    max_junction_id = _get_max_junction_id(data["junction"])
+    max_pipe_junc_id = (max_pipe_id > max_junction_id) ? max_pipe_id : max_junction_id
     num_sub_pipes = Dict()
     short_pipes = []
     long_pipes = []
@@ -280,11 +293,11 @@ function _prep_transient_data!(
         sub_pipe_count = pipe["num_sub_pipes"]
         intermediate_junction_count = pipe["num_sub_pipes"] - 1
 
-        data["original_pipe"][key]["fr_pipe"] = max_pipe_id + pipe["id"] * 1000 + 1
-        data["original_pipe"][key]["to_pipe"] = max_pipe_id + pipe["id"] * 1000 + sub_pipe_count
+        data["original_pipe"][key]["fr_pipe"] = max_pipe_junc_id + pipe["id"] * 1000 + 1
+        data["original_pipe"][key]["to_pipe"] = max_pipe_junc_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
-            id = max_pipe_id + pipe["id"] * 1000 + i
+            id = max_pipe_junc_id + pipe["id"] * 1000 + i
 
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
@@ -303,7 +316,7 @@ function _prep_transient_data!(
         end
 
         for i = 1:sub_pipe_count
-            id = max_pipe_id + pipe["id"] * 1000 + i
+            id = max_pipe_junc_id + pipe["id"] * 1000 + i
             new_length = pipe["length"] / sub_pipe_count
             fr_id = (i == 1) ? fr_junction["id"] : (id - 1)
             to_id = (i == sub_pipe_count) ? to_junction["id"] : id
