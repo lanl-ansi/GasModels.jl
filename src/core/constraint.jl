@@ -145,22 +145,6 @@ end
 #################################################################################################
 # Constraints associated with pipes
 #################################################################################################
-"Constraint: Linear approximation for Weymouth equation"
-function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    pi = var(gm, n, :psqr, i)
-    pj = var(gm, n, :psqr, j)
-    f = var(gm, n, :f_pipe, k)
-
-    slope = max(abs(f_max),abs(f_min))
-    if w == 0.0
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
-    elseif f_min == f_max
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min))
-    else
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == slope*f))
-    end
-
-end
 
 "Constraint: on/off constraints on flow across pipes for expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, n::Int, k, w, f_min, f_max)

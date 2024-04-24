@@ -83,7 +83,7 @@ module GasModels
     include("prob/ls.jl")
     include("prob/nels.jl")
     include("prob/ogf.jl")
-    include("prob/ogf_comp_power_and_pipe_proxy.jl")
+    include("prob/ogf_comp_power_proxy.jl")
     include("prob/transient_ogf.jl")
     include("prob/transient_ogf_archived_storage.jl")
 
