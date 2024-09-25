@@ -3,6 +3,9 @@
 ## Staged
 - nothing
 
+## v0.10.1
+- use JuMP v1.23.2 to fix a bug in NLExpression's get value. 
+
 ## v0.10.0
 - update to new JuMP nonlinear interface (breaking)
 - drop support for JuMP v0.22 and v0.23 (breaking)
