@@ -151,7 +151,7 @@ function expression_non_slack_affine_derivative(
 end
 
 "compression power"
-function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool = true)
+function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool = false)
     comp_power = var(gm, nw)[:compressor_power_expr] = Dict{Int,Any}()
     for (i, compressor) in ref(gm, nw, :compressor)
         alpha = var(gm, nw, :compressor_ratio, i)
@@ -162,12 +162,4 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
         var(gm, nw, :compressor_power_expr)[i] = JuMP.@expression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
 
-    report && sol_component_value(
-        gm,
-        nw,
-        :compressor,
-        :power_expr,
-        ids(gm, nw, :compressor),
-        comp_power,
-    )
 end
