@@ -104,4 +104,14 @@ end
     @test isapprox(result["solution"]["nw"]["2"]["receipt"]["1"]["injection"], 0.0, atol = 1)
     @test isapprox(result["solution"]["nw"]["1"]["storage"]["1"]["storage_flow"], 83, atol = 1)
     @test isapprox(result["solution"]["nw"]["2"]["storage"]["1"]["storage_flow"], 83, atol = 1)
+    @test isa(result["solution"]["nw"]["2"]["storage"]["1"]["well_density_derivative"]["1"],Number)
+end
+
+@testset "transient solution type check" begin
+    mn_data = parse_files("../test/data/matgas/case-6-storage.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 7200.0)
+    result = run_transient_ogf(mn_data, WPGasModel, nlp_solver)
+    @test isa(result["solution"]["nw"]["2"]["junction"]["1"]["net_nodal_edge_out_flow"],Number)
+    @test isa(result["solution"]["nw"]["2"]["junction"]["1"]["net_injection"],Number)
+    @test isa(result["solution"]["nw"]["2"]["storage"]["1"]["reservoir_density_derivative"],Number)
+    @test isa(result["solution"]["nw"]["2"]["compressor"]["1"]["power_var"],Number)
 end
