@@ -111,7 +111,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
     )
     transfer_prices = Dict(
         n => Dict(
-            i => get(ref(gm, n, :transfer, i), "bid_price", 1.0) for i in transfer_set[n]
+            i => ref(gm, n, :transfer, i)["withdrawal_min"] >= 0.0 ?  get(ref(gm, n, :transfer, i), "bid_price", 1.0) : (-1) * get(ref(gm, n, :transfer, i), "offer_price", 1.0) for i in transfer_set[n]
         ) for n in nws
     )
 
