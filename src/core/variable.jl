@@ -298,7 +298,8 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
     fl = var(gm, nw)[:fl] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_delivery)],
         base_name="$(nw)_fl",
-        start=comp_start_value(ref(gm, nw, :delivery), i, "fl_start", 0.0)
+        start=comp_start_value(ref(gm, nw, :delivery), i, "fl_start", 
+        ref(gm,nw,:delivery,i)["withdrawal_max"])
     )
 
     if bounded
@@ -325,7 +326,10 @@ function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default
     ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_transfer)],
         base_name="$(nw)_ft",
-        start=comp_start_value(ref(gm, nw, :transfer), i, "ft_start", 0.0)
+        start= ref(gm, nw, :transfer, i)["withdrawal_min"] < 0.0 ?
+            ref(gm, nw, :transfer, i)["withdrawal_min"] :
+            ref(gm, nw, :transfer, i)["withdrawal_max"]
+        # comp_start_value(ref(gm, nw, :transfer), i, "ft_start", rand())
     )
 
     if bounded
@@ -352,7 +356,9 @@ function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_defau
     fg = var(gm, nw)[:fg] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_receipt)],
         base_name="$(nw)_fg",
-        start=comp_start_value(ref(gm, nw, :receipt), i, "fg_start", 0.0)
+        start=comp_start_value(ref(gm, nw, :receipt), i, "fg_start", 
+        ref(gm,nw,:receipt,i)["injection_max"]
+        )
     )
 
     if bounded

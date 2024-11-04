@@ -3,6 +3,10 @@
 ## Staged
 - nothing
 
+## v0.10.2 
+- bug fix in Steady State transfer cost model 
+- fix for power expression and power variable writing
+
 ## v0.10.1
 - use JuMP v1.23.2 to fix a bug in NLExpression's get value. 
 
