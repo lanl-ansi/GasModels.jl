@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Network Data Format · GasModels</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-367975-10"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-367975-10', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="GasModels logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">GasModels</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../quickguide/">Getting Started</a></li><li><a class="tocitem" href="../data-format/">Input Data Formats</a></li><li class="is-active"><a class="tocitem" href>Network Data Format</a><ul class="internal"><li><a class="tocitem" href="#The-Network-Data-Dictionary"><span>The Network Data Dictionary</span></a></li></ul></li><li><a class="tocitem" href="../result-data/">Result Data Format</a></li><li><a class="tocitem" href="../math-model/">Mathematical Model</a></li><li><a class="tocitem" href="../direction/">Direction Model</a></li></ul></li><li><span class="tocitem">Library</span><ul><li><a class="tocitem" href="../formulations/">Network Formulations</a></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Steady State Specifications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../ss-specifications/">Problem Specifications</a></li><li><a class="tocitem" href="../objective/">Objective</a></li><li><a class="tocitem" href="../variables/">Variables</a></li><li><a class="tocitem" href="../constraints/">Constraints</a></li></ul></li><li><a class="tocitem" href="../transient-specifications/">Transient Specifications</a></li><li><a class="tocitem" href="../parser/">File IO</a></li></ul></li><li><a class="tocitem" href="../developer/">Developer</a></li><li><a class="tocitem" href="../examples/">Examples</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Manual</a></li><li class="is-active"><a href>Network Data Format</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Network Data Format</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/lanl-ansi/GasModels.jl/blob/master/docs/src/network-data.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="GasModels-Network-Data-Format"><a class="docs-heading-anchor" href="#GasModels-Network-Data-Format">GasModels Network Data Format</a><a id="GasModels-Network-Data-Format-1"></a><a class="docs-heading-anchor-permalink" href="#GasModels-Network-Data-Format" title="Permalink"></a></h1><h2 id="The-Network-Data-Dictionary"><a class="docs-heading-anchor" href="#The-Network-Data-Dictionary">The Network Data Dictionary</a><a id="The-Network-Data-Dictionary-1"></a><a class="docs-heading-anchor-permalink" href="#The-Network-Data-Dictionary" title="Permalink"></a></h2><p>Internally GasModels utilizes a dictionary to store network data. The dictionary uses strings as key values so it can be serialized to JSON for algorithmic data exchange. GasModels can utilize this serialization as a text file, however GasModels does not support backwards compatibility for such serializations. When used as serialization, the data is assumed to be in per_unit (non dimenisionalized) or SI units.</p><p>The network data dictionary structure is roughly as follows:</p><pre><code class="language-json hljs">{
+&quot;name&quot;:&lt;string&gt;,                         # a name for the model
+&quot;temperature&quot;:&lt;float&gt;,                   # gas temperature. SI units are kelvin
+&quot;is_per_units&quot;:&lt;int&gt;,                    # Whether or not the file is in per unit (non dimensional units) or SI units.
+&quot;is_english_units&quot;:&lt;int&gt;,                # Whether or not the file is in english units
+&quot;gas_molar_mass&quot;:&lt;float&gt;,                # molecular mass of the gas. SI units are kg/mol
+&quot;gas_specific_gravity&quot;:&lt;float&gt;,          # the specific gravity of the gas. Non-dimensional.
+&quot;multinetwork&quot;:&lt;boolean&gt;,                # flag for whether or not this is multiple networks
+&quot;base_length&quot;:&lt;float&gt;,                   # Base for non-dimensionalizing space (length). Si units are m
+&quot;base_flow&quot;:&lt;float&gt;,                     # Base for non-dimensionalizing mass flow. SI units are kg/s
+&quot;base_pressure&quot;:&lt;float&gt;,                 # Base for non-dimensionalizing pressure. SI units are pascal
+&quot;base_time&quot;:&lt;float&gt;,                     # Base for non-dimensionalizing time. SI units are s
+&quot;compressibility_factor&quot;:&lt;float&gt;,        # Gas compressability. Non-dimensional.
+&quot;specific_heat_capacity_ratio&quot;:&lt;float&gt;,  # Gas compressability. Non-dimensional.
+&quot;sound_speed&quot;:&lt;float&gt;,                   # Speed of sound through the gas. SI units are m/s.
+&quot;R&quot;:&lt;float&gt;,                             # Universal Gas constant. SI units are J/mol/K.
+&quot;junction&quot;:{
+    &quot;1&quot;:{
+      &quot;p_max&quot;: &lt;float&gt;,    # maximum pressure. SI units are pascals
+      &quot;p_min&quot;: &lt;float&gt;,    # minimum pressure. SI units are pascals
+      &quot;p_nominal&quot;: &lt;float&gt;,  # nominal pressure. SI units are pascals
+      &quot;status&quot;: &lt;int&gt;,    # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;lat&quot;:&lt;float&gt;, # latitude position of the junction (optional)
+      &quot;lon&quot;:&lt;float&gt;, # latitude position of the junction (optional)
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;delivery&quot;:{
+    &quot;1&quot;:{
+      &quot;junction_id&quot;: &lt;float&gt;,  # junction id
+      &quot;withdrawal_max&quot;: &lt;float&gt;,  # the maximum mass flow demand. SI units are kg/s.
+      &quot;withdrawal_min&quot;: &lt;float&gt;,  # the minimum mass flow demand. SI units are kg/s.
+      &quot;withdrawal_nominal&quot;: &lt;float&gt;, # nominal mass flow demand. SI units are kg/s.
+      &quot;priority&quot;: &lt;float&gt;, # priority for serving the variable load. High numbers reflect a higher desired to serve this load.
+      &quot;bid_price&quot;: &lt;float&gt;, # price for buying gas at the delivery.
+      &quot;is_dispatchable&quot;: &lt;int&gt;,  # whether or not the unit is dispatchable (0 = delivery should consume withdrawl_nominal, 1 = delivery can consume between withdrawal_min and withdrawal_max).
+      &quot;status&quot;: &lt;int&gt;,   # status of the component (0 = off, 1 = on). Default is 1.
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;receipt&quot;:{
+    &quot;1&quot;:{
+      &quot;junction_id&quot;: &lt;float&gt;,         # junction id
+      &quot;injection_min&quot;: &lt;float&gt;,       # the minimum mass flow gas production. SI units are kg/s.
+      &quot;injection_max&quot;: &lt;float&gt;,       # the maximum mass flow gas production. SI units are kg/s.
+      &quot;injection_nominal&quot;: &lt;float&gt;,   # nominal mass flow production at standard density. SI units are kg/s.
+      &quot;dispatchable&quot;: &lt;int&gt;,          # whether or not the unit is dispatchable (0 = receipt should produce injection_nominal, 1 = receipt can produce between injection_min and injection_max).
+      &quot;offer_price&quot;: &lt;float&gt;,         # price for selling gas at the receipt.
+      &quot;status&quot;: &lt;int&gt;,                # status of the component (0 = off, 1 = on). Default is 1.
+       ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;transfer&quot;:{
+    &quot;1&quot;:{
+        &quot;junction_id&quot;: &lt;float&gt;,         # junction id
+        &quot;withdrawal_max&quot;: &lt;float&gt;,      # the maximum mass flow demand. SI units are kg/s.
+        &quot;withdrawal_min&quot;: &lt;float&gt;,      # the minimum mass flow demand. SI units are kg/s. (can be negative, in which case it is gas injection)
+        &quot;withdrawal_nominal&quot;: &lt;float&gt;,  # nominal mass flow demand. SI units are kg/s.
+        &quot;offer_price&quot;: &lt;float&gt;,         # price for selling gas at the receipt.
+        &quot;bid_price&quot;: &lt;float&gt;,           # price for buying gas at the delivery.
+        &quot;is_dispatchable&quot;: &lt;int&gt;,       # whether or not the unit is dispatchable (0 = transfer should consume withdrawl_nominal, 1 = transfer can consume between withdrawal_min and withdrawal_max).
+        &quot;status&quot;: &lt;int&gt;,                # status of the component (0 = off, 1 = on). Default is 1.
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;pipe&quot;:{
+    &quot;1&quot;:{
+      &quot;length&quot;: &lt;float&gt;,            # the length of the connection. SI units are m.
+      &quot;fr_junction&quot;: &lt;int&gt;,         # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,         # the &quot;to&quot; side junction id
+      &quot;friction_factor&quot;: &lt;float&gt;,   # the friction component of the resistance term of the pipe. Non dimensional.
+      &quot;diameter&quot;: &lt;float&gt;,          # the diameter of the connection. SI units are m.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;p_max&quot;: &lt;float&gt;,             # maximum pressure. SI units are pascals
+      &quot;p_min&quot;: &lt;float&gt;,             # minimum pressure. SI units are pascals
+      &quot;is_bidirectional&quot;: &lt;int&gt;,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+},
+&quot;compressor&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,         # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,         # the &quot;to&quot; side junction id
+      &quot;c_ratio_min&quot;: &lt;float&gt;,       # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;c_ratio_max&quot;: &lt;float&gt;,       # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;operating_cost&quot;: &lt;float&gt;,    # The cost per W of running the compressor
+      &quot;power_max&quot;: &lt;float&gt;,         # Maximum power consumed by the compressor. SI units is W
+      &quot;type&quot;: &lt;int&gt;,                # type of the compressor (two way compression or not, one way flow or not, etc.)
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;short_pipe&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,         # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,         # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;is_bidirectional&quot;: &lt;int&gt;,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;valve&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,             # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,             # the &quot;to&quot; side junction id
+      &quot;status&quot;: &lt;int&gt;,                  # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;is_bidirectional&quot;: &lt;int&gt;,        # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;regulator&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,             # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,             # the &quot;to&quot; side junction id
+      &quot;reduction_factor_min&quot;: &lt;float&gt;,  # minimum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;reduction_factor_max&quot;: &lt;float&gt;,  # maximum multiplicative pressure change (compression or decompressions). Compression only goes from f_junction to t_junction (1 if flow reverses).
+      &quot;status&quot;: &lt;int&gt;,                  # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;is_bidirectional&quot;: &lt;int&gt;,        # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;resistor&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,          # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,          # the &quot;to&quot; side junction id
+      &quot;drag&quot;: &lt;float&gt;,              # the drag factor of resistors. Non dimensional.
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;is_bidirectional&quot;: &lt;int&gt;,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;loss_resistor&quot;:{
+    &quot;1&quot;:{
+      &quot;fr_junction&quot;: &lt;int&gt;,         # the &quot;from&quot; side junction id
+      &quot;to_junction&quot;: &lt;int&gt;,         # the &quot;to&quot; side junction id
+      &quot;p_loss&quot;: &lt;float&gt;,            # constant pressure loss along the edge
+      &quot;status&quot;: &lt;int&gt;,              # status of the component (0 = off, 1 = on). Default is 1.
+      &quot;is_bidirectional&quot;: &lt;int&gt;,    # flag for whether or not flow can go in both directions
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+&quot;storage&quot;:{
+    &quot;1&quot;:{
+        &quot;id&quot;: &lt;int&gt;,                                # id of the junction in which storage is located
+        &quot;well_diameter&quot;: &lt;float&gt;,                   # diameter of the wells
+        &quot;well_depth&quot;: &lt;float&gt;,                      # depth of the wells
+        &quot;well_friction_factor&quot;: &lt;float&gt;,            # friction factor of the wells 
+        &quot;reservoir_p_max&quot;: &lt;float&gt;,                 # maximum pressure of the reservoir
+        &quot;base_gas_capacity&quot;: &lt;float&gt;,               # base gas capacity in reservoir (SI units: kg)
+        &quot;total_field_capacity&quot;: &lt;float&gt;,            # total gas capacity in reservoir (SI units: kg)
+        &quot;initial_field_capacity_percent&quot;: &lt;float&gt;,  # initial gas in reservoir as a percentage of total capacity
+        &quot;reduction_factor_max&quot;: &lt;float&gt;             # maximum reduction factor of the regulator 
+        &quot;c_ratio_max&quot;: &lt;float&gt;,                     # maximum compression ratio of the compressor
+        &quot;status&quot;: &lt;int&gt;,                            # status of the component (0=off, 1=on). Default is 1.
+        &quot;flow_injection_rate_min&quot;: &lt;float&gt;,         # minimum flow rate at which gas can be injected into storage. SI units is kg/s
+        &quot;flow_injection_rate_max&quot;: &lt;float&gt;,         # maximum flow rate at which gas can be injected into storage. SI units is kg/s
+        &quot;flow_withdrawal_rate_min&quot;: &lt;float&gt;,        # minimum flow rate at which gas can be withdrawn from storage. SI units is kg/s
+        &quot;flow_withdrawal_rate_max&quot;: &lt;float&gt;,        # maxium flow rate at which gas can be withdrawn storage. SI units is kg/s  
+        ...
+    },
+    &quot;2&quot;:{...},
+    ...
+}
+}</code></pre><p>All data is assumed to have consistent units (i.e. SI units or non-dimensionalized units)</p><p>The following commands can be used to explore the network data dictionary,</p><pre><code class="language-julia hljs">network_data = GasModels.parse_file(&quot;gaslib-40.m&quot;)
+display(network_data)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../data-format/">« Input Data Formats</a><a class="docs-footer-nextpage" href="../result-data/">Result Data Format »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 29 January 2025 17:22">Wednesday 29 January 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
