@@ -260,6 +260,8 @@ function _prep_transient_data!(
                 "is_si_units",
                 "is_english_units",
                 "is_per_unit",
+                "flow_min", 
+                "flow_max"
             ]
 
             data["pipe"][key] = Dict{String,Any}()
@@ -336,6 +338,8 @@ function _prep_transient_data!(
                 "is_si_units" => data["is_si_units"],
                 "is_english_units" => data["is_english_units"],
                 "is_per_unit" => data["is_english_units"],
+                "flow_min" => pipe["flow_min"],
+                "flow_max" => pipe["flow_max"]
             )
         end
     end
