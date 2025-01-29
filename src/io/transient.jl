@@ -72,10 +72,10 @@ function parse_files(
 
     make_si_units!(static_data)
     add_base_values!(static_data)
+    correct_f_bounds!(static_data)
     check_connectivity(static_data)
     check_status(static_data)
     check_edge_loops(static_data)
-
     check_global_parameters(static_data)
     prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
 

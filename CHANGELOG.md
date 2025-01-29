@@ -3,6 +3,9 @@
 ## Staged
 - nothing
 
+## v0.10.3 
+- bug fix in transient flow bound computation
+
 ## v0.10.2 
 - bug fix in Steady State transfer cost model 
 - fix for power expression and power variable writing
