@@ -37,6 +37,16 @@
         @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
     end
 
+    @testset "test cwp gf" begin
+        @info "Testing cwp gf"
+        result = run_gf("../test/data/matgas/case-6-gf.m", CWPGasModel, nlp_solver)
+        @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+
+        result = run_gf("../test/data/gaslib/GasLib-Integration.zip", WPGasModel, minlp_solver)
+        @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+    end
+
     @testset "test dwp gf" begin
         @info "Testing dwp gf"
         result = run_gf("../test/data/matgas/case-6-gf.m", DWPGasModel, minlp_solver)

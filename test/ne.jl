@@ -36,4 +36,14 @@
             @test result["termination_status"] in [ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
         end
     end
+
+    @testset "test cwp ne" begin
+        @info "Testing cwp ne"
+        result = run_ne("../test/data/matgas/case-6-ne.m", CWPGasModel, minlp_solver)
+        if result["termination_status"] == LOCALLY_SOLVED
+            @test isapprox(result["objective"], 1476; atol = 1e-1)
+        else # CI compat for windows on Julia v1.6, 01/29/24
+            @test result["termination_status"] in [ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+        end
+    end
 end

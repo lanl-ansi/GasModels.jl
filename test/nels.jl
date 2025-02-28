@@ -33,4 +33,11 @@
         @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
         @test isapprox(result["objective"] * result["solution"]["base_flow"], 1031.60; atol = 1e-1)
     end
+
+    @testset "test cwp nels" begin
+        @info "Testing cwp nels"
+        result = run_nels("../test/data/matgas/case-6-nels.m", CWPGasModel, minlp_solver)
+        @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+        @test isapprox(result["objective"] * result["solution"]["base_flow"], 1031.60; atol = 1e-1)
+    end
 end
