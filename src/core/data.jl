@@ -1335,6 +1335,25 @@ function _calc_inclined_pipe_resistance(pipe::Dict{String,Any}, base_length, bas
     return resistance_1, resistance_2
 end
 
+"Calculate the bounds on minimum and maximum scaled pressure difference squared for an inclined pipe"
+function _calc_inclined_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any}, r_2::Float64)
+    pd_max = exp(r_2) * i["p_max"]^2 - j["p_min"]^2
+    pd_min = exp(r_2) * i["p_min"]^2 - j["p_max"]^2
+
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pd_min = max(0, pd_min)
+    end
+
+    if flow_direction == -1
+        pd_max = min(0, pd_max)
+    end
+
+    return pd_min, pd_max
+end
+
 
 "Calculates pipeline resistance from this paper Thorley and CH Tiley.
 Unsteady and transient flow of compressible

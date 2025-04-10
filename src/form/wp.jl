@@ -36,13 +36,24 @@ end
 ``p_j^2 - e^{r_2} \\cdot p_i^2 = (e^{r_2} - 1) \\cdot r_1 \\cdot f \\cdot |f|``
 This is based on work presented in the following paper:
 S.K.K. Hari et al., Operation of Natural Gas Pipeline Networks With Storage Under Transient Flow Conditions"
-function constraint_inclined_pipe_pressure_drop(gm::AbstractWPModel, n::Int, k, i, j, r_1, r_2)
+function constraint_inclined_pipe_pressure_drop(gm::AbstractWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
     pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, pj - exp(r_2)*pii== (exp(r_2) - 1)*r_1*f*abs(f)))
+    inc_pi = exp(r_2) * pii
+    w = 1/(r_1 * (1 - exp(r_2)))
+
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
+    else
+        _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == (f * abs(f)) / w))
+    end
 end
+
+
+
+
 
 
 "Darcy-Weisbach equation with absolute value"

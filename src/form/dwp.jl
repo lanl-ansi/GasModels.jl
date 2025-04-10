@@ -53,19 +53,42 @@ Constraint 4:
 "
 function constraint_pipe_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
     y = var(gm, n, :y_pipe, k)
-    pi = var(gm, n, :psqr, i)
+    pii = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
     if w == 0.0
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == 0.0))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
     else
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
-        _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f^2))
-        _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f^2 - y * (f_max^2 + w * pd_max)))
-        _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f^2))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pii - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
+        _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pii - pj) <= f^2))
+        _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pii) >= f^2 - y * (f_max^2 + w * pd_max)))
+        _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pii) <= f^2))
     end
 end
+
+
+function constraint_inclined_pipe_pressure_drop(gm::AbstractDWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    y = var(gm, n, :y_pipe, k)
+    pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+
+    inc_pi = exp(r_2) * pii
+
+    w = 1/(r_1 * (1 - exp(r_2)))
+    if w == 0.0
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
+    else
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) >=  f^2 - (1 - y) * (f_min^2 - w * inc_pd_min)))
+        _add_constraint!(gm, n, :inclined_weymouth2, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) <= f^2))
+        _add_constraint!(gm, n, :inclined_weymouth3, k, JuMP.@constraint(gm.model, w * (pj - inc_pi) >= f^2 - y * (f_max^2 + w * inc_pd_max)))
+        _add_constraint!(gm, n, :inclined_weymouth4, k, JuMP.@constraint(gm.model, w * (pj -inc_pi) <= f^2))
+    end
+
+end
+
+
 
 
 "Weymouth equation for resistors
