@@ -10,7 +10,7 @@ Status:
 
 GasModels.jl is a Julia/JuMP package for Steady-State Gas Network Optimization.
 It is designed to enable computational evaluation of emerging Gas network formulations and algorithms in a common platform.
-The code is engineered to decouple problem specifications (e.g. Gas Flow, Expansion planning, ...) from the gas network formulations (e.g. DWP, CRDWP, ...).
+The code is engineered to decouple problem specifications (e.g. Gas Flow, Expansion planning, ...) from the gas network formulations (e.g. CWP, DWP, CRDWP, ...).
 This enables the definition of a wide variety of gas network formulations and their comparison on common problem specifications.
 
 **Core Problem Specifications**
@@ -19,6 +19,7 @@ This enables the definition of a wide variety of gas network formulations and th
 * Load Shed (ls)
 
 **Core Network Formulations**
+* CWP
 * DWP
 * WP
 * CRDWP
