@@ -77,6 +77,8 @@ module GasModels
     include("form/wp.jl")
     include("form/dwp.jl")
     include("form/crdwp.jl")
+    include("form/cwp.jl")
+
 
     include("prob/gf.jl")
     include("prob/ne.jl")
