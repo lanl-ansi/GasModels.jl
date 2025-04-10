@@ -89,10 +89,6 @@ function build_ogf_comp_power_unc(gm::AbstractGasModel)
         constraint_compressor_mass_flow(gm, i)
         constraint_compressor_ratio_value(gm, i)
     end
-println("No comp power")
-    # for i in keys(bounded_compressors)
-    #     constraint_compressor_energy(gm, i)
-    # end
 
     for i in ids(gm, :valve)
         constraint_on_off_valve_mass_flow(gm, i)
