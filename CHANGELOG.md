@@ -1,6 +1,10 @@
 # GasModels.jl Change Log
 
-## Staged
+## staged 
+- nothing
+
+
+## v0.10.4
 - adds pressure drop constraints for the CWP and DWP formulations
 - creates a new copy of the OGF problem without compressor power constraint
 - updates to formulations.md to include information on the CWP formulation
