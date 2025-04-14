@@ -155,6 +155,32 @@ function constraint_pipe_weymouth(gm::AbstractCWPModel, n::Int, k, i, j, f_min, 
     _add_constraint!(gm, n, :weymouth_flow_relation, k, JuMP.@constraint(gm.model, f == f_plus - f_minus))
 end
 
+"Inclined pipe pressure loss"
+function constraint_inclined_pipe_pressure_drop(gm::AbstractCWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
+    pj = var(gm, n, :psqr, j)
+    # Retrieve f for this pipe
+    f_plus  = var(gm, n, :f_plus_pipe, k)
+    f_minus = var(gm, n, :f_minus_pipe, k)
+    f       = var(gm, n, :f_pipe, k)
+
+    inc_pi = exp(r_2) * pii
+
+    w = 1/(r_1 * (1 - exp(r_2)))
+
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
+    else
+        _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == (f_plus^2 - f_minus^2) / w))
+    end
+
+    # Complementarity (no simultaneous forward and reverse flow):
+    _add_constraint!(gm, n, :complementarity_weymouth, k, JuMP.@constraint(gm.model, f_plus * f_minus == 0))
+
+    #Relate the net flow variable f to f_plus and f_minus:
+    _add_constraint!(gm, n, :weymouth_flow_relation, k, JuMP.@constraint(gm.model, f == f_plus - f_minus))
+end
+
 "Weymouth equation for an expansion pipe"
 function constraint_pipe_weymouth_ne(gm::AbstractCWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
     # Retrieve squared pressures at the 'from' and 'to' nodes

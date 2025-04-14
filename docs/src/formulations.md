@@ -26,10 +26,11 @@ ref_add_transient!
 # Network Formulations
 
 ## Type Hierarchy
-We begin with the top of the hierarchy, where we can distinguish between the physics of gas flow models. There are currently five formulations supported in GasModels. Two full non convex formulations and three relaxations.
+We begin with the top of the hierarchy, where we can distinguish between the physics of gas flow models. There are currently six formulations supported in GasModels. Three full non convex formulations and three relaxations.
 
 ```julia
 AbstractWPModel <: AbstractGasModel
+AbstractCWPModel <: AbstractWPModel
 AbstractDWPModel <: AbstractGasModel
 AbstractMISOCPModel <: AbstractGasModel
 AbstractLRDWPModel <: AbstractGasModel
@@ -40,7 +41,8 @@ AbstractLRWPModel <: AbstractGasModel
 Each of these forms can be used as the type parameter for a GasModel, i.e.:
 
 ```julia
-WPGasModel <: AbstractWPForm
+WPGasModel <: AbstractWPModel
+CWPGasModel <: AbstractCWPModel
 MIDWPGasModel <: AbstractDWPModel
 CRDWPGasModel <: AbstractMISOCPModel
 LRDWPGasModel <: AbstractLRDWPModel
@@ -68,6 +70,7 @@ All formulation names refer to how underlying physics of a gas network is modele
 | ---------------- | -------------------- | --------------------- | --------------------- |
 | WP               |       Y              |          Y            | Physics is modeled using nonlinear equations. |
 | DWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| CWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Pipe flow in each direction is modeled by a nonnegative continuous variable. Complementarity constraints are used to ensure that flow is zero in at least one direction. |
 | CRDWP            |       Y              |          N            | Physics is modeled using convex equations. Directionality of flow is modeled using discrete variables |
 | LRDWP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
 | LRWP             |       Y              |          N            | Physics is modeled using linear equations. |
