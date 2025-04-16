@@ -162,6 +162,31 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, n::Int, k,
 
 end
 
+
+# *************** here
+"Constraint: Linear approximation for Inclined Pipe Pressure Drop"
+function constraint_inclined_pipe_pressure_drop_linear_approx(gm::AbstractGasModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+
+    inc_pi = exp(r_2) * pii
+    w = 1/(r_1 * (1 - exp(r_2)))
+
+    slope = max(abs(f_max),abs(f_min))
+
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
+    elseif f_min == f_max 
+        _add_constraint!(gm, n, :inclined_pipe_pressure_drop_lin_approx1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min))
+    else
+        # TODO: Improve approximation for inclined pipes
+        _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, pii - pj == slope*f))
+    end
+end
+
+
+
 "Constraint: on/off constraints on flow across pipes for expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, n::Int, k, w, f_min, f_max)
     zp = var(gm, n, :zp, k)
