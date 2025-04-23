@@ -1918,6 +1918,30 @@ function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_ty
     return ccs
 end
 
+function select_largest_component!(data::Dict{String, <:Any})
+    apply_gm!(_select_largest_component!, data)
+end
+
+function _select_largest_component!(data::Dict{String,<:Any})
+    ccs = calc_connected_components(data)
+
+    if length(ccs) > 1
+        Memento.info(_LOGGER, "found $(length(ccs)) components")
+
+        ccs_order = sort(collect(ccs); by=length)
+        largest_cc = ccs_order[end]
+
+        Memento.info(_LOGGER, "largest component has $(length(largest_cc)) buses")
+
+        for (i,junction) in data["junction"]
+            if junction["status"] != 0 && !(junction["id"] in largest_cc)
+                junction["status"] = 0
+                Memento.info(_LOGGER, "deactivating junction $(i) due to small connected component")
+            end
+        end
+        
+    end
+end
 
 "perModels DFS on a graph"
 function _dfs(i, neighbors, component_lookup, touched)
