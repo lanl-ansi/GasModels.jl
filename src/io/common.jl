@@ -47,7 +47,7 @@ function correct_network_data!(data::Dict{String,Any})
     add_compressor_fields!(data)
 
     make_si_units!(data)
-    select_largest_component!(data)
+    # select_largest_component!(data)
     propagate_topology_status!(data)
     add_base_values!(data)
     make_per_unit!(data)

@@ -1931,7 +1931,7 @@ function _select_largest_component!(data::Dict{String,<:Any})
         ccs_order = sort(collect(ccs); by=length)
         largest_cc = ccs_order[end]
 
-        Memento.info(_LOGGER, "largest component has $(length(largest_cc)) buses")
+        Memento.info(_LOGGER, "largest component has $(length(largest_cc)) junctions")
 
         for (i,junction) in data["junction"]
             if junction["status"] != 0 && !(junction["id"] in largest_cc)

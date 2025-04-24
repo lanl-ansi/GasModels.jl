@@ -71,7 +71,7 @@ function parse_files(
     add_compressor_fields!(static_data)
 
     make_si_units!(static_data)
-    select_largest_component!(static_data)
+    # select_largest_component!(static_data)
     propagate_topology_status!(static_data)
     add_base_values!(static_data)
     correct_f_bounds!(static_data)
