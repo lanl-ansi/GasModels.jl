@@ -131,6 +131,63 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
     return JuMP.@objective(gm.model, Min, z)
 end
 
+"function for minimizing supply demand costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j
+    ``"
+function objective_min_supply_demand_costs(gm::AbstractGasModel, nws = [nw_id_default])
+    r = Dict(n => var(gm, n, :rsqr) for n in nws)
+    f = Dict(n => var(gm, n, :f_compressor) for n in nws)
+    fl = Dict(n => var(gm, n, :fl) for n in nws)
+    fg = Dict(n => var(gm, n, :fg) for n in nws)
+    ft = Dict(n => var(gm, n, :ft) for n in nws)
+    gamma = get_specific_heat_capacity_ratio(gm.data)
+    m = ((gamma - 1) / gamma) / 2
+    T = get_temperature(gm.data)
+    G = get_gas_specific_gravity(gm.data)
+    work = _calc_compressor_work(gamma, G, T)
+    base_flow = get_base_flow(gm.data)
+
+    load_set = Dict(
+        n => keys(Dict(
+            x for x in ref(gm, n, :delivery) if x.second["is_dispatchable"] == 1
+        )) for n in nws
+    )
+    transfer_set = Dict(
+        n => keys(Dict(
+            x for x in ref(gm, n, :transfer) if x.second["is_dispatchable"] == 1
+        )) for n in nws
+    )
+    prod_set = Dict(
+        n => keys(Dict(
+            x for x in ref(gm, n, :receipt) if x.second["is_dispatchable"] == 1
+        )) for n in nws
+    )
+    load_prices = Dict(
+        n => Dict(
+            i => get(ref(gm, n, :delivery, i), "bid_price", 1.0) for i in load_set[n]
+        ) for n in nws
+    )
+    prod_prices = Dict(
+        n => Dict(
+            i => get(ref(gm, n, :receipt, i), "offer_price", 1.0) for i in prod_set[n]
+        ) for n in nws
+    )
+    transfer_prices = Dict(
+        n => Dict(
+            i => ref(gm, n, :transfer, i)["withdrawal_min"] >= 0.0 ?  get(ref(gm, n, :transfer, i), "bid_price", 1.0) : (-1) * get(ref(gm, n, :transfer, i), "offer_price", 1.0) for i in transfer_set[n]
+        ) for n in nws
+    )
+
+    # prices are already normalized by base_flow, so we also need to normalize compressor power by base_flow in the objective
+    z = JuMP.@variable(gm.model)
+    JuMP.@constraint(gm.model, z >= sum(
+                                          sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) +
+                                          sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) +
+                                          sum(prod_prices[n][i] * fg[n][i] for i in prod_set[n])                                          
+                                          for n in nws
+                                       ))
+    return JuMP.@objective(gm.model, Min, z)
+end
+
 "transient objective for minimizing a linear combination of compressor power and load shed"
 function objective_min_transient_economic_costs(gm::AbstractGasModel, time_points)
     econ_weight = gm.ref[:it][gm_it_sym][:economic_weighting]

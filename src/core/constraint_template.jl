@@ -165,14 +165,10 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int 
         else
             r_1,r_2 = _calc_inclined_pipe_resistance(pipe,gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
             inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
-            constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
-            # constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2)
+            constraint_inclined_pipe_pressure_drop_linear_approx(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
         end
     end
 end
-
-
-
 
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)

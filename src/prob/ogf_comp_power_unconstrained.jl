@@ -52,7 +52,7 @@ function build_ogf_comp_power_unc(gm::AbstractGasModel)
     variable_storage(gm)
     variable_form_specific(gm)
 
-    objective_min_economic_costs(gm)
+    objective_min_supply_demand_costs(gm)
 
     for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)
