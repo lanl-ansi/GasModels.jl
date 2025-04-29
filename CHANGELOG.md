@@ -3,7 +3,9 @@
 ## staged 
 - nothing
 
-
+## v0.10.5 
+- adds SCIP supported formulation without compressor power constraints
+  
 ## v0.10.4
 - adds pressure drop constraints for the CWP and DWP formulations
 - creates a new copy of the OGF problem without compressor power constraint
