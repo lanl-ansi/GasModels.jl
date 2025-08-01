@@ -19,27 +19,43 @@ This enables the definition of a wide variety of gas network formulations and th
 * Load Shed (ls)
 
 **Core Network Formulations**
-* CWP
-* DWP
-* WP
-* CRDWP
-* LRDWP
-* LRWP
+* CWP (Convex Weymouth Pressure)
+* DWP (Discrete Weymouth Pressure)
+* WP (Weymouth Pressure)
+* CRDWP (Convex Relaxed Discrete Weymouth Pressure)
+* LRDWP (Linear Relaxed Discrete Weymouth Pressure)
+* LRWP (Linear Relaxed Weymouth Pressure)
 
 ## Basic Usage
 
+Note: Different problem formulations require different types of solvers. For continuous models such as CWP, WP, and LRWP, it is recommended to use Ipopt. For formulations that involve discrete variables—such as DWP, CRDWP, and LRDWP—a mixed-integer nonlinear programming (MINLP) solver like Juniper is required. See the second example for details on configuring Juniper.
 
 Once GasModels is installed, a optimizer is installed, and a network data file  has been acquired, a Gas Flow can be executed with,
 ```
-using GasModels
-using <solver_package>
+using GasModels, Ipopt
+ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0)
+casepath = ". . . .\\case-6.m"
+result = run_gf(casepath, CWPGasModel, ipopt_solver)
+```
 
-run_gf("foo.m", FooGasModel, FooSolver())
+For discrete problems requiring the Juniper optimizer, refer to the following example:
+```
+using GasModels, Ipopt, Juniper, Cbc
+# Create Juniper solver for MINLP
+nl_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4)
+mip_solver = optimizer_with_attributes(Cbc.Optimizer)
+juniper_solver = optimizer_with_attributes(
+    Juniper.Optimizer,
+    "nl_solver" => nl_solver,
+    "mip_solver" => mip_solver
+)
+casepath = ". . . .\\case-6.m"
+result = run_gf(casepath, DWPGasModel, juniper_solver)
 ```
 
 Similarly, an expansion optimizer can be executed with,
 ```
-run_ne("foo.m", FooGasModel, FooSolver())
+run_ne(casepath, FooGasModel, FooSolver())
 ```
 
 where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. DWPGasModel) and FooSolver is the JuMP optimizer you want to use to solve the optimization problem (i.e. IpoptSolver).
