@@ -49,7 +49,7 @@ juniper_solver = optimizer_with_attributes(
     "nl_solver" => nl_solver,
     "mip_solver" => mip_solver
 )
-casepath = ". . . .\\case-6.m"
+casepath = "case-6.m"
 result = run_gf(casepath, DWPGasModel, juniper_solver)
 ```
 
