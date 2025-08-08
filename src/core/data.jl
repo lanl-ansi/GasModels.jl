@@ -1877,6 +1877,10 @@ function summary(io::IO, data::Dict{String,Any}; kwargs...)
     )
 end
 
+"prints the text summary for a data file or dictionary to stdout"
+function print_summary(obj::Union{String, Dict{String,<:Any}}; kwargs...)
+    summary(stdout, obj; kwargs...)
+end
 
 """
 computes the connected components of the network graph
