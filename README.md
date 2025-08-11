@@ -34,16 +34,16 @@ Once GasModels is installed, a optimizer is installed, and a network data file  
 ```
 using GasModels, Ipopt
 ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0)
-casepath = ". . . .\\case-6.m"
+casepath = "case-6.m"
 result = run_gf(casepath, CWPGasModel, ipopt_solver)
 ```
 
 For discrete problems requiring the Juniper optimizer, refer to the following example:
 ```
-using GasModels, Ipopt, Juniper, Cbc
+using GasModels, Ipopt, Juniper, HiGHS
 # Create Juniper solver for MINLP
 nl_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4)
-mip_solver = optimizer_with_attributes(Cbc.Optimizer)
+mip_solver = optimizer_with_attributes(HiGHS.Optimizer)
 juniper_solver = optimizer_with_attributes(
     Juniper.Optimizer,
     "nl_solver" => nl_solver,
