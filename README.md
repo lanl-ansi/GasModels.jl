@@ -18,13 +18,19 @@ This enables the definition of a wide variety of gas network formulations and th
 * Expansion Planning (ne)
 * Load Shed (ls)
 
-**Core Network Formulations**
-* CWP (Convex Weymouth Pressure)
-* DWP (Discrete Weymouth Pressure)
-* WP (Weymouth Pressure)
-* CRDWP (Convex Relaxed Discrete Weymouth Pressure)
-* LRDWP (Linear Relaxed Discrete Weymouth Pressure)
-* LRWP (Linear Relaxed Weymouth Pressure)
+
+* ## Supported Formulations
+
+All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LRWP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be mixed integer since valve controls are discrete.
+
+| Formulation      | Steady-State         | Transient             | Description           |
+| ---------------- | -------------------- | --------------------- | --------------------- |
+| WP               |       Y              |          Y            | Physics is modeled using nonlinear equations. |
+| DWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| CWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Pipe flow in each direction is modeled by a nonnegative continuous variable. Complementarity constraints are used to ensure that flow is zero in at least one direction. |
+| CRDWP            |       Y              |          N            | Physics is modeled using convex equations. Directionality of flow is modeled using discrete variables |
+| LRDWP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
+| LRWP             |       Y              |          N            | Physics is modeled using linear equations. |
 
 ## Basic Usage
 
