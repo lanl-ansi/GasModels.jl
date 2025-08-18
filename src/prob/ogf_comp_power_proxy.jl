@@ -1,7 +1,7 @@
 # Definitions for running the new optimal gas flow (ogf) (with a proxy compressor power term in the objective)
 
 "entry point into running the new ogf problem"
-function run_ogf_comp_power_proxy(file, model_type, optimizer; kwargs...)
+function solve_ogf_comp_power_proxy(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
@@ -18,14 +18,14 @@ end
 
 
 ""
-function run_soc_ogf_comp_power_proxy(file, optimizer; kwargs...)
-    return run_ogf_comp_power_proxy(file, CRDWPGasModel, optimizer; kwargs...)
+function solve_soc_ogf_comp_power_proxy(file, optimizer; kwargs...)
+    return solve_ogf_comp_power_proxy(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function run_dwp_ogf_comp_power_proxy(file, optimizer; kwargs...)
-    return run_ogf_comp_power_proxy(file, DWPGasModel, optimizer; kwargs...)
+function solve_dwp_ogf_comp_power_proxy(file, optimizer; kwargs...)
+    return solve_ogf_comp_power_proxy(file, DWPGasModel, optimizer; kwargs...)
 end
 
 
