@@ -1,7 +1,7 @@
 # Definitions for running a feasible gas flow
 
 "entry point into running the gas flow feasability problem"
-function run_gf(file, model_type, optimizer; kwargs...)
+function solve_gf(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
@@ -18,14 +18,14 @@ end
 
 
 ""
-function run_soc_gf(file, optimizer; kwargs...)
-    return run_gf(file, CRDWPGasModel, optimizer; kwargs...)
+function solve_soc_gf(file, optimizer; kwargs...)
+    return solve_gf(file, CRDWPGasModel, optimizer; kwargs...)
 end
 
 
 ""
-function run_dwp_gf(file, optimizer; kwargs...)
-    return run_gf(file, DWPGasModel, optimizer; kwargs...)
+function solve_dwp_gf(file, optimizer; kwargs...)
+    return solve_gf(file, DWPGasModel, optimizer; kwargs...)
 end
 
 
@@ -103,3 +103,4 @@ function build_gf(gm::AbstractGasModel)
     end
 
 end
+
