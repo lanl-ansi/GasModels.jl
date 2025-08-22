@@ -237,6 +237,7 @@ const _params_for_unit_conversions = Dict(
         "density",
         "net_injection",
         "net_nodal_edge_out_flow",
+        "elevation",
     ],
     "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
     "pipe" => [
@@ -373,6 +374,7 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "well_density" => rescale_density,
         "length" => rescale_length,
         "well_depth" => rescale_length,
+        "elevation" => rescale_length, 
         "diameter" => rescale_diameter,
         "well_diameter" => rescale_diameter,
         "f" => rescale_flow,
