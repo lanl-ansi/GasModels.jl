@@ -85,63 +85,136 @@ module _SLP
 
 import GasModels
 import JuMP
+import MathOptInterface as MOI
+import SparseArrays
 
 struct NLP
+    variables::Vector{JuMP.VariableRef}
+    constraints::Vector{<:JuMP.ConstraintRef}
+    constraint_ubs::Vector{Float64}
+    constraint_lbs::Vector{Float64}
+    eq_indices::Vector{Int}
+    ineq_indices::Vector{Int}
+    objective_factor::Int
+    evaluator::MOI.AbstractNLPEvaluator
     function NLP(model::JuMP.Model)
-        return new()
-    end
+        nlp = MOI.Nonlinear.Model()
+        variables = JuMP.all_variables(model)
+        constraints = JuMP.all_constraints(model; include_variable_in_set_constraints = true)
+        ncon = length(constraints)
+        constraint_ubs = fill(Inf, ncon)
+        constraint_lbs = fill(-Inf, ncon)
+        eq_indices = Int[]
+        ineq_indices = Int[]
+        for (i, cref) in enumerate(constraints)
+            # What to do about vector functions?
+            @assert cref.shape == JuMP.ScalarShape()
+            con = JuMP.constraint_object(cref)
+            MOI.Nonlinear.add_constraint(nlp, con.func, con.set)
+            if con.set isa MOI.EqualTo
+                push!(eq_indices, i)
+                constraint_ubs[i] = con.set.value
+                constraint_lbs[i] = con.set.value
+            elseif con.set isa MOI.LessThan
+                push!(ineq_indices, i)
+                constraint_ubs[i] = con.set.upper
+            elseif con.set isa MOI.GreaterThan
+                push!(ineq_indices, i)
+                constraint_lbs[i] = con.set.lower
+            elseif con.set isa MOI.Interval
+                push!(ineq_indices, i)
+                constraint_lbs[i] = con.set.lower
+                constraint_ubs[i] = con.set.upper
+            else
+                error("Unsupported constraint set $(con.set)")
+            end
+        end
+        MOI.Nonlinear.set_objective(nlp, JuMP.objective_function(model))
+        # The purpose of the objective factor is to make sure that the objective-gradient
+        # term in the gradient of the Lagrangian is a direction of improvement.
+        # Note that we solve *minimization and maximization* problems, and this factor
+        # is only for the purpose of computing the Lagrangian.
+        objective_factor = JuMP.objective_sense(model) == JuMP.MIN_SENSE ? -1 : 1
+        evaluator = MOI.Nonlinear.Evaluator(nlp, MOI.Nonlinear.SparseReverseMode(), JuMP.index.(variables))
+        MOI.initialize(evaluator, [:Grad, :Jac, :Hess])
+        return new(
+            variables,
+            constraints,
+            constraint_ubs,
+            constraint_lbs,
+            eq_indices,
+            ineq_indices,
+            objective_factor,
+            evaluator,
+        )
+   end
 end
 
-function eval_grad_lagrangian(nlp, x, λ)
-    grad_obj = eval_grad_obj(nlp, x)
-    jac = eval_jacobian(nlp, x)
-    grad_lagrangian = (
-        grad_obj * nlp.obj_factor # objective factor makes this a direction of improvement
-        + jac.eq' * λ.eq # Sign is arbitrary for an EQ constraint
-        + jac.lt' * λ.lt # Dual is negative for a LT constraint. Interior direction.
-        + jac.gt' * λ.gt # Dual is positive for a GT constraint. Interior direction.
-        + jac.interval' * λ.interval # Sign of dual depends on which side is active
-    )
+function eval_objective_gradient(nlp, x)
+    grad = zeros(length(nlp.variables))
+    MOI.eval_objective_gradient(nlp.evaluator, grad, x)
+    return grad
+end
+
+function eval_constraints(nlp, x)
+    g = zeros(length(nlp.constraints))
+    MOI.eval_constraint(nlp.evaluator, g, x)
+    return g
+end
+
+function eval_constraint_jacobian(nlp, x)
+    structure = MOI.jacobian_structure(nlp.evaluator)
+    values = zeros(length(structure))
+    MOI.eval_constraint_jacobian(nlp.evaluator, values, x)
+    rows = first.(structure)
+    cols = last.(structure)
+    jac = SparseArrays.sparse(rows, cols, values)
+    return jac
+end
+
+function eval_lagrangian_gradient(nlp, x, λ)
+    grad_obj = eval_objective_gradient(nlp, x)
+    jac = eval_constraint_jacobian(nlp, x)
+    grad_lagrangian = grad_obj * nlp.objective_factor + jac' * λ
+    #grad_lagrangian = (
+    #    grad_obj * nlp.obj_factor # objective factor makes this a direction of improvement
+    #    + jac.eq' * λ.eq # Sign is arbitrary for an EQ constraint
+    #    + jac.lt' * λ.lt # Dual is negative for a LT constraint. Interior direction.
+    #    + jac.gt' * λ.gt # Dual is positive for a GT constraint. Interior direction.
+    #    + jac.interval' * λ.interval # Sign of dual depends on which side is active
+    #)
     return grad_lagrangian
 end
 
-# TODO: Specify tolerance
-function evaluate_infeasibilities(nlp::NLP, x, λ)
-    grad_lagrangian = eval_grad_lagrangian(nlp, x, λ)
-    eq_con_values = eval_eq_cons(nlp, x)
-    lt_con_values = eval_lt_cons(nlp, x)
-    gt_con_values = eval_gt_cons(nlp, x)
-    interval_con_values = eval_interval_cons(nlp, x)
+function eval_infeasibilities(nlp::NLP, x, λ)
+    grad_lagrangian = eval_lagrangian_gradient(nlp, x, λ)
+    convals = eval_constraints(nlp, x)
+    eq_values = convals[nlp.eq_indices]
+    eq_rhs = nlp.constraint_ubs[nlp.eq_indices]
+    ineq_values = convals[nlp.ineq_indices]
+    ineq_lbs = nlp.constraint_lbs[nlp.ineq_indices]
+    ineq_ubs = nlp.constraint_ubs[nlp.ineq_indices]
+    λ_ineq = λ[nlp.ineq_indices]
 
-    # Evaluating violations and complementarities probably gets slightly
-    # simpler if constraints all have a consistent data structure.
+    eq_violations = abs.(eq_values .- eq_rhs)
+    ineq_violations = max.(ineq_values .- ineq_ubs, ineq_lbs .- ineq_values, 0.0)
 
-    # TODO: get RHSs somehow
-    eq_con_violations = abs.(eq_con_values .- eq_rhs)
-    lt_con_violations = max.(lt_con_values .- lt_rhs, 0.0)
-    gt_con_violations = max.(gt_rhs .- gt_con_values, 0.0)
-    interval_con_violations = max.(interval_lb .- interval_values, interval_values .- interval_ub, 0.0)
-
-    # All of these complementarities can be negative (if a constraint is violated, for
-    # example), so we take the absolute value
-    # LT: Dual is negative, so this product is positive when feasible
-    lt_complementarity = abs.((lt_rhs .- lt_con_values) .* (-λ.lt))
-    # GT: Dual is positive
-    gt_complementarity = abs.((gt_con_values .- gt_rhs) .* λ.gt)
-    interval_complementarity = abs.(
-        # At most one of these terms can be nonzero
-        (interval_values .- interval_lb) .* max.(λ.interval, 0)
-        .+ (interval_ub .- interval_values) .* max(-λ.interval, 0)
+    # This can be negative if a constraint is violated, so we take the absolute value.
+    complementarity = abs.(
+        # At most one of these terms can be nonzero.
+        # λ ≥ 0 for an active lower bound
+        (ineq_values .- ineq_lbs) .* max.(λ_ineq, 0.0)
+        .+ (ineq_ubs .- ineq_values) .* max.(-λ_ineq, 0.0)
     )
 
     return (;
-        primal = vcat(eq_con_violations, lt_con_violations, gt_con_violations, interval_con_violations),
+        primal = vcat(eq_violations, ineq_violations),
         dual = grad_lagrangian,
-        complementarity = vcat(lt_complementarity, gt_complementarity, interval_complementarity),
+        complementarity,
     )
 end
 
-function check_if_converged(infeas::NamedTuple, tol)
+function is_converged(infeas::NamedTuple, tol)
     # TODO: Allow different tolerances for each category?
     # Is there any reason to break up the primal infeasibilities by constraint type?
     return (
@@ -153,18 +226,19 @@ end
 
 function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
     println("Hello from SLP")
-    obj_sense = JuMP.objective_sense(model)
-    variables = JuMP.all_variables(model)
-    # TODO: Split constraints into equality, GT, etc.
-    constraints = JuMP.all_constraints(model; include_variable_in_set_constraints = true)
-    nvar = length(variables)
-    ncon = length(constraints)
-    x = map(v -> something(x0[v], 0.0), variables)
-    λ = zeros(ncon)
     nlp = NLP(model)
-    infeas = evaluate_infeasibilities(nlp, x, λ)
+    # Note that obj_sense is different than the nlp's objective_factor.
+    obj_sense = JuMP.objective_sense(model)
+    nvar = length(nlp.variables)
+    ncon = length(nlp.constraints)
+    # Not sure if this is the right place to encode the default initial guess...
+    x = map(v -> something(x0[v], 0.0), nlp.variables)
+    # TODO: Better initial guess for duals
+    λ = zeros(ncon)
+    infeas = eval_infeasibilities(nlp, x, λ)
+    iter_count = 0
     for i in 1:slp.max_iter
-        if check_if_converged(infeas, slp.tol)
+        if is_converged(infeas, slp.tol)
             break
         end
         # 1. Obtain a linearization of all constraints at x
@@ -173,25 +247,40 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
         # 4. Extract a candidate point from the solution
         # 5. Apply a trust region correction to the candidate point
         # 6. Check convergence with new point
+        obj_grad = eval_objective_gradient(nlp, x)
+        convals = eval_constraints(nlp, x)
+        eq_values = convals[nlp.eq_indices]
+        eq_rhs = nlp.constraint_ubs[nlp.eq_indices]
+        ineq_values = convals[nlp.ineq_indices]
+        ineq_lbs = nlp.constraint_lbs[nlp.ineq_indices]
+        ineq_ubs = nlp.constraint_ubs[nlp.ineq_indices]
+        jac = eval_constraint_jacobian(nlp, x)
+        eq_jac = jac[nlp.eq_indices, :]
+        ineq_jac = jac[nlp.ineq_indices, :]
+
         lp_model = JuMP.Model(slp.lp_optimizer)
+        # TODO: Handle bounds separately from inequalities
         JuMP.@variable(lp_model, lp_var[1:nvar])
         JuMP.@objective(lp_model, obj_sense, sum(obj_grad .* lp_var))
-        # If all my constraints are L <= g(x) <= U, then this is easy to implement.
-        # At some point, I will probably want to implement bounds separately.
-        JuMP.@constraint(lp_model, lp_equality[1:n_eq], eq_jac * lp_var == eq_rhs)
-        JuMP.@constraint(lp_model, lp_lt[1:n_lt], lt_jac * lp_var <= lt_rhs)
-        JuMP.@constraint(lp_model, lp_gt[1:n_gt], gt_jac * lp_var >= gt_rhs)
-        JuMP.@constraint(lp_model, lp_interval[1:n_interval], interval_lb <= interval_jac * lp_var <= interval_ub)
+        JuMP.@constraint(lp_model,
+            lp_equality[1:length(nlp.eq_indices)],
+            eq_values .+ eq_jac * lp_var .== eq_rhs
+        )
+        JuMP.@constraint(lp_model,
+            lp_inequality[1:length(nlp.ineq_indices)],
+            ineq_lbs .<= ineq_values .+ ineq_jac * lp_var .<= ineq_ubs
+        )
         JuMP.optimize!(lp_model)
         @assert JuMP.is_solved_and_feasible(lp_model)
 
         trial_x = JuMP.value.(lp_var)
-        trial_λ_eq = JuMP.dual.(lp_equality)
-        trial_λ_lt = JuMP.dual.(lp_lt)
-        trial_λ_gt = JuMP.dual.(lp_gt)
-        trial_λ_interval = JuMP.dual.(lp_interval)
+        trial_λ = zeros(ncon)
+        trial_λ[nlp.eq_indices] .= JuMP.dual.(lp_equality)
+        trial_λ[nlp.ineq_indices] .= JuMP.dual.(lp_inequality)
 
         # TODO: Trust region correction
+        iter_count = i
+        break
     end
     # TODO: Run a Newton solve to clean up primal tolerance
     return
