@@ -11,8 +11,10 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
 
     data = []
+    timestamps = Set{String}()
     for line in raw[2:end]
         timestamp, component_type, component_id, parameter, value = split(line, ",")
+        push!(timestamps, timestamp)
         push!(
             data,
             Dict(
@@ -24,6 +26,8 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
             ),
         )
     end
+
+    @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
 
     return data
 end
