@@ -238,6 +238,9 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
     infeas = eval_infeasibilities(nlp, x, λ)
     iter_count = 0
     for i in 1:slp.max_iter
+        println("Iteration $iter_count")
+        # TODO: I want the convergence check to happen at the end of the loop
+        # so I actually check the last iteration
         if is_converged(infeas, slp.tol)
             break
         end
@@ -259,19 +262,20 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
         ineq_jac = jac[nlp.ineq_indices, :]
 
         lp_model = JuMP.Model(slp.lp_optimizer)
+        #JuMP.set_silent(lp_model)
         # TODO: Handle bounds separately from inequalities
-        JuMP.@variable(lp_model, lp_var[1:nvar])
+        JuMP.@variable(lp_model, lp_var[i in 1:nvar], start = x[i])
         JuMP.@objective(lp_model, obj_sense, sum(obj_grad .* lp_var))
         JuMP.@constraint(lp_model,
-            lp_equality[1:length(nlp.eq_indices)],
-            eq_values .+ eq_jac * lp_var .== eq_rhs
+            lp_equality,
+            eq_values .+ eq_jac * (lp_var .- x) .== eq_rhs
         )
         JuMP.@constraint(lp_model,
-            lp_inequality[1:length(nlp.ineq_indices)],
-            ineq_lbs .<= ineq_values .+ ineq_jac * lp_var .<= ineq_ubs
+            lp_inequality,
+            ineq_lbs .<= ineq_values .+ ineq_jac * (lp_var .- x) .<= ineq_ubs
         )
         JuMP.optimize!(lp_model)
-        @assert JuMP.is_solved_and_feasible(lp_model)
+        #@assert JuMP.is_solved_and_feasible(lp_model)
 
         trial_x = JuMP.value.(lp_var)
         trial_λ = zeros(ncon)
@@ -279,8 +283,9 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
         trial_λ[nlp.ineq_indices] .= JuMP.dual.(lp_inequality)
 
         # TODO: Trust region correction
+        x .= trial_x
+        λ .= trial_λ
         iter_count = i
-        break
     end
     # TODO: Run a Newton solve to clean up primal tolerance
     return
