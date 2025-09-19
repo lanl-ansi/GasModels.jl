@@ -9,6 +9,8 @@ module GasModels
     import Memento
     import Printf
     import Statistics
+    import CSV
+    import DataFrames
 
     using Dates
     using Dierckx

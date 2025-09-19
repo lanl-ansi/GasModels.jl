@@ -31,6 +31,30 @@ function parse_file(file::String; skip_correct::Bool = false)
     return gm_data
 end
 
+function parse_v3_file(m_path::String, csv_path::String)
+    case = parse_file(m_path)
+    df = CSV.read(csv_path, DataFrame)
+
+    for row in eachrow(df)
+        if row.component_type == "compressor"
+            asset_key = string(row.component_id)
+            case["compressor"][asset_key][row.parameter] = row.value
+        elseif row.component_type == "transfer"
+            asset_key = string(row.component_id)
+            case["transfer"][asset_key][row.parameter] = row.value
+        elseif row.component_type == "receipt"
+            asset_key = string(row.component_id)
+            case["receipt"][asset_key][row.parameter] = row.value
+        else
+            asset_key = string(row.component_id)
+            case["delivery"][asset_key][row.parameter] = row.value
+        end
+    end
+
+    return case
+
+end
+
 
 """
     correct_network_data!(data::Dict{String,Any})
