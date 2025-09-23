@@ -83,6 +83,7 @@ end
 
 module _SLP
 
+using Printf
 import GasModels
 import JuMP
 import MathOptInterface as MOI
@@ -150,6 +151,10 @@ struct NLP
    end
 end
 
+function eval_objective(nlp, x)
+    return MOI.eval_objective(nlp.evaluator, x)
+end
+
 function eval_objective_gradient(nlp, x)
     grad = zeros(length(nlp.variables))
     MOI.eval_objective_gradient(nlp.evaluator, grad, x)
@@ -199,17 +204,29 @@ function eval_infeasibilities(nlp::NLP, x, λ)
     eq_violations = abs.(eq_values .- eq_rhs)
     ineq_violations = max.(ineq_values .- ineq_ubs, ineq_lbs .- ineq_values, 0.0)
 
+    # Note that this is complicated by storing constraints as general inequalities.
+    # We can't evaluate val-lb when lb doesn't exist (is infinity).
+    leq_indices = (ineq_lbs .== -Inf .&& ineq_ubs .!= Inf)
+    geq_indices = (ineq_ubs .== Inf .&& ineq_lbs .!= -Inf)
+    interval_indices = (ineq_lbs .!= -Inf .&& ineq_ubs .!= Inf)
+    # The signs on the multipliers should be enforced when we truncate a computed
+    # search direction.
+    @assert all(λ_ineq[leq_indices] .<= 0.0)
+    @assert all(λ_ineq[geq_indices] .>= 0.0)
+    complementarity = zeros(length(nlp.ineq_indices))
     # This can be negative if a constraint is violated, so we take the absolute value.
-    complementarity = abs.(
+    complementarity[geq_indices] += abs.((ineq_values[geq_indices] .- ineq_lbs[geq_indices]) .* λ_ineq[geq_indices]) # max.(λ_ineq[geq_indices], 0.0)
+    complementarity[leq_indices] += abs.((ineq_ubs[leq_indices] .- ineq_values[leq_indices]) .* λ_ineq[leq_indices]) # max.(-λ_ineq[leq_indices], 0.0)
+    complementarity[interval_indices] += abs.(
         # At most one of these terms can be nonzero.
         # λ ≥ 0 for an active lower bound
-        (ineq_values .- ineq_lbs) .* max.(λ_ineq, 0.0)
-        .+ (ineq_ubs .- ineq_values) .* max.(-λ_ineq, 0.0)
+        (ineq_values[interval_indices] .- ineq_lbs[interval_indices]) .* max.(λ_ineq[interval_indices], 0.0)
+        .+ (ineq_ubs[interval_indices] .- ineq_values[interval_indices]) .* max.(-λ_ineq[interval_indices], 0.0)
     )
 
     return (;
         primal = vcat(eq_violations, ineq_violations),
-        dual = grad_lagrangian,
+        dual = abs.(grad_lagrangian),
         complementarity,
     )
 end
@@ -225,7 +242,6 @@ function is_converged(infeas::NamedTuple, tol)
 end
 
 function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
-    println("Hello from SLP")
     nlp = NLP(model)
     # Note that obj_sense is different than the nlp's objective_factor.
     obj_sense = JuMP.objective_sense(model)
@@ -235,12 +251,27 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
     x = map(v -> something(x0[v], 0.0), nlp.variables)
     # TODO: Better initial guess for duals
     λ = zeros(ncon)
-    infeas = eval_infeasibilities(nlp, x, λ)
     iter_count = 0
     for i in 1:slp.max_iter
-        println("Iteration $iter_count")
+        infeas = eval_infeasibilities(nlp, x, λ)
+        obj_val = eval_objective(nlp, x)
+        if (iter_count % 10) == 0
+            println("iter    objective   inf_pr    inf_du   inf_compl")
+        end
+        @assert all(infeas.primal .>= 0.0)
+        @assert all(infeas.dual .>= 0.0)
+        @assert all(infeas.complementarity .>= 0.0)
+        log_line = (
+            @sprintf("%4d", iter_count)
+            * @sprintf("%13.3e", obj_val)
+            * @sprintf("%10.2e", maximum(infeas.primal))
+            * @sprintf("%10.2e", maximum(infeas.dual))
+            * @sprintf("%10.2e", maximum(infeas.complementarity))
+        )
+        println(log_line)
         # TODO: I want the convergence check to happen at the end of the loop
-        # so I actually check the last iteration
+        # so I actually check the last iteration.
+        # I should refactor this into a "do-while"-like loop.
         if is_converged(infeas, slp.tol)
             break
         end
@@ -262,9 +293,12 @@ function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
         ineq_jac = jac[nlp.ineq_indices, :]
 
         lp_model = JuMP.Model(slp.lp_optimizer)
-        #JuMP.set_silent(lp_model)
+        JuMP.set_silent(lp_model)
         # TODO: Handle bounds separately from inequalities
         JuMP.@variable(lp_model, lp_var[i in 1:nvar], start = x[i])
+        # It doesn't matter for the solve, but if we want this objective to match
+        # the original model's objective at the solution, we need to offset by
+        # the objective value at x.
         JuMP.@objective(lp_model, obj_sense, sum(obj_grad .* lp_var))
         JuMP.@constraint(lp_model,
             lp_equality,
