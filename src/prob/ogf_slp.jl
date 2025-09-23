@@ -204,24 +204,28 @@ function eval_infeasibilities(nlp::NLP, x, λ)
     eq_violations = abs.(eq_values .- eq_rhs)
     ineq_violations = max.(ineq_values .- ineq_ubs, ineq_lbs .- ineq_values, 0.0)
 
-    # Note that this is complicated by storing constraints as general inequalities.
-    # We can't evaluate val-lb when lb doesn't exist (is infinity).
-    leq_indices = (ineq_lbs .== -Inf .&& ineq_ubs .!= Inf)
-    geq_indices = (ineq_ubs .== Inf .&& ineq_lbs .!= -Inf)
-    interval_indices = (ineq_lbs .!= -Inf .&& ineq_ubs .!= Inf)
-    # The signs on the multipliers should be enforced when we truncate a computed
-    # search direction.
-    @assert all(λ_ineq[leq_indices] .<= 0.0)
-    @assert all(λ_ineq[geq_indices] .>= 0.0)
-    complementarity = zeros(length(nlp.ineq_indices))
-    # This can be negative if a constraint is violated, so we take the absolute value.
-    complementarity[geq_indices] += abs.((ineq_values[geq_indices] .- ineq_lbs[geq_indices]) .* λ_ineq[geq_indices]) # max.(λ_ineq[geq_indices], 0.0)
-    complementarity[leq_indices] += abs.((ineq_ubs[leq_indices] .- ineq_values[leq_indices]) .* λ_ineq[leq_indices]) # max.(-λ_ineq[leq_indices], 0.0)
-    complementarity[interval_indices] += abs.(
-        # At most one of these terms can be nonzero.
-        # λ ≥ 0 for an active lower bound
-        (ineq_values[interval_indices] .- ineq_lbs[interval_indices]) .* max.(λ_ineq[interval_indices], 0.0)
-        .+ (ineq_ubs[interval_indices] .- ineq_values[interval_indices]) .* max.(-λ_ineq[interval_indices], 0.0)
+    # This is a "disaggregated" approach to handling slacks that can be inf.
+    #leq_indices = (ineq_lbs .== -Inf .&& ineq_ubs .!= Inf)
+    #geq_indices = (ineq_ubs .== Inf .&& ineq_lbs .!= -Inf)
+    #interval_indices = (ineq_lbs .!= -Inf .&& ineq_ubs .!= Inf)
+    ## Unclear where these multiplier signs should be enforced...
+    #@assert all(λ_ineq[leq_indices] .<= 0.0)
+    #@assert all(λ_ineq[geq_indices] .>= 0.0)
+    #complementarity = zeros(length(nlp.ineq_indices))
+    #complementarity[geq_indices] += abs.((ineq_values[geq_indices] .- ineq_lbs[geq_indices]) .* λ_ineq[geq_indices]) # max.(λ_ineq[geq_indices], 0.0)
+    #complementarity[leq_indices] += abs.((ineq_ubs[leq_indices] .- ineq_values[leq_indices]) .* λ_ineq[leq_indices]) # max.(-λ_ineq[leq_indices], 0.0)
+    #complementarity[interval_indices] += abs.(
+    #    (ineq_values[interval_indices] .- ineq_lbs[interval_indices]) .* max.(λ_ineq[interval_indices], 0.0)
+    #    .+ (ineq_ubs[interval_indices] .- ineq_values[interval_indices]) .* max.(-λ_ineq[interval_indices], 0.0)
+    #)
+
+    # - This can be negative if a constraint is violated, so we take the absolute value.
+    # - At most one of these terms can be nonzero. λ≥0 for a lower bound
+    # - If the bound is inf, we penalize the corresponding signed magnitude of λ.
+    #   λ should not have, e.g., a positive magnitude if the lower bound is -Inf.
+    complementarity = abs.(
+        ifelse.(ineq_lbs .== -Inf, 1.0, ineq_values .- ineq_lbs) .* max.(λ_ineq, 0.0)
+        .+ ifelse.(ineq_ubs .== Inf, 1.0, ineq_ubs .- ineq_values) .* max.(-λ_ineq, 0.0)
     )
 
     return (;
