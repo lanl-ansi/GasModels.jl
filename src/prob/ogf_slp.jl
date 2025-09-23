@@ -96,7 +96,7 @@ struct NLP
     constraint_lbs::Vector{Float64}
     eq_indices::Vector{Int}
     ineq_indices::Vector{Int}
-    objective_factor::Int
+    lagrangian_objective_factor::Int
     evaluator::MOI.AbstractNLPEvaluator
     function NLP(model::JuMP.Model)
         nlp = MOI.Nonlinear.Model()
@@ -135,7 +135,7 @@ struct NLP
         # term in the gradient of the Lagrangian is a direction of improvement.
         # Note that we solve *minimization and maximization* problems, and this factor
         # is only for the purpose of computing the Lagrangian.
-        objective_factor = JuMP.objective_sense(model) == JuMP.MIN_SENSE ? -1 : 1
+        lagrangian_objective_factor = JuMP.objective_sense(model) == JuMP.MIN_SENSE ? -1 : 1
         evaluator = MOI.Nonlinear.Evaluator(nlp, MOI.Nonlinear.SparseReverseMode(), JuMP.index.(variables))
         MOI.initialize(evaluator, [:Grad, :Jac, :Hess])
         return new(
@@ -145,7 +145,7 @@ struct NLP
             constraint_lbs,
             eq_indices,
             ineq_indices,
-            objective_factor,
+            lagrangian_objective_factor,
             evaluator,
         )
    end
@@ -180,7 +180,7 @@ end
 function eval_lagrangian_gradient(nlp, x, λ)
     grad_obj = eval_objective_gradient(nlp, x)
     jac = eval_constraint_jacobian(nlp, x)
-    grad_lagrangian = grad_obj * nlp.objective_factor + jac' * λ
+    grad_lagrangian = grad_obj * nlp.lagrangian_objective_factor + jac' * λ
     #grad_lagrangian = (
     #    grad_obj * nlp.obj_factor # objective factor makes this a direction of improvement
     #    + jac.eq' * λ.eq # Sign is arbitrary for an EQ constraint
@@ -245,22 +245,25 @@ function is_converged(infeas::NamedTuple, tol)
     )
 end
 
-function run_slp(slp::GasModels.SlpOptimizer, model::JuMP.Model, x0::Dict)
+function run_slp(
+    slp::GasModels.SlpOptimizer,
+    model::JuMP.Model,
+    x0::Dict;
+    λ0::Union{Nothing,Dict} = nothing,
+)
     nlp = NLP(model)
-    # Note that obj_sense is different than the nlp's objective_factor.
+    # Note that obj_sense is different than the nlp's lagrangian_objective_factor.
     obj_sense = JuMP.objective_sense(model)
     nvar = length(nlp.variables)
     ncon = length(nlp.constraints)
-    # Not sure if this is the right place to encode the default initial guess...
-    x = map(v -> something(x0[v], 0.0), nlp.variables)
-    # TODO: Better initial guess for duals
-    λ = zeros(ncon)
+    x = map(v -> x0[v], nlp.variables)
+    λ = something(map(c -> λ0[c], nlp.constraints), zeros(ncon))
     iter_count = 0
     for i in 1:slp.max_iter
         infeas = eval_infeasibilities(nlp, x, λ)
         obj_val = eval_objective(nlp, x)
         if (iter_count % 10) == 0
-            println("iter    objective   inf_pr    inf_du   inf_compl")
+            println("iter    objective   inf_pr    inf_du   inf_comp")
         end
         @assert all(infeas.primal .>= 0.0)
         @assert all(infeas.dual .>= 0.0)
