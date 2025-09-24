@@ -31,51 +31,6 @@ function parse_file(file::String; skip_correct::Bool = false)
     return gm_data
 end
 
-function parse_v3_file(m_path::String, csv_path::String)
-    case = parse_file(m_path)
-    
-    #defining new csv parser here. transient parser now has an assert for number of timesteps, this one does not
-    function parse_csv(filename::String)::Array{Dict{String,Any},1}
-        raw = open(filename, "r") do io
-            readlines(io)
-        end
-        header = split(raw[1], ",")
-        data = []
-        for line in raw[2:end]
-            values = split(line, ",")
-            row_dict = Dict{String,Any}()
-            for (i, col_name) in enumerate(header)
-                if i <= length(values) 
-                    row_dict[col_name] = values[i]
-                end
-            end
-            push!(data, row_dict)
-        end
-        return data
-    end
-    
-    csv_data = parse_csv(csv_path)
-    
-    for row in csv_data
-        component_type = row["component_type"]
-        asset_key = string(row["component_id"])
-        parameter = row["parameter"]
-        value = row["value"]
-        
-        if component_type == "compressor"
-            case["compressor"][asset_key][parameter] = value
-        elseif component_type == "transfer"
-            case["transfer"][asset_key][parameter] = value
-        elseif component_type == "receipt"
-            case["receipt"][asset_key][parameter] = value
-        else
-            case["delivery"][asset_key][parameter] = value
-        end
-    end
-    
-    return case
-end
-
 
 """
     correct_network_data!(data::Dict{String,Any})
