@@ -2,6 +2,7 @@
 optimal gas flow (OGF) problem.
 """
 
+# TODO: This should go in the _SLP module.
 struct SlpOptimizer
     lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
     max_iter
@@ -49,7 +50,7 @@ function run_ogf(
 
     _t = time()
     x0 = _get_start_value(gm)
-    _SLP.run_slp(optimizer, gm.model, x0)
+    slp_results = _SLP.run_slp(optimizer, gm.model, x0)
     t_slp = time() - _t
 
     # TODO: Populate solution
@@ -65,13 +66,10 @@ function run_ogf(
     results = Dict(
         "solve_time" => t_slp,
         "optimizer" => "SLP",
-        # TODO: I will need to set this manually...
-        # For now, these will just be OptimizeNotCalled.
-        "termination_status" => JuMP.termination_status(gm.model),
-        "primal_status" => JuMP.primal_status(gm.model),
-        "dual_status" => JuMP.dual_status(gm.model),
-        # TODO! I can't use JuMP.objective_value because I will get NoOptimizer.
-        "objective" => 0.0,
+        "termination_status" => slp_results.termination_status,
+        "primal_status" => slp_results.primal_status,
+        "dual_status" => slp_results.dual_status,
+        "objective" => slp_results.objective_value,
         "objective_lb" => sense_to_bound[JuMP.objective_sense(gm.model)],
         "solution" => solution,
     )
@@ -259,6 +257,11 @@ function run_slp(
     x = map(v -> x0[v], nlp.variables)
     λ = (λ0 !== nothing ? map(c -> λ0[c], nlp.constraints) : zeros(ncon))
     iter_count = 0
+
+    obj_val = 0.0 # Initialize obj_val so we can access it outside of the loop
+    termination_status = nothing
+    primal_status = nothing
+    dual_status = nothing
     for i in 1:slp.max_iter
         infeas = eval_infeasibilities(nlp, x, λ)
         obj_val = eval_objective(nlp, x)
@@ -280,6 +283,14 @@ function run_slp(
         # so I actually check the last iteration.
         # I should refactor this into a "do-while"-like loop.
         if is_converged(infeas, slp.tol)
+            termination_status = JuMP.LOCALLY_SOLVED
+            primal_status = JuMP.FEASIBLE_POINT
+            dual_status = JuMP.FEASIBLE_POINT
+            break
+        elseif i == slp.max_iter
+            termination_status = JuMP.ITERATION_LIMIT
+            primal_status = (all(infeas.primal .<= slp.tol) ? JuMP.FEASIBLE_POINT : JuMP.INFEASIBLE_POINT)
+            dual_status = (all(infeas.dual .<= slp.tol) ? JuMP.FEASIBLE_POINT : JuMP.INFEASIBLE_POINT)
             break
         end
         # 1. Obtain a linearization of all constraints at x
@@ -329,7 +340,12 @@ function run_slp(
         iter_count = i
     end
     # TODO: Run a Newton solve to clean up primal tolerance
-    return
+    return (;
+        termination_status,
+        primal_status,
+        dual_status,
+        objective_value = obj_val,
+    )
 end
 
 end
