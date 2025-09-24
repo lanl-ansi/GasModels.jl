@@ -17,7 +17,7 @@ struct SlpOptimizer
 end
 
 function _get_start_value(gm::GasModels.AbstractGasModel)
-    return Dict(x => JuMP.start_value(x) for x in JuMP.all_variables(gm.model))
+    return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
 end
 
 # TODO: At this high-level interface, how can I specify the initial guess?
@@ -257,7 +257,7 @@ function run_slp(
     nvar = length(nlp.variables)
     ncon = length(nlp.constraints)
     x = map(v -> x0[v], nlp.variables)
-    λ = something(map(c -> λ0[c], nlp.constraints), zeros(ncon))
+    λ = (λ0 !== nothing ? map(c -> λ0[c], nlp.constraints) : zeros(ncon))
     iter_count = 0
     for i in 1:slp.max_iter
         infeas = eval_infeasibilities(nlp, x, λ)
