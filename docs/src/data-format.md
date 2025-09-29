@@ -221,7 +221,6 @@ These components model producers (providers) of natural gas.
 ## Storage (mgc.storage)
 
 These components are used to model locations which can store and release natural gas.
-
 | Variable                 | Type    | Name                     | Standard Units (SI) | United States Customary Units | Required           | Description                                                     |
 | ------------------------ | ------- | ------------------------ | ------------------- | ----------------------------- | ------------------ | --------------------------------------------------------------- |
 | id                       | Int     | Storage id               |                     |                               | Y | Unique id for storage                                           |
@@ -241,6 +240,7 @@ These components are used to model locations which can store and release natural
 | base\_gas\_capacity        | Float64 | Base gas capacity        | kg                  | MMSCF                         |                    | Base gas capacity                                               |
 | working\_gas\_capacity     | Float64 | Working gas capacity     | kg                  | MMSCF                         |                    | Working gas capacity                                            |
 | total\_field\_capacity     | Float64 | Total field capacity     | kg                  | MMSCF                         |                    | Total field gas capacity                                        |
+| initial_field_capacity_percent | Float64 | Initial field capacity fraction | — | — | Y | Fraction (0 to 1) of total field capacity initially filled; despite the name, this value is a fraction, not a percentage. |
 | edi_id                   | Int     | EDI ID                   |                     |                               |                    | Unique ID to allow easy input of near-real-time EDI data        |
 
 ## Network Parameters (mgc._parameter_)

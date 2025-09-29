@@ -1,5 +1,5 @@
 "entry point for the transient optimal gas flow model"
-function run_transient_ogf(data, model_type, optimizer; kwargs...)
+function solve_transient_ogf(data, model_type, optimizer; kwargs...)
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
     @assert _IM.ismultinetwork(data_it) == true
 

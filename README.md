@@ -18,28 +18,50 @@ This enables the definition of a wide variety of gas network formulations and th
 * Expansion Planning (ne)
 * Load Shed (ls)
 
-**Core Network Formulations**
-* CWP
-* DWP
-* WP
-* CRDWP
-* LRDWP
-* LRWP
+
+* ## Supported Formulations
+
+All formulation names refer to how underlying physics of a gas network is modeled. For example, the `LRWP` model uses a linear representation of natural gas physics. If a model includes valves, then the resulting mathematical optimization problems will be mixed integer since valve controls are discrete.
+
+| Formulation      | Steady-State         | Transient             | Description           |
+| ---------------- | -------------------- | --------------------- | --------------------- |
+| WP               |       Y              |          Y            | Physics is modeled using nonlinear equations. |
+| DWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Directionality of flow is modeled using discrete variables |
+| CWP              |       Y              |          N            | Physics is modeled using nonlinear equations. Pipe flow in each direction is modeled by a nonnegative continuous variable. Complementarity constraints are used to ensure that flow is zero in at least one direction. |
+| CRDWP            |       Y              |          N            | Physics is modeled using convex equations. Directionality of flow is modeled using discrete variables |
+| LRDWP            |       Y              |          N            | Physics is modeled using linear equations. Directionality of flow is modeled using discrete variables |
+| LRWP             |       Y              |          N            | Physics is modeled using linear equations. |
 
 ## Basic Usage
 
+Note: Different problem formulations require different types of solvers. For continuous models such as CWP, WP, and LRWP, it is recommended to use Ipopt. For formulations that involve discrete variables—such as DWP, CRDWP, and LRDWP—a mixed-integer nonlinear programming (MINLP) solver like Juniper is required. See the second example for details on configuring Juniper.
 
 Once GasModels is installed, a optimizer is installed, and a network data file  has been acquired, a Gas Flow can be executed with,
 ```
-using GasModels
-using <solver_package>
+using GasModels, Ipopt
+ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0)
+casepath = "case-6.m"
+result = solve_ogf(casepath, CWPGasModel, ipopt_solver)
+```
 
-run_gf("foo.m", FooGasModel, FooSolver())
+For discrete problems requiring the Juniper optimizer, refer to the following example:
+```
+using GasModels, Ipopt, Juniper, HiGHS
+# Create Juniper solver for MINLP
+nl_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4)
+mip_solver = optimizer_with_attributes(HiGHS.Optimizer)
+juniper_solver = optimizer_with_attributes(
+    Juniper.Optimizer,
+    "nl_solver" => nl_solver,
+    "mip_solver" => mip_solver
+)
+casepath = "case-6.m"
+result = solve_ogf(casepath, DWPGasModel, juniper_solver)
 ```
 
 Similarly, an expansion optimizer can be executed with,
 ```
-run_ne("foo.m", FooGasModel, FooSolver())
+solve_ne(casepath, FooGasModel, FooSolver())
 ```
 
 where FooGasModel is the implementation of the mathematical program of the Gas equations you plan to use (i.e. DWPGasModel) and FooSolver is the JuMP optimizer you want to use to solve the optimization problem (i.e. IpoptSolver).
