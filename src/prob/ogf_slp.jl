@@ -2,22 +2,7 @@
 optimal gas flow (OGF) problem.
 """
 
-# TODO: This should go in the _SLP module.
-struct SlpOptimizer
-    lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
-    max_iter
-    tol
-    function SlpOptimizer(
-        # Can't provide a default because no solvers are dependencies of GasModels
-        lp_optimizer;
-        max_iter = 100,
-        tol = 1e-6,
-    )
-        return new(lp_optimizer, max_iter, tol)
-    end
-end
-
-function _get_start_value(gm::GasModels.AbstractGasModel)
+function _get_start_value(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
     return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
 end
 
@@ -26,10 +11,8 @@ end
 function run_ogf(
     file,
     model_type,
-    optimizer::SlpOptimizer;
-    # For now, this argument maps AbstractGasModel -> Dict{VariableRef,Float | Nothing}
-    # I may reconsider this.
-    _initial_guess::Function = _get_start_value,
+    optimizer::_SLP.SlpOptimizer;
+    _initial_guess::Function = _get_start_value, # AbstractGasMoel -> Dict{VariableRef,Float64}
     skip_correct = false,
     ext = Dict{Symbol,Any}(),
     setting = Dict{String,Any}(),
@@ -54,8 +37,52 @@ function run_ogf(
     t_slp = time() - _t
 
     # TODO: Populate solution
-    solution = Dict(
+    unchanged_keys = [
+        "base_density",
+        "is_per_unit",
+        "multinetwork",
+        "base_volume",
+        "base_mass",
+        "base_flow",
+        "base_time",
+        "base_pressure",
+    ]
+    solution = Dict{String,Any}(k => copy(data[k]) for k in unchanged_keys)
+    solution["multiinfrastructure"] = false
+
+    ref = gm.ref[:it][:gm][:nw][0]
+    var_lookup = gm.var[:it][:gm][:nw][0]
+    con_lookup = gm.con[:it][:gm][:nw][0]
+    _primal(sym::Symbol, idx::Int) = slp_results.primal_solution[var_lookup[sym][idx]]
+    _dual(sym::Symbol, idx::Int) = slp_results.dual_solution[con_lookup[sym][idx]]
+    _primal(name::String, idx::Int) = slp_results.primal_solution[JuMP.variable_by_name(gm.model, "$(name)[$idx]")]
+    # TODO: Include duals if they are requested. Does this API exist?
+    solution["compressor"] = Dict(
+        "$i" => Dict(
+            "f" => _primal(:f_compressor, i),
+            "rsqr" => _primal(:rsqr, i),
+            # TODO: What is r? just √rsqr?
+            # For solutions from Ipopt, it is not exactly this...
+            "r" => sqrt(_primal(:rsqr, i)),
+        )
+        for i in keys(ref[:compressor])
     )
+    solution["receipt"] = Dict(
+        "$i" => Dict("fg" => _primal(:fg, i))
+        for (i, r) in ref[:receipt] if Bool(r["is_dispatchable"])
+    )
+    solution["delivery"] = Dict(
+        "$i" => Dict("fl" => _primal(:fl, i))
+        for (i, d) in ref[:delivery] if Bool(d["is_dispatchable"])
+    )
+    solution["junction"] = Dict(
+        "$i" => Dict("p" => sqrt(_primal(:psqr, i)), "psqr" => _primal(:psqr, i))
+        for i in keys(ref[:junction])
+    )
+    solution["pipe"] = Dict(
+        "$i" => Dict("f" => _primal(:f_pipe, i)) for i in keys(ref[:pipe])
+    )
+    # TODO: Short pipe? Regulator? Resistor? Valve?
 
     # I can't use JuMP.objective_bound because I will hit a NoOptimizer error
     sense_to_bound = Dict(
@@ -86,6 +113,20 @@ import GasModels
 import JuMP
 import MathOptInterface as MOI
 import SparseArrays
+
+struct SlpOptimizer
+    lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
+    max_iter::Int
+    tol::Float64
+    function SlpOptimizer(
+        # Can't provide a default because no solvers are dependencies of GasModels
+        lp_optimizer;
+        max_iter = 100,
+        tol = 1e-6,
+    )
+        return new(lp_optimizer, max_iter, tol)
+    end
+end
 
 struct NLP
     variables::Vector{JuMP.VariableRef}
@@ -244,7 +285,7 @@ function is_converged(infeas::NamedTuple, tol)
 end
 
 function run_slp(
-    slp::GasModels.SlpOptimizer,
+    slp::SlpOptimizer,
     model::JuMP.Model,
     x0::Dict;
     λ0::Union{Nothing,Dict} = nothing,
@@ -258,7 +299,8 @@ function run_slp(
     λ = (λ0 !== nothing ? map(c -> λ0[c], nlp.constraints) : zeros(ncon))
     iter_count = 0
 
-    obj_val = 0.0 # Initialize obj_val so we can access it outside of the loop
+    # Initialize these to dummy values so we can access them outside the loop later
+    obj_val = 0.0
     termination_status = nothing
     primal_status = nothing
     dual_status = nothing
@@ -345,6 +387,8 @@ function run_slp(
         primal_status,
         dual_status,
         objective_value = obj_val,
+        primal_solution = Dict(zip(nlp.variables, x)),
+        dual_solution = Dict(zip(nlp.constraints, λ)),
     )
 end
 
