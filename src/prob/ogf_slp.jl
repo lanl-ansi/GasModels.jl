@@ -2,110 +2,6 @@
 optimal gas flow (OGF) problem.
 """
 
-function _get_start_value(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
-    return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
-end
-
-# TODO: At this high-level interface, how can I specify the initial guess?
-# - My only option is to specify it as a function...
-function run_ogf(
-    file,
-    model_type,
-    optimizer::_SLP.SlpOptimizer;
-    _initial_guess::Function = _get_start_value, # AbstractGasMoel -> Dict{VariableRef,Float64}
-    skip_correct = false,
-    ext = Dict{Symbol,Any}(),
-    setting = Dict{String,Any}(),
-    jump_model = JuMP.Model(),
-    kwargs...,
-)
-    data = GasModels.parse_file(file; skip_correct)
-    gm = GasModels.instantiate_model(
-        data,
-        model_type,
-        GasModels.build_ogf;
-        ref_extensions = [],
-        ext,
-        setting,
-        jump_model,
-        kwargs...,
-    )
-
-    _t = time()
-    x0 = _get_start_value(gm)
-    slp_results = _SLP.run_slp(optimizer, gm.model, x0)
-    t_slp = time() - _t
-
-    # TODO: Populate solution
-    unchanged_keys = [
-        "base_density",
-        "is_per_unit",
-        "multinetwork",
-        "base_volume",
-        "base_mass",
-        "base_flow",
-        "base_time",
-        "base_pressure",
-    ]
-    solution = Dict{String,Any}(k => copy(data[k]) for k in unchanged_keys)
-    solution["multiinfrastructure"] = false
-
-    ref = gm.ref[:it][:gm][:nw][0]
-    var_lookup = gm.var[:it][:gm][:nw][0]
-    con_lookup = gm.con[:it][:gm][:nw][0]
-    _primal(sym::Symbol, idx::Int) = slp_results.primal_solution[var_lookup[sym][idx]]
-    _dual(sym::Symbol, idx::Int) = slp_results.dual_solution[con_lookup[sym][idx]]
-    _primal(name::String, idx::Int) = slp_results.primal_solution[JuMP.variable_by_name(gm.model, "$(name)[$idx]")]
-    # TODO: Include duals if they are requested. Does this API exist?
-    solution["compressor"] = Dict(
-        "$i" => Dict(
-            "f" => _primal(:f_compressor, i),
-            "rsqr" => _primal(:rsqr, i),
-            # TODO: What is r? just √rsqr?
-            # For solutions from Ipopt, it is not exactly this...
-            "r" => sqrt(_primal(:rsqr, i)),
-        )
-        for i in keys(ref[:compressor])
-    )
-    solution["receipt"] = Dict(
-        "$i" => Dict("fg" => _primal(:fg, i))
-        for (i, r) in ref[:receipt] if Bool(r["is_dispatchable"])
-    )
-    solution["delivery"] = Dict(
-        "$i" => Dict("fl" => _primal(:fl, i))
-        for (i, d) in ref[:delivery] if Bool(d["is_dispatchable"])
-    )
-    solution["junction"] = Dict(
-        "$i" => Dict("p" => sqrt(_primal(:psqr, i)), "psqr" => _primal(:psqr, i))
-        for i in keys(ref[:junction])
-    )
-    solution["pipe"] = Dict(
-        "$i" => Dict("f" => _primal(:f_pipe, i)) for i in keys(ref[:pipe])
-    )
-    # TODO: Short pipe? Regulator? Resistor? Valve?
-
-    # I can't use JuMP.objective_bound because I will hit a NoOptimizer error
-    sense_to_bound = Dict(
-        JuMP.MIN_SENSE => -Inf,
-        JuMP.MAX_SENSE => Inf,
-        JuMP.FEASIBILITY_SENSE => NaN,
-    )
-    results = Dict(
-        "solve_time" => t_slp,
-        "optimizer" => "SLP",
-        "termination_status" => slp_results.termination_status,
-        "primal_status" => slp_results.primal_status,
-        "dual_status" => slp_results.dual_status,
-        "objective" => slp_results.objective_value,
-        "objective_lb" => sense_to_bound[JuMP.objective_sense(gm.model)],
-        "solution" => solution,
-    )
-    if haskey(data, "objective_normalization")
-        result["objective"] *= data["objective_normalization"]
-    end
-    return results
-end
-
 module _SLP
 
 using Printf
@@ -114,11 +10,11 @@ import JuMP
 import MathOptInterface as MOI
 import SparseArrays
 
-struct SlpOptimizer
+struct Optimizer
     lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
     max_iter::Int
     tol::Float64
-    function SlpOptimizer(
+    function Optimizer(
         # Can't provide a default because no solvers are dependencies of GasModels
         lp_optimizer;
         max_iter = 100,
@@ -285,7 +181,7 @@ function is_converged(infeas::NamedTuple, tol)
 end
 
 function run_slp(
-    slp::SlpOptimizer,
+    slp::Optimizer,
     model::JuMP.Model,
     x0::Dict;
     λ0::Union{Nothing,Dict} = nothing,
@@ -392,4 +288,108 @@ function run_slp(
     )
 end
 
+end
+
+function _get_start_value(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
+    return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
+end
+
+# TODO: At this high-level interface, how can I specify the initial guess?
+# - My only option is to specify it as a function...
+function run_ogf(
+    file,
+    model_type,
+    optimizer::_SLP.Optimizer;
+    _initial_guess::Function = _get_start_value, # AbstractGasMoel -> Dict{VariableRef,Float64}
+    skip_correct = false,
+    ext = Dict{Symbol,Any}(),
+    setting = Dict{String,Any}(),
+    jump_model = JuMP.Model(),
+    kwargs...,
+)
+    data = GasModels.parse_file(file; skip_correct)
+    gm = GasModels.instantiate_model(
+        data,
+        model_type,
+        GasModels.build_ogf;
+        ref_extensions = [],
+        ext,
+        setting,
+        jump_model,
+        kwargs...,
+    )
+
+    _t = time()
+    x0 = _get_start_value(gm)
+    slp_results = _SLP.run_slp(optimizer, gm.model, x0)
+    t_slp = time() - _t
+
+    # TODO: Populate solution
+    unchanged_keys = [
+        "base_density",
+        "is_per_unit",
+        "multinetwork",
+        "base_volume",
+        "base_mass",
+        "base_flow",
+        "base_time",
+        "base_pressure",
+    ]
+    solution = Dict{String,Any}(k => copy(data[k]) for k in unchanged_keys)
+    solution["multiinfrastructure"] = false
+
+    ref = gm.ref[:it][:gm][:nw][0]
+    var_lookup = gm.var[:it][:gm][:nw][0]
+    con_lookup = gm.con[:it][:gm][:nw][0]
+    _primal(sym::Symbol, idx::Int) = slp_results.primal_solution[var_lookup[sym][idx]]
+    _dual(sym::Symbol, idx::Int) = slp_results.dual_solution[con_lookup[sym][idx]]
+    _primal(name::String, idx::Int) = slp_results.primal_solution[JuMP.variable_by_name(gm.model, "$(name)[$idx]")]
+    # TODO: Include duals if they are requested. Does this API exist?
+    solution["compressor"] = Dict(
+        "$i" => Dict(
+            "f" => _primal(:f_compressor, i),
+            "rsqr" => _primal(:rsqr, i),
+            # TODO: What is r? just √rsqr?
+            # For solutions from Ipopt, it is not exactly this...
+            "r" => sqrt(_primal(:rsqr, i)),
+        )
+        for i in keys(ref[:compressor])
+    )
+    solution["receipt"] = Dict(
+        "$i" => Dict("fg" => _primal(:fg, i))
+        for (i, r) in ref[:receipt] if Bool(r["is_dispatchable"])
+    )
+    solution["delivery"] = Dict(
+        "$i" => Dict("fl" => _primal(:fl, i))
+        for (i, d) in ref[:delivery] if Bool(d["is_dispatchable"])
+    )
+    solution["junction"] = Dict(
+        "$i" => Dict("p" => sqrt(_primal(:psqr, i)), "psqr" => _primal(:psqr, i))
+        for i in keys(ref[:junction])
+    )
+    solution["pipe"] = Dict(
+        "$i" => Dict("f" => _primal(:f_pipe, i)) for i in keys(ref[:pipe])
+    )
+    # TODO: Short pipe? Regulator? Resistor? Valve?
+
+    # I can't use JuMP.objective_bound because I will hit a NoOptimizer error
+    sense_to_bound = Dict(
+        JuMP.MIN_SENSE => -Inf,
+        JuMP.MAX_SENSE => Inf,
+        JuMP.FEASIBILITY_SENSE => NaN,
+    )
+    results = Dict(
+        "solve_time" => t_slp,
+        "optimizer" => "SLP",
+        "termination_status" => slp_results.termination_status,
+        "primal_status" => slp_results.primal_status,
+        "dual_status" => slp_results.dual_status,
+        "objective" => slp_results.objective_value,
+        "objective_lb" => sense_to_bound[JuMP.objective_sense(gm.model)],
+        "solution" => solution,
+    )
+    if haskey(data, "objective_normalization")
+        result["objective"] *= data["objective_normalization"]
+    end
+    return results
 end
