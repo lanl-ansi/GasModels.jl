@@ -508,6 +508,8 @@ at least 4 time series data points are available (and result in an error otherwi
 end
 
 function _fix_time_series_block!(block)
+    #makes sure min/max injection/withdrawal rates cannot be positive/negative
+    #only operates on transfer, receipt, delivery (no compressors)
     for (i, val) in get(block, "transfer", [])
         if haskey(val, "withdrawal_max")
             val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
