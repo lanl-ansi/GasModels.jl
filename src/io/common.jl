@@ -3,7 +3,7 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false)
+function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = true)
     if filetype == "m"
         gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
