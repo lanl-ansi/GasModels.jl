@@ -35,9 +35,28 @@ function parse_csv(lines::Vector{String})
     return data
 end
 
+function update_static_case(case::Dict, csv_data::Dict)
+	for row in csv_data
+        component_type = row["component_type"]
+        asset_key = string(row["component_id"])
+        parameter = row["parameter"]
+        value = row["value"]
+        
+        if component_type == "transfer"
+            case["transfer"][asset_key][parameter] = value
+        elseif component_type == "receipt"
+            case["receipt"][asset_key][parameter] = value
+        else
+            case["delivery"][asset_key][parameter] = value
+        end
+    end
+    
+    return case
+end
+
 "creates a time series block from the csv data which is later used create a multinetwork data"
 function _create_time_series_block(
-    data::Array{Dict{String,Any},1};
+    data::Vector{Any};
     total_time = 86400.0,
     time_step = 3600.0,
     additional_time = 21600.0,
