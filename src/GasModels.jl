@@ -52,6 +52,7 @@ module GasModels
     include("io/gaslib.jl")
     include("io/matgas.jl")
     include("io/transient.jl")
+    include("io/mnw_updates/parse_csv.jl") # path for new parser
 
     include("core/base.jl")
     include("core/types.jl")

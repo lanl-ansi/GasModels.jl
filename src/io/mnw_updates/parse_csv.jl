@@ -1,5 +1,3 @@
-# parse file into io, parse io into 
-
 #=
 workflow: call parse_file on the static data? will have to check that this will still work with the data checks removed
 call parse_csv (maybe rename to parse_timeseries?)
@@ -7,21 +5,21 @@ call create_timeseries(static data, transient data)
 something in that should apply the data checks to the static file (reference existing code)
 =#
 
-function parse_csv(filename::String)
+function parse_csv(filename::String)::Vector{Dict{String,Any}}
     raw = open(filename, "r") do io
         readlines(io)
     end
     return parse_csv(raw) 
 end
 
-function parse_csv(io::IO)
+function parse_csv(io::IO)::Vector{Dict{String,Any}}
     lines = readlines(io)
     return parse_csv(lines)
 end
 
-function parse_csv(lines::Vector{String})
+function parse_csv(lines::Vector{String})::Vector{Dict{String,Any}}
     header = split(lines[1], ",")
-    data = []
+    data = Vector{Dict{String,Any}}()
     for line in lines[2:end]
         values = split(line, ",")
         row_dict = Dict{String,Any}()
@@ -34,6 +32,7 @@ function parse_csv(lines::Vector{String})
     end
     return data
 end
+
 
 function update_static_case(case::Dict, csv_data::Dict)
 	for row in csv_data
@@ -54,166 +53,87 @@ function update_static_case(case::Dict, csv_data::Dict)
     return case
 end
 
-"creates a time series block from the csv data which is later used create a multinetwork data"
-function _create_time_series_block(
-    data::Vector{Any};
+# assemble multinetwork using pieces of existing parse_files
+function build_multinetwork(
+    static_data::Dict{String,Any},
+    csv_data::Vector{Dict{String,Any}};
     total_time = 86400.0,
     time_step = 3600.0,
+    spatial_discretization = 10000.0,
     additional_time = 21600.0,
-    periodic = true,
+    apply_corrections = true
 )::Dict{String,Any}
-    # create time information
-    time_series_block = Dict{String,Any}()
-    end_time = total_time + additional_time
+    if apply_corrections
+        check_non_negativity(static_data)
+        check_pipeline_geometry!(static_data)
+        correct_p_mins!(static_data)
+        per_unit_data_field_check!(static_data)
+        add_compressor_fields!(static_data)
 
-    if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
-        Memento.error(
-            _LOGGER,
-            "the 3600 seconds has to be exactly divisible by the time step,
-provide a time step that exactly divides 3600.0",
-        )
+        make_si_units!(static_data)
+        propagate_topology_status!(static_data)
+        add_base_values!(static_data)
+        correct_f_bounds!(static_data)
+        check_connectivity(static_data)
+        check_status(static_data)
+        check_edge_loops(static_data)
+        check_global_parameters(static_data)
     end
+    
+    prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
 
-    if time_step < 3600.0 && !isinteger(3600.0 / time_step)
-        Memento.error(_LOGGER, "time step should divide 3600.0 exactly when < 3600.0")
-    end
-
-    if total_time > 86400.0
-        Memento.warn(
-            _LOGGER,
-            "the solver takes a substantial performance hit when trying to solve
-transient optimization problems for more than a day's worth of data; if it takes too long to
-converge, please restrict the final time horizon to a day or less",
-        )
-    end
-
-    if (additional_time == 0.0)
-        Memento.warn(
-            _LOGGER,
-            "the transient optimization problem will only work for time-periodic
-time-series data. Please ensure the time-series data is time-periodic with a period of $total_time;
-if the data is not time-periodic GasModels will perform a time-periodic spline interpolation if
-at least 4 time series data points are available (and result in an error otherwise)",
-        )
-    end
-
-    num_time_points = Int(ceil(end_time / time_step)) + 1
-    num_physical_time_points = Int(ceil(total_time / time_step)) + 1
-    time_points = collect(LinRange(0.0, end_time, num_time_points))
-
-    time_series_block["num_steps"] = num_time_points
-    time_series_block["num_physical_time_points"] = num_physical_time_points
-    time_series_block["num_time_points"] = length(time_points)
-    time_series_block["time_point"] = time_points
-    time_series_block["time_step"] = time_step
-
-    interpolators = Dict{String,Any}()
-    fields = Set()
-    for line in data
-        type = line["component_type"]
-        id = line["component_id"]
-        param = line["parameter"]
-        push!(fields, (type, id, param))
-        val = parse(Float64, line["value"])
-        timestamp = DateTime(split(line["timestamp"], "+")[1])
-
-        if !haskey(interpolators, type)
-            interpolators[type] = Dict{String,Any}()
-        end
-
-        if !haskey(interpolators[type], id)
-            interpolators[type][id] = Dict{String,Any}()
-        end
-
-        if !haskey(interpolators[type][id], param)
-            interpolators[type][id][param] = Dict{String,Any}(
-                "values" => [],
-                "timestamps" => [],
-                "times" => [],
-                "reduced_data_points" => [],
-            )
-        end
-
-        push!(interpolators[type][id][param]["values"], val)
-        push!(interpolators[type][id][param]["timestamps"], timestamp)
-        time_val = (
-                interpolators[type][id][param]["timestamps"][end] -
-                interpolators[type][id][param]["timestamps"][1]
-            ) / Millisecond(1) * 1 / 1000.0
-
-        if (time_val <= total_time)
-            push!(interpolators[type][id][param]["times"], time_val)
-            push!(interpolators[type][id][param]["reduced_data_points"], val)
+    
+    # Convert the CSV data to the format expected by _create_time_series_block
+    transient_data = Vector{Dict{String,Any}}()
+    for row in csv_data
+        if haskey(row, "timestamp") && 
+           haskey(row, "component_type") && 
+           haskey(row, "component_id") && 
+           haskey(row, "parameter") && 
+           haskey(row, "value")
+            push!(transient_data, Dict{String,Any}(
+                "timestamp" => row["timestamp"],
+                "component_type" => row["component_type"],
+                "component_id" => row["component_id"],
+                "parameter" => row["parameter"],
+                "value" => row["value"]
+            ))
         end
     end
-
-    for (type, id, param) in fields
-        if (additional_time > 0.0)
-            start_val = interpolators[type][id][param]["reduced_data_points"][1]
-            #= remove cubic spline interpolation
-            end_val = interpolators[type][id][param]["reduced_data_points"][end]
-            middle_time = total_time + additional_time / 2
-            middle_val = (end_val + start_val) / 2
-            push!(interpolators[type][id][param]["times"], middle_time)
-            push!(interpolators[type][id][param]["reduced_data_points"], middle_val)
-            =#
-            push!(interpolators[type][id][param]["times"], end_time)
-            push!(interpolators[type][id][param]["reduced_data_points"], start_val)
-        end
-        x = interpolators[type][id][param]["times"]
-        y = interpolators[type][id][param]["reduced_data_points"]
-        interpolators[type][id][param]["itp"] = Spline1D(x, y, k = 1, periodic = periodic)
-
-        if !haskey(time_series_block, type)
-            time_series_block[type] = Dict{String,Any}()
-        end
-
-        if !haskey(time_series_block[type], id)
-            time_series_block[type][id] = Dict{String,Any}()
-        end
-
-        if !haskey(time_series_block[type][id], param)
-            time_series_block[type][id][param] = []
-        end
-
-        itp = interpolators[type][id][param]["itp"]
-
-        for t in time_series_block["time_point"]
-            itp_val = round(itp(t), digits = 2)
-            (abs(itp_val) <= 1e-4) && (itp_val = 0.0)
-            push!(time_series_block[type][id][param], itp_val)
-        end
+    
+    # make sure the static csv can't be used to make a mnw case
+    timestamps = unique([row["timestamp"] for row in transient_data])
+    if length(timestamps) < 2
+        Memento.error(_LOGGER, "Transient data must contain more than one unique timestamp")
     end
+    
+    make_si_units!(transient_data, static_data)
 
-    _fix_time_series_block!(time_series_block)
-    return time_series_block
+    time_series_block = _create_time_series_block(
+        transient_data,
+        total_time = total_time,
+        time_step = time_step,
+        additional_time = additional_time,
+        periodic = true
+    )
+
+    apply_gm!(
+        x -> x["time_series"] = deepcopy(time_series_block),
+        static_data;
+        apply_to_subnetworks = false
+    )
+
+    mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
+    
+    # --- Final per-unit conversion ---
+    make_per_unit!(mn_data)
+    
+    # convert network indices from strings to integers (trying to fix the key 0 not found error)
+    new_nw = Dict{Int, Any}()
+    for (k, v) in mn_data["nw"]
+        new_nw[parse(Int, k)] = v
+    end
+    mn_data["nw"] = new_nw
+
+    return mn_data
 end
-
-function _fix_time_series_block!(block)
-    for (i, val) in get(block, "transfer", [])
-        if haskey(val, "withdrawal_max")
-            val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
-        end
-        if haskey(val, "withdrawal_min")
-            val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
-        end
-    end
-    for (i, val) in get(block, "delivery", [])
-        if haskey(val, "withdrawal_max")
-            val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))
-        end
-        if haskey(val, "withdrawal_min")
-            val["withdrawal_min"] = min.(val["withdrawal_min"], zeros(length(val["withdrawal_min"])))
-        end
-    end
-
-    for (i, val) in get(block, "receipt", [])
-        if haskey(val, "injection_max")
-            val["injection_max"] = max.(val["injection_max"], zeros(length(val["injection_max"])))
-        end
-        if haskey(val, "injection_min")
-            val["injection_min"] = min.(val["injection_min"], zeros(length(val["injection_min"])))
-        end
-    end
-end
-
