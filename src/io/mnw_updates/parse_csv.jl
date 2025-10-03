@@ -61,7 +61,7 @@ function build_multinetwork(
     time_step = 3600.0,
     spatial_discretization = 10000.0,
     additional_time = 21600.0,
-    apply_corrections = true
+    apply_corrections = false
 )::Dict{String,Any}
     if apply_corrections
         check_non_negativity(static_data)

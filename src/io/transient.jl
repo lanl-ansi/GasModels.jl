@@ -10,7 +10,7 @@ end
 function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
 
-    #@assert !occursin("compressor", raw) "Timeseries file cannot contain compressor information. Move this data in the base case file."
+    #@assert !occursin("compressor", raw) "Timeseries file cannot contain compressor information. Move this data into the base case file."
 
     data = []
     timestamps = Set{String}()
