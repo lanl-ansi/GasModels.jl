@@ -325,7 +325,26 @@ function solve_ogf(
     slp_results = _SLP.run_slp(optimizer, gm.model, x0)
     t_slp = time() - _t
 
-    # TODO: Populate solution
+    # HACK: Manually override the VariablePrimal attribute with our solution.
+    # This is necessary because build_solution relies on JuMP.value. This would
+    # already be set if SLP was an MOI optimizer.
+    #
+    # NOTE: This doesn't work with gm.model. Maybe I need backend(gm.model) instead?
+    # Still fails with backend(gm.model). I'm not sure why...
+    #
+    #for var in JuMP.all_variables(gm.model)
+    #    val = slp_results.primal_solution[var]
+    #    MOI.set(JuMP.backend(gm.model), MOI.VariablePrimal(1), JuMP.index(var), val)
+    #end
+    #solution = _IM.build_solution(
+    #    gm;
+    #    post_processors = [
+    #        sol_psqr_to_p!,
+    #        sol_compressor_p_to_r!,
+    #        sol_regulator_p_to_r!,
+    #    ],
+    #)
+
     unchanged_keys = [
         "base_density",
         "is_per_unit",
