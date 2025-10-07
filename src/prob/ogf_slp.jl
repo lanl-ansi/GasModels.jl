@@ -296,7 +296,7 @@ end
 
 # TODO: At this high-level interface, how can I specify the initial guess?
 # - My only option is to specify it as a function...
-function run_ogf(
+function solve_ogf(
     file,
     model_type,
     optimizer::_SLP.Optimizer;
