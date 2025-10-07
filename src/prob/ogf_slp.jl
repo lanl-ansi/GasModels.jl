@@ -209,13 +209,14 @@ function run_slp(
         @assert all(infeas.primal .>= 0.0)
         @assert all(infeas.dual .>= 0.0)
         @assert all(infeas.complementarity .>= 0.0)
-        log_line = (
-            @sprintf("%4d", iter_count)
-            * @sprintf("%13.3e", obj_val)
-            * @sprintf("%10.2e", maximum(infeas.primal))
-            * @sprintf("%10.2e", maximum(infeas.dual))
-            * @sprintf("%10.2e", maximum(infeas.complementarity))
-        )
+        log_items = [
+            @sprintf("%4d", iter_count),
+            @sprintf("%13.3e", obj_val),
+            @sprintf("%10.2e", maximum(infeas.primal)),
+            @sprintf("%10.2e", maximum(infeas.dual)),
+            @sprintf("%10.2e", maximum(infeas.complementarity)),
+        ]
+        log_line = join(log_items)
         println(log_line)
         # TODO: I want the convergence check to happen at the end of the loop
         # so I actually check the last iteration.
