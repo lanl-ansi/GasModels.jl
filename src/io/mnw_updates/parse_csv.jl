@@ -54,6 +54,8 @@ function update_static_case(case::Dict, csv_data::Dict)
 end
 
 # assemble multinetwork using pieces of existing parse_files
+# understanding the issues I had with this version vs kaarthik's original version:
+# per unit conversion was applied in the wrong order. parse_file 
 function build_multinetwork(
     static_data::Dict{String,Any},
     csv_data::Vector{Dict{String,Any}};
