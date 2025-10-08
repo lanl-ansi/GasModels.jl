@@ -3,7 +3,7 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = true)
+function parse_file(io::IO; filetype::AbstractString = "m", apply_correct::Bool = false)
     if filetype == "m"
         gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
@@ -14,7 +14,7 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
         Memento.error(_LOGGER, "only .m and .json files are supported")
     end
 
-    if !skip_correct
+    if apply_correct
         correct_network_data!(gm_data)
     end
 
@@ -23,9 +23,9 @@ end
 
 
 ""
-function parse_file(file::String; skip_correct::Bool = false)
+function parse_file(file::String; apply_correct::Bool = false)
     gm_data = open(file) do io
-        parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct)
+        parse_file(io; filetype = split(lowercase(file), '.')[end], apply_correct = apply_correct)
     end
 
     return gm_data
