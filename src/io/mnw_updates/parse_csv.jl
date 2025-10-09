@@ -5,32 +5,59 @@ call create_timeseries(static data, transient data)
 something in that should apply the data checks to the static file (reference existing code)
 =#
 
-function parse_csv(filename::String)::Vector{Dict{String,Any}}
-    raw = open(filename, "r") do io
-        readlines(io)
+function parse_csv(filename::String)::Dict{String,Any}
+    open(filename, "r") do io
+        return parse_csv(io)
     end
-    return parse_csv(raw) 
 end
 
-function parse_csv(io::IO)::Vector{Dict{String,Any}}
-    lines = readlines(io)
-    return parse_csv(lines)
-end
+function parse_csv(io::IO)::Dict{String,Any}
 
-function parse_csv(lines::Vector{String})::Vector{Dict{String,Any}}
-    header = split(lines[1], ",")
-    data = Vector{Dict{String,Any}}()
-    for line in lines[2:end]
-        values = split(line, ",")
-        row_dict = Dict{String,Any}()
-        for (i, col_name) in enumerate(header)
-            if i <= length(values) 
-                row_dict[col_name] = values[i]
-            end
+    nw = Dict{String,Any}()
+    
+    timestamp_to_int = Dict{String,String}()
+    current_timestep = 0
+    
+    for line in eachline(io)
+        # Skip header
+        if occursin("timestep", lowercase(line)) || occursin("timestamp", lowercase(line))
+            continue
         end
-        push!(data, row_dict)
+        
+        values = split(line, ",")
+        
+        raw_timestamp = values[1]
+        asset_type = values[2]
+        asset_id = values[3]
+        parameter = values[4]
+        value = values[5]
+        
+        # Assign integer timestep
+        if !haskey(timestamp_to_int, raw_timestamp)
+            current_timestep += 1
+            timestamp_to_int[raw_timestamp] = string(current_timestep)
+        end
+        
+        timestep_key = timestamp_to_int[raw_timestamp]
+        
+        # set up the nested dicts
+        # timestep
+        if !haskey(nw, timestep_key)
+            nw[timestep_key] = Dict{String,Any}()
+        end
+        # asset type
+        if !haskey(nw[timestep_key], asset_type)
+            nw[timestep_key][asset_type] = Dict{String,Any}()
+        end
+        # asset id
+        if !haskey(nw[timestep_key][asset_type], asset_id)
+            nw[timestep_key][asset_type][asset_id] = Dict{String,Any}()
+        end
+        # parameter and value
+        nw[timestep_key][asset_type][asset_id][parameter] = value
     end
-    return data
+    
+    return Dict("nw" => nw)
 end
 
 
