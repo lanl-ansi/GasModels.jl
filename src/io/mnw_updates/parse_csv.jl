@@ -12,10 +12,11 @@ function parse_csv(filename::String)::Dict{String,Any}
 end
 
 function parse_csv(io::IO)::Dict{String,Any}
-
     nw = Dict{String,Any}()
+    sizehint!(nw, 24)  # expecting 24 hours to be the most common so this allows for some preallocation
     
     timestamp_to_int = Dict{String,String}()
+    sizehint!(timestamp_to_int, 24)  
     current_timestep = 0
     
     for line in eachline(io)
@@ -32,7 +33,7 @@ function parse_csv(io::IO)::Dict{String,Any}
         parameter = values[4]
         value = values[5]
         
-        # Assign integer timestep
+        # Convert timestamp to integer
         if !haskey(timestamp_to_int, raw_timestamp)
             current_timestep += 1
             timestamp_to_int[raw_timestamp] = string(current_timestep)
@@ -40,19 +41,25 @@ function parse_csv(io::IO)::Dict{String,Any}
         
         timestep_key = timestamp_to_int[raw_timestamp]
         
-        # set up the nested dicts
-        # timestep
+        # set up nested dictionaries
+        # timesteps
         if !haskey(nw, timestep_key)
             nw[timestep_key] = Dict{String,Any}()
+            sizehint!(nw[timestep_key], 3)  #3 asset types within each time key
         end
+        
         # asset type
         if !haskey(nw[timestep_key], asset_type)
             nw[timestep_key][asset_type] = Dict{String,Any}()
+            # not consistent enough data to put a size hint here
         end
+        
         # asset id
         if !haskey(nw[timestep_key][asset_type], asset_id)
             nw[timestep_key][asset_type][asset_id] = Dict{String,Any}()
+            # not consistent enough data to put a size hint here
         end
+        
         # parameter and value
         nw[timestep_key][asset_type][asset_id][parameter] = value
     end
