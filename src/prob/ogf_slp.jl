@@ -295,13 +295,38 @@ function _get_start_value(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef
     return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
 end
 
+# TODO: Move this import
+import HiGHS
+
+function _solve_penalized_relaxation(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
+    model, refmap = JuMP.copy_model(gm.model)
+    # TODO: Allow solver and options to be specified
+    slpopt = _SLP.Optimizer(HiGHS.Optimizer)
+    original_variables = JuMP.all_variables(model)
+    JuMP.@objective(model, Min, 0.0)
+    JuMP.relax_with_penalty!(model)
+    x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(model))
+    display(x0)
+    display(JuMP.objective_function(model))
+    result = _SLP.run_slp(slpopt, model, x0)
+    @assert result.termination_status == JuMP.LOCALLY_SOLVED
+    @assert result.primal_status == JuMP.FEASIBLE_POINT
+    @assert result.dual_status == JuMP.FEASIBLE_POINT
+    ncon = length(JuMP.all_constraints(model; include_variable_in_set_constraints = false))
+    @assert result.objective_value <= 1e-6 * ncon
+    primal_values = map(x -> result.primal_solution[x], original_variables)
+    original_vars = JuMP.all_variables(gm.model)
+    return Dict(zip(original_vars, primal_values))
+end
+
 # TODO: At this high-level interface, how can I specify the initial guess?
 # - My only option is to specify it as a function...
 function solve_ogf(
     file,
     model_type,
     optimizer::_SLP.Optimizer;
-    _initial_guess::Function = _get_start_value, # AbstractGasMoel -> Dict{VariableRef,Float64}
+    # TODO: Allow keywords for this function
+    _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
     skip_correct = false,
     ext = Dict{Symbol,Any}(),
     setting = Dict{String,Any}(),
@@ -321,7 +346,7 @@ function solve_ogf(
     )
 
     _t = time()
-    x0 = _get_start_value(gm)
+    x0 = _initial_guess(gm)
     slp_results = _SLP.run_slp(optimizer, gm.model, x0)
     t_slp = time() - _t
 
