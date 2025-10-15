@@ -1,5 +1,5 @@
 
-#WARNING: INCLUDING THIS CODE WILL CAUSE PRECOMP TO Final
+#WARNING: INCLUDING THIS CODE WILL CAUSE PRECOMP TO FAIL
 #DO NOT ADD TO GASMODELS.JL UNTIL IMPORTS HAVE BEEN RESOLVED
 
 
@@ -199,89 +199,8 @@ function extract_metadata(content)
 end
 
 filepath = "KernRiverGT_YELLOW_v3.m"
-#content = read(filepath, String)
 
-#starts = ["%% junction", "%% pipe", "%% compressor", "%% transfer", "%% receipt", "%% delivery"]
-#data_starts = ["%% junction data", "%% pipe data", "%% compressor data", "%% transfer data", "%% receipt data", "%% delivery data"]
-#end_marker = "];"  
-
-## get the main data for each asset type
-#junction_text = extract_text_between(content, starts[1], end_marker)
-#pipe_text = extract_text_between(content, starts[2], end_marker)
-#compressor_text = extract_text_between(content, starts[3], end_marker)
-#transfer_text = extract_text_between(content, starts[4], end_marker)
-#receipt_text = extract_text_between(content, starts[5], end_marker)
-#delivery_text = extract_text_between(content, starts[6], end_marker)
-
-## get the additional data. this will be appended to the main df
-#junction_data_text = extract_text_between(content, data_starts[1], end_marker)
-#pipe_data_text = extract_text_between(content, data_starts[2], end_marker)
-#compressor_data_text = extract_text_between(content, data_starts[3], end_marker)
-#transfer_data_text = extract_text_between(content, data_starts[4], end_marker)
-#receipt_data_text = extract_text_between(content, data_starts[5], end_marker)
-#delivery_data_text = extract_text_between(content, data_starts[6], end_marker)
-
-## tasks for parallel processing
-#junction_task = Threads.@spawn process_data_pair_to_dict(junction_text, junction_data_text, "junction")
-#pipe_task = Threads.@spawn process_data_pair_to_dict(pipe_text, pipe_data_text, "pipe")
-#compressor_task = Threads.@spawn process_data_pair_to_dict(compressor_text, compressor_data_text, "compressor")
-#transfer_task = Threads.@spawn process_data_pair_to_dict(transfer_text, transfer_data_text, "transfer")
-#receipt_task = Threads.@spawn process_data_pair_to_dict(receipt_text, receipt_data_text, "receipt")
-#delivery_task = Threads.@spawn process_data_pair_to_dict(delivery_text, delivery_data_text, "delivery")
-
-## gather the results from the threads
-#case = Dict{String, Any}()
-
-#case["junction"] = fetch(junction_task)
-#case["pipe"] = fetch(pipe_task)
-#case["compressor"] = fetch(compressor_task)
-#case["transfer"] = fetch(transfer_task)
-#case["receipt"] = fetch(receipt_task)
-#case["delivery"] = fetch(delivery_task)
-
-#metadata = extract_metadata(content)
-#for (key, value) in metadata
-#    case[key] = value
-#end
-
-##starting checks, adding in the things that were missing from the base file
-#case["gas_molar_mass"] = 0.02896 * case["gas_specific_gravity"]
-#unitsmatch = match(r"mgc.units = 'si'", content)
-#if unitsmatch !== nothing
-#   case["is_si_units"] = 1
-#   case["is_per_unit"] = 0
-#   case["is_english_units"] = 0
-#   delete!(case, "units") #this gets added in the metadata loop
-#end
-#delete!(case, "function mgc")
-#case["source_type"] = ".m"
-#case["multinetwork"] = false
-#case["pipeline_id"] = round(Int, case["pipeline_id"])
-
-###################################################################
-#if apply_corrections
-#check_non_negativity(case)
-#check_pipeline_geometry!(case) #geo must be checked before per-unit conversion
-#check_non_zero(case)
-#correct_p_mins!(case)
-
-## per_unit_case_field_check!(case)
-#add_compressor_fields!(case)
-
-#make_si_units!(case)
-#propagate_topology_status!(case)
-#add_base_values!(case)
-#make_per_unit!(case)
-
-## Assumes everything is per unit
-#correct_f_bounds!(case)
-
-## check_connectivity(case)
-## check_status(case)
-#check_edge_loops(case)
-#check_global_parameters(case)
-#end
-
+# next task: add asserts to make parser more robust wrt per unit
 function fast_m_parse(filepath::String, apply_corrections=true)
     content = read(filepath, String)
 
@@ -343,6 +262,45 @@ function fast_m_parse(filepath::String, apply_corrections=true)
     case["pipeline_id"] = round(Int, case["pipeline_id"])
 
     ##################################################################
+    #trying to make sure everything is in per unit so that make_per_unit works
+    #this is not a performance ideal solution
+    
+    for key in keys(case["junction"])
+        case["junction"][key]["is_per_unit"] = 0
+        case["junction"][key]["is_si_units"] = 1
+        case["junction"][key]["is_english_units"] = 0
+    end
+
+    for key in keys(case["pipe"])
+        case["pipe"][key]["is_per_unit"] = 0
+        case["pipe"][key]["is_si_units"] = 1
+        case["pipe"][key]["is_english_units"] = 0
+    end
+
+    for key in keys(case["compressor"])
+        case["compressor"][key]["is_per_unit"] = 0
+        case["compressor"][key]["is_si_units"] = 1
+        case["compressor"][key]["is_english_units"] = 0
+    end
+
+    for key in keys(case["transfer"])
+        case["transfer"][key]["is_per_unit"] = 0
+        case["transfer"][key]["is_si_units"] = 1
+        case["transfer"][key]["is_english_units"] = 0
+    end
+
+    for key in keys(case["receipt"])
+        case["receipt"][key]["is_per_unit"] = 0
+        case["receipt"][key]["is_si_units"] = 1
+        case["receipt"][key]["is_english_units"] = 0
+    end
+
+    for key in keys(case["delivery"])
+        case["delivery"][key]["is_per_unit"] = 0
+        case["delivery"][key]["is_si_units"] = 1
+        case["delivery"][key]["is_english_units"] = 0
+    end
+
     if apply_corrections
         check_non_negativity(case)
         check_pipeline_geometry!(case) #geo must be checked before per-unit conversion
@@ -352,7 +310,7 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         # per_unit_case_field_check!(case)
         add_compressor_fields!(case)
 
-        make_si_units!(case)
+        make_si_units!(case) # per unit, si transforms are not applying to the case
         propagate_topology_status!(case)
         add_base_values!(case)
         make_per_unit!(case)
