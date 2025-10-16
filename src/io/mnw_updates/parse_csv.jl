@@ -19,20 +19,31 @@ function parse_csv(io::IO)::Dict{String,Any}
     sizehint!(timestamp_to_int, 24)  
     current_timestep = 0
     
+    line_number = 0
     for line in eachline(io)
+        line_number += 1
         # Skip header
         if occursin("timestep", lowercase(line)) || occursin("timestamp", lowercase(line))
             continue
         end
         
         values = split(line, ",")
-        
+
+        if length(values) < 5
+            error("Line $line_number: Expected at least 5 columns but got $(length(values)). Line content: $line")
+        end
+
         raw_timestamp = values[1]
         asset_type = values[2]
         asset_id = values[3]
         parameter = values[4]
         value = values[5]
-        
+
+        @assert !isempty(raw_timestamp) "Line $line_number: Empty timestamp"
+        @assert !isempty(asset_type) "Line $line_number: Empty asset_type"
+        @assert !isempty(asset_id) "Line $line_number: Empty asset_id"
+        @assert !isempty(parameter) "Line $line_number: Empty parameter"
+
         # Convert timestamp to integer
         if !haskey(timestamp_to_int, raw_timestamp)
             current_timestep += 1
@@ -64,6 +75,9 @@ function parse_csv(io::IO)::Dict{String,Any}
         nw[timestep_key][asset_type][asset_id][parameter] = value
     end
     
+    # min timestep should be 1
+    @assert current_timestep > 0 "No valid data was found in the CSV"
+
     return Dict("nw" => nw)
 end
 
