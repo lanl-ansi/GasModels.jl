@@ -33,16 +33,12 @@ function parse_csv(io::IO)::Dict{String,Any}
             error("Line $line_number: Expected at least 5 columns but got $(length(values)). Line content: $line")
         end
 
+        @assert length(values)==5 "Error: fewer values than expected on line $line_number"
         raw_timestamp = values[1]
         asset_type = values[2]
         asset_id = values[3]
         parameter = values[4]
         value = values[5]
-
-        @assert !isempty(raw_timestamp) "Line $line_number: Empty timestamp"
-        @assert !isempty(asset_type) "Line $line_number: Empty asset_type"
-        @assert !isempty(asset_id) "Line $line_number: Empty asset_id"
-        @assert !isempty(parameter) "Line $line_number: Empty parameter"
 
         # Convert timestamp to integer
         if !haskey(timestamp_to_int, raw_timestamp)
@@ -68,7 +64,6 @@ function parse_csv(io::IO)::Dict{String,Any}
         # asset id
         if !haskey(nw[timestep_key][asset_type], asset_id)
             nw[timestep_key][asset_type][asset_id] = Dict{String,Any}()
-            # not consistent enough data to put a size hint here
         end
         
         # parameter and value
@@ -76,7 +71,7 @@ function parse_csv(io::IO)::Dict{String,Any}
     end
     
     # min timestep should be 1
-    @assert current_timestep > 0 "No valid data was found in the CSV"
+    @assert current_timestep > 0 "No valid data was found: the csv must contain at least 1 timestep"
 
     return Dict("nw" => nw)
 end

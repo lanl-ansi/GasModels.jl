@@ -125,6 +125,12 @@ function process_data_pair_to_dict(text1, text2, asset_type)
         end
     end
     
+    for key in keys(result_dict[asset_type])
+        case[asset_type][key]["is_per_unit"] = 0
+        case[asset_type][key]["is_si_units"] = 1
+        case[asset_type][key]["is_english_units"] = 0
+    end
+
     return result_dict
 end
 
@@ -241,6 +247,9 @@ function fast_m_parse(filepath::String, apply_corrections=true)
     case["transfer"] = fetch(transfer_task)
     case["receipt"] = fetch(receipt_task)
     case["delivery"] = fetch(delivery_task)
+    
+    #one big assert to check that everything exists
+    @assert (!isempty(case["junction"]) && !isempty(case["pipe"]) && !isempty(case["compressor"]) && !isempty(case["transfer"]) && !isempty(case["receipt"]) && !isempty(case["delivery"])) "Not all component types were read in properly"
 
     metadata = extract_metadata(content)
     for (key, value) in metadata
@@ -265,42 +274,6 @@ function fast_m_parse(filepath::String, apply_corrections=true)
     #trying to make sure everything is in per unit so that make_per_unit works
     #this is not a performance ideal solution
     
-    for key in keys(case["junction"])
-        case["junction"][key]["is_per_unit"] = 0
-        case["junction"][key]["is_si_units"] = 1
-        case["junction"][key]["is_english_units"] = 0
-    end
-
-    for key in keys(case["pipe"])
-        case["pipe"][key]["is_per_unit"] = 0
-        case["pipe"][key]["is_si_units"] = 1
-        case["pipe"][key]["is_english_units"] = 0
-    end
-
-    for key in keys(case["compressor"])
-        case["compressor"][key]["is_per_unit"] = 0
-        case["compressor"][key]["is_si_units"] = 1
-        case["compressor"][key]["is_english_units"] = 0
-    end
-
-    for key in keys(case["transfer"])
-        case["transfer"][key]["is_per_unit"] = 0
-        case["transfer"][key]["is_si_units"] = 1
-        case["transfer"][key]["is_english_units"] = 0
-    end
-
-    for key in keys(case["receipt"])
-        case["receipt"][key]["is_per_unit"] = 0
-        case["receipt"][key]["is_si_units"] = 1
-        case["receipt"][key]["is_english_units"] = 0
-    end
-
-    for key in keys(case["delivery"])
-        case["delivery"][key]["is_per_unit"] = 0
-        case["delivery"][key]["is_si_units"] = 1
-        case["delivery"][key]["is_english_units"] = 0
-    end
-
     if apply_corrections
         check_non_negativity(case)
         check_pipeline_geometry!(case) #geo must be checked before per-unit conversion
