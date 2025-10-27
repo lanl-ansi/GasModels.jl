@@ -97,13 +97,9 @@ end
 
 #wrap the previous 2 functions, then call in parallel on the different parts of the dataframe
 function process_data_pair_to_dict(text1, text2, asset_type)
-    if isempty(text1)
-        throw(ArgumentError("$asset_type data not found"))
-    end
+    @assert (!isempty(text1)&&!isempty(text2)) "Important data missing from $asset_type"
+
     df1 = parse_raw_data_to_df(text1)
-    if isempty(text2)
-        throw(ArgumentError("additional $asset_type data not found"))
-    end
     df2 = parse_raw_data_to_df(text2)
     combined_df = hcat(df1, df2)
     
@@ -115,20 +111,20 @@ function process_data_pair_to_dict(text1, text2, asset_type)
     
     for i in 1:nrow(combined_df)
         asset_id = string(combined_df[i, id_col])
-        
         if !haskey(result_dict, asset_id)
             result_dict[asset_id] = Dict{String, Any}()
         end
-        
         for col_name in names(combined_df)[2:end]
             result_dict[asset_id][string(col_name)] = combined_df[i, col_name] #store the value
         end
     end
     
-    for key in keys(result_dict[asset_type])
-        case[asset_type][key]["is_per_unit"] = 0
-        case[asset_type][key]["is_si_units"] = 1
-        case[asset_type][key]["is_english_units"] = 0
+    for key in keys(result_dict)
+        result_dict[key]["is_per_unit"] = 0
+        result_dict[key]["is_si_units"] = 1
+        result_dict[key]["is_english_units"] = 0
+        result_dict[key]["id"] = key
+        result_dict[key]["index"] = key
     end
 
     return result_dict
@@ -265,15 +261,14 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         case["is_english_units"] = 0
         delete!(case, "units") #this gets added in the metadata loop
     end
+    # case["version"] and case["source_version"] are both in the original parser result. is this necessary?
+    case["name"] = case["function mgc"]
     delete!(case, "function mgc")
     case["source_type"] = ".m"
     case["multinetwork"] = false
     case["pipeline_id"] = round(Int, case["pipeline_id"])
+    case["units"] = "si" # why do we have to say the units are SI so many times???
 
-    ##################################################################
-    #trying to make sure everything is in per unit so that make_per_unit works
-    #this is not a performance ideal solution
-    
     if apply_corrections
         check_non_negativity(case)
         check_pipeline_geometry!(case) #geo must be checked before per-unit conversion
@@ -291,7 +286,7 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         # Assumes everything is per unit
         correct_f_bounds!(case)
 
-        # check_connectivity(case)
+        # check_connectivity(case) #edit 10/27: pretty sure the issue with getting this sys to solve comes from not calling these 2 functions
         # check_status(case)
         check_edge_loops(case)
         check_global_parameters(case)
