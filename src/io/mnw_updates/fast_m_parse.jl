@@ -275,7 +275,7 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         check_non_zero(case)
         correct_p_mins!(case)
 
-        # per_unit_case_field_check!(case)
+        # per_unit_case_field_check!(case) #note: this is from core/data.jl, like check_connectivity and check_status does not fix things
         add_compressor_fields!(case)
 
         make_si_units!(case) # per unit, si transforms are not applying to the case
@@ -286,7 +286,8 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         # Assumes everything is per unit
         correct_f_bounds!(case)
 
-        # check_connectivity(case) #edit 10/27: pretty sure the issue with getting this sys to solve comes from not calling these 2 functions
+        # check_connectivity(case) #edit 10/28: including these functions does not make the case solve
+        #lots of warnings related to junction_id xxxx in pipe/compressor/delivery/receipt xxxx not defined
         # check_status(case)
         check_edge_loops(case)
         check_global_parameters(case)
