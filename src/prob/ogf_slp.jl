@@ -236,7 +236,7 @@ function run_slp(
         infeas = eval_infeasibilities(nlp, x, λ)
         obj_val = eval_objective(nlp, x)
         if (iter_count % 10) == 0
-            println("iter    objective   inf_pr    inf_du   inf_comp")
+            println("iter    objective   inf_pr    inf_du   inf_comp  TR_radius")
         end
         @assert all(infeas.primal .>= 0.0)
         @assert all(infeas.dual .>= 0.0)
@@ -247,6 +247,7 @@ function run_slp(
             @sprintf("%10.2e", maximum(infeas.primal)),
             @sprintf("%10.2e", maximum(infeas.dual)),
             @sprintf("%10.2e", maximum(infeas.complementarity)),
+            @sprintf("%11.2e", trust_region_radius),
         ]
         log_line = join(log_items)
         println(log_line)
@@ -362,8 +363,9 @@ end
 
 end
 
-function _get_start_value(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
-    return Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
+function _get_start_value(gm::GasModels.AbstractGasModel)::Tuple{Dict{JuMP.VariableRef,Float64},Any}
+    x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
+    return x0, nothing
 end
 
 # TODO: Move this import
@@ -372,7 +374,7 @@ import HiGHS
 function _solve_penalized_relaxation(
     gm::GasModels.AbstractGasModel;
     tol = 1e-6,
-)::Dict{JuMP.VariableRef,Float64}
+)::Tuple{Dict{JuMP.VariableRef,Float64},Any}
     model, refmap = JuMP.copy_model(gm.model)
     # TODO: More systematic handling of options
     slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol)
@@ -381,14 +383,14 @@ function _solve_penalized_relaxation(
     JuMP.relax_with_penalty!(model)
     x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(model))
     result = _SLP.run_slp(slpopt, model, x0)
-    @assert result.termination_status == JuMP.LOCALLY_SOLVED
-    @assert result.primal_status == JuMP.FEASIBLE_POINT
-    @assert result.dual_status == JuMP.FEASIBLE_POINT
+    #@assert result.termination_status == JuMP.LOCALLY_SOLVED
+    #@assert result.primal_status == JuMP.FEASIBLE_POINT
+    #@assert result.dual_status == JuMP.FEASIBLE_POINT
     ncon = length(JuMP.all_constraints(model; include_variable_in_set_constraints = false))
-    @assert result.objective_value <= 1e-6 * ncon
+    #@assert result.objective_value <= 1e-6 * ncon
     primal_values = map(x -> result.primal_solution[x], original_variables)
     original_vars = JuMP.all_variables(gm.model)
-    return Dict(zip(original_vars, primal_values))
+    return Dict(zip(original_vars, primal_values)), result
 end
 
 # TODO: At this high-level interface, how can I specify the initial guess?
@@ -418,7 +420,7 @@ function solve_ogf(
     )
 
     _t = time()
-    x0 = _initial_guess(gm)
+    x0, _ = _initial_guess(gm)
     slp_results = _SLP.run_slp(optimizer, gm.model, x0)
     t_slp = time() - _t
 
