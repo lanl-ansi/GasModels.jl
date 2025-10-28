@@ -486,7 +486,7 @@ function solve_ogf(
         "solution" => solution,
     )
     if haskey(data, "objective_normalization")
-        result["objective"] *= data["objective_normalization"]
+        results["objective"] *= data["objective_normalization"]
     end
     return results
 end
