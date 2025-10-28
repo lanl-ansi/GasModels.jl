@@ -170,6 +170,23 @@ function eval_infeasibilities(nlp::NLP, x, λ)
     )
 end
 
+function merit_function(nlp::NLP, x)
+    # Let's use a merit function that is the objective value plus constraint violation
+    convals = eval_constraints(nlp, x)
+    eq_values = convals[nlp.eq_indices]
+    eq_rhs = nlp.constraint_ubs[nlp.eq_indices]
+    ineq_values = convals[nlp.ineq_indices]
+    ineq_lbs = nlp.constraint_lbs[nlp.ineq_indices]
+    ineq_ubs = nlp.constraint_ubs[nlp.ineq_indices]
+    eq_violations = abs.(eq_values .- eq_rhs)
+    ineq_violations = max.(ineq_values .- ineq_ubs, ineq_lbs .- ineq_values, 0.0)
+    return (
+        nlp.lagrangian_objective_factor * eval_objective(nlp, x)
+        + sum(eq_violations)
+        + sum(ineq_violations)
+    )
+end
+
 function is_converged(infeas::NamedTuple, tol)
     # TODO: Allow different tolerances for each category?
     # Is there any reason to break up the primal infeasibilities by constraint type?
@@ -191,9 +208,24 @@ function run_slp(
     obj_sense = JuMP.objective_sense(model)
     nvar = length(nlp.variables)
     ncon = length(nlp.constraints)
+
+    # Initialize state we will update during the algorithm
     x = map(v -> x0[v], nlp.variables)
     λ = (λ0 !== nothing ? map(c -> λ0[c], nlp.constraints) : zeros(ncon))
     iter_count = 0
+
+    # Trust region parameters
+    # TODO: Make the initial TRR configurable
+    nominal_trust_region_radius = 10.0
+    trust_region_radius = nominal_trust_region_radius
+    max_trust_region_radius = 5 * nominal_trust_region_radius
+    min_trust_region_radius = 1e-3
+    expand_factor = 1.25
+    shrink_factor = 0.5
+    # We expand or shrink the TRR depending on the ratio between actual
+    # and predicted improvement in a merit function.
+    expansion_threshold = 1.0
+    reduction_threshold = 1.3
 
     # Initialize these to dummy values so we can access them outside the loop later
     obj_val = 0.0
@@ -238,6 +270,7 @@ function run_slp(
         # 4. Extract a candidate point from the solution
         # 5. Apply a trust region correction to the candidate point
         # 6. Check convergence with new point
+        obj_val = eval_objective(nlp, x)
         obj_grad = eval_objective_gradient(nlp, x)
         convals = eval_constraints(nlp, x)
         eq_values = convals[nlp.eq_indices]
@@ -249,6 +282,7 @@ function run_slp(
         eq_jac = jac[nlp.eq_indices, :]
         ineq_jac = jac[nlp.ineq_indices, :]
 
+        # TODO: Reuse a single model for performance
         lp_model = JuMP.Model(slp.lp_optimizer)
         JuMP.set_silent(lp_model)
         # TODO: Handle bounds separately from inequalities
@@ -265,17 +299,54 @@ function run_slp(
             lp_inequality,
             ineq_lbs .<= ineq_values .+ ineq_jac * (lp_var .- x) .<= ineq_ubs
         )
+        JuMP.@constraint(lp_model,
+            trust_region,
+            - trust_region_radius .<= lp_var .- x .<= trust_region_radius
+        )
         JuMP.optimize!(lp_model)
-        #@assert JuMP.is_solved_and_feasible(lp_model)
 
-        trial_x = JuMP.value.(lp_var)
-        trial_λ = zeros(ncon)
-        trial_λ[nlp.eq_indices] .= JuMP.dual.(lp_equality)
-        trial_λ[nlp.ineq_indices] .= JuMP.dual.(lp_inequality)
+        # Update trust region size
+        if JuMP.is_solved_and_feasible(lp_model)
+            xnew = JuMP.value.(lp_var)
+            ratio = (
+                (merit_function(nlp, xnew) - merit_function(nlp, x))
+                / (
+                    # Linear approximation to the merit function
+                    # Since the LP is feasible, the constraint violations are zero.
+                    # The approximation is then:
+                    # ∇f(x^0)^T (x - x^0)
+                    nlp.lagrangian_objective_factor * sum(obj_grad .* (xnew .- x))
+                )
+            )
+            # Luke also tests some quantity called the "boundary ratio"
+            if ratio < expansion_threshold
+                trust_region_radius = min(trust_region_radius * expand_factor, max_trust_region_radius)
+            elseif ratio > reduction_threshold
+                trust_region_radius = max(trust_region_radius * shrink_factor, min_trust_region_radius)
+            end
+        else
+            # Increase trust region size
+            # I'm copying this iteration-dependent update from Luke's code.
+            if i < 10
+                trust_region_radius += 0.5 * nominal_trust_region_radius
+            else
+                trust_region_radius += 0.1 * nominal_trust_region_radius
+            end
+        end
+        # TODO: Detect the case where expanding the trust region doesn't
+        # fix infeasibility. Here we have basically two options:
+        # 1. Converge at a locally infeasible point
+        # 2. Feasibility restoration
 
-        # TODO: Trust region correction
-        x .= trial_x
-        λ .= trial_λ
+        # We update primal-dual variables to hold most recent LP solution
+        # *after* updating the trust region radius, which uses the previous
+        # points.
+        if JuMP.is_solved_and_feasible(lp_model)
+            x .= JuMP.value.(lp_var)
+            λ[nlp.eq_indices] .= JuMP.dual.(lp_equality)
+            λ[nlp.ineq_indices] .= JuMP.dual.(lp_inequality)
+        end
+
         iter_count = i
     end
     # TODO: Run a Newton solve to clean up primal tolerance
@@ -298,16 +369,17 @@ end
 # TODO: Move this import
 import HiGHS
 
-function _solve_penalized_relaxation(gm::GasModels.AbstractGasModel)::Dict{JuMP.VariableRef,Float64}
+function _solve_penalized_relaxation(
+    gm::GasModels.AbstractGasModel;
+    tol = 1e-6,
+)::Dict{JuMP.VariableRef,Float64}
     model, refmap = JuMP.copy_model(gm.model)
-    # TODO: Allow solver and options to be specified
-    slpopt = _SLP.Optimizer(HiGHS.Optimizer)
+    # TODO: More systematic handling of options
+    slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol)
     original_variables = JuMP.all_variables(model)
     JuMP.@objective(model, Min, 0.0)
     JuMP.relax_with_penalty!(model)
     x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(model))
-    display(x0)
-    display(JuMP.objective_function(model))
     result = _SLP.run_slp(slpopt, model, x0)
     @assert result.termination_status == JuMP.LOCALLY_SOLVED
     @assert result.primal_status == JuMP.FEASIBLE_POINT
