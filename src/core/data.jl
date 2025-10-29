@@ -1,7 +1,7 @@
 # tools for working with GasModels internal data format
 
-"GasModels wrapper for the InfrastructureModels `apply!` function."
-function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
+"GasModels wrapper for the InfrastructureModels apply! function." 
+function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true) 
     _IM.apply!(func!, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
 end
 

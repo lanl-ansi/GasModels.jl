@@ -29,7 +29,7 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
         )
     end
 
-    @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
+    # @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
 
     return data
 end

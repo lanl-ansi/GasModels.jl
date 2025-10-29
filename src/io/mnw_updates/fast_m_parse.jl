@@ -275,7 +275,7 @@ function fast_m_parse(filepath::String, apply_corrections=true)
         check_non_zero(case)
         correct_p_mins!(case)
 
-        # per_unit_case_field_check!(case) #note: this is from core/data.jl, like check_connectivity and check_status does not fix things
+        per_unit_data_field_check!(case) #note: this is from core/data.jl, like check_connectivity and check_status does not fix things
         add_compressor_fields!(case)
 
         make_si_units!(case) # per unit, si transforms are not applying to the case
