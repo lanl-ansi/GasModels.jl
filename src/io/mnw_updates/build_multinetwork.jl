@@ -100,9 +100,9 @@ end
 #filepath function
 function build_multinetwork(static_file::AbstractString,
                             transient_file::AbstractString;
-                            total_time::Float = 86400.0,
-                            time_step::Float  = 3600.0,
-                            additional_time::Float = 0.0,
+                            total_time::Float64 = 86400.0,
+                            time_step::Float64  = 3600.0,
+                            additional_time::Float64 = 0.0,
                             periodic::Bool = false)
 
     open(static_file, "r") do s_io
@@ -121,9 +121,9 @@ end
 function build_multinetwork(static_io::IO,
                             transient_io::IO;
                             skip_correct::Bool = false,
-                            total_time::Float = 86400.0,
-                            time_step::Float  = 3600.0,
-                            additional_time::Float = 0.0,
+                            total_time::Float64 = 86400.0,
+                            time_step::Float64  = 3600.0,
+                            additional_time::Float64 = 0.0,
                             periodic::Bool = false)
 
     # ------------------------------------------------------------------
