@@ -158,10 +158,13 @@ function build_multinetwork(static_io::IO,
     apply_gm!(x -> x["time_series"] = deepcopy(ts),
               static_data; apply_to_subnetworks = false)
 
+    # temporary hack to disable warnings on 1-timestep data
+    _IM.logger_config!("error")
+    # warnings come from the IMs logger, not the GMs logger
     mnw = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
+    _IM.logger_config!("info")
 
     make_per_unit!(mnw)
-
     @assert (length(mnw["nw"])<=24) #prevent earlier error with too many timestamps 
 
     return mnw
