@@ -10,6 +10,25 @@ import JuMP
 import MathOptInterface as MOI
 import SparseArrays
 
+mutable struct Timer
+    construct_lp::Float64
+    construct_nlp::Float64
+    optimize_lp::Float64
+    evaluate_nlp::Float64
+    Timer() = new(0.0, 0.0, 0.0, 0.0)
+end
+
+function Base.show(io::IO, timer::Timer)
+    println(io, "==========================")
+    println(io, "SLP Timing Information (s)")
+    println(io, "--------------------------")
+    println(io, "  Construct NLP: $(@sprintf("%6.2f", timer.construct_nlp))")
+    println(io, "   Evaluate NLP: $(@sprintf("%6.2f", timer.evaluate_nlp))")
+    println(io, "  Construct  LP: $(@sprintf("%6.2f", timer.construct_lp))")
+    println(io, "   Optimize  LP: $(@sprintf("%6.2f", timer.optimize_lp))")
+    println(io, "==========================")
+end
+
 struct Optimizer
     lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
     max_iter::Int
@@ -202,8 +221,11 @@ function run_slp(
     model::JuMP.Model,
     x0::Dict;
     λ0::Union{Nothing,Dict} = nothing,
+    timer::Timer = Timer(),
 )
+    _t = time()
     nlp = NLP(model)
+    timer.construct_nlp += time() - _t
     # Note that obj_sense is different than the nlp's lagrangian_objective_factor.
     obj_sense = JuMP.objective_sense(model)
     nvar = length(nlp.variables)
@@ -265,12 +287,7 @@ function run_slp(
             dual_status = (all(infeas.dual .<= slp.tol) ? JuMP.FEASIBLE_POINT : JuMP.INFEASIBLE_POINT)
             break
         end
-        # 1. Obtain a linearization of all constraints at x
-        # 2. Construct a LP using the linearized constraints
-        # 3. Solve this LP with the specified solver
-        # 4. Extract a candidate point from the solution
-        # 5. Apply a trust region correction to the candidate point
-        # 6. Check convergence with new point
+        _t = time()
         obj_val = eval_objective(nlp, x)
         obj_grad = eval_objective_gradient(nlp, x)
         convals = eval_constraints(nlp, x)
@@ -282,8 +299,10 @@ function run_slp(
         jac = eval_constraint_jacobian(nlp, x)
         eq_jac = jac[nlp.eq_indices, :]
         ineq_jac = jac[nlp.ineq_indices, :]
+        timer.evaluate_nlp += time() - _t
 
         # TODO: Reuse a single model for performance
+        _t = time()
         lp_model = JuMP.Model(slp.lp_optimizer)
         JuMP.set_silent(lp_model)
         # TODO: Handle bounds separately from inequalities
@@ -304,7 +323,10 @@ function run_slp(
             trust_region,
             - trust_region_radius .<= lp_var .- x .<= trust_region_radius
         )
+        timer.construct_lp += time() - _t
+        _t = time()
         JuMP.optimize!(lp_model)
+        timer.optimize_lp += time() - _t
 
         # Update trust region size
         if JuMP.is_solved_and_feasible(lp_model)
@@ -358,6 +380,7 @@ function run_slp(
         objective_value = obj_val,
         primal_solution = Dict(zip(nlp.variables, x)),
         dual_solution = Dict(zip(nlp.constraints, λ)),
+        timer,
     )
 end
 
@@ -390,6 +413,7 @@ function _solve_penalized_relaxation(
     #@assert result.objective_value <= 1e-6 * ncon
     primal_values = map(x -> result.primal_solution[x], original_variables)
     original_vars = JuMP.all_variables(gm.model)
+    result = merge((; model, refmap), result)
     return Dict(zip(original_vars, primal_values)), result
 end
 
