@@ -35,7 +35,7 @@ function _create_time_series_block_no_interp(
         ts_block["timestamps"][i] = t
     end
 
-    # helper to create (or fetche) the leaf vector that will hold the timeseries values for a particular component_type → component_id → parameter triple
+    # helper to create (or fetch) the leaf vector that will hold the timeseries values for a particular component_type → component_id → parameter triple
     function _ensure_leaf!(root::Dict{String,Any},
                            comp_type::String, comp_id::String, param::String)
         # component level
@@ -67,15 +67,15 @@ function _create_time_series_block_no_interp(
     end
 
     for row in data
-        comp_type   = row["component_type"]
-        comp_id    = row["component_id"]
-        param  = row["parameter"]
+        comp_type   = row["component_type"] |> string   #these are substrings by default
+        comp_id    = row["component_id"] |> string
+        param  = row["parameter"] |> string
         value  = parse(Float64, row["value"])
         ts_raw = DateTime(split(row["timestamp"], "+")[1])
 
         idx = ts_index[ts_raw]
 
-        leaf = _ensure_leaf!(ts_block, string(comp_type), string(comp_id), string(param)) #these are substrings by default
+        leaf = _ensure_leaf!(ts_block, (comp_type), (comp_id), (param)) 
         leaf[idx] = value
     end
 
@@ -108,7 +108,6 @@ function build_multinetwork(static_file::AbstractString,
     open(static_file, "r") do s_io
         open(transient_file, "r") do t_io
             return build_multinetwork(s_io, t_io;
-                                      skip_correct = skip_correct,
                                       total_time   = total_time,
                                       time_step    = time_step,
                                       additional_time = additional_time,
@@ -120,7 +119,6 @@ end
 #io function (main)
 function build_multinetwork(static_io::IO,
                             transient_io::IO;
-                            skip_correct::Bool = false,
                             total_time::Float64 = 86400.0,
                             time_step::Float64  = 3600.0,
                             additional_time::Float64 = 0.0,
@@ -131,19 +129,12 @@ function build_multinetwork(static_io::IO,
     
     # these same functions are all applied in parse_files
     check_non_negativity(static_data)
-    check_pipeline_geometry!(static_data)    # added check for nonzero length/diameter and elevation_difference
+    check_pipeline_geometry!(static_data)  
     correct_p_mins!(static_data)
     add_base_values!(static_data) # moving this before per unit conversions
     per_unit_data_field_check!(static_data)
     add_compressor_fields!(static_data)
     
-    # safety asserts, could probably remove these
-    @assert (haskey(static_data, "base_density")&&static_data["base_density"]!==nothing) #make sure base quantities exist
-    @assert (haskey(static_data, "base_pressure")&&static_data["base_pressure"]!==nothing) 
-    @assert (haskey(static_data, "base_flow")&&static_data["base_flow"]!==nothing) 
-    @assert (haskey(static_data, "base_mass")&&static_data["base_mass"]!==nothing) 
-    @assert (haskey(static_data, "base_volume")&&static_data["base_volume"]!==nothing) 
-
     # --- Convert units in static network ---
     make_si_units!(static_data)
     propagate_topology_status!(static_data)
@@ -154,7 +145,7 @@ function build_multinetwork(static_io::IO,
     check_global_parameters(static_data)
     # omitted prep_transient_data
 
-    rows = parse_transient(transient_io)   # → Vector{Dict{String,Any}}
+    rows = parse_transient(transient_io)   # → Vector{Dict{String,Any}}, this is the same one used by parse_files
 
     ts = make_time_series_block(rows;
                                 total_time      = total_time,
@@ -163,13 +154,14 @@ function build_multinetwork(static_io::IO,
                                 periodic        = periodic)
 
     #
-    # Attach timeseries block to static data
+    # Attach timeseries block to static data (same method as parse_files)
     apply_gm!(x -> x["time_series"] = deepcopy(ts),
               static_data; apply_to_subnetworks = false)
 
     mnw = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
 
     make_per_unit!(mnw)
+
     @assert (length(mnw["nw"])<=24) #prevent earlier error with too many timestamps 
 
     return mnw
