@@ -3,10 +3,7 @@
 # ----------------------------------------------------------------------
 function _create_time_series_block_no_interp(
         data::Vector{Dict{String,Any}}; 
-        total_time::Float64   = 86400.0, #might be able to remove unused calls here
         time_step::Float64    = 3600.0,
-        additional_time::Float64 = 0.0,
-        periodic::Bool        = false,
     )::Dict{String,Any}
 
     raw_ts = DateTime[]
@@ -84,34 +81,23 @@ end
 
 # forward arguments to _create_time.... with accounting for single timestep
 function make_time_series_block(csv_rows; total_time=86400.0,
-                               time_step=3600.0,
-                               additional_time=0.0,
-                               periodic=false)
+                               time_step=3600.0)
     if length(unique(r["timestamp"] for r in csv_rows)) == 1
         @warn "Only one timestamp found – a 1‑step multinetwork will be created."
     end
-    return _create_time_series_block_no_interp(csv_rows; #note: this throws a big warning block on single timestep data. figure out how to remove
-                                     total_time      = total_time,
-                                     time_step       = time_step,
-                                     additional_time = additional_time,
-                                     periodic        = periodic)
+    return _create_time_series_block_no_interp(csv_rows; #note: this throws a big warning block on single timestep data when logger is enabled
+                                     time_step       = time_step)
 end
 
 #filepath function
 function build_multinetwork(static_file::AbstractString,
                             transient_file::AbstractString;
-                            total_time::Float64 = 86400.0,
-                            time_step::Float64  = 3600.0,
-                            additional_time::Float64 = 0.0,
-                            periodic::Bool = false)
+                            time_step::Float64  = 3600.0)
 
     open(static_file, "r") do s_io
         open(transient_file, "r") do t_io
             return build_multinetwork(s_io, t_io;
-                                      total_time   = total_time,
-                                      time_step    = time_step,
-                                      additional_time = additional_time,
-                                      periodic = periodic)
+                                      time_step    = time_step)
         end
     end
 end
@@ -119,9 +105,7 @@ end
 #io function (main)
 function build_multinetwork(static_io::IO,
                             transient_io::IO;
-                            total_time::Float64 = 86400.0,
                             time_step::Float64  = 3600.0,
-                            additional_time::Float64 = 0.0,
                             periodic::Bool = false)
 
     # ------------------------------------------------------------------
@@ -148,10 +132,7 @@ function build_multinetwork(static_io::IO,
     rows = parse_transient(transient_io)   # → Vector{Dict{String,Any}}, this is the same one used by parse_files
 
     ts = make_time_series_block(rows;
-                                total_time      = total_time,
-                                time_step       = time_step,
-                                additional_time = additional_time,
-                                periodic        = periodic)
+                                time_step       = time_step)
 
     #
     # Attach timeseries block to static data (same method as parse_files)
