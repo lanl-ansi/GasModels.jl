@@ -40,7 +40,7 @@ function _create_time_series_block_no_interp(
             root[comp_type] = Dict{String,Any}()
         elseif !(root[comp_type] isa Dict)
             Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$comp_type\" is both a scalar and a container")
+                "Inconsistent column naming – \"$comp_type\" is both a parameter and a container")
         end
         comp_type_dict = root[comp_type]
 
@@ -49,7 +49,7 @@ function _create_time_series_block_no_interp(
             comp_type_dict[comp_id] = Dict{String,Any}()
         elseif !(comp_type_dict[comp_id] isa Dict)
             Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$comp_id\" is both a scalar and a container")
+                "Inconsistent column naming – \"$comp_id\" is both a parameter and a container")
         end
         id_dict = comp_type_dict[comp_id]
 
@@ -58,7 +58,7 @@ function _create_time_series_block_no_interp(
             id_dict[param] = Vector{Any}(undef, n_steps)
         elseif !(id_dict[param] isa Vector)
             Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$param\" is both a container and a scalar")
+                "Inconsistent column naming – \"$param\" is both a container and a parameter")
         end
         return id_dict[param]   # the leaf vector
     end
@@ -85,7 +85,7 @@ function make_time_series_block(csv_rows; total_time=86400.0,
     if length(unique(r["timestamp"] for r in csv_rows)) == 1
         @warn "Only one timestamp found – a 1‑step multinetwork will be created."
     end
-    return _create_time_series_block_no_interp(csv_rows; #note: this throws a big warning block on single timestep data when logger is enabled
+    return _create_time_series_block_no_interp(csv_rows; 
                                      time_step       = time_step)
 end
 
@@ -102,7 +102,6 @@ function build_multinetwork(static_file::AbstractString,
     end
 end
 
-#io function (main)
 function build_multinetwork(static_io::IO,
                             transient_io::IO;
                             time_step::Float64  = 3600.0,
@@ -111,7 +110,7 @@ function build_multinetwork(static_io::IO,
     # ------------------------------------------------------------------
     static_data = parse_file(static_io, skip_correct=true)
     
-    # these same functions are all applied in parse_files
+    # these same functions are applied in parse_files
     check_non_negativity(static_data)
     check_pipeline_geometry!(static_data)  
     correct_p_mins!(static_data)
@@ -119,15 +118,13 @@ function build_multinetwork(static_io::IO,
     per_unit_data_field_check!(static_data)
     add_compressor_fields!(static_data)
     
-    # --- Convert units in static network ---
+    # --- convert units in static network ---
     make_si_units!(static_data)
     propagate_topology_status!(static_data)
-    correct_f_bounds!(static_data)
     check_connectivity(static_data)
     check_status(static_data)
     check_edge_loops(static_data)
     check_global_parameters(static_data)
-    # omitted prep_transient_data
 
     rows = parse_transient(transient_io)   # → Vector{Dict{String,Any}}, this is the same one used by parse_files
 
@@ -139,14 +136,12 @@ function build_multinetwork(static_io::IO,
     apply_gm!(x -> x["time_series"] = deepcopy(ts),
               static_data; apply_to_subnetworks = false)
 
-    # temporary hack to disable warnings on 1-timestep data
-    _IM.logger_config!("error")
-    # warnings come from the IMs logger, not the GMs logger
+    _IM.logger_config!("error") #temporarily reduce logger level
     mnw = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
     _IM.logger_config!("info")
 
+    correct_f_bounds!(mnw)
     make_per_unit!(mnw)
-    @assert (length(mnw["nw"])<=24) #prevent earlier error with too many timestamps 
 
     return mnw
 end
