@@ -69,6 +69,8 @@ include("common.jl")
     include("storage.jl")
 
     include("transient.jl")
+    
+    include("build_mnw.jl")
 
     # test gaslib-582 dwp gf
     include("debug.jl")
