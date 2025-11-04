@@ -254,11 +254,13 @@ function run_slp(
     termination_status = nothing
     primal_status = nothing
     dual_status = nothing
+    dx = fill(NaN, nvar)
+    lp_status = "N/A"
     for i in 1:slp.max_iter
         infeas = eval_infeasibilities(nlp, x, λ)
         obj_val = eval_objective(nlp, x)
         if (iter_count % 10) == 0
-            println("iter    objective   inf_pr    inf_du   inf_comp  TR_radius")
+            println("iter    objective   inf_pr    inf_du   inf_comp   ||d||    TR_radius  LP_status")
         end
         @assert all(infeas.primal .>= 0.0)
         @assert all(infeas.dual .>= 0.0)
@@ -269,7 +271,11 @@ function run_slp(
             @sprintf("%10.2e", maximum(infeas.primal)),
             @sprintf("%10.2e", maximum(infeas.dual)),
             @sprintf("%10.2e", maximum(infeas.complementarity)),
+            # TODO: I would like to make this the dx _computed_ at this step,
+            # not the previous dx...
+            @sprintf("%10.2e", maximum(abs.(dx))),
             @sprintf("%11.2e", trust_region_radius),
+            @sprintf("%11s", lp_status),
         ]
         log_line = join(log_items)
         println(log_line)
@@ -331,6 +337,8 @@ function run_slp(
         # Update trust region size
         if JuMP.is_solved_and_feasible(lp_model)
             xnew = JuMP.value.(lp_var)
+            dx .= xnew .- x
+            lp_status = "feasible"
             ratio = (
                 (merit_function(nlp, xnew) - merit_function(nlp, x))
                 / (
@@ -348,6 +356,8 @@ function run_slp(
                 trust_region_radius = max(trust_region_radius * shrink_factor, min_trust_region_radius)
             end
         else
+            dx .= 0.0
+            lp_status = "infeasible"
             # Increase trust region size
             # I'm copying this iteration-dependent update from Luke's code.
             if i < 10
@@ -397,10 +407,11 @@ import HiGHS
 function _solve_penalized_relaxation(
     gm::GasModels.AbstractGasModel;
     tol = 1e-6,
+    max_iter = 100,
 )::Tuple{Dict{JuMP.VariableRef,Float64},Any}
     model, refmap = JuMP.copy_model(gm.model)
     # TODO: More systematic handling of options
-    slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol)
+    slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol, max_iter)
     original_variables = JuMP.all_variables(model)
     JuMP.@objective(model, Min, 0.0)
     JuMP.relax_with_penalty!(model)
