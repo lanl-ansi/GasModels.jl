@@ -33,13 +33,15 @@ struct Optimizer
     lp_optimizer # This should be either the OptimizerWithAttributes or the optimizer constructor
     max_iter::Int
     tol::Float64
+    init_trust_region::Float64
     function Optimizer(
         # Can't provide a default because no solvers are dependencies of GasModels
         lp_optimizer;
         max_iter = 100,
         tol = 1e-6,
+        init_trust_region = 10.0,
     )
-        return new(lp_optimizer, max_iter, tol)
+        return new(lp_optimizer, max_iter, tol, init_trust_region)
     end
 end
 
@@ -238,7 +240,7 @@ function run_slp(
 
     # Trust region parameters
     # TODO: Make the initial TRR configurable
-    nominal_trust_region_radius = 10.0
+    nominal_trust_region_radius = slp.init_trust_region
     trust_region_radius = nominal_trust_region_radius
     max_trust_region_radius = 5 * nominal_trust_region_radius
     min_trust_region_radius = 1e-3
@@ -408,10 +410,11 @@ function _solve_penalized_relaxation(
     gm::GasModels.AbstractGasModel;
     tol = 1e-6,
     max_iter = 100,
+    init_trust_region = 10.0,
 )::Tuple{Dict{JuMP.VariableRef,Float64},Any}
     model, refmap = JuMP.copy_model(gm.model)
     # TODO: More systematic handling of options
-    slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol, max_iter)
+    slpopt = _SLP.Optimizer(HiGHS.Optimizer; tol, max_iter, init_trust_region)
     original_variables = JuMP.all_variables(model)
     JuMP.@objective(model, Min, 0.0)
     JuMP.relax_with_penalty!(model)
