@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # refactored version of timeseries block from parse_files with no splining/interpolation
 # ----------------------------------------------------------------------
-function _create_time_series_block_no_interp(
+function _create_tsb(
         data::Vector{Dict{String,Any}}; 
         time_step::Float64    = 3600.0,
     )::Dict{String,Any}
@@ -85,7 +85,7 @@ function make_time_series_block(csv_rows; total_time=86400.0,
     if length(unique(r["timestamp"] for r in csv_rows)) == 1
         @warn "Only one timestamp found – a 1‑step multinetwork will be created."
     end
-    return _create_time_series_block_no_interp(csv_rows; 
+    return _create_tsb(csv_rows; 
                                      time_step       = time_step)
 end
 

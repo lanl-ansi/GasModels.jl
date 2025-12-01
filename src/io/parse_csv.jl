@@ -12,6 +12,7 @@ function parse_csv(filename::String)::Dict{String,Any}
 end
 
 function parse_csv(io::IO)::Dict{String,Any}
+    """parses csv data into gasmodels structure"""
     nw = Dict{String,Any}()
     sizehint!(nw, 24)  # expecting 24 hours to be the most common so this allows for some preallocation
     

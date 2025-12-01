@@ -10,8 +10,6 @@ end
 function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
 
-    #@assert !occursin("compressor", raw) "Timeseries file cannot contain compressor information. Move this data into the base case file."
-
     data = []
     timestamps = Set{String}()
     for line in raw[2:end]
@@ -28,8 +26,6 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
             ),
         )
     end
-
-    # @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
 
     return data
 end

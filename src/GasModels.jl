@@ -52,7 +52,6 @@ module GasModels
     include("io/gaslib.jl")
     include("io/matgas.jl")
     include("io/transient.jl")
-    include("io/mnw_updates/parse_csv.jl") 
     include("io/mnw_updates/build_multinetwork.jl") #new build mnw function
 
     include("core/base.jl")
