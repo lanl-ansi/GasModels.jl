@@ -222,26 +222,26 @@ These components model producers (providers) of natural gas.
 
 These components are used to model locations which can store and release natural gas.
 
-| Variable                 | Type    | Name                     | Standard Units (SI) | United States Customary Units | Required           | Description                                                     |
-| ------------------------ | ------- | ------------------------ | ------------------- | ----------------------------- | ------------------ | --------------------------------------------------------------- |
-| id                       | Int     | Storage id               |                     |                               | Y | Unique id for storage                                           |
-| junction_id              | Int     | Junction id              |                     |                               | Y | Unique id of Junction to which component is connected           |
-| pressure_nominal         | Float64 | Nominal pressure         | Pascal              | PSI                           | Y | pressure at the storage                                         |
-| flow\_injection\_rate\_min  | Float64 | Minimum injection rate   | kg/s                | MMSCFD                        | Y | Minimum flow injection rate                                     |
-| flow\_injection\_rate\_max  | Float64 | Maximum injection rate   | kg/s                | MMSCFD                        | Y | Maximum flow injection rate                                     |
-| flow\_withdrawal\_rate\_min | Float64 | Minimum withdrawal rate  | kg/s                | MMSCFD                        | Y | Minimum flow withdrawal rate                                    |
-| flow\_withdrawal\_rate\_max | Float64 | Maximum withdrawal rate  | kg/s                | MMSCFD                        | Y | Maximum flow withdrawal rate                                    |
-| capacity                 | Float64 | Capacity                 | kg                  | MMSCF                         | Y | Capacity of the storage                                         |
-| status                   | Int     | Storage status           |                     |                               | Y | Determines if the component is active in the model              |
-| name                     | String  | Storage Name             |                     |                               |                    | Name of the Storage point                                       |
-| owner_name               | String  | Owner Name               |                     |                               |                    | Name of the Storage point owner                                 |
-| storage_type             | String  | Storage type             |                     |                               |                    | Type of storage (aquifer, salt cavern, or depleted oil and gas) |
-| daily\_withdrawal\_max     | Float64 | Daily withdrawal rate    | kg/s                | MMSCFD                        |                    | Maximum daily withdrawal                                        |
-| seasonal\_withdrawal\_max  | Float64 | Seasonal withdrawal rate | kg/s                | MMSCFD                        |                    | Maximum Seasonal withdrawal                                     |
-| base\_gas\_capacity        | Float64 | Base gas capacity        | kg                  | MMSCF                         |                    | Base gas capacity                                               |
-| working\_gas\_capacity     | Float64 | Working gas capacity     | kg                  | MMSCF                         |                    | Working gas capacity                                            |
-| total\_field\_capacity     | Float64 | Total field capacity     | kg                  | MMSCF                         |                    | Total field gas capacity                                        |
-| edi_id                   | Int     | EDI ID                   |                     |                               |                    | Unique ID to allow easy input of near-real-time EDI data        |
+| Variable                    | Type    | Name                     | Standard Units (SI) | United States Customary Units | Required           | Description                                                     |
+| --------------------------- | ------- | ------------------------ | ------------------- | ----------------------------- | ------------------ | --------------------------------------------------------------- |
+| id                          | Int     | Storage id               |                     |                               | Y                  | Unique id for storage                                           |
+| junction\_id                | Int     | Junction id              |                     |                               | Y                  | Unique id of Junction to which component is connected           |
+| pressure\_nominal           | Float64 | Nominal pressure         | Pascal              | PSI                           | Y                  | pressure at the storage                                         |
+| flow\_injection\_rate\_min  | Float64 | Minimum injection rate   | kg/s                | MMSCFD                        | Y                  | Minimum flow injection rate                                     |
+| flow\_injection\_rate\_max  | Float64 | Maximum injection rate   | kg/s                | MMSCFD                        | Y                  | Maximum flow injection rate                                     |
+| flow\_withdrawal\_rate\_min | Float64 | Minimum withdrawal rate  | kg/s                | MMSCFD                        | Y                  | Minimum flow withdrawal rate                                    |
+| flow\_withdrawal\_rate\_max | Float64 | Maximum withdrawal rate  | kg/s                | MMSCFD                        | Y                  | Maximum flow withdrawal rate                                    |
+| capacity                    | Float64 | Capacity                 | kg                  | MMSCF                         | Y                  | Capacity of the storage                                         |
+| status                      | Int     | Storage status           |                     |                               | Y                  | Determines if the component is active in the model              |
+| name                        | String  | Storage Name             |                     |                               |                    | Name of the Storage point                                       |
+| owner\_name                 | String  | Owner Name               |                     |                               |                    | Name of the Storage point owner                                 |
+| storage\_type               | String  | Storage type             |                     |                               |                    | Type of storage (aquifer, salt cavern, or depleted oil and gas) |
+| daily\_withdrawal\_max      | Float64 | Daily withdrawal rate    | kg/s                | MMSCFD                        |                    | Maximum daily withdrawal                                        |
+| seasonal\_withdrawal\_max   | Float64 | Seasonal withdrawal rate | kg/s                | MMSCFD                        |                    | Maximum Seasonal withdrawal                                     |
+| base\_gas\_capacity         | Float64 | Base gas capacity        | kg                  | MMSCF                         |                    | Base gas capacity                                               |
+| working\_gas\_capacity      | Float64 | Working gas capacity     | kg                  | MMSCF                         |                    | Working gas capacity                                            |
+| total\_field\_capacity      | Float64 | Total field capacity     | kg                  | MMSCF                         |                    | Total field gas capacity                                        |
+| edi\_id                     | Int     | EDI ID                   |                     |                               |                    | Unique ID to allow easy input of near-real-time EDI data        |
 
 ## Network Parameters (mgc._parameter_)
 
