@@ -69,7 +69,7 @@
     @testset "check solution summary" begin
         gas_file = "../test/data/matgas/gaslib-40-E.m"
         gas_data = GasModels.parse_file(gas_file)
-        result = run_gf(gas_file, CRDWPGasModel, misocp_solver)
+        result = solve_gf(gas_file, CRDWPGasModel, misocp_solver)
         output = sprint(GasModels.summary, result["solution"])
 
         line_count = count(c -> c == '\n', output)

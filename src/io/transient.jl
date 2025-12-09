@@ -10,9 +10,13 @@ end
 function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
 
+    #@assert !occursin("compressor", raw) "Timeseries file cannot contain compressor information. Move this data in the base case file."
+
     data = []
+    timestamps = Set{String}()
     for line in raw[2:end]
         timestamp, component_type, component_id, parameter, value = split(line, ",")
+        push!(timestamps, timestamp)
         push!(
             data,
             Dict(
@@ -24,6 +28,8 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
             ),
         )
     end
+
+    @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
 
     return data
 end
@@ -56,6 +62,7 @@ function parse_files(
 )
     periodic = true
 
+    # --- Read static network data ---
     if static_filetype == "m"
         static_data = GasModels.parse_matgas(static_io)
     elseif static_filetype == "json"
@@ -64,12 +71,14 @@ function parse_files(
         Memento.error(_LOGGER, "only .m and .json network data files are supported")
     end
 
+    # --- Validate static network before unit conversion ---
     check_non_negativity(static_data)
+    check_pipeline_geometry!(static_data)    # added check for nonzero length/diameter and elevation_difference
     correct_p_mins!(static_data)
-
     per_unit_data_field_check!(static_data)
     add_compressor_fields!(static_data)
 
+    # --- Convert units in static network ---
     make_si_units!(static_data)
     # select_largest_component!(static_data)
     propagate_topology_status!(static_data)
@@ -81,19 +90,33 @@ function parse_files(
     check_global_parameters(static_data)
     prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
 
+    # --- Read and convert transient data ---
     transient_data = parse_transient(transient_io)
     make_si_units!(transient_data, static_data)
 
+    # --- Build time series ---
     time_series_block = _create_time_series_block(
-        transient_data, total_time = total_time, time_step = time_step,
-        additional_time = additional_time, periodic = periodic)
+        transient_data,
+        total_time = total_time,
+        time_step = time_step,
+        additional_time = additional_time,
+        periodic = periodic,
+    )
 
-    apply_gm!(x -> x["time_series"] = deepcopy(time_series_block), static_data; apply_to_subnetworks = false)
+    apply_gm!(
+        x -> x["time_series"] = deepcopy(time_series_block),
+        static_data;
+        apply_to_subnetworks = false
+    )
+
     mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
+
+    # --- Final per-unit conversion ---
     make_per_unit!(mn_data)
 
     return mn_data
 end
+
 
 "function to get the maximum pipe id"
 function _get_max_pipe_id(pipes::Dict{String,Any})::Int

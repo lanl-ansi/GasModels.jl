@@ -1,7 +1,7 @@
 # Definitions for running a pipe expansion problem to maximize load
 
 "entry point into running the gas flow expansion planning with load shedding"
-function run_nels(file, model_type, optimizer; kwargs...)
+function solve_nels(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,

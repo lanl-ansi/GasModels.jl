@@ -1,7 +1,7 @@
 # Definitions for running a pipe expansion problem
 
 "entry point into running the gas flow feasability problem"
-function run_ne(file, model_type, optimizer; kwargs...)
+function solve_ne(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,

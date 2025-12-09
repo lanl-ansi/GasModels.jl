@@ -37,8 +37,44 @@ end
 
 Data integrity checks
 """
+
+#check that no pipes have diameter or length = 0
+#check that no elevation change is larger than the length of the pipe
+function check_pipeline_geometry!(data::Dict{String,Any})
+    for (pipe_id, pipe) in data["pipe"]
+        length = pipe["length"]
+        diameter = pipe["diameter"]
+
+        if length <= 0.0
+            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive length: $length")
+        end
+        if diameter <= 0.0
+            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive diameter: $diameter")
+        end
+
+        # Convert junction indices to strings before lookup
+        fr_id = string(pipe["fr_junction"])
+        to_id = string(pipe["to_junction"])
+
+        if haskey(data["junction"], fr_id) && haskey(data["junction"], to_id)
+            f_junc = data["junction"][fr_id]
+            t_junc = data["junction"][to_id]
+
+            if haskey(f_junc, "elevation") && haskey(t_junc, "elevation")
+                dz = abs(f_junc["elevation"] - t_junc["elevation"])
+                if dz > length
+                    Memento.error(_LOGGER, "Pipeline $pipe_id has elevation change ($dz) greater than length ($length)")
+                end
+            end
+        else
+            Memento.warn(_LOGGER, "Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
+        end
+    end
+end
+
 function correct_network_data!(data::Dict{String,Any})
     check_non_negativity(data)
+    check_pipeline_geometry!(data) #geo must be checked before per-unit conversion
     check_non_zero(data)
     check_rouge_junction_ids(data)
     correct_p_mins!(data)
