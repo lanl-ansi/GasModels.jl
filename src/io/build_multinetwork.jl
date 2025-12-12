@@ -108,7 +108,7 @@ function build_multinetwork(static_io::IO,
                             periodic::Bool = false)
 
     # ------------------------------------------------------------------
-    static_data = parse_file(static_io, skip_correct=true)
+    static_data = parse_file(static_io, skip_correct=false)
     
     # these same functions are applied in parse_files
     check_non_negativity(static_data)
