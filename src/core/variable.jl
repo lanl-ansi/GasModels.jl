@@ -296,8 +296,6 @@ end
 "variables associated with demand"
 function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
     withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
-    println("withdrawal_type from variable_load_mass_flow:")
-    println(withdrawal_type)
     fl = var(gm, nw)[:fl] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_delivery)],
         base_name="$(nw)_fl",
@@ -327,8 +325,6 @@ end
 "variables associated with transfer"
 function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
     withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
-    println("withdrawal_type from variable_transfer_mass_flow:")
-    println(withdrawal_type)
     ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_transfer)],
         base_name="$(nw)_ft",
