@@ -829,7 +829,6 @@ const _matlab_field_order = Dict{String,Array}(
 
 "order of required global parameters"
 const _matlab_global_params_order_required = [
-    "name",
     "gas_specific_gravity",
     "specific_heat_capacity_ratio",
     "temperature",
@@ -838,7 +837,7 @@ const _matlab_global_params_order_required = [
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit", "version", "pipeline_id", "base_volume", "economic_weighting"]
 
 
 "list of units of meta data fields"
@@ -941,7 +940,6 @@ function _gasmodels_to_matgas_string(
     (data["is_english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
-    push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
         line = isa(data[param], Float64) ?
             Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
@@ -949,10 +947,10 @@ function _gasmodels_to_matgas_string(
         haskey(_units[units], param) && (line *= "  % $(_units[units][param])")
         push!(lines, line)
     end
+    pipeline_name = data["pipeline_name"]
     push!(lines, "mgc.units = '$units';", "")
+    push!(lines, "mgc.pipeline_name = '$pipeline_name';", "")
 
-    push!(lines,
-        "%% optional global data (that was either provided or computed based on required global data)")
     for param in _matlab_global_params_order_optional
         line = isa(data[param], Float64) ?
             Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
