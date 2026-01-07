@@ -54,6 +54,23 @@ end
 
 @testset "test ls case" begin
     mn_data = build_multinetwork("../test/data/matgas/case-6-ls.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
+    # set parameters to coax the solver to a better state
+    mn_data["nw"]["32"]["receipt"]["1"]["injection_nominal"] = 1.373485013568335e-7
+    mn_data["nw"]["32"]["transfer"]["1"]["injection_nominal"] = 0
+    mn_data["nw"]["1"]["transfer"]["1"]["injection_nominal"] = 0
+    mn_data["nw"]["1"]["compressor"]["1"]["flow_max"] = 1.3734850135686312e-7
+    mn_data["nw"]["2"]["transfer"]["1"]["injection_nominal"] = 0
+    mn_data["nw"]["2"]["transfer"]["2"]["injection_nominal"] = 0
+    mn_data["nw"]["2"]["transfer"]["3"]["injection_nominal"] = 0
+    mn_data["nw"]["2"]["transfer"]["4"]["injection_nominal"] = 0
+    mn_data["nw"]["2"]["junction"]["4"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["2"]["junction"]["3"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["2"]["junction"]["2"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["2"]["junction"]["1"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["53"]["junction"]["4"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["53"]["junction"]["3"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["53"]["junction"]["2"]["p_nominal"] = 1.3334 
+    mn_data["nw"]["53"]["junction"]["1"]["p_nominal"] = 1.3334 
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
