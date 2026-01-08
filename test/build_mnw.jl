@@ -28,7 +28,7 @@ end
 @testset "test ls-priority case" begin
     mn_data = build_multinetwork("../test/data/matgas/case-6-ls-priority.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     # set parameters to coax the solver to a better state
-    if Sys.isapple
+    if Sys.isapple()
         mn_data["nw"]["1"]["transfer"]["1"]["injection_nominal"] = 0
         mn_data["nw"]["1"]["transfer"]["2"]["injection_nominal"] = 0
         mn_data["nw"]["1"]["transfer"]["3"]["injection_nominal"] = 0
