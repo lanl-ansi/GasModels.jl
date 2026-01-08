@@ -56,7 +56,7 @@ end
 # end
 
 # exclude julia 1.6 from tests
-if (Sys.isapple() && VERSION > v"1.7") || !Sys.isapple()
+if !Sys.isapple()
     @testset "test ls case" begin
         mn_data = build_multinetwork("../test/data/matgas/case-6-ls.m", 
                                     "../test/data/transient/time-series-case-6a.csv", 
