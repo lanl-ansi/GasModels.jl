@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+GasModels = "5e113713-6c35-5477-b766-e1109486666f"
 
 [compat]
 Documenter = "0.27"
