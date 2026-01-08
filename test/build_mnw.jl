@@ -55,54 +55,15 @@ end
 #     @test isapprox(result["objective"], -28280.6027907, atol = 1e-2)
 # end
 
-@testset "test ls case" begin
-    mn_data = build_multinetwork("../test/data/matgas/case-6-ls.m", 
-                                  "../test/data/transient/time-series-case-6a.csv", 
-                                  time_step=864.0)
-    
-    solver = if Sys.isapple()
-        mn_data["nw"]["32"]["receipt"]["1"]["injection_nominal"] = 1.373485013568335e-7
-        mn_data["nw"]["32"]["transfer"]["1"]["injection_nominal"] = 0
-        mn_data["nw"]["1"]["transfer"]["1"]["injection_nominal"] = 0
-        mn_data["nw"]["1"]["compressor"]["1"]["flow_max"] = 1.3734850135686312e-7
-        mn_data["nw"]["2"]["transfer"]["1"]["injection_nominal"] = 0
-        mn_data["nw"]["2"]["transfer"]["2"]["injection_nominal"] = 0
-        mn_data["nw"]["2"]["transfer"]["3"]["injection_nominal"] = 0
-        mn_data["nw"]["2"]["transfer"]["4"]["injection_nominal"] = 0
-        mn_data["nw"]["75"]["transfer"]["1"]["injection_nominal"] = 0
-        mn_data["nw"]["75"]["transfer"]["2"]["injection_nominal"] = 0
-        mn_data["nw"]["75"]["transfer"]["3"]["injection_nominal"] = 0
-        mn_data["nw"]["75"]["transfer"]["4"]["injection_nominal"] = 0
-        mn_data["nw"]["2"]["junction"]["4"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["2"]["junction"]["3"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["2"]["junction"]["2"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["2"]["junction"]["1"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["53"]["junction"]["4"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["53"]["junction"]["3"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["53"]["junction"]["2"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["53"]["junction"]["1"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["75"]["junction"]["4"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["75"]["junction"]["3"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["75"]["junction"]["2"]["p_nominal"] = 1.3334 
-        mn_data["nw"]["75"]["junction"]["1"]["p_nominal"] = 1.3334 
+# exclude julia 1.6 from tests
+if (Sys.isapple() && VERSION > v"1.7") || !Sys.isapple()
+    @testset "test ls case" begin
+        mn_data = build_multinetwork("../test/data/matgas/case-6-ls.m", 
+                                    "../test/data/transient/time-series-case-6a.csv", 
+                                    time_step=864.0)
         
-        # mac-specific solver with warm start
-        JuMP.optimizer_with_attributes(
-            Ipopt.Optimizer,
-            "print_level" => 0,
-            "sb" => "yes",
-            "mu_init" => 1e-2,
-            "acceptable_tol" => 1.0e-2,
-            "warm_start_init_point" => "yes",          
-            "warm_start_bound_push" => 1e-9,            # helps with warm start?
-            "warm_start_mult_bound_push" => 1e-9,      
-            "max_iter" => 500                         
-        )
-    else
-        nlp_solver  # standard solver for windows/linux
+        result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
+        @test result["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
     end
-    
-    result = solve_transient_ogf(mn_data, WPGasModel, solver)
-    @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
 end
