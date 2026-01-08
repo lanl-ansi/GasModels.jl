@@ -829,7 +829,6 @@ const _matlab_field_order = Dict{String,Array}(
 
 "order of required global parameters"
 const _matlab_global_params_order_required = [
-    "name",
     "gas_specific_gravity",
     "specific_heat_capacity_ratio",
     "temperature",
@@ -838,7 +837,7 @@ const _matlab_global_params_order_required = [
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit", "version", "pipeline_id", "base_volume", "economic_weighting"]
 
 
 "list of units of meta data fields"
@@ -933,88 +932,74 @@ const rouge_junction_id_fields = Dict{String,Vector{String}}(
 
 "write to matgas"
 function _gasmodels_to_matgas_string(
-    data::Dict{String,Any};
-    units::String = "si",
-    include_extended::Bool = false,
-)::String
+        data::Dict{String,Any};
+        units::String = "si",
+        include_extended::Bool = false,
+    )::String
+
     (data["is_english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
-    push!(lines, "%% required global data")
     for param in _matlab_global_params_order_required
-        if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
-        else
-            line = "mgc.$(param) = $(data[param]);"
-        end
-        if haskey(_units[units], param)
-            line = "$line  % $(_units[units][param])"
-        end
-
+        line = isa(data[param], Float64) ?
+            Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
+            "mgc.$(param) = $(data[param]);"
+        haskey(_units[units], param) && (line *= "  % $(_units[units][param])")
         push!(lines, line)
     end
-    push!(lines, "mgc.units = \'$units\';")
-    push!(lines, "")
+    pipeline_name = data["pipeline_name"]
+    push!(lines, "mgc.units = '$units';", "")
+    push!(lines, "mgc.pipeline_name = '$pipeline_name';", "")
 
-    push!(
-        lines,
-        "%% optional global data (that was either provided or computed based on required global data)",
-    )
     for param in _matlab_global_params_order_optional
-        if isa(data[param], Float64)
-            line = Printf.@sprintf "mgc.%s = %.12g;" param data[param]
-        else
-            line = "mgc.$(param) = $(data[param]);"
-        end
-        if haskey(_units[units], param)
-            line = "$line  % $(_units[units][param])"
-        end
-
+        line = isa(data[param], Float64) ?
+            Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
+            "mgc.$(param) = $(data[param]);"
+        haskey(_units[units], param) && (line *= "  % $(_units[units][param])")
         push!(lines, line)
     end
     push!(lines, "")
 
+    #dict/vector helper
+    _entry(container, i) = container isa AbstractDict ? container["$i"] : container[i]
+
+    # ------------------------------------------------------------------------
     for data_type in _matlab_data_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
-            fields_header = []
-            for field in _matlab_field_order[data_type]
-                idxs = [parse(Int, i) for i in keys(data[data_type])]
-                if !isempty(idxs)
-                    check_id = idxs[1]
-                    if haskey(data[data_type]["$check_id"], field)
-                        push!(fields_header, field)
-                    end
+
+            fields_header = String[]
+            idxs = collect(eachindex(data[data_type]))
+            if !isempty(idxs)
+                first_id = idxs[1]
+                first_entry = _entry(data[data_type], first_id)
+                for field in _matlab_field_order[data_type]
+                    haskey(first_entry, field) && push!(fields_header, field)
                 end
             end
             push!(lines, "% $(join(fields_header, "\t"))")
 
+            # write the matrix
             push!(lines, "mgc.$data_type = [")
-            idxs = [parse(Int, i) for i in keys(data[data_type])]
             if !isempty(idxs)
                 for i in sort(idxs)
-                    entries = []
+                    entry = _entry(data[data_type], i)
+                    entries = String[]
                     for field in fields_header
-                        if haskey(data[data_type]["$i"], field)
-                            if isa(
-                                data[data_type]["$i"][field],
-                                Union{String,SubString{String}},
-                            )
-                                push!(entries, "\'$(data[data_type]["$i"][field])\'")
-                            elseif isa(data[data_type]["$i"][field], Float64)
-                                push!(
-                                    entries,
-                                    Printf.@sprintf "%.12g" data[data_type]["$i"][field]
-                                )
+                        if haskey(entry, field)
+                            val = entry[field]
+                            if isa(val, Union{String,SubString{String}})
+                                push!(entries, "\'$(val)\'")
+                            elseif isa(val, Float64)
+                                push!(entries, Printf.@sprintf("%.12g", val))
                             else
-                                push!(entries, "$(data[data_type]["$i"][field])")
+                                push!(entries, "$(val)")
                             end
                         else
-                            if field == "edi_id"
-                                push!(entries, Int(0))
-                            else
-                                Memento.error(_LOGGER, string("$(data_type) $(i) is missing field $(field)"))
-                            end
+                            # special handling for the optional edi_id column
+                            field == "edi_id" ? push!(entries, "0") :
+                                Memento.error(_LOGGER,
+                                    string("$(data_type) $(i) is missing field $(field)"))
                         end
                     end
                     push!(lines, "$(join(entries, "\t"))")
@@ -1024,6 +1009,7 @@ function _gasmodels_to_matgas_string(
         end
     end
 
+    # ------------------------------------------------------------------------
     if include_extended
         for data_type in _matlab_data_order
             if haskey(data, data_type)
@@ -1032,21 +1018,21 @@ function _gasmodels_to_matgas_string(
                     for col in keys(item) if !(col in _matlab_field_order[data_type])
                 ])
                 common_ext_cols = [
-                    col
-                    for
-                    col in all_ext_cols if
-                    all(col in keys(item) for item in values(data[data_type]))
+                    col for col in all_ext_cols
+                    if all(col in keys(item) for item in values(data[data_type]))
                 ]
 
                 if !isempty(common_ext_cols)
                     push!(lines, "%% $data_type data (extended)")
                     push!(lines, "%column_names% $(join(common_ext_cols, "\t"))")
                     push!(lines, "mgc.$(data_type)_data = [")
-                    for i in sort([parse(Int, i) for i in keys(data[data_type])])
-                        push!(
-                            lines,
-                            "\t$(join([data[data_type]["$i"][col] for col in sort(common_ext_cols)], "\t"))",
-                        )
+
+                    for i in sort(collect(eachindex(data[data_type])))
+                        row = [
+                            data[data_type][_key(i)][col]   # `_key` converts i → string key when needed
+                            for col in sort(common_ext_cols)
+                        ]
+                        push!(lines, "\t$(join(row, "\t"))")
                     end
                     push!(lines, "];\n")
                 end
@@ -1055,9 +1041,11 @@ function _gasmodels_to_matgas_string(
     end
 
     push!(lines, "end\n")
-
     return join(lines, "\n")
 end
+
+# ------------------------------------------------------------------------
+_key(i) = i isa Integer ? string(i) : i
 
 
 "writes data structure to matlab format"
