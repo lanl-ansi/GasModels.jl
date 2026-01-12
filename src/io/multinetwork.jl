@@ -142,6 +142,10 @@ function parse_multinetwork(static_io::IO,
 
     correct_f_bounds!(mnw)
     make_per_unit!(mnw)
+    
+    correct_network_data!(static_data)
+
+    mnw["nw"]["0"] = static_data
 
     return mnw
 end
