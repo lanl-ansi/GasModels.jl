@@ -50,6 +50,8 @@ include("common.jl")
 @testset "GasModels" begin
     include("data.jl")
 
+    include("build_mnw.jl")
+
     include("ogf.jl")
 
     include("ogf_comp_power_unconstrained.jl")
@@ -69,8 +71,6 @@ include("common.jl")
     include("storage.jl")
 
     include("transient.jl")
-    
-    include("build_mnw.jl")
 
     # test gaslib-582 dwp gf
     include("debug.jl")

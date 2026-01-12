@@ -2,6 +2,11 @@
 
 "entry point into running the ogf problem"
 function solve_ogf(file, model_type, optimizer; kwargs...)
+
+    if get(file, "multinetwork", false) && haskey(file, "nw") && haskey(file["nw"], "0")
+        return solve_ogf(file["nw"]["0"], model_type, optimizer; kwargs...)
+    end
+
     return run_model(
         file,
         model_type,
