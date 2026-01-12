@@ -83,7 +83,7 @@ end
 function make_time_series_block(csv_rows; total_time=86400.0,
                                time_step=3600.0)
     if length(unique(r["timestamp"] for r in csv_rows)) == 1
-        @warn "Only one timestamp found – a 1‑step multinetwork will be created. ⚠️ As of GMs 0.10.6, this formulation cannot be solved by `solve_ogf ⚠️`"
+        @warn "Only one timestamp found – a 1‑step multinetwork will be created"
     end
     return _create_tsb(csv_rows; 
                                      time_step       = time_step)
@@ -149,13 +149,3 @@ function parse_multinetwork(static_io::IO,
 
     return mnw
 end
-
-"""
-new workflow: build mnw:
-parse file, static data, no apply_corrections
-parse_csv
-call IM build mnw
-merge csv data into im timesteps
-apply apply_corrections
-return data
-"""

@@ -1,10 +1,3 @@
-#=
-workflow: call parse_file on the static data? will have to check that this will still work with the data checks removed
-call parse_csv (maybe rename to parse_timeseries?)
-call create_timeseries(static data, transient data)
-something in that should apply the data checks to the static file (reference existing code)
-=#
-
 function parse_csv(filename::String)::Dict{String,Any}
     open(filename, "r") do io
         return parse_csv(io)

@@ -50,7 +50,7 @@ include("common.jl")
 @testset "GasModels" begin
     include("data.jl")
 
-    include("build_mnw.jl")
+    include("mnw.jl")
 
     include("ogf.jl")
 
