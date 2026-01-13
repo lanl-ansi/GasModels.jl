@@ -239,7 +239,6 @@ function run_slp(
     iter_count = 0
 
     # Trust region parameters
-    # TODO: Make the initial TRR configurable
     nominal_trust_region_radius = slp.init_trust_region
     trust_region_radius = nominal_trust_region_radius
     max_trust_region_radius = 5 * nominal_trust_region_radius
@@ -399,7 +398,20 @@ end
 end
 
 function _get_start_value(gm::GasModels.AbstractGasModel)::Tuple{Dict{JuMP.VariableRef,Float64},Any}
-    x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(gm.model))
+    return _get_start_value(gm.model)
+end
+
+function _get_start_value(model::JuMP.Model)::Tuple{Dict{JuMP.VariableRef,Float64},Any}
+    x0 = Dict{JuMP.VariableRef,Float64}()
+    for x in JuMP.all_variables(model)
+        if JuMP.has_start_value(x)
+            x0[x] = JuMP.start_value(x)
+        elseif JuMP.has_lower_bound(x) && JuMP.has_upper_bound(x)
+            x0[x] = 0.5 * (JuMP.lower_bound(x) + JuMP.upper_bound(x))
+        else
+            x0[x] = 0.0
+        end
+    end
     return x0, nothing
 end
 
@@ -418,7 +430,7 @@ function _solve_penalized_relaxation(
     original_variables = JuMP.all_variables(model)
     JuMP.@objective(model, Min, 0.0)
     JuMP.relax_with_penalty!(model)
-    x0 = Dict(x => something(JuMP.start_value(x), 0.0) for x in JuMP.all_variables(model))
+    x0, _ = _get_start_value(model)
     result = _SLP.run_slp(slpopt, model, x0)
     #@assert result.termination_status == JuMP.LOCALLY_SOLVED
     #@assert result.primal_status == JuMP.FEASIBLE_POINT
@@ -431,8 +443,6 @@ function _solve_penalized_relaxation(
     return Dict(zip(original_vars, primal_values)), result
 end
 
-# TODO: At this high-level interface, how can I specify the initial guess?
-# - My only option is to specify it as a function...
 function solve_ogf(
     file,
     model_type,
