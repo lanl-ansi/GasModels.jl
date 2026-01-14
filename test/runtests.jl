@@ -79,4 +79,6 @@ include("common.jl")
     include("direction_valve.jl")
     include("direction_regulator.jl")
     include("direction_compressor.jl")
+
+    include("ogf_slp.jl")
 end
