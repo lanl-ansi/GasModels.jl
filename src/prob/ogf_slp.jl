@@ -444,26 +444,18 @@ function _solve_penalized_relaxation(
 end
 
 function solve_ogf(
-    file,
-    model_type,
+    file::String,
+    model_type::Type,
     optimizer::_SLP.Optimizer;
     # TODO: Allow keywords for this function
     _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
-    skip_correct = false,
-    ext = Dict{Symbol,Any}(),
-    setting = Dict{String,Any}(),
-    jump_model = JuMP.Model(),
     kwargs...,
 )
-    data = GasModels.parse_file(file; skip_correct)
+    data = GasModels.parse_file(file; skip_correct = false)
     gm = GasModels.instantiate_model(
         data,
         model_type,
         GasModels.build_ogf;
-        ref_extensions = [],
-        ext,
-        setting,
-        jump_model,
         kwargs...,
     )
 
