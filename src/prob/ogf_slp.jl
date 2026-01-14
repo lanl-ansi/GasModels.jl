@@ -34,14 +34,16 @@ struct Optimizer
     max_iter::Int
     tol::Float64
     init_trust_region::Float64
+    silent::Bool
     function Optimizer(
         # Can't provide a default because no solvers are dependencies of GasModels
         lp_optimizer;
         max_iter = 100,
         tol = 1e-6,
         init_trust_region = 10.0,
+        silent = false,
     )
-        return new(lp_optimizer, max_iter, tol, init_trust_region)
+        return new(lp_optimizer, max_iter, tol, init_trust_region, silent)
     end
 end
 
@@ -260,7 +262,7 @@ function run_slp(
     for i in 1:slp.max_iter
         infeas = eval_infeasibilities(nlp, x, λ)
         obj_val = eval_objective(nlp, x)
-        if (iter_count % 10) == 0
+        if (iter_count % 10) == 0 && !slp.silent
             println("iter    objective   inf_pr    inf_du   inf_comp   ||d||    TR_radius  LP_status")
         end
         @assert all(infeas.primal .>= 0.0)
@@ -279,7 +281,9 @@ function run_slp(
             @sprintf("%11s", lp_status),
         ]
         log_line = join(log_items)
-        println(log_line)
+        if !slp.silent
+            println(log_line)
+        end
         # TODO: I want the convergence check to happen at the end of the loop
         # so I actually check the last iteration.
         # I should refactor this into a "do-while"-like loop.
