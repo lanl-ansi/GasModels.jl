@@ -7,11 +7,7 @@
         result = GasModels._SLP.run_slp(slpopt, gm.model, x0)
         @test result.termination_status in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
         @test result.primal_status == JuMP.FEASIBLE_POINT
-        feas = true
-        for (con, viol) in JuMP.primal_feasibility_report(gm.model; point = result.primal_solution)
-            feas &= abs(viol) <= 1e-5
-        end
-        @test feas
+        @test isempty(JuMP.primal_feasibility_report(gm.model, result.primal_solution, atol = 1e-5))
     end
     @testset "test SLP solve_ogf" begin
         fname = "../test/data/matgas/case-6-no-power-limits.m"
