@@ -1,5 +1,8 @@
 """A customized sequential linear programming (SLP) algorithm for solving the
 optimal gas flow (OGF) problem.
+
+WARNING: Everything in the _SLP submodule is experimental and subject to change
+without notice. This includes APIs and performance of the SLP algorithm itself.
 """
 
 module _SLP
@@ -162,21 +165,6 @@ function eval_infeasibilities(nlp::NLP, x, λ)
     eq_violations = abs.(eq_values .- eq_rhs)
     ineq_violations = max.(ineq_values .- ineq_ubs, ineq_lbs .- ineq_values, 0.0)
 
-    # This is a "disaggregated" approach to handling slacks that can be inf.
-    #leq_indices = (ineq_lbs .== -Inf .&& ineq_ubs .!= Inf)
-    #geq_indices = (ineq_ubs .== Inf .&& ineq_lbs .!= -Inf)
-    #interval_indices = (ineq_lbs .!= -Inf .&& ineq_ubs .!= Inf)
-    ## Unclear where these multiplier signs should be enforced...
-    #@assert all(λ_ineq[leq_indices] .<= 0.0)
-    #@assert all(λ_ineq[geq_indices] .>= 0.0)
-    #complementarity = zeros(length(nlp.ineq_indices))
-    #complementarity[geq_indices] += abs.((ineq_values[geq_indices] .- ineq_lbs[geq_indices]) .* λ_ineq[geq_indices]) # max.(λ_ineq[geq_indices], 0.0)
-    #complementarity[leq_indices] += abs.((ineq_ubs[leq_indices] .- ineq_values[leq_indices]) .* λ_ineq[leq_indices]) # max.(-λ_ineq[leq_indices], 0.0)
-    #complementarity[interval_indices] += abs.(
-    #    (ineq_values[interval_indices] .- ineq_lbs[interval_indices]) .* max.(λ_ineq[interval_indices], 0.0)
-    #    .+ (ineq_ubs[interval_indices] .- ineq_values[interval_indices]) .* max.(-λ_ineq[interval_indices], 0.0)
-    #)
-
     # - This can be negative if a constraint is violated, so we take the absolute value.
     # - At most one of these terms can be nonzero. λ≥0 for a lower bound
     # - If the bound is inf, we penalize the corresponding signed magnitude of λ.
@@ -220,13 +208,44 @@ function is_converged(infeas::NamedTuple, tol)
     )
 end
 
+"""
+    run_slp(
+        slp::Optimizer,
+        model::JuMP.Model,
+        x0::Dict{JuMP.VariableRef,Float64};
+        λ0 = nothing,
+        timer = Timer(),
+    )::NamedTuple
+
+Solve the optimization model with a sequential linear programming (SLP) algorithm.
+
+`x0` must contain the initial guess value for every primal variable. `λ0` contains
+the optional initial guess for constraint Lagrange multipliers.
+Note that this function *does not* alter the model. That is, `JuMP.value` will
+*not* correctly return solutions produced by this algorithm. To access solutions,
+use the `primal_solution` field of the returned NamedTuple.
+
+## Example
+```julia
+import GasModels
+import JuMP
+import HiGHS
+data = GasModels.parse_file("mymodel.m")
+gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_ogf)
+slpopt = GasModels._SLP.Optimizer(HiGHS.Optimizer; tol = 1e-5)
+x0 = Dict(x => something(JuMP.start_value(x, 0.0)) for x in JuMP.all_variables(gm.model))
+result = run_slp(slpopt, gm.model, x0)
+@assert result.termination_status == JuMP.LOCALLY_SOLVED
+display(result.primal_solution)
+```
+"""
 function run_slp(
     slp::Optimizer,
     model::JuMP.Model,
-    x0::Dict;
+    x0::Dict{JuMP.VariableRef,Float64};
     λ0::Union{Nothing,Dict} = nothing,
     timer::Timer = Timer(),
-)
+)::NamedTuple
     _t = time()
     nlp = NLP(model)
     timer.construct_nlp += time() - _t
@@ -447,13 +466,36 @@ function _solve_penalized_relaxation(
     return Dict(zip(original_vars, primal_values)), result
 end
 
+"""
+    solve_ogf(
+        file::String,
+        model_type::Type,
+        optimizer::_SLP.Optimizer,
+    )::Dict
+
+Solve an optimal gas flow (OGF) problem with a sequential linear programming (SLP)
+algorithm.
+
+This mimics the API of the existing `run_ogf` function, with an `_SLP.Optimizer`
+taking the place of a JuMP/MOI optimizer. Like `run_ogf`, a method exists that
+accepts the GasModels data dictionary obtained from `parse_file`.
+
+## Example
+```julia
+import GasModels, JuMP, HiGHS
+slpopt = GasModels._SLP.Optimizer(HiGHS.Optimizer; tol = 1e-5)
+result = solve_ogf("mymodel.m", GasModels.WPGasModel, slpopt)
+@assert result["termination_status"] == JuMP.LOCALLY_SOLVED
+display(result["solution"])
+```
+"""
 function solve_ogf(
     file::String,
     model_type::Type,
     optimizer::_SLP.Optimizer;
     _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
     kwargs...,
-)
+)::Dict
     data = GasModels.parse_file(file; skip_correct = false)
     return solve_ogf(data, model_type, optimizer; _initial_guess, kwargs...)
 end
@@ -465,7 +507,7 @@ function solve_ogf(
     # TODO: Allow keywords for this function
     _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
     kwargs...,
-)
+)::Dict
     gm = GasModels.instantiate_model(
         data,
         model_type,
