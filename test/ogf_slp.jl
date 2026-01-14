@@ -15,5 +15,11 @@
         result = GasModels.solve_ogf(fname, GasModels.WPGasModel, slpopt)
         @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
         @test result["primal_status"] == JuMP.FEASIBLE_POINT
+
+        data = GasModels.parse_file(fname)
+        # Test method that accepts data
+        result = GasModels.solve_ogf(data, GasModels.WPGasModel, slpopt)
+        @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+        @test result["primal_status"] == JuMP.FEASIBLE_POINT
     end
 end

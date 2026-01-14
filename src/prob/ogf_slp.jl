@@ -447,11 +447,21 @@ function solve_ogf(
     file::String,
     model_type::Type,
     optimizer::_SLP.Optimizer;
-    # TODO: Allow keywords for this function
     _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
     kwargs...,
 )
     data = GasModels.parse_file(file; skip_correct = false)
+    return solve_ogf(data, model_type, optimizer; _initial_guess, kwargs...)
+end
+
+function solve_ogf(
+    data::Dict,
+    model_type::Type,
+    optimizer::_SLP.Optimizer;
+    # TODO: Allow keywords for this function
+    _initial_guess::Function = _get_start_value, # AbstractGasModel -> Dict{VariableRef,Float64}
+    kwargs...,
+)
     gm = GasModels.instantiate_model(
         data,
         model_type,
