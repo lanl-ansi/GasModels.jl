@@ -1,3 +1,5 @@
+solution_file = "../test/data/transient/case6_ls_a_solution.json"
+
 @testset "confirm that changes occur in parse_multinetwork" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     @test (mn_data["nw"]["1"]["transfer"]["1"]["withdrawal_max"] !== mn_data["nw"]["100"]["transfer"]["1"]["withdrawal_max"])
@@ -26,6 +28,7 @@ end
 
 @testset "test ls-priority case" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6-ls-priority.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
+    add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
     @test stat_result["termination_status"] == LOCALLY_SOLVED
@@ -35,7 +38,7 @@ end
 
 @testset "test no limits case - model structure validation" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6-no-power-limits.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
-    
+
     @test haskey(mn_data, "nw")
     @test length(mn_data["nw"]) > 0
     
@@ -50,6 +53,7 @@ end
                                 "../test/data/transient/time-series-case-6a.csv", 
                                 time_step=864.0)
     
+    add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
     @test stat_result["termination_status"] == LOCALLY_SOLVED

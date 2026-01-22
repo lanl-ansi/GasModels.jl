@@ -53,6 +53,7 @@ module GasModels
     include("io/matgas.jl")
     include("io/transient.jl")
     include("io/multinetwork.jl") 
+    include("io/solution_hints.jl")
 
     include("core/base.jl")
     include("core/types.jl")
