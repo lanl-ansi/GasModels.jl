@@ -26,7 +26,7 @@ ipopt_solver = JuMP.optimizer_with_attributes(
     "print_level" => 0,
     "sb" => "yes",
     "mu_init" => 1e-2,
-    "acceptable_tol" => 1.0e-2,
+    "acceptable_tol" => 1.0e-4,
 )
 highs_solver = JuMP.optimizer_with_attributes(HiGHS.Optimizer, "output_flag"=>false)
 juniper_solver = JuMP.optimizer_with_attributes(
