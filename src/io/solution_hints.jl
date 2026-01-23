@@ -1,4 +1,51 @@
-function add_solution_hints!(case::Dict, solution_file::String) 
+function add_solution_hints!(case::Dict, solution_file::String)
+    if case["multinetwork"] #compatible with mnw data that doesn't have original_pipe, original_junction, etc
+        return _add_solution_hints_mnw!(case, solution_file)
+    else
+        return _add_solution_hints_static!(case, solution_file) #static data doesn't have "nw"
+    end
+end
+
+function _add_solution_hints_static!(case::Dict, solution_file::String)
+    solution = JSON.parsefile(solution_file)
+    sol = solution["solution"]
+    
+    #add p_start
+    if haskey(sol, "junction") && haskey(case, "junction")
+        for (j_id, j_sol) in sol["junction"]
+            if haskey(case["junction"], j_id)
+                if haskey(j_sol, "p")
+                    case["junction"][j_id]["p_start"] = j_sol["p"]
+                end
+            end
+        end
+    end
+    
+    #add f_start for pipes
+    if haskey(sol, "pipe") && haskey(case, "pipe")
+        for (p_id, p_sol) in sol["pipe"]
+            if haskey(case["pipe"], p_id)
+                if haskey(p_sol, "f")
+                    case["pipe"][p_id]["f_start"] = p_sol["f"]
+                end
+            end
+        end
+    end
+    
+    #add f_start for compressors
+    for (c_id, c_sol) in sol["compressor"]
+        if haskey(case["compressor"], c_id)
+            if haskey(c_sol, "f")
+                case["compressor"][c_id]["f_start"] = c_sol["f"]
+            end
+        end
+    end
+    
+    return case
+end
+
+function _add_solution_hints_mnw!(case::Dict, solution_file::String) 
+    #something in this probably errors if we give it a case from parse_files instead of parse_multinetwork
 
     solution = JSON.parsefile(solution_file)
     sol_nw = solution["solution"]["nw"]
