@@ -128,10 +128,8 @@ function parse_multinetwork(static_io::IO,
 
     rows = parse_transient(transient_io)   # → Vector{Dict{String,Any}}, this is the same one used by parse_files
 
-    ts = make_time_series_block(rows;
-                                time_step       = time_step)
+    ts = make_time_series_block(rows; time_step = time_step)
 
-    #
     # Attach timeseries block to static data (same method as parse_files)
     apply_gm!(x -> x["time_series"] = deepcopy(ts),
               static_data; apply_to_subnetworks = false)
@@ -145,7 +143,7 @@ function parse_multinetwork(static_io::IO,
     
     correct_network_data!(static_data)
     
-    mnw["nw"]["0"] = static_data
+    mnw["nw"]["0"] = static_data #slight hack for being able to apply solve_ogf to data from parse_mnw
 
     return mnw
 end
