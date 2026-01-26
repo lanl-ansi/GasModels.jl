@@ -54,6 +54,8 @@ include("common.jl")
 
     include("ogf.jl")
 
+    include("ogf_nominal.jl")
+
     include("ogf_comp_power_unconstrained.jl")
 
     include("ogf_comp_power_and_pipe_proxy.jl")

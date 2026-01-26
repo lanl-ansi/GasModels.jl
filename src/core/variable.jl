@@ -294,18 +294,19 @@ end
 
 
 "variables associated with demand"
-function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
     fl = var(gm, nw)[:fl] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_delivery)],
         base_name="$(nw)_fl",
         start=comp_start_value(ref(gm, nw, :delivery), i, "fl_start", 
-        ref(gm,nw,:delivery,i)["withdrawal_max"])
+        ref(gm,nw,:delivery,i)[withdrawal_type])
     )
 
     if bounded
         for (i, delivery) in ref(gm, nw, :dispatchable_delivery)
             JuMP.set_lower_bound(fl[i], ref(gm,nw,:delivery,i)["withdrawal_min"])
-            JuMP.set_upper_bound(fl[i], ref(gm,nw,:delivery,i)["withdrawal_max"])
+            JuMP.set_upper_bound(fl[i], ref(gm,nw,:delivery,i)[withdrawal_type])
         end
     end
 
@@ -322,20 +323,20 @@ end
 
 
 "variables associated with transfer"
-function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
     ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_transfer)],
         base_name="$(nw)_ft",
         start= ref(gm, nw, :transfer, i)["withdrawal_min"] < 0.0 ?
             ref(gm, nw, :transfer, i)["withdrawal_min"] :
-            ref(gm, nw, :transfer, i)["withdrawal_max"]
-        # comp_start_value(ref(gm, nw, :transfer), i, "ft_start", rand())
+            ref(gm, nw, :transfer, i)[withdrawal_type]
     )
 
     if bounded
         for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
             JuMP.set_lower_bound(ft[i], ref(gm, nw, :transfer, i)["withdrawal_min"])
-            JuMP.set_upper_bound(ft[i], ref(gm, nw, :transfer, i)["withdrawal_max"])
+            JuMP.set_upper_bound(ft[i], ref(gm, nw, :transfer, i)[withdrawal_type])
         end
     end
 
@@ -352,19 +353,22 @@ end
 
 
 "variables associated with production"
-function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    injection_type = is_nominal ? "injection_nominal" : "injection_max"
+    println("injection_type from variable_production_mass_flow:")
+    println(injection_type)
     fg = var(gm, nw)[:fg] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_receipt)],
         base_name="$(nw)_fg",
         start=comp_start_value(ref(gm, nw, :receipt), i, "fg_start", 
-        ref(gm,nw,:receipt,i)["injection_max"]
+        ref(gm,nw,:receipt,i)[injection_type]
         )
     )
 
     if bounded
         for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
             JuMP.set_lower_bound(fg[i], ref(gm,nw,:receipt,i)["injection_min"])
-            JuMP.set_upper_bound(fg[i], ref(gm,nw,:receipt,i)["injection_max"])
+            JuMP.set_upper_bound(fg[i], ref(gm,nw,:receipt,i)[injection_type])
         end
     end
 
