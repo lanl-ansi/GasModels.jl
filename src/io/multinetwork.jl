@@ -79,14 +79,11 @@ function _create_tsb(
     return ts_block
 end
 
-# forward arguments to _create_time.... with accounting for single timestep
+# forward arguments to _create_time.... 
+# this function could use a more differentiated name from create time series block
 function make_time_series_block(csv_rows; total_time=86400.0,
                                time_step=3600.0)
-    if length(unique(r["timestamp"] for r in csv_rows)) == 1
-        @warn "Only one timestamp found – a 1‑step multinetwork will be created"
-    end
-    return _create_tsb(csv_rows; 
-                                     time_step       = time_step)
+    return _create_tsb(csv_rows; time_step = time_step)
 end
 
 #filepath function
@@ -104,8 +101,7 @@ end
 
 function parse_multinetwork(static_io::IO,
                             transient_io::IO;
-                            time_step::Float64  = 3600.0,
-                            periodic::Bool = false)
+                            time_step::Float64  = 3600.0)
 
     # ------------------------------------------------------------------
     static_data = parse_file(static_io, skip_correct=false)
@@ -144,8 +140,6 @@ function parse_multinetwork(static_io::IO,
     make_per_unit!(mnw)
     
     correct_network_data!(static_data)
-    
-    mnw["nw"]["0"] = static_data
 
     return mnw
 end
