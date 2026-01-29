@@ -355,8 +355,6 @@ end
 "variables associated with production"
 function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
     injection_type = is_nominal ? "injection_nominal" : "injection_max"
-    println("injection_type from variable_production_mass_flow:")
-    println(injection_type)
     fg = var(gm, nw)[:fg] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_receipt)],
         base_name="$(nw)_fg",
