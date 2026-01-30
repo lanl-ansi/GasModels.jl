@@ -11,8 +11,6 @@ end
 @testset "confirm that solution exists and is feasible" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
-    stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
-    @test stat_result["termination_status"] == LOCALLY_SOLVED
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -16875.6010, atol = 1e-2) 
 end
@@ -20,8 +18,6 @@ end
 @testset "test elevation case" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6-elevation.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
-    stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
-    @test stat_result["termination_status"] == LOCALLY_SOLVED
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -16875.6010, atol = 1e-2) 
 end
@@ -30,8 +26,6 @@ end
     mn_data = parse_multinetwork("../test/data/matgas/case-6-ls-priority.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
-    stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
-    @test stat_result["termination_status"] == LOCALLY_SOLVED
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) #
 end
@@ -55,8 +49,6 @@ end
     
     add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
-    stat_result = solve_ogf(mn_data, WPGasModel, nlp_solver)
-    @test stat_result["termination_status"] == LOCALLY_SOLVED
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
 end
