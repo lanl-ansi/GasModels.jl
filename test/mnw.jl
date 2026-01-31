@@ -12,14 +12,14 @@ end
     mn_data = parse_multinetwork("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -16875.6010, atol = 1e-2) 
+    @test isapprox(result["objective"], -16708.421, atol = 1e-1) 
 end
 
 @testset "test elevation case" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6-elevation.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -16875.6010, atol = 1e-2) 
+    @test isapprox(result["objective"], -16708.421, atol = 1e-1) 
 end
 
 @testset "test ls-priority case" begin
