@@ -279,9 +279,10 @@ function ref_pipe_theta!(ref::Dict{Symbol,Any}, base_length)
         else
             h1 = ref[:junction][fr]["elevation"]
             h2 = ref[:junction][to]["elevation"]
-            L = pipe["length"]*base_length
+            L = pipe["length"]
             @assert(abs(h2 - h1) <= L, "Elevation change cannot be greater than pipe length. Check pipe with id = $(pipe["id"])")
             pipe["theta"] = asin((h2 - h1)/L) #value in radians
+            #elevation and length have the same scaling factor
         end
     end
 end

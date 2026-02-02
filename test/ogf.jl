@@ -55,9 +55,9 @@
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-            @test isapprox(result["objective"], -167.190; atol = 1e-2)
+            @test isapprox(result["objective"], -191.169; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.6788; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275594438166; atol = 1e-2)
         end
 
         @testset "case 6 cwp ogf binding energy constraint" begin
@@ -75,9 +75,9 @@
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf(data, CWPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-            @test isapprox(result["objective"], -167.1902; atol = 1e-2)
+            @test isapprox(result["objective"], -191.169; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.6788; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.2727559842232; atol = 1e-2)
         end
     end
 end
