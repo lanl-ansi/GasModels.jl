@@ -81,6 +81,7 @@ end
 
 # forward arguments to _create_time.... 
 # this function could use a more differentiated name from create time series block
+# key difference is no interpolation/splining
 function make_time_series_block(csv_rows; total_time=86400.0,
                                time_step=3600.0)
     return _create_tsb(csv_rows; time_step = time_step)
@@ -90,7 +91,7 @@ end
 function parse_multinetwork(static_file::AbstractString,
                             transient_file::AbstractString;
                             time_step::Float64  = 3600.0)
-
+"""parse a case file plus csv containing multiple timesteps. unlike parse_files, no interpolation or splining is performed on the data."""
     open(static_file, "r") do s_io
         open(transient_file, "r") do t_io
             return parse_multinetwork(s_io, t_io;
@@ -99,6 +100,7 @@ function parse_multinetwork(static_file::AbstractString,
     end
 end
 
+#io stream function
 function parse_multinetwork(static_io::IO,
                             transient_io::IO;
                             time_step::Float64  = 3600.0)
@@ -136,10 +138,12 @@ function parse_multinetwork(static_io::IO,
     mnw = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
     _IM.logger_config!("info")
 
+    @assert length(mnw["nw"]) > 1 "Only one timestep detected: use parse_separated_data instead"
+
     correct_f_bounds!(mnw)
     make_per_unit!(mnw)
     
     correct_network_data!(static_data)
-
+    
     return mnw
 end

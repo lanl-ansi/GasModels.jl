@@ -1,4 +1,5 @@
 function add_solution_hints!(case::Dict, solution_file::String)::Dict
+    """add the results from a solution file as starting values. helps ensure solver consistency for testing"""
     sol = JSON.parsefile(solution_file)["solution"]
     sol_root = haskey(sol, "result") ? sol["result"] : sol #handle the case of "solution = solve_ogf" vs "result = solve_ogf"
 
