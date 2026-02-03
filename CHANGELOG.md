@@ -3,6 +3,9 @@
 ## staged 
 - nothing
 
+## v0.10.6 
+- corrects the pipe inclination calculation
+
 ## v0.10.5 
 - adds SCIP supported formulation without compressor power constraints
   
