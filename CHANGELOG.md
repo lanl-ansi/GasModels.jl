@@ -3,7 +3,7 @@
 ## staged 
 - nothing
 
-## v0.10.6 
+## v0.10.7 
 - corrects the pipe inclination calculation
 
 ## v0.10.5 
