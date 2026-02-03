@@ -17,11 +17,11 @@ end
 end
 
 @testset "test elevation case" begin
-    mn_data = parse_multinetwork("../test/data/matgas/case-6-elevation.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
+    mn_data = parse_multinetwork("../test/data/matgas/case-6-elevation-transient.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     add_solution_hints!(mn_data, elevation_solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
-    # @test result["termination_status"] == LOCALLY_SOLVED #note: this solution is optimal according to MA57. Can't convince mumps that it's right, so ipopt hits ITERATION_LIMIT
-    # @test isapprox(result["objective"], -18650.977, atol = 1e-1) 
+    @test result["termination_status"] == LOCALLY_SOLVED 
+    @test isapprox(result["objective"], -25216.73, atol = 1e-1) 
 end
 
 @testset "test ls-priority case" begin
