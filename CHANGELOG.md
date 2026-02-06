@@ -3,6 +3,12 @@
 ## staged 
 - nothing
 
+## v0.11.0
+- introduce new data parsers
+- fix matgas writer
+- add solution hints function to improve test robustness
+- bug fixes
+
 ## v0.10.7 
 - corrects the pipe inclination calculation
 
