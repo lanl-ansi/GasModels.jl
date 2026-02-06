@@ -70,7 +70,7 @@ where FooGasModel is the implementation of the mathematical program of the Gas e
 ## Acknowledgments
 
 This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
-The primary developer is Russell Bent, with significant contributions from Conrado Borraz-Sanchez, Hassan Hijazi, and Pascal van Hentenryck.
+The primary developers are Russell Bent and Kaarthik Sundar, with significant contributions from Skyler Reid, Conrado Borraz-Sanchez, Hassan Hijazi, and Pascal van Hentenryck.
 
 Special thanks to Miles Lubin for his assistance in integrating with Julia/JuMP.
 

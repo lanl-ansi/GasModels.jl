@@ -9,6 +9,15 @@
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
         end
+        
+        @testset "test solution hints for static file" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            solution_file = "../test/data/transient/case6_base_solution.json"
+            add_solution_hints!(data, solution_file)
+            res = solve_ogf(data, WPGasModel, nlp_solver)
+            @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
+            @test isapprox(res["objective"], -167.19, rtol=1e-2)
+        end
 
         @testset "case 6 ogf" begin
             @info "Testing OGF"

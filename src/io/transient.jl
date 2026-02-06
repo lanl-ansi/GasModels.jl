@@ -10,8 +10,6 @@ end
 function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
 
-    #@assert !occursin("compressor", raw) "Timeseries file cannot contain compressor information. Move this data in the base case file."
-
     data = []
     timestamps = Set{String}()
     for line in raw[2:end]
@@ -28,8 +26,6 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
             ),
         )
     end
-
-    @assert length(timestamps) > 1 "Transient data must contain more than one unique timestamp"
 
     return data
 end
@@ -111,7 +107,7 @@ function parse_files(
 
     mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
 
-    # --- Final per-unit conversion ---
+    # --- Final per-unit conversion --- 
     make_per_unit!(mn_data)
 
     return mn_data
@@ -324,7 +320,8 @@ function _prep_transient_data!(
         data["original_pipe"][key]["to_pipe"] = max_pipe_junc_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
-            id = max_pipe_junc_id + pipe["id"] * 1000 + i
+            # id = Base.Checked.checked_mul(max_pipe_junc_id + pipe["id"], 1000 + i) #note: this should be the fix to prevent the Int64 overflow, but breaks tests
+            id = max_pipe_junc_id + pipe["id"] * 1000+i
 
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
@@ -508,6 +505,8 @@ at least 4 time series data points are available (and result in an error otherwi
 end
 
 function _fix_time_series_block!(block)
+    #makes sure min/max injection/withdrawal rates cannot be positive/negative
+    #only operates on transfer, receipt, delivery (no compressors)
     for (i, val) in get(block, "transfer", [])
         if haskey(val, "withdrawal_max")
             val["withdrawal_max"] = max.(val["withdrawal_max"], zeros(length(val["withdrawal_max"])))

@@ -2,6 +2,7 @@
 
 "entry point into running the ogf problem"
 function solve_ogf(file, model_type, optimizer; kwargs...)
+
     return run_model(
         file,
         model_type,
@@ -18,6 +19,7 @@ end
 
 
 "entry point into running the nominal ogf problem"
+#TODO: could use better documentation of what this problem is
 function solve_ogf_nominal(file, model_type, optimizer; kwargs...)
     return run_model(
         file,

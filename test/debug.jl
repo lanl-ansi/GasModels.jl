@@ -109,7 +109,7 @@
     ]
     coeff = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0]
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -180,7 +180,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -202,7 +202,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -221,7 +221,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -238,7 +238,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -301,7 +301,7 @@
     @test isa(set, MOI.EqualTo{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -320,7 +320,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -337,7 +337,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -357,7 +357,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -375,7 +375,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -400,7 +400,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -421,7 +421,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -442,7 +442,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -463,7 +463,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -484,7 +484,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -501,7 +501,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -518,7 +518,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -535,7 +535,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -558,7 +558,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -579,7 +579,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -600,7 +600,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -617,7 +617,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -634,7 +634,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -651,7 +651,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 2
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -676,7 +676,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 3
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -698,7 +698,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -720,7 +720,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 
@@ -742,7 +742,7 @@
     @test isa(set, MOI.LessThan{Float64})
     @test length(func.terms) == 4
 
-    for i = 1:length(var_ref)
+    for i in eachindex(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
     end
 end
