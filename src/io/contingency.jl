@@ -1,0 +1,156 @@
+abstract type Contingency end
+
+@kwdef struct FailedComponentContingency <: Contingency
+    asset_type::String
+    asset_id::String
+end
+
+@kwdef struct PowerOutageContingency <: Contingency
+    asset_type::String
+    asset_id::String
+    available_power_fraction::Float64
+    
+    function PowerOutageContingency(asset_type, asset_id, available_power_fraction)
+        if !(0.0 <= available_power_fraction <= 1.0)
+            throw(ArgumentError("available_power_fraction must be between 0.0 and 1.0"))
+        end
+        if asset_type != "compressor"
+            @warn "PowerOutageContingency currently only supports 'compressor' asset type"
+        end
+        new(asset_type, asset_id, available_power_fraction)
+    end
+end
+
+#struct that takes a vector of individual contingencies
+@kwdef struct ContingencyScenario
+    name::String
+    description::String = ""
+    contingencies::Vector{<:Contingency}
+end
+
+struct ContingencyResult
+    contingency::Contingency
+    success::Bool
+    message::String
+end
+
+#helper functions
+function all_applied(results::Vector{ContingencyResult})
+    """check to see if all contingencies were applied successfully"""
+    return all(r.success for r in results)
+end
+
+function summarize_results(results::Vector{ContingencyResult})
+    """summary string of results"""
+    n_success = count(r.success for r in results)
+    n_total = length(results)
+    return "Applied $n_success/$n_total contingencies successfully"
+end
+
+#main function
+function apply_contingency!(
+    case::AbstractDict{String, <:Any},
+    scenario::ContingencyScenario,
+    id_map::Union{Dict{String, String}, Nothing}=nothing,
+)::Vector{ContingencyResult}
+    results = ContingencyResult[]
+    
+    for cont in scenario.contingencies
+        success = _apply_contingency!(case, cont, id_map) #calls helpers for each type
+        msg = success ? "Applied successfully" : "Failed to apply"
+        push!(results, ContingencyResult(cont, success, msg))
+    end
+    
+    return results
+end
+
+function _apply_contingency!(
+    case::AbstractDict{String, <:Any},
+    contingency::FailedComponentContingency,
+    id_map::Union{Dict{String, String}, Nothing}=nothing,
+)::Bool
+    #internal applier for failure contingency
+    effective_map = isnothing(id_map) ? build_mapping_id_map(case) : id_map
+    asset_id = get(effective_map, contingency.asset_id, contingency.asset_id)
+    
+    if !haskey(case, contingency.asset_type)
+        #some models won't have every asset type
+        @warn "Asset type '$(contingency.asset_type)' not found in model data."
+        return false
+    end
+
+    asset_group = case[contingency.asset_type]
+    
+    if !haskey(asset_group, asset_id)
+        @warn "Asset ID '$asset_id' not found in '$(contingency.asset_type)'."
+        return false
+    end
+
+    asset = asset_group[asset_id]
+    
+    orig_status = asset["status"]
+    if orig_status != 0
+        asset["status"] = 0
+        return true
+    end
+    
+    return false
+end
+
+function _apply_contingency!(
+    case::AbstractDict{String, <:Any},
+    contingency::PowerOutageContingency,
+    id_map::Union{Dict{String, String}, Nothing}=nothing,
+)::Bool
+    #scales compressor ratio based on available power
+    if contingency.asset_type != "compressor"
+        @warn "PowerOutageContingency only applies to compressors"
+        return false
+    end
+    
+    effective_map = isnothing(id_map) ? build_mapping_id_map(case) : id_map
+    asset_id = get(effective_map, contingency.asset_id, contingency.asset_id)
+    
+    if !haskey(case, contingency.asset_type)
+        @warn "Asset type '$(contingency.asset_type)' not found in model data."
+        return false
+    end
+
+    asset_group = case[contingency.asset_type]
+    
+    if !haskey(asset_group, asset_id)
+        @warn "Asset ID '$asset_id' not found in '$(contingency.asset_type)'."
+        return false
+    end
+
+    asset = asset_group[asset_id]
+    
+    #new_max = min + (max - min) * available_fraction
+    orig_min = get(asset, "c_ratio_min", 1.0)
+    orig_max = asset["c_ratio_max"]
+    
+    new_max = orig_min + (orig_max - orig_min) * contingency.available_power_fraction
+    
+    if new_max != orig_max
+        asset["c_ratio_max"] = new_max
+        asset["c_ratio_min"] = orig_min
+        return true
+    end
+    
+    return false
+end
+
+
+
+# #example use
+# scenario = ContingencyScenario(
+#     name = "Winter Storm",
+#     description = "Two pipes frozen, one compressor at reduced power",
+#     contingencies = [
+            # FailedComponentContingency(asset_type="pipe", asset_id="1000369020000001"),
+            # FailedComponentContingency(asset_type="pipe", asset_id="1000369020000002"),
+            # PowerOutageContingency(asset_type="compressor", asset_id="1000369030000002", available_power_fraction=0.3),
+#     ]
+# )
+
+# results = apply_contingency!(case, scenario)
