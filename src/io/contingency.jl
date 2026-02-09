@@ -1,11 +1,11 @@
 abstract type Contingency end
 
-@kwdef struct FailedComponentContingency <: Contingency
+Base.@kwdef struct FailedComponentContingency <: Contingency
     asset_type::String
     asset_id::String
 end
 
-@kwdef struct PowerOutageContingency <: Contingency
+Base.@kwdef struct PowerOutageContingency <: Contingency
     asset_type::String
     asset_id::String
     available_power_fraction::Float64
@@ -22,7 +22,7 @@ end
 end
 
 #struct that takes a vector of individual contingencies
-@kwdef struct ContingencyScenario
+Base.@kwdef struct ContingencyScenario
     name::String
     description::String = ""
     contingencies::Vector{<:Contingency}
@@ -56,7 +56,7 @@ function apply_contingency!(
     results = ContingencyResult[]
     
     for cont in scenario.contingencies
-        success = _apply_contingency!(case, cont, id_map) #calls helpers for each type
+        success = _apply_contingency!(case, cont, id_map)
         msg = success ? "Applied successfully" : "Failed to apply"
         push!(results, ContingencyResult(cont, success, msg))
     end
@@ -69,12 +69,11 @@ function _apply_contingency!(
     contingency::FailedComponentContingency,
     id_map::Union{Dict{String, String}, Nothing}=nothing,
 )::Bool
-    #internal applier for failure contingency
-    effective_map = isnothing(id_map) ? build_mapping_id_map(case) : id_map
-    asset_id = get(effective_map, contingency.asset_id, contingency.asset_id)
+    # Get effective asset ID (use mapping if provided, otherwise use as-is)
+    asset_id = isnothing(id_map) ? contingency.asset_id : get(id_map, contingency.asset_id, contingency.asset_id)
     
     if !haskey(case, contingency.asset_type)
-        #some models won't have every asset type
+        #some models don't have all asset types
         @warn "Asset type '$(contingency.asset_type)' not found in model data."
         return false
     end
@@ -108,8 +107,8 @@ function _apply_contingency!(
         return false
     end
     
-    effective_map = isnothing(id_map) ? build_mapping_id_map(case) : id_map
-    asset_id = get(effective_map, contingency.asset_id, contingency.asset_id)
+    #option to remap asset ids, don't really plan on using this
+    asset_id = isnothing(id_map) ? contingency.asset_id : get(id_map, contingency.asset_id, contingency.asset_id)
     
     if !haskey(case, contingency.asset_type)
         @warn "Asset type '$(contingency.asset_type)' not found in model data."
@@ -139,6 +138,7 @@ function _apply_contingency!(
     
     return false
 end
+
 
 
 
