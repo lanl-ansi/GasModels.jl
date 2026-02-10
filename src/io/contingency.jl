@@ -50,13 +50,12 @@ end
 #main function
 function apply_contingency!(
     case::AbstractDict{String, <:Any},
-    scenario::ContingencyScenario,
-    id_map::Union{Dict{String, String}, Nothing}=nothing,
+    scenario::ContingencyScenario
 )::Vector{ContingencyResult}
     results = ContingencyResult[]
     
     for cont in scenario.contingencies
-        success = _apply_contingency!(case, cont, id_map)
+        success = _apply_contingency!(case, cont)
         msg = success ? "Applied successfully" : "Failed to apply"
         push!(results, ContingencyResult(cont, success, msg))
     end
@@ -66,12 +65,8 @@ end
 
 function _apply_contingency!(
     case::AbstractDict{String, <:Any},
-    contingency::FailedComponentContingency,
-    id_map::Union{Dict{String, String}, Nothing}=nothing,
+    contingency::FailedComponentContingency
 )::Bool
-    # Get effective asset ID (use mapping if provided, otherwise use as-is)
-    asset_id = isnothing(id_map) ? contingency.asset_id : get(id_map, contingency.asset_id, contingency.asset_id)
-    
     if !haskey(case, contingency.asset_type)
         #some models don't have all asset types
         @warn "Asset type '$(contingency.asset_type)' not found in model data."
@@ -80,12 +75,12 @@ function _apply_contingency!(
 
     asset_group = case[contingency.asset_type]
     
-    if !haskey(asset_group, asset_id)
-        @warn "Asset ID '$asset_id' not found in '$(contingency.asset_type)'."
+    if !haskey(asset_group, contingency.asset_id)
+        @warn "Asset ID '$(contingency.asset_id)' not found in '$(contingency.asset_type)'."
         return false
     end
 
-    asset = asset_group[asset_id]
+    asset = asset_group[contingency.asset_id]
     
     orig_status = asset["status"]
     if orig_status != 0
@@ -98,17 +93,13 @@ end
 
 function _apply_contingency!(
     case::AbstractDict{String, <:Any},
-    contingency::PowerOutageContingency,
-    id_map::Union{Dict{String, String}, Nothing}=nothing,
+    contingency::PowerOutageContingency
 )::Bool
     #scales compressor ratio based on available power
     if contingency.asset_type != "compressor"
         @warn "PowerOutageContingency only applies to compressors"
         return false
     end
-    
-    #option to remap asset ids, don't really plan on using this
-    asset_id = isnothing(id_map) ? contingency.asset_id : get(id_map, contingency.asset_id, contingency.asset_id)
     
     if !haskey(case, contingency.asset_type)
         @warn "Asset type '$(contingency.asset_type)' not found in model data."
@@ -117,12 +108,12 @@ function _apply_contingency!(
 
     asset_group = case[contingency.asset_type]
     
-    if !haskey(asset_group, asset_id)
-        @warn "Asset ID '$asset_id' not found in '$(contingency.asset_type)'."
+    if !haskey(asset_group, contingency.asset_id)
+        @warn "Asset ID '$(contingency.asset_id)' not found in '$(contingency.asset_type)'."
         return false
     end
 
-    asset = asset_group[asset_id]
+    asset = asset_group[contingency.asset_id]
     
     #new_max = min + (max - min) * available_fraction
     orig_min = get(asset, "c_ratio_min", 1.0)
@@ -153,4 +144,4 @@ end
 #     ]
 # )
 
-# results = apply_contingency!(case, scenario)
+# storm_case = apply_contingency!(case, scenario)
