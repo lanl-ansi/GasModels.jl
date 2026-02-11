@@ -32,7 +32,7 @@ SCENARIO_LIBRARY = Dict{String, ContingencyScenario}(
     case = parse_file("../test/data/matgas/case-6.m")
     results = apply_contingency!(case, SCENARIO_LIBRARY["winter_storm"])
     for i in eachindex(results)
-        @test results[i].message == "Applied successfully"
+        @test results[i].success
     end
     output = solve_ogf(case, WPGasModel, nlp_solver)
     @test !haskey(output["solution"]["pipe"], "1") #components with status 0 are not included in solution
@@ -44,7 +44,7 @@ end
     case = parse_file("../test/data/matgas/case-6.m")
     results = apply_contingency!(case, SCENARIO_LIBRARY["maintenance"]) #"results" is a vector of results
     for i in eachindex(results)
-        @test results[i].message == "Applied successfully"
+        @test results[i].success
     end
     output = solve_ogf(case, WPGasModel, nlp_solver)
     @test output["solution"]["compressor"]["1"]["r"] < 1.3 #reduced power means it can't get to 1.4
@@ -54,7 +54,7 @@ end
     case = parse_file("../test/data/matgas/case-6.m")
     results = apply_contingency!(case, SCENARIO_LIBRARY["power_grid_issue"]) #"results" is a vector of results
     for i in eachindex(results)
-        @test results[i].message == "Applied successfully"
+        @test results[i].success
     end
     output = solve_ogf(case, WPGasModel, nlp_solver)
     @test output["solution"]["compressor"]["1"]["r"] < 1.3 #reduced power means it can't get to 1.4

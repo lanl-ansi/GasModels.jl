@@ -138,9 +138,9 @@ end
 #     name = "Winter Storm",
 #     description = "Two pipes frozen, one compressor at reduced power",
 #     contingencies = [
-            # FailedComponentContingency(asset_type="pipe", asset_id="1000369020000001"),
-            # FailedComponentContingency(asset_type="pipe", asset_id="1000369020000002"),
-            # PowerOutageContingency(asset_type="compressor", asset_id="1000369030000002", available_power_fraction=0.3),
+#             FailedComponentContingency(asset_type="pipe", asset_id="1"),
+#             FailedComponentContingency(asset_type="pipe", asset_id="2"),
+#             PowerOutageContingency(asset_type="compressor", asset_id="2", available_power_fraction=0.3),
 #     ]
 # )
 
