@@ -42,6 +42,7 @@ end
 
 @testset "transient (steady state replicate) case with storage" begin
     mn_data = parse_files("../test/data/matgas/case-6-storage.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 7200.0)
+    add_solution_hints!(mn_data, "../test/data/transient/transient_time_periodic_storage.json")
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
     make_si_units!(result["solution"])
