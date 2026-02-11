@@ -33,11 +33,9 @@ end
 
 ""
 function parse_files(static_file::AbstractString, transient_file::AbstractString; kwargs...)::Dict{String,Any}
-    static_filetype = split(lowercase(static_file), '.')[end]
-
     open(static_file, "r") do static_io
         open(transient_file, "r") do transient_io
-            return parse_files(static_io, transient_io; static_filetype=static_filetype, kwargs...)
+            return parse_files(static_io, transient_io; kwargs...)
         end
     end
 end
@@ -50,7 +48,6 @@ Parses two files - a static file and a transient csv file and prepares the data 
 function parse_files(
     static_io::IO,
     transient_io::IO;
-    static_filetype::AbstractString="m",
     total_time = 86400.0,
     time_step = 3600.0,
     spatial_discretization = 10000.0,
@@ -59,31 +56,8 @@ function parse_files(
     periodic = true
 
     # --- Read static network data ---
-    if static_filetype == "m"
-        static_data = GasModels.parse_matgas(static_io)
-    elseif static_filetype == "json"
-        static_data = GasModels.parse_json(static_io)
-    else
-        Memento.error(_LOGGER, "only .m and .json network data files are supported")
-    end
-
-    # --- Validate static network before unit conversion ---
-    check_non_negativity(static_data)
-    check_pipeline_geometry!(static_data)    # added check for nonzero length/diameter and elevation_difference
-    correct_p_mins!(static_data)
-    per_unit_data_field_check!(static_data)
-    add_compressor_fields!(static_data)
-
-    # --- Convert units in static network ---
+    static_data = parse_file(static_io) 
     make_si_units!(static_data)
-    # select_largest_component!(static_data)
-    propagate_topology_status!(static_data)
-    add_base_values!(static_data)
-    correct_f_bounds!(static_data)
-    check_connectivity(static_data)
-    check_status(static_data)
-    check_edge_loops(static_data)
-    check_global_parameters(static_data)
     prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
 
     # --- Read and convert transient data ---
