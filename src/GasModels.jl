@@ -30,7 +30,7 @@ module GasModels
         Memento.setlevel!(Memento.getlogger(GasModels), "error")
     end
 
-    "alows the user to set the logging level without the need to add Memento"
+    "allows the user to set the logging level without the need to add Memento"
     function logger_config!(level)
         Memento.config!(Memento.getlogger("GasModels"), level)
     end
@@ -91,6 +91,7 @@ module GasModels
     include("prob/ogf_comp_power_unconstrained.jl")
     include("prob/ogf_comp_power_proxy.jl")
     include("prob/ogf_comp_power_and_pipe_proxy.jl")
+    include("prob/ogf_slp.jl")
     include("prob/transient_ogf.jl")
     include("prob/transient_ogf_archived_storage.jl")
 
