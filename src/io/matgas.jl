@@ -929,6 +929,18 @@ const rouge_junction_id_fields = Dict{String,Vector{String}}(
     "storage" => ["junction_id"],
 )
 
+function _validate_schema(data)
+    """prevent writer from silently crashing if data is missing"""
+    for (data_type, fields) in _matlab_field_order
+        if haskey(data, data_type)
+            for (id, entry) in data[data_type]
+                for field in fields
+                    haskey(entry, field) || Memento.error(_LOGGER, "Missing $field in $data_type $id")
+                end
+            end
+        end
+    end
+end
 
 "write to matgas"
 function _gasmodels_to_matgas_string(
@@ -939,6 +951,12 @@ function _gasmodels_to_matgas_string(
 
     (data["is_english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
+
+    _validate_schema(data)
+    for headervalue in vcat(_matlab_global_params_order_optional, _matlab_global_params_order_required)
+        #keyerror in the dict catches this anyway, just including the loop to make it more explicit
+        @assert haskey(data, headervalue) "missing header information: add $headervalue to case (case['$headervalue'] = something)"
+    end
 
     for param in _matlab_global_params_order_required
         line = isa(data[param], Float64) ?
