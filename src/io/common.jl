@@ -74,7 +74,6 @@ end
 
 function check_sound_speed!(mn_data::Dict{String,Any}; tol=0.5)
     Z = mn_data["compressibility_factor"]
-    Z = mn_data["compressibility_factor"]
     T = mn_data["temperature"]
     R = mn_data["R"]
     m = mn_data["gas_molar_mass"]
