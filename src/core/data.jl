@@ -1,7 +1,7 @@
 # tools for working with GasModels internal data format
 
-"GasModels wrapper for the InfrastructureModels apply! function." 
-function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true) 
+"GasModels wrapper for the InfrastructureModels apply! function."
+function apply_gm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
     _IM.apply!(func!, data, gm_it_name; apply_to_subnetworks = apply_to_subnetworks)
 end
 
@@ -238,6 +238,7 @@ const _params_for_unit_conversions = Dict(
         "net_injection",
         "net_nodal_edge_out_flow",
         "elevation",
+        "lam_junction_mfb"
     ],
     "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
     "pipe" => [
@@ -374,7 +375,7 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "well_density" => rescale_density,
         "length" => rescale_length,
         "well_depth" => rescale_length,
-        "elevation" => rescale_length, 
+        "elevation" => rescale_length,
         "diameter" => rescale_diameter,
         "well_diameter" => rescale_diameter,
         "f" => rescale_flow,
@@ -418,6 +419,7 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "storage_flow" => rescale_flow,
         "bid_price" => rescale_inv_flow,
         "offer_price" => rescale_inv_flow,
+        "lam_junction_mfb" => rescale_inv_flow
     )
 end
 
@@ -1945,7 +1947,7 @@ function _select_largest_component!(data::Dict{String,<:Any})
                 Memento.info(_LOGGER, "deactivating junction $(i) due to small connected component")
             end
         end
-        
+
     end
 end
 
