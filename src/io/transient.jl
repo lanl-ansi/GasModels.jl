@@ -294,8 +294,9 @@ function _prep_transient_data!(
         data["original_pipe"][key]["to_pipe"] = max_pipe_junc_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
-            # id = Base.Checked.checked_mul(max_pipe_junc_id + pipe["id"], 1000 + i) #note: this should be the fix to prevent the Int64 overflow, but breaks tests
-            id = max_pipe_junc_id + pipe["id"] * 1000+i
+            mul  = Base.Checked.checked_mul(pipe["id"], 1000)
+            add1 = Base.Checked.checked_add(max_pipe_junc_id, mul)
+            id   = Base.Checked.checked_add(add1, i)
 
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
