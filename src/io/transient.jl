@@ -252,9 +252,9 @@ function _prep_transient_data!(
                 "p_max",
                 "status",
                 "is_bidirectional",
-                "is_si_units",
-                "is_english_units",
-                "is_per_unit",
+                "si_units",
+                "english_units",
+                "per_unit",
                 "flow_min", 
                 "flow_max"
             ]
@@ -306,9 +306,9 @@ function _prep_transient_data!(
                 "junction_type" => 0,
                 "status" => 1,
                 "is_physical" => false,
-                "is_si_units" => data["is_si_units"],
-                "is_english_units" => data["is_english_units"],
-                "is_per_unit" => data["is_per_unit"],
+                "si_units" => data["si_units"],
+                "english_units" => data["english_units"],
+                "per_unit" => data["per_unit"],
                 "elevation" => h1 + (elevation_difference)*i/sub_pipe_count,
             )
         end
@@ -331,9 +331,9 @@ function _prep_transient_data!(
                 "p_min" => pipe["p_min"],
                 "p_max" => pipe["p_max"],
                 "is_bidirectional" => pipe["is_bidirectional"],
-                "is_si_units" => data["is_si_units"],
-                "is_english_units" => data["is_english_units"],
-                "is_per_unit" => data["is_per_unit"],
+                "si_units" => data["si_units"],
+                "english_units" => data["english_units"],
+                "per_unit" => data["per_unit"],
                 "flow_min" => pipe["flow_min"],
                 "flow_max" => pipe["flow_max"]
             )

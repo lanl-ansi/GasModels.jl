@@ -96,7 +96,7 @@ end
 
 "if original data is in per-unit ensure it has base values"
 function _per_unit_data_field_check!(data::Dict{String,Any})
-    if get(data, "is_per_unit", false) == true
+    if get(data, "per_unit", false) == true
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
             Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
@@ -448,24 +448,24 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
-                comp["is_per_unit"] = gm_data["is_per_unit"]
-                comp["is_si_units"] = 0
-                comp["is_english_units"] = 0
+            if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
+                comp["per_unit"] = gm_data["per_unit"]
+                comp["si_units"] = false
+                comp["english_units"] = false
             end
 
-            if comp["is_si_units"] == true && comp["is_per_unit"] == false
+            if comp["si_units"] == true && comp["per_unit"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
                 end
 
-                comp["is_si_units"] = 0
-                comp["is_english_units"] = 0
-                comp["is_per_unit"] = 1
+                comp["si_units"] = false
+                comp["english_units"] = false
+                comp["per_unit"] = true
             end
         end
     end
@@ -497,23 +497,23 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
-                @assert gm_data["is_per_unit"] == 1
-                comp["is_per_unit"] = gm_data["is_per_unit"]
-                comp["is_si_units"] = 0
-                comp["is_english_units"] = 0
+            if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
+                @assert gm_data["per_unit"] == true
+                comp["per_unit"] = gm_data["per_unit"]
+                comp["si_units"] = false
+                comp["english_units"] = false
             end
 
-            if comp["is_si_units"] == false && comp["is_per_unit"] == true
+            if comp["si_units"] == false && comp["per_unit"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 1
-                    comp["is_english_units"] = 0
-                    comp["is_per_unit"] = 0
+                    comp["si_units"] = true
+                    comp["english_units"] = false
+                    comp["per_unit"] = false
                 end
             end
         end
@@ -544,23 +544,23 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
-                @assert gm_data["is_per_unit"] == 1
-                comp["is_per_unit"] = gm_data["is_per_unit"]
-                comp["is_si_units"] = 0
-                comp["is_english_units"] = 0
+            if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
+                @assert gm_data["per_unit"] == true
+                comp["per_unit"] = gm_data["per_unit"]
+                comp["si_units"] = false
+                comp["english_units"] = false
             end
 
-            if comp["is_english_units"] == false && comp["is_si_units"] == true
+            if comp["english_units"] == false && comp["si_units"] == true
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 0
-                    comp["is_english_units"] = 1
-                    comp["is_per_unit"] = 0
+                    comp["si_units"] = false
+                    comp["english_units"] = true
+                    comp["per_unit"] = false
                 end
             end
         end
@@ -591,23 +591,23 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
 
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
-            if !haskey(comp, "is_per_unit") && !haskey(gm_data, "is_per_unit")
+            if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
                 Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
             end
 
-            if !haskey(comp, "is_per_unit") && haskey(gm_data, "is_per_unit")
-                @assert gm_data["is_per_unit"] == 1
-                comp["is_per_unit"] = gm_data["is_per_unit"]
-                comp["is_si_units"] = 0
-                comp["is_english_units"] = 0
+            if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
+                @assert gm_data["per_unit"] == true
+                comp["per_unit"] = gm_data["per_unit"]
+                comp["si_units"] = false
+                comp["english_units"] = false
             end
 
-            if comp["is_english_units"] == true && comp["is_si_units"] == false
+            if comp["english_units"] == true && comp["si_units"] == false
                 for param in parameters
                     _apply_func!(comp, param, functions[param])
-                    comp["is_si_units"] = 1
-                    comp["is_english_units"] = 0
-                    comp["is_per_unit"] = 0
+                    comp["si_units"] = true
+                    comp["english_units"] = false
+                    comp["per_unit"] = false
                 end
             end
         end
@@ -623,11 +623,11 @@ end
 
 "transforms data to si units"
 function _make_si_units!(data::Dict{String,<:Any})
-    if get(data, "is_si_units", false) == true
+    if get(data, "si_units", false) == true
         return
     end
 
-    if get(data, "is_per_unit", false) == true
+    if get(data, "per_unit", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 pu_to_si!(data, id = i)
@@ -641,12 +641,12 @@ function _make_si_units!(data::Dict{String,<:Any})
             data["time_step"] = rescale_time(data["time_step"])
         end
 
-        data["is_si_units"] = 1
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 0
+        data["si_units"] = true
+        data["english_units"] = false
+        data["per_unit"] = false
     end
 
-    if get(data, "is_english_units", false) == true
+    if get(data, "english_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 english_to_si!(data, id = i)
@@ -655,9 +655,9 @@ function _make_si_units!(data::Dict{String,<:Any})
             english_to_si!(data)
         end
 
-        data["is_si_units"] = 1
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 0
+        data["si_units"] = true
+        data["english_units"] = false
+        data["per_unit"] = false
     end
 end
 
@@ -669,15 +669,15 @@ end
 
 "Transforms network data into English units"
 function _make_english_units!(data::Dict{String, <:Any})
-    if get(data, "is_english_units", false) == true
+    if get(data, "english_units", false) == true
         return
     end
 
-    if get(data, "is_per_unit", false) == true
+    if get(data, "per_unit", false) == true
         make_si_units!(data)
     end
 
-    if get(data, "is_si_units", false) == true
+    if get(data, "si_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_english!(data, id = i)
@@ -686,9 +686,9 @@ function _make_english_units!(data::Dict{String, <:Any})
             si_to_english!(data)
         end
 
-        data["is_si_units"] = 0
-        data["is_english_units"] = 1
-        data["is_per_unit"] = 0
+        data["si_units"] = false
+        data["english_units"] = true
+        data["per_unit"] = false
     end
 end
 
@@ -701,15 +701,15 @@ end
 
 "Transforms network data into per unit"
 function _make_per_unit!(data::Dict{String,<:Any})
-    if get(data, "is_per_unit", false) == true
+    if get(data, "per_unit", false) == true
         return
     end
 
-    if get(data, "is_english_units", false) == true
+    if get(data, "english_units", false) == true
         make_si_units!(data)
     end
 
-    if get(data, "is_si_units", false) == true
+    if get(data, "si_units", false) == true
         if _IM.ismultinetwork(data)
             for (i, _) in data["nw"]
                 si_to_pu!(data, id = i)
@@ -723,9 +723,9 @@ function _make_per_unit!(data::Dict{String,<:Any})
             data["time_step"] = rescale_time(data["time_step"])
         end
 
-        data["is_si_units"] = 0
-        data["is_english_units"] = 0
-        data["is_per_unit"] = 1
+        data["si_units"] = false
+        data["english_units"] = false
+        data["per_unit"] = true
     end
 end
 
@@ -947,30 +947,30 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 0.0
             Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (junction["p_min"] = si_value)
-            (data["is_english_units"] == 1) && (junction["p_min"] = english_value)
+            (data["si_units"] == true) && (junction["p_min"] = si_value)
+            (data["english_units"] == true) && (junction["p_min"] = english_value)
         end
     end
 
     for (i, pipe) in get(data, "pipe", [])
         if pipe["p_min"] < 0.0
             Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (pipe["p_min"] = si_value)
-            (data["is_english_units"] == 1) && (pipe["p_min"] = english_value)
+            (data["si_units"] == true) && (pipe["p_min"] = si_value)
+            (data["english_units"] == true) && (pipe["p_min"] = english_value)
         end
     end
 
     for (i, compressor) in get(data, "compressor", [])
         if compressor["inlet_p_min"] < 0
             Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (compressor["inlet_p_min"] = si_value)
-            (data["is_english_units"] == 1) && (compressor["inlet_p_min"] = english_value)
+            (data["si_units"] == true) && (compressor["inlet_p_min"] = si_value)
+            (data["english_units"] == true) && (compressor["inlet_p_min"] = english_value)
         end
 
         if compressor["outlet_p_min"] < 0
             Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
-            (data["is_si_units"] == 1) && (compressor["outlet_p_min"] = si_value)
-            (data["is_english_units"] == 1) && (compressor["outlet_p_min"] = english_value)
+            (data["si_units"] == true) && (compressor["outlet_p_min"] = si_value)
+            (data["english_units"] == true) && (compressor["outlet_p_min"] = english_value)
         end
     end
 end
@@ -984,25 +984,25 @@ end
 
 "add additional compressor fields - required for transient"
 function _add_compressor_fields!(data::Dict{String,<:Any})
-    is_si_units = get(data, "is_si_units", 0)
-    is_english_units = get(data, "is_english_units", 0)
-    is_per_unit = get(data, "is_per_unit", false)
+    si_units = get(data, "si_units", 0)
+    english_units = get(data, "english_units", 0)
+    per_unit = get(data, "per_unit", false)
 
     if haskey(data, "compressor")
         for (i, compressor) in data["compressor"]
-            if is_si_units == true
+            if si_units == true
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0
                 compressor["friction_factor"] = 0.001
             end
 
-            if is_english_units == true
+            if english_units == true
                 compressor["diameter"] = 39.37
                 compressor["length"] = 0.16
                 compressor["friction_factor"] = 0.001
             end
 
-            if is_per_unit == true
+            if per_unit == true
                 base_length = get(data, "base_length", 5000.0)
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0 / base_length
@@ -1013,19 +1013,19 @@ function _add_compressor_fields!(data::Dict{String,<:Any})
 
     if haskey(data, "ne_compressor")
         for (i, compressor) in data["ne_compressor"]
-            if is_si_units == true
+            if si_units == true
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0
                 compressor["friction_factor"] = 0.001
             end
 
-            if is_english_units == true
+            if english_units == true
                 compressor["diameter"] = 39.37
                 compressor["length"] = 0.16
                 compressor["friction_factor"] = 0.001
             end
 
-            if is_per_unit == true
+            if per_unit == true
                 base_length = get(data, "base_length", 5000.0)
                 compressor["diameter"] = 1.0
                 compressor["length"] = 250.0 / base_length

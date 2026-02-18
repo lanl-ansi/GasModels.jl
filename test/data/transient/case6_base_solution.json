@@ -7,7 +7,7 @@
   "objective": -167.19018814779176,
   "solution": {
     "base_density": 21.717986575066167,
-    "is_per_unit": 1,
+    "per_unit": true,
     "multinetwork": false,
     "base_volume": 5000,
     "compressor": {
