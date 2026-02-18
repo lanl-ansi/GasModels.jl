@@ -10,8 +10,8 @@ The network data dictionary structure is roughly as follows:
 {
 "name":<string>,                         # a name for the model
 "temperature":<float>,                   # gas temperature. SI units are kelvin
-"per_units":<int>,                    # Whether or not the file is in per unit (non dimensional units) or SI units.
-"english_units":<int>,                # Whether or not the file is in english units
+"per_unit":<boolean>,                    # Whether or not the file is in per unit (non dimensional units) or SI units.
+"english_units":<boolean>,                # Whether or not the file is in english units
 "gas_molar_mass":<float>,                # molecular mass of the gas. SI units are kg/mol
 "gas_specific_gravity":<float>,          # the specific gravity of the gas. Non-dimensional.
 "multinetwork":<boolean>,                # flag for whether or not this is multiple networks

@@ -24,7 +24,7 @@ end
 accepted_keys = ["junction"]
 for (i, junction) in data["junction"]
     junction["id"] = (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) : parse(Int64, i)
-    if (data["per_unit"] == false)
+    if (data["per_unit"] == true)
         junction["p_min"] = junction["pmin"] * data["baseP"]
         junction["p_max"] = junction["pmax"] * data["baseP"]
         junction["p_nominal"] = (get(junction, "p", false) == true) ? junction["p"] * data["baseP"] : junction["pmin"] * data["baseP"]
@@ -82,7 +82,7 @@ for (i, compressor) in data["compressor"]
     if compressor["qmin"] == compressor["qmax"]
         compressor["qmin"] = 0.0
     end
-    if data["per_unit"] == false
+    if data["per_unit"] == true
         compressor["flow_min"] = compressor["qmin"] * data["baseQ"]
         compressor["flow_max"] = compressor["qmax"] * data["baseQ"]
     else
@@ -125,7 +125,7 @@ for (i, producer) in data["producer"]
     data["receipt"][i]["junction_id"] = (get(producer, "junction", false) != false) ? producer["junction"] : producer["qg_junc"]
     data["receipt"][i]["status"] = (get(producer, "status", false) != false) ? producer["status"] : Int(1)
     data["receipt"][i]["is_dispatchable"] = producer["dispatchable"]
-    if data["per_unit"] == false
+    if data["per_unit"] == true
         data["receipt"][i]["injection_min"] = producer["qgmin"] * data["baseQ"]
         data["receipt"][i]["injection_max"] = producer["qgmax"] * data["baseQ"]
         data["receipt"][i]["injection_nominal"] = producer["qg"] * data["baseQ"]
@@ -148,7 +148,7 @@ for (i, consumer) in data["consumer"]
     if haskey(consumer, "priority")
         data["delivery"][i]["priority"] = consumer["priority"]
     end
-    if data["per_unit"] == false
+    if data["per_unit"] == true
         data["delivery"][i]["withdrawal_min"] = consumer["qlmin"] * data["baseQ"]
         data["delivery"][i]["withdrawal_max"] = consumer["qlmax"] * data["baseQ"]
         data["delivery"][i]["withdrawal_nominal"] = consumer["ql"] * data["baseQ"]
@@ -255,7 +255,7 @@ if haskey(data, "ne_compressor")
         if compressor["qmin"] == compressor["qmax"]
             compressor["qmin"] = 0.0
         end
-        if data["per_unit"] == false
+        if data["per_unit"] == true
             compressor["flow_min"] = compressor["qmin"] * data["baseQ"]
             compressor["flow_max"] = compressor["qmax"] * data["baseQ"]
         else
