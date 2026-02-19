@@ -404,10 +404,10 @@ This value will be auto-assigned based on the pressure limits provided in the da
             This value will be auto-assigned based on the pipe data"))
     end
 
-    if haskey(matlab_data, "mgc.per_unit")
-        case["per_unit"] = matlab_data["mgc.per_unit"]
+    if haskey(matlab_data, "mgc.is_per_unit")
+        case["per_unit"] = matlab_data["mgc.is_per_unit"]
     else
-        Memento.warn(_LOGGER, string("no per_unit found in .m file.
+        Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the per_unit field"))
         case["per_unit"] = false
     end
