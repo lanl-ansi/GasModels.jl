@@ -18,6 +18,10 @@
         @test occursin("Table: delivery", output)
     end
 
+    @testset "asset ID overflow" begin
+        @test_throws OverflowError case=parse_files("../test/data/matgas/case-6-overflow.m", "../test/data/transient/time-series-case-6a.csv")
+    end
+
     @testset "check status = false components" begin
         gm = instantiate_model("../test/data/status.m", CRDWPGasModel, GasModels.build_ls)
 
