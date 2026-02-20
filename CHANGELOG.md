@@ -3,6 +3,10 @@
 ## staged 
 - nothing
 
+## v0.11.1
+- change units flags from 1 or 0 (`is_english_units = 0`) to booleans (`per_unit = true`)
+- this is a breaking change for any code that asserts/checks/modifies the units flag
+
 ## v0.11.0
 - introduce new data parsers
 - fix matgas writer
