@@ -49,7 +49,7 @@ function variable_pipe_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
     f_pipe = var(gm, nw)[:f_pipe] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :pipe)],
         base_name="$(nw)_f_pipe",
-        start=comp_start_value(ref(gm, nw, :pipe), i, "f_start", 0)
+        start=comp_start_value(ref(gm, nw, :pipe), i, "f_pipe_start", 0)
     )
 
     if bounded
@@ -67,7 +67,7 @@ function variable_compressor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_defau
     f_compressor = var(gm, nw)[:f_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:compressor)],
         base_name="$(nw)_f_compressor",
-        start=comp_start_value(ref(gm, nw, :compressor), i, "f_start", 0)
+        start=comp_start_value(ref(gm, nw, :compressor), i, "f_compressor_start", 0)
     )
 
     if bounded
@@ -85,7 +85,7 @@ function variable_resistor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default
     f_resistor = var(gm, nw)[:f_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:resistor)],
         base_name="$(nw)_f_resistor",
-        start=comp_start_value(ref(gm, nw, :resistor), i, "f_start", 1.0e-6)
+        start=comp_start_value(ref(gm, nw, :resistor), i, "f_resistor_start", 1.0e-6)
     )
 
     if bounded
@@ -103,7 +103,7 @@ function variable_loss_resistor_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_de
     f_loss_resistor = var(gm, nw)[:f_loss_resistor] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :loss_resistor)],
         base_name="$(nw)_f_lossresistor",
-        start=comp_start_value(ref(gm, nw, :loss_resistor), i, "f_start", 1.0e-6)
+        start=comp_start_value(ref(gm, nw, :loss_resistor), i, "f_lossresistor_start", 1.0e-6)
     )
 
     if bounded
@@ -121,7 +121,7 @@ function variable_short_pipe_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_defau
     f_short_pipe = var(gm, nw)[:f_short_pipe] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:short_pipe)],
         base_name="$(nw)_f_shortpipe",
-        start=comp_start_value(ref(gm, nw, :short_pipe), i, "f_start", 0)
+        start=comp_start_value(ref(gm, nw, :short_pipe), i, "f_shortpipe_start", 0)
     )
 
     if bounded
@@ -140,7 +140,7 @@ function variable_valve_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; b
     f_valve = var(gm, nw)[:f_valve] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:valve)],
         base_name="$(nw)_f_valve",
-        start=comp_start_value(ref(gm, nw, :valve), i, "f_start", 0)
+        start=comp_start_value(ref(gm, nw, :valve), i, "f_valve_start", 0)
     )
 
     if bounded
@@ -162,7 +162,7 @@ function variable_regulator_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_defaul
     f_regulator = var(gm, nw)[:f_regulator] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:regulator)],
         base_name="$(nw)_f_regulator",
-        start=comp_start_value(ref(gm, nw, :regulator), i, "f_start", 0)
+        start=comp_start_value(ref(gm, nw, :regulator), i, "f_regulator_start", 0)
     )
 
     if bounded
@@ -193,8 +193,8 @@ end
 "variables associated with mass flow in pipes in expansion planning"
 function variable_pipe_mass_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_ne_pipe = var(gm, nw)[:f_ne_pipe] = JuMP.@variable(
-        gm.model, [i in ids(gm, nw, :ne_pipe)], base_name="$(nw)_f_ne",
-        start=comp_start_value(ref(gm, nw, :ne_pipe), i, "f_start", 0.0))
+        gm.model, [i in ids(gm, nw, :ne_pipe)], base_name="$(nw)_f_pipe_ne",
+        start=comp_start_value(ref(gm, nw, :ne_pipe), i, "f_pipe_ne_start", 0.0))
 
     if bounded
         for (i, ne_pipe) in ref(gm, nw, :ne_pipe)
@@ -215,8 +215,8 @@ end
 function variable_compressor_mass_flow_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     f_ne_compressor = var(gm, nw)[:f_ne_compressor] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:ne_compressor)],
-        base_name="$(nw)_f_ne",
-        start=comp_start_value(ref(gm, nw, :ne_compressor), i, "f_start", 0))
+        base_name="$(nw)_f_compressor_ne",
+        start=comp_start_value(ref(gm, nw, :ne_compressor), i, "f_compressor_ne_start", 0))
 
     if bounded
         for (i, ne_compressor) in ref(gm, nw, :ne_compressor)
