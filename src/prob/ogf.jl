@@ -1,18 +1,23 @@
 # Definitions for running an optimal gas flow (ogf)
 
 "entry point into running the ogf problem"
-function solve_ogf(file, model_type, optimizer; kwargs...)
+function solve_ogf(file, model_type, optimizer; include_deactivated::Bool=false, kwargs...)
+    sol_procs = Function[
+        sol_psqr_to_p!,
+        sol_compressor_p_to_r!,
+        sol_regulator_p_to_r!,
+    ]
+
+    if include_deactivated
+        push!(sol_procs, sol_include_deactivated!)
+    end
 
     return run_model(
         file,
         model_type,
         optimizer,
         build_ogf;
-        solution_processors = [
-            sol_psqr_to_p!,
-            sol_compressor_p_to_r!,
-            sol_regulator_p_to_r!,
-        ],
+        solution_processors = sol_procs,
         kwargs...,
     )
 end
