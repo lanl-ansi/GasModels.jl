@@ -72,9 +72,8 @@ function check_pipeline_geometry!(data::Dict{String,Any})
     end
 end
 
-function check_isothermal_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
+function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
     """note that isothermal sound speed is not the TRUE sound speed in the gas. a pressure wave moving through the gas will inherently raise the temperature"""
-    #potentially add some kind of choice or correction here. I think this has already been implemented elsewhere
     Z = mn_data["compressibility_factor"]
     T = mn_data["temperature"]
     R = mn_data["R"]
@@ -91,7 +90,7 @@ function check_isothermal_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
     if abs(a_given - a_expected) > tol
         Memento.warn(
             _LOGGER,
-            "Isothermal sound speed mismatch: provided=$(a_given), expected=$(a_expected), Δ=$(a_given - a_expected)"
+            "Sound speed mismatch: provided=$(a_given), calculated=$(a_expected), Δ=$(a_given - a_expected). The calculated speed will be used."
         )
     end
 
@@ -109,7 +108,7 @@ function correct_network_data!(data::Dict{String,Any})
     add_compressor_fields!(data)
 
     make_si_units!(data)
-    check_isothermal_soundspeed!(data)
+    check_soundspeed!(data)
     # select_largest_component!(data)
     propagate_topology_status!(data)
     add_base_values!(data)
