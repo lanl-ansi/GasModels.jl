@@ -23,8 +23,8 @@ end
 
 accepted_keys = ["junction"]
 for (i, junction) in data["junction"]
-    junction["id"] = (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) : parse(Int, i)
-    if (data["per_unit"] == 1)
+    junction["id"] = (get(junction, "junction_i", false) == true) ? Int(junction["junction_i"]) : parse(Int64, i)
+    if (data["per_unit"] == true)
         junction["p_min"] = junction["pmin"] * data["baseP"]
         junction["p_max"] = junction["pmax"] * data["baseP"]
         junction["p_nominal"] = (get(junction, "p", false) == true) ? junction["p"] * data["baseP"] : junction["pmin"] * data["baseP"]
@@ -82,7 +82,7 @@ for (i, compressor) in data["compressor"]
     if compressor["qmin"] == compressor["qmax"]
         compressor["qmin"] = 0.0
     end
-    if data["per_unit"] == 1
+    if data["per_unit"] == true
         compressor["flow_min"] = compressor["qmin"] * data["baseQ"]
         compressor["flow_max"] = compressor["qmax"] * data["baseQ"]
     else
@@ -125,7 +125,7 @@ for (i, producer) in data["producer"]
     data["receipt"][i]["junction_id"] = (get(producer, "junction", false) != false) ? producer["junction"] : producer["qg_junc"]
     data["receipt"][i]["status"] = (get(producer, "status", false) != false) ? producer["status"] : Int(1)
     data["receipt"][i]["is_dispatchable"] = producer["dispatchable"]
-    if data["per_unit"] == 1
+    if data["per_unit"] == true
         data["receipt"][i]["injection_min"] = producer["qgmin"] * data["baseQ"]
         data["receipt"][i]["injection_max"] = producer["qgmax"] * data["baseQ"]
         data["receipt"][i]["injection_nominal"] = producer["qg"] * data["baseQ"]
@@ -148,7 +148,7 @@ for (i, consumer) in data["consumer"]
     if haskey(consumer, "priority")
         data["delivery"][i]["priority"] = consumer["priority"]
     end
-    if data["per_unit"] == 1
+    if data["per_unit"] == true
         data["delivery"][i]["withdrawal_min"] = consumer["qlmin"] * data["baseQ"]
         data["delivery"][i]["withdrawal_max"] = consumer["qlmax"] * data["baseQ"]
         data["delivery"][i]["withdrawal_nominal"] = consumer["ql"] * data["baseQ"]
@@ -206,7 +206,7 @@ for (i, control_valve) in get(data, "control_valve", [])
         control_valve["qmin"] = -1e4
         control_valve["qmax"] = 1e4
     end
-    if data["per_unit"] == 1
+    if data["per_unit"] == false
         data["regulator"][i]["flow_min"] = control_valve["qmin"] * data["baseQ"]
         data["regulator"][i]["flow_max"] = control_valve["qmax"] * data["baseQ"]
     else
@@ -255,7 +255,7 @@ if haskey(data, "ne_compressor")
         if compressor["qmin"] == compressor["qmax"]
             compressor["qmin"] = 0.0
         end
-        if data["per_unit"] == 1
+        if data["per_unit"] == true
             compressor["flow_min"] = compressor["qmin"] * data["baseQ"]
             compressor["flow_max"] = compressor["qmax"] * data["baseQ"]
         else
@@ -296,9 +296,9 @@ push!(accepted_keys, "sound_speed")
 push!(accepted_keys, "R")
 push!(accepted_keys, "compressibility_factor")
 push!(accepted_keys, "units")
-push!(accepted_keys, "is_per_unit")
-push!(accepted_keys, "is_si_units")
-push!(accepted_keys, "is_english_units")
+push!(accepted_keys, "per_unit")
+push!(accepted_keys, "si_units")
+push!(accepted_keys, "english_units")
 push!(accepted_keys, "economic_weighting")
 push!(accepted_keys, "base_pressure")
 push!(accepted_keys, "base_length")
@@ -339,9 +339,9 @@ end
 data["base_pressure"] = data["baseP"]
 data["base_length"] = 5000.0
 data["base_flow"] = data["baseQ"]
-data["is_per_unit"] = 0
-data["is_si_units"] = 1
-data["is_english_units"] = 0
+data["per_unit"] = false
+data["si_units"] = true
+data["english_units"] = false
 data["units"] = "si"
 
 

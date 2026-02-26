@@ -7,7 +7,7 @@
   "objective": -18989.191876545374,
   "solution": {
     "base_density": 21.717986575066167,
-    "is_per_unit": 1,
+    "per_unit": true,
     "multinetwork": true,
     "base_volume": 5000,
     "base_length": 5000,
