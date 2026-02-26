@@ -67,9 +67,34 @@ function check_pipeline_geometry!(data::Dict{String,Any})
                 end
             end
         else
-            Memento.warn(_LOGGER, "Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
+            Memento.warn(_LOGGER,"Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
         end
     end
+end
+
+function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
+    """note that isothermal sound speed is not the TRUE sound speed in the gas. a pressure wave moving through the gas will inherently raise the temperature"""
+    Z = mn_data["compressibility_factor"]
+    T = mn_data["temperature"]
+    R = mn_data["R"]
+    m = mn_data["gas_molar_mass"]
+    a_given = mn_data["sound_speed"]
+
+    #specific gas constant
+    R_spec = R / m
+
+    #expected sound speed
+    a_expected = sqrt(Z * R_spec * T)
+
+    #check for mismatch
+    if abs(a_given - a_expected) > tol
+        Memento.warn(
+            _LOGGER,
+            "Sound speed mismatch: provided=$(a_given), calculated=$(a_expected), Δ=$(a_given - a_expected). The calculated speed will be used."
+        )
+    end
+
+    return nothing
 end
 
 function correct_network_data!(data::Dict{String,Any})
@@ -83,6 +108,7 @@ function correct_network_data!(data::Dict{String,Any})
     add_compressor_fields!(data)
 
     make_si_units!(data)
+    check_soundspeed!(data)
     # select_largest_component!(data)
     propagate_topology_status!(data)
     add_base_values!(data)
