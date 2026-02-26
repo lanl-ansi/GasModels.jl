@@ -55,6 +55,7 @@ module GasModels
     include("io/multinetwork.jl") 
     include("io/solution_hints.jl")
     include("io/separated_data.jl")
+    include("io/contingency.jl")
 
     include("core/base.jl")
     include("core/types.jl")
