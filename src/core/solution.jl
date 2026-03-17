@@ -181,6 +181,7 @@ function _status_zero_missing_ids(
 
     return out
 end
+
 function _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
     ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :junction)
     isempty(ids0) && return
