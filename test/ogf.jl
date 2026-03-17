@@ -10,6 +10,14 @@
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
         end
         
+        @testset "test status zero components in solution" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            data["junction"]["1"]["status"] = 0
+            res = solve_ogf(data, WPGasModel, nlp_solver, include_status_zero_components=true)
+            @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
+            @test haskey(res["solution"]["junction"], "1")
+        end
+
         @testset "test solution hints for static file" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             solution_file = "../test/data/transient/case6_base_solution.json"
