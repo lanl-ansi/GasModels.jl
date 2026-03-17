@@ -88,9 +88,9 @@ function parse_gaslib(zip_path::Union{IO,String})
         "loss_resistor" => loss_resistors,
         "short_pipe" => short_pipes,
         "valve" => valves,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
-        "is_per_unit" => 0,
+        "si_units" => true,
+        "english_units" => 0,
+        "per_unit" => false,
         "sound_speed" => sound_speed,
         "temperature" => temperature,
         "name" => name,
@@ -293,7 +293,7 @@ function _get_compressor_entry(
     power_max = H_max * abs(flow_max) * inv(0.1)
 
     return Dict{String,Any}(
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "fr_junction" => fr_junction,
         "to_junction" => to_junction,
         "inlet_p_min" => inlet_p_min,
@@ -305,8 +305,8 @@ function _get_compressor_entry(
         "diameter" => diameter,
         "directionality" => directionality,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
         "c_ratio_min" => c_ratio_min,
         "c_ratio_max" => c_ratio_max,
         "power_max" => power_max,
@@ -333,10 +333,10 @@ function _get_delivery_entry(delivery, density::Float64)
         "withdrawal_max" => withdrawal_max,
         "withdrawal_nominal" => withdrawal_max,
         "is_dispatchable" => is_dispatchable,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
         "junction_id" => delivery[:id],
     )
 end
@@ -361,9 +361,9 @@ function _get_junction_entry(junction)
         "is_dispatchable" => 0,
         "status" => 1,
         "junction_type" => 0,
-        "is_per_unit" => 0,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "per_unit" => false,
+        "si_units" => true,
+        "english_units" => 0,
         "edi_id" => junction[:id],
         "id" => junction[:id],
         "index" => junction[:id],
@@ -425,9 +425,9 @@ function _get_pipe_entry(pipe, junctions, density::Float64)
         "friction_factor" => friction_factor,
         "is_bidirectional" => is_bidirectional,
         "status" => 1,
-        "is_per_unit" => 0,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "per_unit" => false,
+        "si_units" => true,
+        "english_units" => 0,
     )
 end
 
@@ -451,10 +451,10 @@ function _get_loss_resistor_entry(loss_resistor, density::Float64)
         "flow_min" => flow_min,
         "flow_max" => flow_max,
         "p_loss" => p_loss,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
         "is_bidirectional" => is_bidirectional,
     )
 end
@@ -476,10 +476,10 @@ function _get_short_pipe_entry(short_pipe, density::Float64)
         "fr_junction" => fr_junction,
         "to_junction" => to_junction,
         "is_bidirectional" => is_bidirectional,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
     )
 end
 
@@ -502,10 +502,10 @@ function _get_receipt_entry(receipt, density::Float64)
         "injection_max" => injection_max,
         "injection_nominal" => injection_max,
         "is_dispatchable" => is_dispatchable,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
         "junction_id" => receipt[:id],
     )
 end
@@ -532,10 +532,10 @@ function _get_resistor_entry(resistor, density::Float64)
         "flow_max" => flow_max,
         "drag" => drag,
         "diameter" => diameter,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "status" => 1,
-        "is_si_units" => 1,
-        "is_english_units" => 0,
+        "si_units" => true,
+        "english_units" => 0,
         "is_bidirectional" => is_bidirectional,
     )
 end
@@ -555,13 +555,13 @@ function _get_valve_entry(valve, density::Float64)
 
     return Dict{String,Any}(
         "fr_junction" => fr_junction,
-        "is_english_units" => 0,
+        "english_units" => 0,
         "to_junction" => to_junction,
         "flow_min" => flow_min,
         "flow_max" => flow_max,
         "status" => 1,
-        "is_per_unit" => 0,
-        "is_si_units" => 1,
+        "per_unit" => false,
+        "si_units" => true,
         "is_bidirectional" => is_bidirectional,
     )
 end
@@ -587,16 +587,16 @@ function _get_regulator_entry(regulator, density::Float64)
 
     return Dict{String,Any}(
         "fr_junction" => fr_junction,
-        "is_english_units" => 0,
+        "english_units" => 0,
         "to_junction" => to_junction,
         "flow_min" => flow_min,
-        "is_si_units" => 1,
+        "si_units" => true,
         "flow_max" => flow_max,
         "reduction_factor_min" => reduction_factor_min,
         "reduction_factor_max" => reduction_factor_max,
         "status" => 1,
         "is_bidirectional" => is_bidirectional,
-        "is_per_unit" => 0,
+        "per_unit" => false,
         "bypass_required" => bypass_required,
     )
 end

@@ -87,5 +87,28 @@
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.2727559842232; atol = 1e-2)
         end
+         @testset "6-bus case solution with duals" begin
+            @info "Testing OGF Report Duals"
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            settings = Dict("output" => Dict("duals" => true))
+            result = solve_ogf(data, CWPGasModel, nlp_solver, setting=settings)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test isapprox(result["objective"], -167.190; atol = 1e-2)
+
+            @test isapprox(result["solution"]["junction"]["1"]["lam_junction_mfb"], 9585.2624, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["2"]["lam_junction_mfb"], 23004.6300, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["3"]["lam_junction_mfb"], 30672.8399, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["4"]["lam_junction_mfb"], 24621.9535, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["5"]["lam_junction_mfb"], 9584.9839, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["6"]["lam_junction_mfb"], 23004.3516, atol=1e-2)
+
+            # test the unit conversions on duals work
+            result_base = deepcopy(result)
+            GasModels.make_english_units!(result["solution"])
+            GasModels.make_si_units!(result["solution"])
+            GasModels.make_per_unit!(result["solution"])
+
+            @test compare(result["solution"], result_base["solution"], rtol=1e-12)
+        end
     end
 end
