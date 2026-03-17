@@ -12,173 +12,6 @@ end
 
 const LAST_SOL_ARG = Ref{Any}(nothing)
 
-function sol_include_deactivated!(
-    gm,
-    result_or_solution;
-    component_keys = nothing,
-    copy_fields = nothing,
-)
-    @info "ENTER sol_include_deactivated!" gm_type = typeof(gm)
-
-    component_keys === nothing && (component_keys = String[
-        "junction","pipe","compressor","valve","regulator","resistor",
-        "short_pipe","storage","receipt","delivery","transfer",
-    ])
-    copy_fields === nothing && (copy_fields = String["name", "status"])
-
-    # detect shape and extract solution dict
-    is_full_result = (result_or_solution isa AbstractDict) && haskey(result_or_solution, "solution")
-    @info "shape detect" is_full_result = is_full_result
-
-    solution = nothing
-    if is_full_result
-        solution = result_or_solution["solution"]
-    elseif result_or_solution isa AbstractDict
-        solution = result_or_solution
-    else
-        @info "unknown input shape - bailing" typeof_arg = typeof(result_or_solution)
-        return result_or_solution
-    end
-
-    # record the exact object we were passed so you can inspect after solve
-    LAST_SOL_ARG[] = solution
-
-    # log object identity pointers 
-    try
-        sol_ptr = pointer_from_objref(solution)
-        @info "solution pointer" ptr = sol_ptr
-    catch e
-        @info "pointer_from_objref failed" err = e
-    end
-
-    # file-shape handling like your add_solution_hints!
-    sol_root = haskey(solution, "result") ? solution["result"] : solution
-    @info "sol_root identity" sol_root_keys = collect(keys(sol_root))[1:min(10,end)]
-    @info "is sol_root === solution?" equal_root_solution = (sol_root === solution)
-
-    data = gm.data
-    @info "gm.data keys count" n_data_keys = length(keys(data))
-
-    # call helper on NW or single root
-    if haskey(sol_root, "nw")
-        @info "multinetwork path"
-        haskey(data, "nw") || begin
-            @info "gm.data has no 'nw' - nothing to do"
-            return is_full_result ? result_or_solution : solution
-        end
-        for (nw_id, nw_sol_any) in sol_root["nw"]
-            @info "processing network" nw_id = nw_id
-            haskey(data["nw"], nw_id) || begin
-                @info "no matching network in gm.data - skipping" nw_id = nw_id
-                continue
-            end
-            nw_sol  = nw_sol_any::Dict{String,Any}
-            nw_data = data["nw"][nw_id]::Dict{String,Any}
-            _include_deactivated_into_solution_root!(nw_data, nw_sol; component_keys=component_keys, copy_fields=copy_fields)
-        end
-    else
-        @info "single-network path; calling helper"
-        _include_deactivated_into_solution_root!(data, sol_root; component_keys=component_keys, copy_fields=copy_fields)
-    end
-
-    # after helper finish, log where the junction ended up
-    sol_has_top_junction = haskey(solution, "junction") && haskey(solution["junction"], "1")
-    root_has_top_junction = haskey(sol_root, "junction") && haskey(sol_root["junction"], "1")
-    @info "post-insert presence" sol_has_top_junction = sol_has_top_junction root_has_top_junction = root_has_top_junction sol_root_is_solution = (sol_root === solution)
-
-    return is_full_result ? result_or_solution : solution
-end
-
-
-function _include_deactivated_into_solution_root!(
-    data_root::Dict{String,Any},
-    sol_root::Dict{String,Any};
-    component_keys::Vector{String},
-    copy_fields::Vector{String},
-)
-    # log pointer identity 
-    try
-        @info "_include_deactivated_into_solution_root! sol_root ptr" ptr = pointer_from_objref(sol_root)
-    catch e
-        @warn "pointer_from_objref failed on sol_root" err=e
-    end
-    @info "data_root keys count" n_data_keys = length(keys(data_root)) sol_root_keys_preview = collect(keys(sol_root))[1:min(8, end)]
-
-    for comp_key in component_keys
-        haskey(data_root, comp_key) || continue
-        data_tbl_any = data_root[comp_key]
-        data_tbl_any isa AbstractDict || continue
-        data_tbl = data_tbl_any::Dict{String,Any}
-
-        sol_tbl = get!(sol_root, comp_key) do
-            Dict{String,Any}()
-        end
-        sol_tbl = sol_tbl::Dict{String,Any}
-
-        # log pointer identity for the components
-        try
-            @info "component table ptr" comp_key = comp_key sol_tbl_ptr = pointer_from_objref(sol_tbl)
-        catch e
-            @warn "pointer_from_objref failed on sol_tbl" err=e
-        end
-
-        for (id, comp_any) in data_tbl
-            comp_any isa AbstractDict || continue
-            comp = comp_any::Dict{String,Any}
-
-            s = get(comp, "status", 1)
-            @info "checking component" comp_key = comp_key id = id status = s
-            s == 0 || begin
-                @info "skipping: not deactivated" id = id status = s
-                continue
-            end
-
-            if haskey(sol_tbl, id)
-                @info "skipping: already in solution table" id = id
-                continue
-            end
-
-            new_entry = Dict{String,Any}()
-            new_entry["status"] = 0
-
-            for f in copy_fields
-                f == "status" && continue
-                if haskey(comp, f)
-                    new_entry[f] = comp[f]
-                else
-                    @info "copy field missing in data component" field=f id=id
-                end
-            end
-
-            # some kind of dumb pointer stuff to compare values
-            exists_before = haskey(sol_tbl, id)
-            try
-                tbl_ptr_before = pointer_from_objref(sol_tbl)
-            catch e
-                tbl_ptr_before = nothing
-            end
-            @info "about to assign into sol_tbl" comp_key = comp_key id = id sol_tbl_ptr_before = tbl_ptr_before exists_before = exists_before new_entry_preview = new_entry
-
-            # actual insertion 
-            sol_tbl[id] = new_entry
-
-            # re-check presence on sol_tbl and sol_root and log pointers again
-            exists_after_tbl = haskey(sol_tbl, id)
-            exists_after_root = haskey(sol_root, comp_key) && haskey(sol_root[comp_key], id)
-            try
-                tbl_ptr_after = pointer_from_objref(sol_tbl)
-                root_ptr_after = pointer_from_objref(sol_root)
-            catch e
-                tbl_ptr_after = nothing
-                root_ptr_after = nothing
-            end
-            @info "after assign" comp_key = comp_key id = id exists_after_tbl = exists_after_tbl exists_after_root = exists_after_root sol_tbl_ptr_after = tbl_ptr_after sol_root_ptr_after = root_ptr_after
-        end
-    end
-
-    return sol_root
-end
-
 "GasModels wrapper for the InfrastructureModels `sol_component_value` function."
 function sol_component_value(aim::AbstractGasModel, n::Int, comp_name::Symbol, field_name::Symbol, comp_ids, variables)
     return _IM.sol_component_value(aim, gm_it_sym, n, comp_name, field_name, comp_ids, variables)
@@ -287,5 +120,155 @@ function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
                 regulator["r"] = (f >= 0) ? sqrt(pj) / sqrt(pi) : sqrt(pi) / sqrt(pj)
             end
         end
+    end
+end
+
+function sol_status_zero_components!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_sol = solution["it"][gm_it_name]["nw"]
+    else
+        nws_sol = Dict("0" => solution["it"][gm_it_name])
+    end
+
+    nws_data =
+        if get(gm.data, "multinetwork", false)
+            gm.data["nw"]
+        else
+            Dict("0" => gm.data)
+        end
+
+    for (n_str, nw_sol) in nws_sol
+        n = parse(Int, n_str)
+        nw_data = nws_data[n_str]
+
+        _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
+        _backfill_status_zero_pipes!(gm, n, nw_data, nw_sol)
+        _backfill_status_zero_compressors!(gm, n, nw_data, nw_sol)
+        _backfill_status_zero_transfers!(gm, n, nw_data, nw_sol)
+        _backfill_status_zero_receipts!(gm, n, nw_data, nw_sol)
+        _backfill_status_zero_deliveries!(gm, n, nw_data, nw_sol)
+    end
+end
+
+function _status_zero_missing_ids(
+    gm::AbstractGasModel,
+    n::Int,
+    nw_data::Dict,
+    nw_sol::Dict,
+    comp_name::Symbol,
+)
+    comp_key = string(comp_name)
+
+    if !haskey(nw_data, comp_key)
+        return Int[]
+    end
+
+    data_comps = nw_data[comp_key]
+    sol_comps = get(nw_sol, comp_key, Dict{String,Any}())
+
+    ref_ids = Set(ids(gm, n, comp_name))
+    out = Int[]
+
+    for (k, data_comp) in data_comps
+        i = parse(Int, k)
+
+        if get(data_comp, "status", 1) == 0 &&
+           !(i in ref_ids) &&
+           !haskey(sol_comps, k)
+            push!(out, i)
+        end
+    end
+
+    return out
+end
+function _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :junction)
+    isempty(ids0) && return
+
+    data_comps = nw_data["junction"]
+    sol_comps = get!(nw_sol, "junction", Dict{String,Any}())
+
+    for i in ids0
+        k = string(i)
+        dat = data_comps[k]
+        sol = get!(sol_comps, k, Dict{String,Any}())
+
+        sol["status"] = 0
+
+        if haskey(dat, "psqr")
+            sol["psqr"] = dat["psqr"]
+        end
+        if haskey(dat, "p")
+            sol["p"] = dat["p"]
+        elseif haskey(sol, "psqr")
+            sol["p"] = sqrt(max(0.0, sol["psqr"]))
+        end
+    end
+end
+
+
+function _backfill_status_zero_pipes!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :pipe)
+    isempty(ids0) && return
+
+    sol_comps = get!(nw_sol, "pipe", Dict{String,Any}())
+    for i in ids0
+        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        sol["status"] = 0
+        sol["f"] = 0.0
+    end
+end
+
+
+function _backfill_status_zero_compressors!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :compressor)
+    isempty(ids0) && return
+
+    sol_comps = get!(nw_sol, "compressor", Dict{String,Any}())
+    for i in ids0
+        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        sol["status"] = 0
+        sol["f"] = 0.0
+        sol["r"] = 1.0
+        sol["rsqr"] = 1.0
+    end
+end
+
+
+function _backfill_status_zero_transfers!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :transfer)
+    isempty(ids0) && return
+
+    sol_comps = get!(nw_sol, "transfer", Dict{String,Any}())
+    for i in ids0
+        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        sol["status"] = 0
+        sol["ft"] = 0.0
+    end
+end
+
+
+function _backfill_status_zero_receipts!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :receipt)
+    isempty(ids0) && return
+
+    sol_comps = get!(nw_sol, "receipt", Dict{String,Any}())
+    for i in ids0
+        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        sol["status"] = 0
+        sol["fg"] = 0.0
+    end
+end
+
+
+function _backfill_status_zero_deliveries!(gm, n, nw_data, nw_sol)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :delivery)
+    isempty(ids0) && return
+
+    sol_comps = get!(nw_sol, "delivery", Dict{String,Any}())
+    for i in ids0
+        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        sol["status"] = 0
+        sol["fd"] = 0.0
     end
 end
