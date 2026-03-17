@@ -29,6 +29,14 @@ end
     @test isapprox(result["solution"]["nw"]["2"]["compressor"]["1"]["power_var"], 0.0, atol = 10)
 end
 
+@testset "deactivated components in solution" begin
+    mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 0.0)
+    mn_data["nw"]["1"]["junction"]["1"]["status"] = 0
+    result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver, include_status_zero_components=true)
+    @test result["termination_status"] == LOCALLY_SOLVED
+    @test haskey(result["solution"]["nw"]["1"]["junction"], "1")
+end
+
 @testset "transient time-periodic withdrawal case" begin
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", spatial_discretization = 1e4, additional_time = 0.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
