@@ -2,7 +2,12 @@ using Documenter, GasModels
 
 makedocs(
     modules = [GasModels],
-    format = Documenter.HTML(analytics = "UA-367975-10", mathengine = Documenter.MathJax()),
+    checkdocs = :exports,   # or :none as a temporary escape hatch
+    warnonly = [:missing_docs],
+    format = Documenter.HTML(
+        analytics = "UA-367975-10",
+        mathengine = Documenter.MathJax()
+    ),
     sitename = "GasModels",
     authors = "Russell Bent and contributors.",
     pages = [
