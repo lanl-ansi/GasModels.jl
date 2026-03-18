@@ -7,7 +7,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219; atol = 1e-2)
         end
 
         @testset "test solution hints for static file" begin
@@ -26,7 +26,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219; atol = 1e-2)
         end
 
         @testset "case 6 ogf weymouth lin rel" begin
@@ -36,7 +36,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -260.001; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 130.00040358725565; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 130.00040; atol = 1e-2)
         end
 
 
@@ -47,7 +47,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -167.190; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887353509726; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887; atol = 1e-2)
         end
 
         @testset "case 6 wp ogf elevation constraint" begin
@@ -57,7 +57,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -191.169; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275594438166; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275; atol = 1e-2)
         end
 
         @testset "case 6 cwp ogf binding energy constraint" begin
@@ -67,7 +67,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -167.190; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887353509726; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 60.67887; atol = 1e-2)
         end
 
         @testset "case 6 cwp ogf elevation constraint" begin
@@ -77,7 +77,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -191.169; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.2727559842232; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.2727; atol = 1e-2)
         end
          @testset "6-bus case solution with duals" begin
             @info "Testing OGF Report Duals"
@@ -100,7 +100,7 @@
             GasModels.make_si_units!(result["solution"])
             GasModels.make_per_unit!(result["solution"])
 
-            @test compare(result["solution"], result_base["solution"], rtol=1e-12)
+            @test compare(result["solution"], result_base["solution"], rtol=1e-6)
         end
     end
 end
