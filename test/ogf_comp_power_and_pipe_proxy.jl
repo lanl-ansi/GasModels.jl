@@ -38,7 +38,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -219.444; atol = 1e-1)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 86.33190047645546; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 86.3319; atol = 1e-2)
         end
     end
 end
