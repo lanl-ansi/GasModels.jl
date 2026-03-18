@@ -14,6 +14,7 @@ makedocs(
             "Result Data Format" => "result-data.md",
             "Mathematical Model" => "math-model.md",
             "Direction Model" => "direction.md",
+            "Gas Contingency" => "contingency.md"
         ],
         "Library" => [
             "Network Formulations" => "formulations.md",
