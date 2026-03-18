@@ -18,7 +18,7 @@ const _mg_data_names = Vector{String}([
     "mgc.base_pressure",
     "mgc.base_length",
     "mgc.units",
-    "mgc.is_per_unit",
+    "mgc.per_unit",
     "mgc.sources",
     "mgc.junction",
     "mgc.pipe",
@@ -355,7 +355,7 @@ function parse_m_string(data_string::String)
         "mgc.R",
         "mgc.base_pressure",
         "mgc.base_length",
-        "mgc.is_per_unit",
+        "mgc.per_unit",
         "mgc.gas_molar_mass",
         "mgc.economic_weighting",
     ]
@@ -372,11 +372,11 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.units")
         case["units"] = matlab_data["mgc.units"]
         if matlab_data["mgc.units"] == "si"
-            case["is_si_units"] = 1
-            case["is_english_units"] = 0
+            case["si_units"] = true
+            case["english_units"] = false
         elseif matlab_data["mgc.units"] == "usc"
-            case["is_english_units"] = 1
-            case["is_si_units"] = 0
+            case["english_units"] = true
+            case["si_units"] = false
         else
             Memento.error(_LOGGER, string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
@@ -405,11 +405,11 @@ This value will be auto-assigned based on the pressure limits provided in the da
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
-        case["is_per_unit"] = matlab_data["mgc.is_per_unit"]
+        case["per_unit"] = matlab_data["mgc.is_per_unit"]
     else
         Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
-            Auto assigning a value of 0 (false) for the is_per_unit field"))
-        case["is_per_unit"] = 0
+            Auto assigning a value of 0 (false) for the per_unit field"))
+        case["per_unit"] = false
     end
 
     if haskey(matlab_data, "mgc.R")
@@ -463,9 +463,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.junction", _mg_junction_columns),
             )
             junction_data["index"] = _IM.check_type(Int, junction_row[1])
-            junction_data["is_si_units"] = case["is_si_units"]
-            junction_data["is_english_units"] = case["is_english_units"]
-            junction_data["is_per_unit"] = case["is_per_unit"]
+            junction_data["si_units"] = case["si_units"]
+            junction_data["english_units"] = case["english_units"]
+            junction_data["per_unit"] = case["per_unit"]
             push!(junctions, junction_data)
         end
         case["junction"] = junctions
@@ -482,9 +482,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.pipe", _mg_pipe_columns),
             )
             pipe_data["index"] = _IM.check_type(Int, pipe_row[1])
-            pipe_data["is_si_units"] = case["is_si_units"]
-            pipe_data["is_english_units"] = case["is_english_units"]
-            pipe_data["is_per_unit"] = case["is_per_unit"]
+            pipe_data["si_units"] = case["si_units"]
+            pipe_data["english_units"] = case["english_units"]
+            pipe_data["per_unit"] = case["per_unit"]
             push!(pipes, pipe_data)
         end
         case["pipe"] = pipes
@@ -501,9 +501,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.ne_pipe", _mg_ne_pipe_columns),
             )
             pipe_data["index"] = _IM.check_type(Int, pipe_row[1])
-            pipe_data["is_si_units"] = case["is_si_units"]
-            pipe_data["is_english_units"] = case["is_english_units"]
-            pipe_data["is_per_unit"] = case["is_per_unit"]
+            pipe_data["si_units"] = case["si_units"]
+            pipe_data["english_units"] = case["english_units"]
+            pipe_data["per_unit"] = case["per_unit"]
             push!(ne_pipes, pipe_data)
         end
         case["ne_pipe"] = ne_pipes
@@ -517,9 +517,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.compressor", _mg_compressor_columns),
             )
             compressor_data["index"] = _IM.check_type(Int, compressor_row[1])
-            compressor_data["is_si_units"] = case["is_si_units"]
-            compressor_data["is_english_units"] = case["is_english_units"]
-            compressor_data["is_per_unit"] = case["is_per_unit"]
+            compressor_data["si_units"] = case["si_units"]
+            compressor_data["english_units"] = case["english_units"]
+            compressor_data["per_unit"] = case["per_unit"]
             push!(compressors, compressor_data)
         end
         case["compressor"] = compressors
@@ -533,9 +533,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.ne_compressor", _mg_ne_compressor_columns),
             )
             compressor_data["index"] = _IM.check_type(Int, compressor_row[1])
-            compressor_data["is_si_units"] = case["is_si_units"]
-            compressor_data["is_english_units"] = case["is_english_units"]
-            compressor_data["is_per_unit"] = case["is_per_unit"]
+            compressor_data["si_units"] = case["si_units"]
+            compressor_data["english_units"] = case["english_units"]
+            compressor_data["per_unit"] = case["per_unit"]
             push!(ne_compressors, compressor_data)
         end
         case["ne_compressor"] = ne_compressors
@@ -549,9 +549,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.short_pipe", _mg_short_pipe_columns),
             )
             short_pipe_data["index"] = _IM.check_type(Int, short_pipe_row[1])
-            short_pipe_data["is_si_units"] = case["is_si_units"]
-            short_pipe_data["is_english_units"] = case["is_english_units"]
-            short_pipe_data["is_per_unit"] = case["is_per_unit"]
+            short_pipe_data["si_units"] = case["si_units"]
+            short_pipe_data["english_units"] = case["english_units"]
+            short_pipe_data["per_unit"] = case["per_unit"]
             push!(short_pipes, short_pipe_data)
         end
         case["short_pipe"] = short_pipes
@@ -565,9 +565,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.resistor", _mg_resistor_columns),
             )
             resistor_data["index"] = _IM.check_type(Int, resistor_row[1])
-            resistor_data["is_si_units"] = case["is_si_units"]
-            resistor_data["is_english_units"] = case["is_english_units"]
-            resistor_data["is_per_unit"] = case["is_per_unit"]
+            resistor_data["si_units"] = case["si_units"]
+            resistor_data["english_units"] = case["english_units"]
+            resistor_data["per_unit"] = case["per_unit"]
             push!(resistors, resistor_data)
         end
         case["resistor"] = resistors
@@ -581,9 +581,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.transfer", _mg_transfer_columns),
             )
             transfer_data["index"] = _IM.check_type(Int, transfer_row[1])
-            transfer_data["is_si_units"] = case["is_si_units"]
-            transfer_data["is_english_units"] = case["is_english_units"]
-            transfer_data["is_per_unit"] = case["is_per_unit"]
+            transfer_data["si_units"] = case["si_units"]
+            transfer_data["english_units"] = case["english_units"]
+            transfer_data["per_unit"] = case["per_unit"]
             push!(transfers, transfer_data)
         end
         case["transfer"] = transfers
@@ -597,9 +597,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.receipt", _mg_receipt_columns),
             )
             receipt_data["index"] = _IM.check_type(Int, receipt_row[1])
-            receipt_data["is_si_units"] = case["is_si_units"]
-            receipt_data["is_english_units"] = case["is_english_units"]
-            receipt_data["is_per_unit"] = case["is_per_unit"]
+            receipt_data["si_units"] = case["si_units"]
+            receipt_data["english_units"] = case["english_units"]
+            receipt_data["per_unit"] = case["per_unit"]
             push!(receipts, receipt_data)
         end
         case["receipt"] = receipts
@@ -613,9 +613,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.delivery", _mg_delivery_columns),
             )
             delivery_data["index"] = _IM.check_type(Int, delivery_row[1])
-            delivery_data["is_si_units"] = case["is_si_units"]
-            delivery_data["is_english_units"] = case["is_english_units"]
-            delivery_data["is_per_unit"] = case["is_per_unit"]
+            delivery_data["si_units"] = case["si_units"]
+            delivery_data["english_units"] = case["english_units"]
+            delivery_data["per_unit"] = case["per_unit"]
             push!(deliveries, delivery_data)
         end
         case["delivery"] = deliveries
@@ -629,9 +629,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.regulator", _mg_regulator_columns),
             )
             regulator_data["index"] = _IM.check_type(Int, regulator_row[1])
-            regulator_data["is_si_units"] = case["is_si_units"]
-            regulator_data["is_english_units"] = case["is_english_units"]
-            regulator_data["is_per_unit"] = case["is_per_unit"]
+            regulator_data["si_units"] = case["si_units"]
+            regulator_data["english_units"] = case["english_units"]
+            regulator_data["per_unit"] = case["per_unit"]
             push!(regulators, regulator_data)
         end
         case["regulator"] = regulators
@@ -645,9 +645,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.valve", _mg_valve_columns),
             )
             valve_data["index"] = _IM.check_type(Int, valve_row[1])
-            valve_data["is_si_units"] = case["is_si_units"]
-            valve_data["is_english_units"] = case["is_english_units"]
-            valve_data["is_per_unit"] = case["is_per_unit"]
+            valve_data["si_units"] = case["si_units"]
+            valve_data["english_units"] = case["english_units"]
+            valve_data["per_unit"] = case["per_unit"]
             push!(valves, valve_data)
         end
         case["valve"] = valves
@@ -661,9 +661,9 @@ objective is economic_weighting * (load shed) +
                 get(_colnames, "mgc.storage", _mg_storage_columns),
             )
             storage_data["index"] = _IM.check_type(Int, storage_row[1])
-            storage_data["is_si_units"] = case["is_si_units"]
-            storage_data["is_english_units"] = case["is_english_units"]
-            storage_data["is_per_unit"] = case["is_per_unit"]
+            storage_data["si_units"] = case["si_units"]
+            storage_data["english_units"] = case["english_units"]
+            storage_data["per_unit"] = case["per_unit"]
             push!(storages, storage_data)
         end
         case["storage"] = storages
@@ -837,7 +837,7 @@ const _matlab_global_params_order_required = [
 
 
 "order of optional global parameters"
-const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "is_per_unit", "version", "pipeline_id", "base_volume", "economic_weighting"]
+const _matlab_global_params_order_optional = ["sound_speed", "R", "base_pressure", "base_length", "per_unit", "version", "pipeline_id", "base_volume", "economic_weighting"]
 
 
 "list of units of meta data fields"
@@ -937,7 +937,7 @@ function _gasmodels_to_matgas_string(
         include_extended::Bool = false,
     )::String
 
-    (data["is_english_units"] == true) && (units = "usc")
+    (data["english_units"] == true) && (units = "usc")
     lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
 
     for param in _matlab_global_params_order_required
