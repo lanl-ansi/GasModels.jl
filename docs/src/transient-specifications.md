@@ -59,7 +59,6 @@ expression_reservoir_density_derivative
 ```@docs 
 constraint_slack_junction_density
 constraint_nodal_balance
-constraint_nodal_balance
 constraint_pipe_mass_balance
 constraint_pipe_momentum_balance
 constraint_compressor_physics
