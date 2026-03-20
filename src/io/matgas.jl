@@ -963,6 +963,7 @@ function write_matgas(filename::String, gm_data::Dict{String,<:Any})
 end
 
 function write_matgas(io::IO, gm_data::Dict{String,<:Any})
+    make_si_units!(gm_data)
     case_name = get(gm_data, "name", "gas_network")
     func_name = _sanitize_matlab_identifier(String(case_name))
 
@@ -1195,7 +1196,7 @@ function _format_matgas_cell(x)
     if x === nothing || x isa Missing
         return "''"
     elseif x isa Bool
-        return x ? "1" : "0"
+        return x ? "true" : "false"
     elseif x isa Integer
         return string(x)
     elseif x isa AbstractFloat
