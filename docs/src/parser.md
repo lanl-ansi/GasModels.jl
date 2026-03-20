@@ -50,7 +50,7 @@ mgc.R                            = 8.314;  % J/(mol K)
 mgc.base_length                  = 5000;  % m (non-dimensionalization value)
 mgc.base_pressure                = 8101325;  % Pa (non-dimensionalization value)
 mgc.base_flow                    = 604; (non-dimensionalization value)
-mgc.is_per_unit                  = 0;
+mgc.per_unit                     = false;
 mgc.sound_speed                  = 312.8060
 ```
 

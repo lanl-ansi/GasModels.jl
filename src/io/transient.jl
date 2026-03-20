@@ -252,9 +252,9 @@ function _prep_transient_data!(
                 "p_max",
                 "status",
                 "is_bidirectional",
-                "is_si_units",
-                "is_english_units",
-                "is_per_unit",
+                "si_units",
+                "english_units",
+                "per_unit",
                 "flow_min", 
                 "flow_max"
             ]
@@ -294,8 +294,9 @@ function _prep_transient_data!(
         data["original_pipe"][key]["to_pipe"] = max_pipe_junc_id + pipe["id"] * 1000 + sub_pipe_count
 
         for i = 1:intermediate_junction_count
-            # id = Base.Checked.checked_mul(max_pipe_junc_id + pipe["id"], 1000 + i) #note: this should be the fix to prevent the Int64 overflow, but breaks tests
-            id = max_pipe_junc_id + pipe["id"] * 1000+i
+            mul  = Base.Checked.checked_mul(pipe["id"], 1000)
+            add1 = Base.Checked.checked_add(max_pipe_junc_id, mul)
+            id   = Base.Checked.checked_add(add1, i)
 
             data["junction"][string(id)] = Dict{String,Any}(
                 "id" => id,
@@ -306,9 +307,9 @@ function _prep_transient_data!(
                 "junction_type" => 0,
                 "status" => 1,
                 "is_physical" => false,
-                "is_si_units" => data["is_si_units"],
-                "is_english_units" => data["is_english_units"],
-                "is_per_unit" => data["is_per_unit"],
+                "si_units" => data["si_units"],
+                "english_units" => data["english_units"],
+                "per_unit" => data["per_unit"],
                 "elevation" => h1 + (elevation_difference)*i/sub_pipe_count,
             )
         end
@@ -331,9 +332,9 @@ function _prep_transient_data!(
                 "p_min" => pipe["p_min"],
                 "p_max" => pipe["p_max"],
                 "is_bidirectional" => pipe["is_bidirectional"],
-                "is_si_units" => data["is_si_units"],
-                "is_english_units" => data["is_english_units"],
-                "is_per_unit" => data["is_per_unit"],
+                "si_units" => data["si_units"],
+                "english_units" => data["english_units"],
+                "per_unit" => data["per_unit"],
                 "flow_min" => pipe["flow_min"],
                 "flow_max" => pipe["flow_max"]
             )
