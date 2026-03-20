@@ -1180,7 +1180,20 @@ function _present_columns(
     return [name for name in canonical_names if name in present]
 end
 
-_present_extra_columns(rows::Vector{Dict{String,Any}}, extra_cols::Vector{String}) = extra_cols
+function _present_extra_columns(rows::Vector{Dict{String,Any}}, extra_cols::Vector{String})
+    present = Set{String}()
+
+    for row in rows
+        for col in extra_cols
+            val = _row_get(row, col)
+            if !(val === nothing || val isa Missing)
+                push!(present, col)
+            end
+        end
+    end
+
+    return [col for col in extra_cols if col in present]
+end
 
 # ------------------------------------------------------------------
 # cell formatting
