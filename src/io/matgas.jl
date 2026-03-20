@@ -1094,9 +1094,25 @@ function _normalize_rows(rows::AbstractVector, section_name::String)
 end
 
 function _normalize_rows(rows::AbstractDict, section_name::String)
+    vals = collect(values(rows))
+
+    sort!(vals; by = row -> begin
+        if haskey(row, "id")
+            row["id"]
+        elseif haskey(row, :id)
+            row[:id]
+        elseif haskey(row, "index")
+            row["index"]
+        elseif haskey(row, :index)
+            row[:index]
+        else
+            typemax(Int)
+        end
+    end)
+
     out = Vector{Dict{String,Any}}()
-    sizehint!(out, length(rows))
-    for row in values(rows)
+    sizehint!(out, length(vals))
+    for row in vals
         push!(out, _normalize_row(row, section_name))
     end
     return out
@@ -1108,12 +1124,15 @@ function _normalize_row(row::AbstractDict, section_name::String)
     for (k, v) in row
         ks = String(k)
 
-        # internal bookkeeping fields should never be written as table columns
-        if ks in ("si_units", "english_units", "per_unit")
+        # internal bookkeeping / non-matgas fields → skip
+        if ks in (
+            "si_units", "english_units", "per_unit",
+            "is_si_units", "is_english_units", "is_per_unit"
+        )
             continue
         end
 
-        # don't write internal index directly; map to id below if needed
+        # don't write internal index directly
         if ks == "index"
             continue
         end
@@ -1121,6 +1140,7 @@ function _normalize_row(row::AbstractDict, section_name::String)
         out[ks] = v
     end
 
+    # ensure id exists
     if !haskey(out, "id")
         if haskey(row, "id")
             out["id"] = row["id"]
@@ -1135,6 +1155,7 @@ function _normalize_row(row::AbstractDict, section_name::String)
 
     return out
 end
+
 # ------------------------------------------------------------------
 # column selection
 # ------------------------------------------------------------------
@@ -1155,10 +1176,8 @@ function _present_columns(
         end
     end
 
-    ordered = [name for name in canonical_names if name in present]
-    extras = sort([name for name in present if !(name in canonical_names)])
-
-    return vcat(ordered, extras)
+    # Only emit columns that are both canonical and present
+    return [name for name in canonical_names if name in present]
 end
 
 _present_extra_columns(rows::Vector{Dict{String,Any}}, extra_cols::Vector{String}) = extra_cols
