@@ -955,14 +955,6 @@ const _mg_extra_data_columns = Dict{String,Vector{String}}(
 """
     write_matgas(filename::String, gm_data::Dict{String,<:Any})
     write_matgas(io::IO, gm_data::Dict{String,<:Any})
-
-Write a GasModels data dictionary to a matgas `.m` file.
-
-Design goals:
-- header-driven output using actual present fields
-- canonical ordering when fields exist
-- no column-shift bugs when some fields are removed
-- strings quoted, floats compactly formatted, missing -> NaN
 """
 function write_matgas(filename::String, gm_data::Dict{String,<:Any})
     open(filename, "w") do io
@@ -1112,8 +1104,8 @@ function _normalize_rows(rows::AbstractDict, section_name::String)
 
     out = Vector{Dict{String,Any}}()
     sizehint!(out, length(vals))
-    for row in vals
-        push!(out, _normalize_row(row, section_name))
+    for xrow in vals
+        push!(out, _normalize_row(xrow, section_name))
     end
     return out
 end
@@ -1124,7 +1116,7 @@ function _normalize_row(row::AbstractDict, section_name::String)
     for (k, v) in row
         ks = String(k)
 
-        # internal bookkeeping / non-matgas fields → skip
+        # internal bookkeeping
         if ks in (
             "si_units", "english_units", "per_unit",
             "is_si_units", "is_english_units", "is_per_unit"
@@ -1132,7 +1124,7 @@ function _normalize_row(row::AbstractDict, section_name::String)
             continue
         end
 
-        # don't write internal index directly
+        # don't write index directly
         if ks == "index"
             continue
         end
@@ -1176,7 +1168,7 @@ function _present_columns(
         end
     end
 
-    # Only emit columns that are both canonical and present
+    # only write canonical and present columns
     return [name for name in canonical_names if name in present]
 end
 
