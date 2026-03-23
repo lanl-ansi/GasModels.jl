@@ -1020,7 +1020,7 @@ function _format_matgas_scalar(x)
     elseif x isa AbstractString || x isa SubString{String}
         return "'" * _escape_matgas_string(String(x)) * "'"
     elseif x isa Bool
-        return x ? "1" : "0"
+        return x ? "true" : "false"
     elseif x isa Integer
         return string(x)
     elseif x isa AbstractFloat
