@@ -1,7 +1,16 @@
-"entry point for the transient optimal gas flow model"
-function solve_transient_ogf(data, model_type, optimizer; kwargs...)
+"entry point for transient ogf"
+function solve_transient_ogf(data, model_type, optimizer;
+    include_status_zero_components::Bool=false,
+    kwargs...)
+
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
     @assert _IM.ismultinetwork(data_it) == true
+
+    solution_processors = Any[]
+
+    if include_status_zero_components
+        push!(solution_processors, sol_status_zero_components!)
+    end
 
     return run_model(
         data,
@@ -9,6 +18,7 @@ function solve_transient_ogf(data, model_type, optimizer; kwargs...)
         optimizer,
         build_transient_ogf;
         ref_extensions = [ref_add_transient!],
+        solution_processors = solution_processors,
         kwargs...,
     )
 end
