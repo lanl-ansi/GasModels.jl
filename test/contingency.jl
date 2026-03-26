@@ -4,7 +4,7 @@ SCENARIO_LIBRARY = Dict{String, ContingencyScenario}(
         name = "Winter Storm",
         description = "One pipe disabled, one compressor at reduced power",
         contingencies = [
-            FailedComponentContingency(asset_type="pipe", asset_id="1"),
+            FailedComponentContingency(asset_type="pipe", asset_id="2"),
             PowerOutageContingency(asset_type="compressor", asset_id="1", available_power_fraction=0.3),
         ]
     ),
@@ -43,7 +43,7 @@ SCENARIO_LIBRARY = Dict{String, ContingencyScenario}(
     end
 
     #check data modifications
-    @test case["pipe"]["1"]["status"] == 0
+    @test case["pipe"]["2"]["status"] == 0
     @test isapprox(case["compressor"]["1"]["c_ratio_max"], 1.12, atol=0.01)  # reduced power
     
     #make deliveries dispatchable
@@ -52,13 +52,15 @@ SCENARIO_LIBRARY = Dict{String, ContingencyScenario}(
     end
     
     @test case["delivery"]["1"]["is_dispatchable"] == 1
+    @test case["transfer"]["1"]["is_dispatchable"] == 1
+    @test case["receipt"]["1"]["is_dispatchable"] == 1
 
     #solve new case
-    output = solve_ogf(case, WPGasModel, nlp_solver)
+    output = solve_ogf(case, DWPGasModel, minlp_solver)
 
     #check convergence
-    # @test output["termination_status"] == LOCALLY_SOLVED #hits iteration limit
-    # @test output["primal_status"] == FEASIBLE_POINT #infeasible point
+    @test output["termination_status"] == LOCALLY_SOLVED 
+    @test output["primal_status"] == FEASIBLE_POINT
 
     #check objective value changed
     @test output["objective"] != base_obj
