@@ -7,7 +7,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.6821; atol = 1e-2)
         end
 
         @testset "case 6 ogf comp power unc" begin
@@ -17,7 +17,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219958067358; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.6821; atol = 1e-2)
         end
 
         @testset "case 6 ogf comp power unc weymouth lin rel" begin
@@ -27,7 +27,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -260.001; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 130.00040358725565; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 130.0004; atol = 1e-2)
         end
 
 
@@ -48,7 +48,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -285.768; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 124.6143508063051; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 124.6143; atol = 1e-2)
         end
 
         @testset "case 6 cwp ogf comp power unc binding energy constraint" begin
@@ -68,7 +68,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -285.768; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 124.61435080630409; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 124.6143; atol = 1e-2)
         end
     end
 end
