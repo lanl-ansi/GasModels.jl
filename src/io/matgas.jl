@@ -964,6 +964,9 @@ end
 
 function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     make_si_units!(gm_data)
+    if haskey(gm_data, "ne_compressor") || haskey(gm_data, "ne_pipe")
+        throw(ArgumentError("write_matgas does not currently support Network Expansion cases"))
+    end
     case_name = get(gm_data, "name", "gas_network")
     func_name = _sanitize_matlab_identifier(String(case_name))
 
@@ -992,9 +995,9 @@ function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     _write_section_if_present(io, "junction", get(gm_data, "junction", nothing), _mg_junction_columns)
     _write_section_if_present(io, "pipe", get(gm_data, "pipe", nothing), _mg_pipe_columns)
     _write_section_if_present(io, "compressor", get(gm_data, "compressor", nothing), _mg_compressor_columns)
+    _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns)
     _write_section_if_present(io, "receipt", get(gm_data, "receipt", nothing), _mg_receipt_columns)
     _write_section_if_present(io, "delivery", get(gm_data, "delivery", nothing), _mg_delivery_columns)
-    _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns)
     _write_section_if_present(io, "short_pipe", get(gm_data, "short_pipe", nothing), _mg_short_pipe_columns)
     _write_section_if_present(io, "resistor", get(gm_data, "resistor", nothing), _mg_resistor_columns)
     _write_section_if_present(io, "regulator", get(gm_data, "regulator", nothing), _mg_regulator_columns)
@@ -1020,7 +1023,7 @@ function _format_matgas_scalar(x)
     elseif x isa AbstractString || x isa SubString{String}
         return "'" * _escape_matgas_string(String(x)) * "'"
     elseif x isa Bool
-        return x ? "true" : "false"
+        return x ? "1" : "0"
     elseif x isa Integer
         return string(x)
     elseif x isa AbstractFloat
@@ -1208,7 +1211,7 @@ function _format_matgas_cell(x)
     end
 end
 
-_format_float(x::AbstractFloat) = Printf.@sprintf("%.4g", x)
+_format_float(x::AbstractFloat) = Printf.@sprintf("%.5g", x)
 
 _escape_matgas_string(s::String) = replace(s, "'" => "''")
 

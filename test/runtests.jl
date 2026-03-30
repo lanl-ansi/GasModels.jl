@@ -48,6 +48,8 @@ nlp_solver = ipopt_solver
 include("common.jl")
 
 @testset "GasModels" begin
+    include("matgaswriter.jl")
+
     include("data.jl")
 
     include("mnw.jl")
