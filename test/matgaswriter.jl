@@ -22,4 +22,4 @@
 end
 
 rm("../test/data/matgas/case-6-mg-writer.m")
-rm("../test/data/matgas/case-6-mg-elevation-mgw.m")
+rm("../test/data/matgas/case-6-elevation-mgw.m")
