@@ -7,7 +7,6 @@
         case_b = parse_file("../test/data/matgas/case-6-mg-writer.m")
         res_b = solve_ogf(case_b, WPGasModel, nlp_solver)
         @test isapprox(res_a["objective"], res_b["objective"], atol = 1e-2)
-        rm("../test/data/matgas/case-6-mg-writer.m")
     end
     
     @testset "case 6 elevation file IO" begin
@@ -19,6 +18,8 @@
         case_b = parse_file("../test/data/matgas/case-6-elevation-mgw.m")
         res_b = solve_ogf(case_b, WPGasModel, nlp_solver)
         @test isapprox(res_a["objective"], res_b["objective"], atol = 1e-2)
-        rm("../test/data/matgas/case-6-mg-elevation-mgw.m")
     end
 end
+
+rm("../test/data/matgas/case-6-mg-writer.m")
+rm("../test/data/matgas/case-6-mg-elevation-mgw.m")
