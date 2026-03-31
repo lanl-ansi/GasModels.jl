@@ -964,9 +964,6 @@ end
 
 function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     make_si_units!(gm_data)
-    if haskey(gm_data, "ne_compressor") || haskey(gm_data, "ne_pipe")
-        throw(ArgumentError("write_matgas does not currently support Network Expansion cases"))
-    end
     case_name = get(gm_data, "name", "gas_network")
     func_name = _sanitize_matlab_identifier(String(case_name))
 
@@ -994,7 +991,9 @@ function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     _write_section_if_present(io, "sources", get(gm_data, "sources", nothing), _mg_sources_columns)
     _write_section_if_present(io, "junction", get(gm_data, "junction", nothing), _mg_junction_columns)
     _write_section_if_present(io, "pipe", get(gm_data, "pipe", nothing), _mg_pipe_columns)
+    _write_section_if_present(io, "ne_pipe", get(gm_data, "ne_pipe", nothing), _mg_ne_pipe_columns)
     _write_section_if_present(io, "compressor", get(gm_data, "compressor", nothing), _mg_compressor_columns)
+    _write_section_if_present(io, "ne_compressor", get(gm_data, "ne_compressor", nothing), _mg_ne_compressor_columns)
     _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns)
     _write_section_if_present(io, "receipt", get(gm_data, "receipt", nothing), _mg_receipt_columns)
     _write_section_if_present(io, "delivery", get(gm_data, "delivery", nothing), _mg_delivery_columns)
@@ -1003,8 +1002,6 @@ function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     _write_section_if_present(io, "regulator", get(gm_data, "regulator", nothing), _mg_regulator_columns)
     _write_section_if_present(io, "valve", get(gm_data, "valve", nothing), _mg_valve_columns)
     _write_section_if_present(io, "storage", get(gm_data, "storage", nothing), _mg_storage_columns)
-    _write_section_if_present(io, "ne_pipe", get(gm_data, "ne_pipe", nothing), _mg_ne_pipe_columns)
-    _write_section_if_present(io, "ne_compressor", get(gm_data, "ne_compressor", nothing), _mg_ne_compressor_columns)
 end
 
 
@@ -1040,22 +1037,22 @@ end
 
 function _write_section_if_present(io::IO, section_name::String, rows, canonical_cols::Vector{Tuple{String,Type}})
     rows === nothing && return
-    isempty(rows) && return
 
     row_dicts = _normalize_rows(rows, section_name)
 
-    # main section: exclude extra-data-only columns
     extra_cols = get(_mg_extra_data_columns, section_name, String[])
-    main_cols = _present_columns(row_dicts, canonical_cols; exclude=Set(extra_cols))
 
-    if !isempty(main_cols)
-        _write_table(io, section_name, row_dicts, main_cols)
-    end
+    main_cols =
+        isempty(row_dicts) ?
+        [name for (name, _) in canonical_cols if !(name in Set(extra_cols))] :
+        _present_columns(row_dicts, canonical_cols; exclude=Set(extra_cols))
 
-    # optional *_data section
-    if haskey(_mg_extra_data_columns, section_name)
+    # always write the main section, even if there are no rows
+    _write_table(io, section_name, row_dicts, main_cols)
+
+    # only write *_data if there is actual extra data present
+    if haskey(_mg_extra_data_columns, section_name) && !isempty(row_dicts)
         data_cols = _present_extra_columns(row_dicts, _mg_extra_data_columns[section_name])
-
         if !isempty(data_cols)
             _write_table(io, section_name * "_data", row_dicts, data_cols)
         end
@@ -1064,7 +1061,13 @@ end
 
 function _write_table(io::IO, table_name::String, row_dicts::Vector{Dict{String,Any}}, cols::Vector{String})
     println(io, "%% ", table_name)
-    println(io, "%column_names% ", join(cols, " "))
+
+    if isempty(row_dicts)
+        println(io, "% ", join(cols, " "))
+    else
+        println(io, "%column_names% ", join(cols, " ")) # %column_names% with a blank matrix breaks the IMs parser
+    end
+
     println(io, "mgc.", table_name, " = [")
 
     for row in row_dicts
