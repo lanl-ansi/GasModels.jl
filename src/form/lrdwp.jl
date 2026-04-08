@@ -112,7 +112,42 @@ function constraint_loss_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::In
 
 "Constraint: Weymouth equation"
 function constraint_pipe_weymouth_ne(gm::AbstractLRDWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in crdwp.jl
+    y = var(gm, n, :y_ne_pipe, k)
+
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    zp = var(gm, n, :zp, k)
+    f = var(gm, n, :f_ne_pipe, k)
+
+    f2_l = JuMP.@variable(gm.model)
+
+    @assert f_min != f_max "Expansion modeling does not support this case yet"
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
+    else
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f2_l - (1 - y) * (f_min^2 - w * pd_min) - (1 - zp) * abs(w * pd_min)))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f2_l + (1 - zp) * w * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f2_l - y * (f_max^2 + w * pd_max) - (1 - zp) * abs(w * pd_max)))
+        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f2_l - (1 - zp) * w * pd_min))
+
+        # f2_l incorporates the univariate relaxation for f*(abs(f))
+        if(f_min<0 && f_max>0)
+            partition = [f_min, 0, f_max]
+            # partition = [f_min,3*f_min/4,f_min/2,f_min/4,0,f_max/4,f_max/2,3*f_max/4,f_max]
+        else
+            partition = [f_min, f_max]
+        end
+
+        f2_max = (max(abs(f_min), abs(f_max)))^2
+        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, f2_l <= zp * f2_max))
+        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, f2_l >= 0))
+
+        construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, f2_l, partition, true)
+    
+    end
+
+
 end
 
 
