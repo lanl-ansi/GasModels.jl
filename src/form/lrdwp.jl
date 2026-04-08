@@ -6,6 +6,12 @@ function variable_form_specific(gm::AbstractLRDWPModel, nw::Int=nw_id_default; b
         base_name="$(nw)_f_square_l")
     report && sol_component_value(gm, nw, :pipe, :f_square_l, ids(gm, nw, :pipe), f_square_l_pipe)
 
+    # resistor f^2 relaxation
+    f_square_l_resistor = var(gm, nw)[:f_square_l_resistor] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :resistor)],
+        base_name="$(nw)_f_square_l")
+    report && sol_component_value(gm, nw, :resistor, :f_square_l, ids(gm, nw, :resistor), f_square_l_resistor)
+
 end
 
 "Variables needed for modeling flow in LRDWP models"
@@ -68,7 +74,30 @@ end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRDWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in crdwp.jl
+    f, y = var(gm, n, :f_resistor, k), var(gm, n, :y_resistor, k)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    f2_l = var(gm, n, :f_square_l_resistor, k)
+
+    if w == 0.0
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, (p_i - p_j) == 0.0))
+    elseif f_min == f_max
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min*abs(f_min)))
+    else
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) >= f2_l - (1.0 - y) * (f_min^2-(1.0/w)*pd_min)))
+        _add_constraint!(gm, n, :darcy_weisbach_2, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) <= f2_l))
+        _add_constraint!(gm, n, :darcy_weisbach_3, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) >= f2_l - y * (f_max^2+(1.0/w)*pd_max)))
+        _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) <= f2_l))
+
+        # f2_l incorporates the univariate relaxation for f^2
+        if(f_min<0 && f_max>0)
+            partition = [f_min, 0, f_max]
+            # partition = [f_min,3*f_min/4,f_min/2,f_min/4,0,f_max/4,f_max/2,3*f_max/4,f_max]
+        else
+            partition = [f_min, f_max]
+        end
+        construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
+    end
+
 end
 
 
