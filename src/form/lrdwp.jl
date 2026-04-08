@@ -1,6 +1,11 @@
 # Define LRDWP implementations of Gas Models
 function variable_form_specific(gm::AbstractLRDWPModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
-    # NONE
+    # pipe f^2 relaxation
+    f_square_l_pipe = var(gm, nw)[:f_square_l_pipe] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :pipe)],
+        base_name="$(nw)_f_square_l")
+    report && sol_component_value(gm, nw, :pipe, :f_square_l, ids(gm, nw, :pipe), f_square_l_pipe)
+
 end
 
 "Variables needed for modeling flow in LRDWP models"
@@ -28,7 +33,36 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRDWP models"
 function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO Linear convex hull of the weymouth equations in crdwp.jl
+    y = var(gm, n, :y_pipe, k)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+    f2_l = var(gm, n, :f_square_l_pipe, k)
+
+    @info "f_min: $f_min, f_max: $f_max"
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == 0.0))
+    elseif f_min == f_max
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min*abs(f_min)))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f2_l - (1 - y) * (f_min^2 - w * pd_min)))
+        _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pi - pj) <= f2_l))
+        _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, w * (pj - pi) >= f2_l - y * (f_max^2 + w * pd_max)))
+        _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f2_l))
+
+        #univariate relaxdation for f^2
+        if(f_min<0 && f_max>0)
+            partition = [f_min, 0, f_max]
+            # partition = [f_min,3*f_min/4,f_min/2,f_min/4,0,f_max/4,f_max/2,3*f_max/4,f_max]
+        else
+            partition = [f_min, f_max]
+            @info partition
+        end
+        construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
+    end
+
+
+
 end
 
 

@@ -25,7 +25,7 @@ function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min,
     if w == 0.0
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
     elseif f_min == f_max
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == fmf_l))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
@@ -50,7 +50,7 @@ function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i,
     if w == 0.0
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, (p_i - p_j) == 0.0))
     elseif f_min == f_max
-        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min))
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == fmf_l))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
