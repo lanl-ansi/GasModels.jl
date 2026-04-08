@@ -134,11 +134,11 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
 
         if length(slack_junctions) == 0
-            Memento.warn(_LOGGER, "No slack junctions found in the data - add a slack junction")
+            @warn ("No slack junctions found in the data - add a slack junction")
         end
 
         if length(slack_junctions) > 1
-            Memento.warn(_LOGGER, "multiple slack junctions, $(keys(slack_junctions))")
+            @warn ("multiple slack junctions, $(keys(slack_junctions))")
         end
 
         nw_ref[:slack_junctions] = slack_junctions

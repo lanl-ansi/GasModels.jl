@@ -11,7 +11,7 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
     elseif filetype == "zip"
         gm_data = GasModels.parse_gaslib(io)
     else
-        Memento.error(_LOGGER, "only .m and .json files are supported")
+        error("only .m and .json files are supported")
     end
 
     if !skip_correct
@@ -46,10 +46,10 @@ function check_pipeline_geometry!(data::Dict{String,Any})
         diameter = pipe["diameter"]
 
         if length <= 0.0
-            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive length: $length")
+            error("Pipeline $pipe_id has non-positive length: $length")
         end
         if diameter <= 0.0
-            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive diameter: $diameter")
+            error("Pipeline $pipe_id has non-positive diameter: $diameter")
         end
 
         # Convert junction indices to strings before lookup
@@ -63,11 +63,11 @@ function check_pipeline_geometry!(data::Dict{String,Any})
             if haskey(f_junc, "elevation") && haskey(t_junc, "elevation")
                 dz = abs(f_junc["elevation"] - t_junc["elevation"])
                 if dz > length
-                    Memento.error(_LOGGER, "Pipeline $pipe_id has elevation change ($dz) greater than length ($length)")
+                    error("Pipeline $pipe_id has elevation change ($dz) greater than length ($length)")
                 end
             end
         else
-            Memento.warn(_LOGGER,"Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
+            @warn ("Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
         end
     end
 end
@@ -88,8 +88,7 @@ function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
 
     #check for mismatch
     if abs(a_given - a_expected) > tol
-        Memento.warn(
-            _LOGGER,
+        @warn(
             "Sound speed mismatch: provided=$(a_given), calculated=$(a_expected), Δ=$(a_given - a_expected). The calculated speed will be used."
         )
     end
