@@ -5,13 +5,13 @@ repo = "https://github.com/lanl-ansi/GasModels.jl.git"
 version = "0.12.0"
 
 [deps]
-
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
-Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+LoggingExtras = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 PolyhedralRelaxations = "2e741578-48fa-11ea-2d62-b52c946f73a0"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -19,7 +19,6 @@ XMLDict = "228000da-037f-5747-90a9-8195ccbf91a5"
 ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [compat]
-
 Dierckx = "~0.4, ~0.5"
 HiGHS = "~1"
 InfrastructureModels = "~0.7"
@@ -27,11 +26,12 @@ Ipopt = "~1"
 JSON = "~0.21"
 JuMP = "~1.0, 1"
 Juniper = ">= 0.4"
-Memento = "~1.0, ~1.1, ~1.2, ~1.3, ~1.4"
+Logging = "1"
+LoggingExtras = "0.4.9"
 PolyhedralRelaxations = "~0.3"
 XMLDict = "~0.4"
 ZipFile = "~0.10"
-julia = "^1"
+julia = "^1.10"
 
 [extras]
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"

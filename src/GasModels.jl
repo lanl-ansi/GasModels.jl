@@ -6,33 +6,31 @@ module GasModels
 
     import JSON
     import JuMP
-    import Memento
     import Printf
     import Statistics
 
-    using Dates
+    using Dates, Logging, LoggingExtras
     using Dierckx
     using PolyhedralRelaxations
+    
+    include("core/logging.jl")
+    _DEFAULT_LOGGER = Logging.current_logger()
+    _LOGGER = Logging.ConsoleLogger(; meta_formatter=GasModels._gm_metafmt)
+    function __init__()
+        global _DEFAULT_LOGGER = Logging.current_logger()
+        global _LOGGER = Logging.ConsoleLogger(; meta_formatter=GasModels._gm_metafmt)
 
-
-
-    # Create our module level logger (this will get precompiled)
-    const _LOGGER = Memento.getlogger(@__MODULE__)
-
-    # Register the module level logger at runtime so that folks can access the logger via `getlogger(GasModels)`
-    # NOTE: If this line is not included then the precompiled `GasModels.LOGGER` won't be registered at runtime.
-    __init__() = Memento.register(_LOGGER)
-
-    "Suppresses information and warning messages output by GasModels, for fine grained control use the Memento package"
-    function silence()
-        Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
-        Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
-        Memento.setlevel!(Memento.getlogger(GasModels), "error")
+        Logging.global_logger(_LOGGER)
     end
 
-    "alows the user to set the logging level without the need to add Memento"
+    "Suppresses information and warning messages output by GasModels, for fine grained control use the Logging standard library"
+    function silence()
+        silence!()
+    end
+
+    "allows the user to set the logging level without the need to add Logging"
     function logger_config!(level)
-        Memento.config!(Memento.getlogger("GasModels"), level)
+        set_logging_level!(Symbol(uppercase(level[1]) * level[2:end]))
     end
 
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",

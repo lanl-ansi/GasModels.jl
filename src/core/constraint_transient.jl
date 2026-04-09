@@ -97,7 +97,7 @@ function constraint_compressor_physics(gm::AbstractGasModel, nw::Int, compressor
             _add_constraint!(gm, nw, :compressor_physics_ratios_9, compressor_id, JuMP.@constraint(gm.model,  alpha == alpha_1 + alpha_2 - 1))
             # There is a disjunction, so we have to use a binary variable for this one
         else
-            Memento.error(_LOGGER, "For bidirectional compressor c_ratio_min needs to be <= 1.0 and c_ratio_max needs to be >= 1.0")
+            error("For bidirectional compressor c_ratio_min needs to be <= 1.0 and c_ratio_max needs to be >= 1.0")
         end
         return
     end

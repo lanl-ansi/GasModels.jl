@@ -27,8 +27,7 @@ function parse_gaslib(zip_path::Union{IO,String})
         nomination_xml = _parse_xml_file(zip_reader, fid)
 
         # Print a warning message stating that the above file is being used.
-        Memento.warn(
-            _LOGGER,
+        @warn(
             "Multiple nomination file paths found " *
             "in GasLib data. Selecting last nomination file " *
             "(i.e., \"$(file_paths[fid])\") " *

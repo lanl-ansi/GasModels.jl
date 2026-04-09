@@ -161,7 +161,7 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.baseP")
         case["baseP"] = matlab_data["mgc.baseP"]
     else
-        Memento.error(_LOGGER, string("no baseP found in .m file.
+        error(string("no baseP found in .m file.
             The file seems to be missing \"mgc.baseP = ...\" \n
             Typical value is a pmin in any of the junction"))
     end
@@ -169,14 +169,14 @@ function parse_old_m_string(data_string::String)
     if haskey(matlab_data, "mgc.baseF")
         case["baseF"] = matlab_data["mgc.baseF"]
     else
-        Memento.error(_LOGGER, string("no baseF found in .m file.
+        error(string("no baseF found in .m file.
             The file seems to be missing \"mgc.baseF = ...\" "))
     end
 
     if haskey(matlab_data, "mgc.per_unit")
         case["per_unit"] = matlab_data["mgc.per_unit"] == 1 ? true : false
     else
-        Memento.error(_LOGGER, string("no per_unit found in .m file.
+        error(string("no per_unit found in .m file.
             The file seems to be missing \"mgc.per_unit = ...\" "))
     end
 
@@ -189,7 +189,7 @@ function parse_old_m_string(data_string::String)
         end
         case["junction"] = junctions
     else
-        Memento.error(_LOGGER, string("no junction table found in .m file.
+        error(string("no junction table found in .m file.
             The file seems to be missing \"mgc.junction = [...];\""))
     end
 
@@ -202,7 +202,7 @@ function parse_old_m_string(data_string::String)
         end
         case["pipe"] = pipes
     else
-        Memento.error(_LOGGER, string("no pipe table found in .m file.
+        error(string("no pipe table found in .m file.
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
@@ -228,7 +228,7 @@ function parse_old_m_string(data_string::String)
         end
         case["compressor"] = compressors
     else
-        Memento.error(_LOGGER, string("no compressor table found in .m file.
+        error(string("no compressor table found in .m file.
             The file seems to be missing \"mgc.compressor = [...];\""))
     end
 
@@ -272,7 +272,7 @@ function parse_old_m_string(data_string::String)
         case["junction_name"] = junction_names
 
         if length(case["junction_name"]) != length(case["junction"])
-            Memento.error(_LOGGER, "incorrect .m file, the number of junction names ($(length(case["junction_name"]))) is inconsistent with the number of junctions ($(length(case["junction"]))).\n")
+            error("incorrect .m file, the number of junction names ($(length(case["junction_name"]))) is inconsistent with the number of junctions ($(length(case["junction"]))).\n")
         end
     end
 
