@@ -956,13 +956,14 @@ const _mg_extra_data_columns = Dict{String,Vector{String}}(
     write_matgas(filename::String, gm_data::Dict{String,<:Any})
     write_matgas(io::IO, gm_data::Dict{String,<:Any})
 """
-function write_matgas(filename::String, gm_data::Dict{String,<:Any})
+function write_matgas(filename::String, gm_data::Dict{String,<:Any}, precision::Int)
+    #precision is number of digits that floats will be written in
     open(filename, "w") do io
-        write_matgas(io, gm_data)
+        write_matgas(io, gm_data, precision)
     end
 end
 
-function write_matgas(io::IO, gm_data::Dict{String,<:Any})
+function write_matgas(io::IO, gm_data::Dict{String,<:Any}, precison::Int=6)
     make_si_units!(gm_data)
     case_name = get(gm_data, "name", "gas_network")
     func_name = _sanitize_matlab_identifier(String(case_name))
@@ -971,37 +972,37 @@ function write_matgas(io::IO, gm_data::Dict{String,<:Any})
     println(io)
 
     # ---- scalar metadata ----
-    _write_scalar_if_present(io, "mgc.version", get(gm_data, "source_version", v"0.0.0"))
-    _write_scalar_if_present(io, "mgc.name", get(gm_data, "name", func_name))
-    _write_scalar_if_present(io, "mgc.gas_specific_gravity", gm_data["gas_specific_gravity"])
-    _write_scalar_if_present(io, "mgc.specific_heat_capacity_ratio", gm_data["specific_heat_capacity_ratio"])
-    _write_scalar_if_present(io, "mgc.temperature", gm_data["temperature"])
-    _write_scalar_if_present(io, "mgc.sound_speed", get(gm_data, "sound_speed", nothing))
-    _write_scalar_if_present(io, "mgc.compressibility_factor", gm_data["compressibility_factor"])
-    _write_scalar_if_present(io, "mgc.R", get(gm_data, "R", nothing))
-    _write_scalar_if_present(io, "mgc.gas_molar_mass", get(gm_data, "gas_molar_mass", nothing))
-    _write_scalar_if_present(io, "mgc.base_pressure", get(gm_data, "base_pressure", nothing))
-    _write_scalar_if_present(io, "mgc.base_length", get(gm_data, "base_length", nothing))
-    _write_scalar_if_present(io, "mgc.units", gm_data["units"])
-    _write_scalar_if_present(io, "mgc.per_unit", get(gm_data, "per_unit", nothing))
-    _write_scalar_if_present(io, "mgc.economic_weighting", get(gm_data, "economic_weighting", nothing))
+    _write_scalar_if_present(io, "mgc.version", get(gm_data, "source_version", v"0.0.0"), precision)
+    _write_scalar_if_present(io, "mgc.name", get(gm_data, "name", func_name), precision)
+    _write_scalar_if_present(io, "mgc.gas_specific_gravity", gm_data["gas_specific_gravity"], precision)
+    _write_scalar_if_present(io, "mgc.specific_heat_capacity_ratio", gm_data["specific_heat_capacity_ratio"], precision)
+    _write_scalar_if_present(io, "mgc.temperature", gm_data["temperature"], precision)
+    _write_scalar_if_present(io, "mgc.sound_speed", get(gm_data, "sound_speed", nothing), precision)
+    _write_scalar_if_present(io, "mgc.compressibility_factor", gm_data["compressibility_factor"], precision)
+    _write_scalar_if_present(io, "mgc.R", get(gm_data, "R", nothing), precision)
+    _write_scalar_if_present(io, "mgc.gas_molar_mass", get(gm_data, "gas_molar_mass", nothing), precision)
+    _write_scalar_if_present(io, "mgc.base_pressure", get(gm_data, "base_pressure", nothing), precision)
+    _write_scalar_if_present(io, "mgc.base_length", get(gm_data, "base_length", nothing), precision)
+    _write_scalar_if_present(io, "mgc.units", gm_data["units"], precision)
+    _write_scalar_if_present(io, "mgc.per_unit", get(gm_data, "per_unit", nothing), precision)
+    _write_scalar_if_present(io, "mgc.economic_weighting", get(gm_data, "economic_weighting", nothing), precision)
     println(io)
 
     # ---- tabular sections ----
-    _write_section_if_present(io, "sources", get(gm_data, "sources", nothing), _mg_sources_columns)
-    _write_section_if_present(io, "junction", get(gm_data, "junction", nothing), _mg_junction_columns)
-    _write_section_if_present(io, "pipe", get(gm_data, "pipe", nothing), _mg_pipe_columns)
-    _write_section_if_present(io, "ne_pipe", get(gm_data, "ne_pipe", nothing), _mg_ne_pipe_columns)
-    _write_section_if_present(io, "compressor", get(gm_data, "compressor", nothing), _mg_compressor_columns)
-    _write_section_if_present(io, "ne_compressor", get(gm_data, "ne_compressor", nothing), _mg_ne_compressor_columns)
-    _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns)
-    _write_section_if_present(io, "receipt", get(gm_data, "receipt", nothing), _mg_receipt_columns)
-    _write_section_if_present(io, "delivery", get(gm_data, "delivery", nothing), _mg_delivery_columns)
-    _write_section_if_present(io, "short_pipe", get(gm_data, "short_pipe", nothing), _mg_short_pipe_columns)
-    _write_section_if_present(io, "resistor", get(gm_data, "resistor", nothing), _mg_resistor_columns)
-    _write_section_if_present(io, "regulator", get(gm_data, "regulator", nothing), _mg_regulator_columns)
-    _write_section_if_present(io, "valve", get(gm_data, "valve", nothing), _mg_valve_columns)
-    _write_section_if_present(io, "storage", get(gm_data, "storage", nothing), _mg_storage_columns)
+    _write_section_if_present(io, "sources", get(gm_data, "sources", nothing), _mg_sources_columns, precision)
+    _write_section_if_present(io, "junction", get(gm_data, "junction", nothing), _mg_junction_columns, precision)
+    _write_section_if_present(io, "pipe", get(gm_data, "pipe", nothing), _mg_pipe_columns, precision)
+    _write_section_if_present(io, "ne_pipe", get(gm_data, "ne_pipe", nothing), _mg_ne_pipe_columns, precision)
+    _write_section_if_present(io, "compressor", get(gm_data, "compressor", nothing), _mg_compressor_columns, precision)
+    _write_section_if_present(io, "ne_compressor", get(gm_data, "ne_compressor", nothing), _mg_ne_compressor_columns, precision)
+    _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns, precision)
+    _write_section_if_present(io, "receipt", get(gm_data, "receipt", nothing), _mg_receipt_columns, precision)
+    _write_section_if_present(io, "delivery", get(gm_data, "delivery", nothing), _mg_delivery_columns, precision)
+    _write_section_if_present(io, "short_pipe", get(gm_data, "short_pipe", nothing), _mg_short_pipe_columns, precision)
+    _write_section_if_present(io, "resistor", get(gm_data, "resistor", nothing), _mg_resistor_columns, precision)
+    _write_section_if_present(io, "regulator", get(gm_data, "regulator", nothing), _mg_regulator_columns, precision)
+    _write_section_if_present(io, "valve", get(gm_data, "valve", nothing), _mg_valve_columns, precision)
+    _write_section_if_present(io, "storage", get(gm_data, "storage", nothing), _mg_storage_columns, precision)
 end
 
 
@@ -1009,12 +1010,12 @@ end
 # scalar writers
 # ------------------------------------------------------------------
 
-function _write_scalar_if_present(io::IO, lhs::String, value)
+function _write_scalar_if_present(io::IO, lhs::String, value, precision::Int)
     value === nothing && return
-    println(io, lhs, " = ", _format_matgas_scalar(value), ";")
+    println(io, lhs, " = ", _format_matgas_scalar(value, precision), ";")
 end
 
-function _format_matgas_scalar(x)
+function _format_matgas_scalar(x, precision::Int)
     if x isa VersionNumber
         return "'" * string(x) * "'"
     elseif x isa AbstractString || x isa SubString{String}
@@ -1024,7 +1025,7 @@ function _format_matgas_scalar(x)
     elseif x isa Integer
         return string(x)
     elseif x isa AbstractFloat
-        return isnan(x) ? "NaN" : _format_float(x)
+        return isnan(x) ? "NaN" : _format_float(x, precision)
     else
         return "'" * _escape_matgas_string(string(x)) * "'"
     end
@@ -1035,7 +1036,7 @@ end
 # section writers
 # ------------------------------------------------------------------
 
-function _write_section_if_present(io::IO, section_name::String, rows, canonical_cols::Vector{Tuple{String,Type}})
+function _write_section_if_present(io::IO, section_name::String, rows, canonical_cols::Vector{Tuple{String,Type}}, precision::Int=6)
     rows === nothing && return
 
     row_dicts = _normalize_rows(rows, section_name)
@@ -1071,7 +1072,7 @@ function _write_table(io::IO, table_name::String, row_dicts::Vector{Dict{String,
     println(io, "mgc.", table_name, " = [")
 
     for row in row_dicts
-        vals = [_format_matgas_cell(_row_get(row, col)) for col in cols]
+        vals = [_format_matgas_cell(_row_get(row, col), precision) for col in cols]
         println(io, join(vals, "\t"))
     end
 
@@ -1198,7 +1199,7 @@ end
 # cell formatting
 # ------------------------------------------------------------------
 
-function _format_matgas_cell(x)
+function _format_matgas_cell(x, precision::Int)
     if x === nothing || x isa Missing
         return "''"
     elseif x isa Bool
@@ -1206,7 +1207,7 @@ function _format_matgas_cell(x)
     elseif x isa Integer
         return string(x)
     elseif x isa AbstractFloat
-        return isnan(x) ? "''" : _format_float(x)
+        return isnan(x) ? "''" : _format_float(x, precision)
     elseif x isa AbstractString || x isa SubString{String}
         return "'" * _escape_matgas_string(String(x)) * "'"
     else
@@ -1214,7 +1215,7 @@ function _format_matgas_cell(x)
     end
 end
 
-_format_float(x::AbstractFloat) = Printf.@sprintf("%.5g", x)
+_format_float(x::AbstractFloat, precision::Int=6) = Printf.@sprintf("%.$(string(precision))g", x)
 
 _escape_matgas_string(s::String) = replace(s, "'" => "''")
 
