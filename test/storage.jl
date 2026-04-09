@@ -1,5 +1,5 @@
 @testset "Steady State Storage" begin
-    @info "Testing GF Storage"
+    @_info "Testing GF Storage"
     result = solve_gf("../test/data/matgas/case-6-storage.m", CRDWPGasModel, misocp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
     result = solve_gf("../test/data/matgas/case-6-storage.m", DWPGasModel, minlp_solver)
