@@ -13,24 +13,82 @@ module GasModels
     using Dierckx
     using PolyhedralRelaxations
     
-    include("core/logging.jl")
-    _DEFAULT_LOGGER = Logging.current_logger()
-    _LOGGER = Logging.ConsoleLogger(; meta_formatter=GasModels._gm_metafmt)
+    global _LOGGER
+
     function __init__()
-        global _DEFAULT_LOGGER = Logging.current_logger()
-        global _LOGGER = Logging.ConsoleLogger(; meta_formatter=GasModels._gm_metafmt)
-
-        Logging.global_logger(_LOGGER)
+        logger_config!("info")
+        return
     end
 
-    "Suppresses information and warning messages output by GasModels, for fine grained control use the Logging standard library"
-    function silence()
-        silence!()
+    function silence!()
+        logger_config!("error")
     end
 
-    "allows the user to set the logging level without the need to add Logging"
-    function logger_config!(level)
-        set_logging_level!(Symbol(uppercase(level[1]) * level[2:end]))
+    function _meta_formatter(l::Logging.LogLevel, _module, ::Any, id, file, line)
+        color = Logging.default_logcolor(l)
+        prefix = "$(_module) | $l]:"
+        if Logging.Info <= l < Logging.Warn
+            return color, prefix, ""
+        end
+        suffix = string("@ $(_module) ", Base.contractuser(file), ":$line")
+        return color, prefix, suffix
+    end
+
+    function logger_config!(level::Logging.LogLevel)
+        global _LOGGER =
+            Logging.ConsoleLogger(stdout, level; meta_formatter = _meta_formatter)
+        return
+    end
+
+    function logger_config!(level::String)
+        if level == "error"
+            logger_config!(Logging.Error)
+        elseif level == "warn"
+            logger_config!(Logging.Warn)
+        elseif level == "info"
+            logger_config!(Logging.Info)
+        else
+            @assert level == "debug"
+            logger_config!(Logging.Debug)
+        end
+        return
+    end
+
+    macro _warn(msg)
+        logger = GlobalRef(@__MODULE__, :_LOGGER)
+        return quote
+            Logging.with_logger($logger) do
+                @warn $(esc(msg))
+            end
+        end
+    end
+
+    macro _info(msg)
+        logger = GlobalRef(@__MODULE__, :_LOGGER)
+        return quote
+            Logging.with_logger($logger) do
+                @info $(esc(msg))
+            end
+        end
+    end
+
+    macro _debug(msg)
+        logger = GlobalRef(@__MODULE__, :_LOGGER)
+        return quote
+            Logging.with_logger($logger) do
+                @debug $(esc(msg))
+            end
+        end
+    end
+
+    macro _error(msg)
+        logger = GlobalRef(@__MODULE__, :_LOGGER)
+        return quote
+            Logging.with_logger($logger) do
+                @error $(esc(msg))
+            end
+            error($(esc(msg)))
+        end
     end
 
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",

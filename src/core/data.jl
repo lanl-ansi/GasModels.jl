@@ -98,7 +98,7 @@ end
 function _per_unit_data_field_check!(data::Dict{String,Any})
     if get(data, "per_unit", false) == true
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
-            error("data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
+            @_error("data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
             if get(data, "base_density", false) == false
                 data["base_density"] = calc_base_density(data)
@@ -451,7 +451,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                error("the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -500,7 +500,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                error("the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -547,7 +547,7 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                error("the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -594,7 +594,7 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                error("the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -757,7 +757,7 @@ function _check_rouge_junction_ids(data::Dict{String,<:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(rouge_junction_id_fields, field, [])
                 if !(table[column_name] in junction_ids)
-                    error("junction_id of $field[$i] does not exist in junction table.")
+                    @_error("junction_id of $field[$i] does not exist in junction table.")
                 end
             end
         end
@@ -768,7 +768,7 @@ end
 function _check_non_negativity(data::Dict{String, <:Any})
     for field in non_negative_metadata
         if get(data, field, 0.0) < 0.0
-            error("Metadata $field is less than zero.")
+            @_error("Metadata $field is less than zero.")
         end
     end
 
@@ -776,7 +776,7 @@ function _check_non_negativity(data::Dict{String, <:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
-                    error("$field[$i][$column_name] is less than zero.")
+                    @_error("$field[$i][$column_name] is less than zero.")
                 end
             end
         end
@@ -790,7 +790,7 @@ function _check_non_zero(data::Dict{String, <:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
-                    error("$field[$i][$column_name] is zero.")
+                    @_error("$field[$i][$column_name] is zero.")
                 end
             end
         end
@@ -807,23 +807,23 @@ end
 "checks validity of global-level parameters"
 function _check_global_parameters(data::Dict{String, <:Any})
     if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
-        @warn ("temperature of $(data["temperature"]) K is unrealistic")
+        @_warn ("temperature of $(data["temperature"]) K is unrealistic")
     end
 
     if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        @warn ("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+        @_warn ("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
     if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
-        @warn ("gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+        @_warn ("gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
     end
 
     if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        @warn ("sound speed of $(data["sound_speed"]) m/s is unrealistic")
+        @_warn ("sound speed of $(data["sound_speed"]) m/s is unrealistic")
     end
 
     if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
-        @warn ("compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+        @_warn ("compressibility_factor $(data["compressibility_factor"]) is unrealistic")
     end
 end
 
@@ -948,7 +948,7 @@ end
 function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 0.0
-            @warn ("junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn ("junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (junction["p_min"] = si_value)
             (data["english_units"] == true) && (junction["p_min"] = english_value)
         end
@@ -956,7 +956,7 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, pipe) in get(data, "pipe", [])
         if pipe["p_min"] < 0.0
-            @warn ("pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn ("pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (pipe["p_min"] = si_value)
             (data["english_units"] == true) && (pipe["p_min"] = english_value)
         end
@@ -964,13 +964,13 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, compressor) in get(data, "compressor", [])
         if compressor["inlet_p_min"] < 0
-            @warn ("compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn ("compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["inlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["inlet_p_min"] = english_value)
         end
 
         if compressor["outlet_p_min"] < 0
-            @warn ("compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn ("compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["outlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["outlet_p_min"] = english_value)
         end
@@ -1084,7 +1084,7 @@ function _check_connectivity(data::Dict{String,<:Any})
             for junc_key in _gm_junction_keys
                 if haskey(comp, junc_key)
                     if !(comp[junc_key] in junc_ids)
-                        @warn ("$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
+                        @_warn ("$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
                     end
                 end
             end
@@ -1102,7 +1102,7 @@ end
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function _check_status(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        error("check_status does not yet support multinetwork data")
+        @_error("check_status does not yet support multinetwork data")
     end
 
     active_junction_ids = Set(
@@ -1116,7 +1116,7 @@ function _check_status(data::Dict{String,<:Any})
                 if haskey(comp, junc_key)
                     if get(comp, "status", 1) != 0 &&
                        !(comp[junc_key] in active_junction_ids)
-                        @warn ("active $comp_type $i is connected to inactive junction $(comp[junc_key])")
+                        @_warn ("active $comp_type $i is connected to inactive junction $(comp[junc_key])")
                     end
                 end
             end
@@ -1134,14 +1134,14 @@ end
 "checks that all edges connect two distinct junctions"
 function _check_edge_loops(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        error("check_edge_loops does not yet support multinetwork data")
+        @_error("check_edge_loops does not yet support multinetwork data")
     end
 
     for edge_type in _gm_edge_types
         if haskey(data, edge_type)
             for edge in values(data[edge_type])
                 if edge["fr_junction"] == edge["to_junction"]
-                    error("both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
+                    @_error("both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
                 end
             end
         end
@@ -1165,7 +1165,7 @@ function _propagate_topology_status!(data::Dict{String,<:Any})
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
                         comp["status"] = 0
-                        @info ("Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
+                        @_info ("Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
                         break
                     end
                 end
@@ -1894,7 +1894,7 @@ function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_ty
     gm_data = get_gm_data(data)
 
     if _IM.ismultinetwork(gm_data)
-        error("calc_connected_components does not yet support multinetwork data")
+        @_error("calc_connected_components does not yet support multinetwork data")
     end
 
     active_junction = Dict(x for x in gm_data["junction"] if x.second["status"] != 0)
@@ -1934,17 +1934,17 @@ function _select_largest_component!(data::Dict{String,<:Any})
     ccs = calc_connected_components(data)
 
     if length(ccs) > 1
-        @info ("found $(length(ccs)) components")
+        @_info ("found $(length(ccs)) components")
 
         ccs_order = sort(collect(ccs); by=length)
         largest_cc = ccs_order[end]
 
-        @info ("largest component has $(length(largest_cc)) junctions")
+        @_info ("largest component has $(length(largest_cc)) junctions")
 
         for (i,junction) in data["junction"]
             if junction["status"] != 0 && !(junction["id"] in largest_cc)
                 junction["status"] = 0
-                @info ("deactivating junction $(i) due to small connected component")
+                @_info ("deactivating junction $(i) due to small connected component")
             end
         end
 

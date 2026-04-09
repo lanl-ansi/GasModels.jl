@@ -364,11 +364,11 @@ provide a time step that exactly divides 3600.0",
     end
 
     if time_step < 3600.0 && !isinteger(3600.0 / time_step)
-        error("time step should divide 3600.0 exactly when < 3600.0")
+        @_error("time step should divide 3600.0 exactly when < 3600.0")
     end
 
     if total_time > 86400.0
-        @warn (
+        @_warn (
             "the solver takes a substantial performance hit when trying to solve
 transient optimization problems for more than a day's worth of data; if it takes too long to
 converge, please restrict the final time horizon to a day or less",
@@ -376,7 +376,7 @@ converge, please restrict the final time horizon to a day or less",
     end
 
     if (additional_time == 0.0)
-        @warn(
+        @_warn(
             "the transient optimization problem will only work for time-periodic
 time-series data. Please ensure the time-series data is time-periodic with a period of $total_time;
 if the data is not time-periodic GasModels will perform a time-periodic spline interpolation if

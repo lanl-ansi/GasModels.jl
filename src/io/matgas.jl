@@ -329,7 +329,7 @@ function parse_m_string(data_string::String)
     if func_name !== nothing
         case["name"] = func_name
     else
-        @warn ("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
+        @_warn ("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
         case["name"] = "no_name_found"
     end
 
@@ -337,7 +337,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        @warn ("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
+        @_warn ("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
         case["source_version"] = "0.0.0+"
     end
 
@@ -365,7 +365,7 @@ function parse_m_string(data_string::String)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            error(string("no $data_name found in .m file"))
+            @_error(string("no $data_name found in .m file"))
         end
     end
 
@@ -378,10 +378,10 @@ function parse_m_string(data_string::String)
             case["english_units"] = true
             case["si_units"] = false
         else
-            error(string("the possible values for units field in .m file are \"si\" or \"usc\""))
+            @_error(string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
     else
-        error(string("no units field found in .m file.
+        @_error(string("no units field found in .m file.
         The file seems to be missing \"mgc.units = ...;\" \n
         Possible values are 1 (SI) or 2 (English units)"))
     end
@@ -390,7 +390,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.base_pressure")
         case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
-        @warn(
+        @_warn(
             "no base_pressure found in .m file.
 This value will be auto-assigned based on the pressure limits provided in the data"
         )
@@ -399,14 +399,14 @@ This value will be auto-assigned based on the pressure limits provided in the da
     if haskey(matlab_data, "mgc.base_length")
         case["base_length"] = matlab_data["mgc.base_length"]
     else
-        @warn string("no base_length found in .m file.
+        @_warn string("no base_length found in .m file.
             This value will be auto-assigned based on the pipe data")
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
         case["per_unit"] = matlab_data["mgc.is_per_unit"]
     else
-        @warn (string("no is_per_unit found in .m file.
+        @_warn (string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the per_unit field"))
         case["per_unit"] = false
     end
@@ -437,7 +437,7 @@ This value will be auto-assigned based on the pressure limits provided in the da
         case["economic_weighting"] = matlab_data["mgc.economic_weighting"]
     else
         case["economic_weighting"] = 1.0
-        @warn (
+        @_warn (
             "economic_weighting value set to 1.0; the transient ogf
 objective is economic_weighting * (load shed) +
 (1-economic_weighting) * (compressor power)",
@@ -468,7 +468,7 @@ objective is economic_weighting * (load shed) +
         end
         case["junction"] = junctions
     else
-        error(string("no junction table found in .m file.
+        @_error(string("no junction table found in .m file.
             The file seems to be missing \"mgc.junction = [...];\""))
     end
 
@@ -487,7 +487,7 @@ objective is economic_weighting * (load shed) +
         end
         case["pipe"] = pipes
     else
-        error(string("no pipe table found in .m file.
+        @_error(string("no pipe table found in .m file.
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
@@ -684,10 +684,10 @@ objective is economic_weighting * (load shed) +
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                @info ("extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
+                @_info ("extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
-                @info ("extending matlab format with constant data: $(case_name)")
+                @_info ("extending matlab format with constant data: $(case_name)")
             end
         end
     end
@@ -718,7 +718,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
 
     num_supplies = receipts + transfers + storages
     if num_supplies == 0
-        @warn ("no supply points are present in the data file")
+        @_warn ("no supply points are present in the data file")
     end
 
     for field in check_fields
@@ -749,17 +749,17 @@ function _merge_generic_data!(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mg_matrix) != length(v)
-                        error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
+                        @_error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
                     end
 
-                    @info ("extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
+                    @_info ("extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
 
                     for (i, row) in enumerate(mg_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                @_error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end
@@ -996,7 +996,7 @@ function _gasmodels_to_matgas_string(
                         else
                             # special handling for the optional edi_id column
                             field == "edi_id" ? push!(entries, "0") :
-                                    error(string("$(data_type) $(i) is missing field $(field)"))
+                                    @_error(string("$(data_type) $(i) is missing field $(field)"))
                         end
                     end
                     push!(lines, "$(join(entries, "\t"))")
