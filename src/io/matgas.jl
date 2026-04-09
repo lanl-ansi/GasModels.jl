@@ -1215,7 +1215,7 @@ function _format_matgas_cell(x, precision::Int)
     end
 end
 
-_format_float(x::AbstractFloat, precision::Int=6) = Printf.@sprintf("%.$(string(precision))g", x)
+_format_float(x::AbstractFloat, precision::Int=6) = Printf.format(Printf.Format("%.$(precision)g"), x)
 
 _escape_matgas_string(s::String) = replace(s, "'" => "''")
 
