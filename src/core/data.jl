@@ -35,6 +35,132 @@ end
 @inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
 @inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
 
+function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
+    if f_min > f_max
+        error("expected f_min <= f_max, got [$f_min, $f_max]")
+    end
+
+    num_breakpoints >= 0 || error("`num_breakpoints` must be nonnegative")
+
+    if f_min == f_max
+        return [float(f_min)]
+    end
+
+    includes_zero = f_min <= 0 <= f_max
+    zero_is_endpoint = f_min == 0 || f_max == 0
+    zero_requires_new_breakpoint = includes_zero && !zero_is_endpoint
+
+    if zero_requires_new_breakpoint && num_breakpoints == 0
+        error("`num_breakpoints` must be at least 1 when 0 is inside the interval and not an endpoint")
+    end
+
+    num_nonzero_breakpoints = zero_requires_new_breakpoint ? num_breakpoints - 1 : num_breakpoints
+    partition = float.(collect(range(f_min, f_max; length = num_nonzero_breakpoints + 2)))
+
+    if zero_requires_new_breakpoint
+        partition = sort(unique(vcat(partition, 0.0)))
+    end
+
+    return partition
+end
+
+
+function build_flow_partition(f_min::Real, f_max::Real, interior_partition_points::AbstractVector{<:Real})
+    if f_min > f_max
+        error("expected f_min <= f_max, got [$f_min, $f_max]")
+    end
+
+    if f_min == f_max
+        return [float(f_min)]
+    end
+
+    includes_zero = f_min <= 0 <= f_max
+    cleaned_partition = sort(unique(float.(interior_partition_points)))
+
+    if !isempty(cleaned_partition)
+        cleaned_partition[1] >= f_min || error("partition point $(cleaned_partition[1]) is below f_min = $f_min")
+        cleaned_partition[end] <= f_max || error("partition point $(cleaned_partition[end]) is above f_max = $f_max")
+    end
+
+    final_partition = vcat(float(f_min), cleaned_partition, float(f_max))
+
+    if includes_zero
+        final_partition = vcat(final_partition, 0.0)
+    end
+
+    return sort(unique(final_partition))
+end
+
+
+function get_flow_partition(component::Dict{String, <:Any}, f_min::Real, f_max::Real)
+    raw_partition = get(component, "flow_partition", nothing)
+
+    if isnothing(raw_partition)
+        return build_flow_partition(f_min, f_max, Float64[])
+    end
+
+    return build_flow_partition(f_min, f_max, raw_partition)
+end
+
+
+const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor", "loss_resistor"]
+
+
+function _normalize_flow_partition_units(units)
+    if isnothing(units)
+        return nothing
+    end
+
+    units_norm = lowercase(String(units))
+
+    if units_norm in ("si",)
+        return "si"
+    elseif units_norm in ("pu", "per_unit", "per-unit")
+        return "pu"
+    else
+        error("unsupported flow partition units `$units`; expected `si` or `pu`")
+    end
+end
+
+
+function _convert_flow_partition_spec(data::Dict{String, <:Any}, spec; units = nothing)
+    spec isa Integer && return spec
+
+    units_norm = _normalize_flow_partition_units(units)
+    isnothing(units_norm) && return spec
+
+    gm_data = get_gm_data(data)
+
+    if get(gm_data, "english_units", false) == true
+        error("flow partition unit conversion is not supported for datasets in english units")
+    end
+
+    if get(gm_data, "per_unit", false) == true
+        return units_norm == "si" ? float.(spec) ./ get_base_flow(data) : float.(spec)
+    elseif get(gm_data, "si_units", false) == true
+        return units_norm == "pu" ? float.(spec) .* get_base_flow(data) : float.(spec)
+    else
+        error("the current units of the data dictionary are unknown")
+    end
+end
+
+
+function set_flow_partitions!(data::Dict{String, <:Any}, spec; units = nothing)
+    gm_data = get_gm_data(data)
+    converted_spec = _convert_flow_partition_spec(data, spec; units = units)
+
+    for component_type in _flow_partition_component_types
+        for (_, component) in get(gm_data, component_type, [])
+            component["flow_partition"] = build_flow_partition(
+                component["flow_min"],
+                component["flow_max"],
+                converted_spec,
+            )
+        end
+    end
+
+    return data
+end
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
@@ -258,9 +384,10 @@ const _params_for_unit_conversions = Dict(
         "flow_neg",
         "flow_fr",
         "flow_to",
+        "flow_partition",
     ],
-    "original_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max"],
-    "ne_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max"],
+    "original_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max", "flow_partition"],
+    "ne_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max", "flow_partition"],
     "compressor" => [
         "length",
         "flow_min",
@@ -339,12 +466,14 @@ const _params_for_unit_conversions = Dict(
         "f",
         "p_loss",
         "flow_min",
-        "flow_max"
+        "flow_max",
+        "flow_partition",
     ],
     "resistor" => [
         "f",
         "flow_min",
-        "flow_max"
+        "flow_max",
+        "flow_partition",
     ],
     "valve" => [
         "flow_min",
@@ -390,6 +519,7 @@ function _rescale_functions(rescale_pressure::Function, rescale_density::Functio
         "flow_neg" => rescale_flow,
         "flow_fr" => rescale_flow,
         "flow_to" => rescale_flow,
+        "flow_partition" => rescale_flow,
         "withdrawal" => rescale_flow,
         "injection" => rescale_flow,
         "power" => rescale_flow,

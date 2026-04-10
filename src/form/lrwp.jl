@@ -5,6 +5,12 @@ function variable_form_specific(gm::AbstractLRWPModel, nw::Int=nw_id_default; bo
         [i in ids(gm, nw, :pipe)],
         base_name="$(nw)_fmf_l")
     report && sol_component_value(gm, nw, :pipe, :fmf_l, ids(gm, nw, :pipe), fmf_l_pipe)
+
+    # resistor f|f\ relaxation
+    fmf_l_resistor = var(gm, nw)[:fmf_l_resistor] = JuMP.@variable(gm.model,
+        [i in ids(gm, nw, :resistor)],
+        base_name="$(nw)_fmf_l")
+    report && sol_component_value(gm, nw, :resistor, :fmf_l, ids(gm, nw, :resistor), fmf_l_resistor)
 end
 ######################################################################################################
 ## Constraints
@@ -12,6 +18,7 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRWP models"
 function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    pipe = ref(gm, n, :pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
@@ -19,16 +26,11 @@ function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min,
     if w == 0.0
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
     elseif f_min == f_max
-        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min))
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == fmf_l))
-        # fmf_f incorporates the univariate relaxation for f*(abs(f))
-        if(f_min<0 && f_max>0)
-            partition = [f_min, 0, f_max]
-            # partition = [f_min,3*f_min/4,f_min/2,f_min/4,0,f_max/4,f_max/2,3*f_max/4,f_max]
-        else
-            partition = [f_min, f_max]
-        end
+        # fmf_l incorporates the univariate relaxation for f*(abs(f))
+        partition = get_flow_partition(pipe, f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
     end
 
@@ -37,7 +39,22 @@ end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    # TODO Linear convex hull of the weymouth equations in wp.jl
+    resistor = ref(gm, n, :resistor, k)
+    p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
+    f = var(gm, n, :f_resistor, k)
+    fmf_l = var(gm, n, :fmf_l_resistor, k)
+
+    if w == 0.0
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, (p_i - p_j) == 0.0))
+    elseif f_min == f_max
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min*abs(f_min)))
+    else
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == fmf_l))
+        # fmf_l incorporates the univariate relaxation for f*(abs(f))
+        partition = get_flow_partition(resistor, f_min, f_max)
+        construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
+    end
+
 end
 
 
@@ -163,7 +180,30 @@ end
 
 "Constraint: Weymouth equation"
 function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-    #TODO Linear convex hull equations in wp.jl
+    pipe = ref(gm, n, :ne_pipe, k)
+    pi = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    zp = var(gm, n, :zp, k)
+    f = var(gm, n, :f_ne_pipe, k)
+
+    fmf_l = JuMP.@variable(gm.model)
+
+    @assert f_min != f_max "Expansion modeling does not support this case yet"
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
+    else
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, (pi - pj) <= fmf_l / w + (1 - zp) * pd_max))
+        _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, (pi - pj) >= fmf_l / w + (1 - zp) * pd_min))
+
+        # fmf_l incorporates the univariate relaxation for f*(abs(f))
+        partition = get_flow_partition(pipe, f_min, f_max)
+
+        _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, fmf_l <= zp * f_max*abs(f_max)))
+        _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, fmf_l >= zp * f_min*abs(f_min)))
+
+        construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
+    end
 end
 
 
