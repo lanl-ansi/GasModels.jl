@@ -1,6 +1,6 @@
 @testset "Direction of Pipes" begin
     @testset "Base Model" begin
-        @info "Testing base model"
+        @_info "Testing base model"
         result = solve_gf("../test/data/matgas/direction.m", CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         result = solve_gf("../test/data/matgas/direction.m", DWPGasModel, minlp_solver)
@@ -14,7 +14,7 @@
     end
 
     @testset "Pipe direction" begin
-        @info "Testing pipe direction"
+        @_info "Testing pipe direction"
 
         data = GasModels.parse_file("../test/data/matgas/direction.m"; skip_correct=true)
         data["pipe"]["10"]["flow_direction"] = 0
