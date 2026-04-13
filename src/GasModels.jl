@@ -9,86 +9,75 @@ module GasModels
     import Printf
     import Statistics
 
-    using Dates, Logging, LoggingExtras
+    using Dates
+    import Logging
     using Dierckx
     using PolyhedralRelaxations
     
-    global _LOGGER
+    const _LOGGER = Ref{Logging.ConsoleLogger}()
 
     function __init__()
         logger_config!("info")
         return
     end
 
-    function silence!()
+    """
+        silence()
+
+    Silence logging within GasModels and InfrastructureModels.
+
+    This is equivalent to calling `logger_config!("error")`.
+    """
+    function silence()
         logger_config!("error")
+        _IM.logger_config!("error")
+        return
     end
 
-    function _meta_formatter(l::Logging.LogLevel, _module, ::Any, id, file, line)
-        color = Logging.default_logcolor(l)
-        prefix = "$(_module) | $l]:"
-        if Logging.Info <= l < Logging.Warn
-            return color, prefix, ""
-        end
-        suffix = string("@ $(_module) ", Base.contractuser(file), ":$line")
-        return color, prefix, suffix
+    function _meta_formatter(level::Logging.LogLevel, _module, args...)
+        return Logging.default_logcolor(level), "$(_module) | $level]:", ""
     end
 
     function logger_config!(level::Logging.LogLevel)
-        global _LOGGER =
+        _LOGGER[] =
             Logging.ConsoleLogger(stdout, level; meta_formatter = _meta_formatter)
         return
     end
 
+    """
+        logger_config!(level::String)
+
+    Set the logging level within GasModels. `level` just be one of `"error"`,
+    `"warn"`, `"info"`, or `"debug"`.
+    """
     function logger_config!(level::String)
-        if level == "error"
-            logger_config!(Logging.Error)
-        elseif level == "warn"
-            logger_config!(Logging.Warn)
-        elseif level == "info"
-            logger_config!(Logging.Info)
-        else
-            @assert level == "debug"
-            logger_config!(Logging.Debug)
+        return getfield(Logging, level |> titlecase |> Symbol) |> logger_config!
+    end
+
+    function _log_if_level(f, level, logger = _LOGGER[])
+        if level >= Logging.min_enabled_level(logger)
+            Logging.with_logger(f, logger)
         end
         return
     end
 
-    macro _warn(msg)
-        logger = GlobalRef(@__MODULE__, :_LOGGER)
+    macro _error(msg)
         return quote
-            Logging.with_logger($logger) do
-                @warn $(esc(msg))
-            end
-        end
+            GasModels._log_if_level(() -> @error($msg), Logging.Error)
+            error($msg)
+        end |> esc
     end
 
-    macro _info(msg)
-        logger = GlobalRef(@__MODULE__, :_LOGGER)
-        return quote
-            Logging.with_logger($logger) do
-                @info $(esc(msg))
-            end
-        end
+    macro _warn(msg)
+        return :(GasModels._log_if_level(() -> @warn($msg), Logging.Warn)) |> esc
     end
 
     macro _debug(msg)
-        logger = GlobalRef(@__MODULE__, :_LOGGER)
-        return quote
-            Logging.with_logger($logger) do
-                @debug $(esc(msg))
-            end
-        end
+        return :(GasModels._log_if_level(() -> @debug($msg), Logging.Debug)) |> esc
     end
 
-    macro _error(msg)
-        logger = GlobalRef(@__MODULE__, :_LOGGER)
-        return quote
-            Logging.with_logger($logger) do
-                @error $(esc(msg))
-            end
-            error($(esc(msg)))
-        end
+    macro _info(msg)
+        return :(GasModels._log_if_level(() -> @info($msg), Logging.Info)) |> esc
     end
 
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
