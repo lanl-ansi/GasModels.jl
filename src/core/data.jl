@@ -807,23 +807,23 @@ end
 "checks validity of global-level parameters"
 function _check_global_parameters(data::Dict{String, <:Any})
     if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
-        @_warn ("temperature of $(data["temperature"]) K is unrealistic")
+        @_warn("temperature of $(data["temperature"]) K is unrealistic")
     end
 
     if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        @_warn ("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+        @_warn("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
     if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
-        @_warn ("gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+        @_warn("gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
     end
 
     if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        @_warn ("sound speed of $(data["sound_speed"]) m/s is unrealistic")
+        @_warn("sound speed of $(data["sound_speed"]) m/s is unrealistic")
     end
 
     if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
-        @_warn ("compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+        @_warn("compressibility_factor $(data["compressibility_factor"]) is unrealistic")
     end
 end
 
@@ -948,7 +948,7 @@ end
 function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 0.0
-            @_warn ("junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (junction["p_min"] = si_value)
             (data["english_units"] == true) && (junction["p_min"] = english_value)
         end
@@ -956,7 +956,7 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, pipe) in get(data, "pipe", [])
         if pipe["p_min"] < 0.0
-            @_warn ("pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (pipe["p_min"] = si_value)
             (data["english_units"] == true) && (pipe["p_min"] = english_value)
         end
@@ -964,13 +964,13 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, compressor) in get(data, "compressor", [])
         if compressor["inlet_p_min"] < 0
-            @_warn ("compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["inlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["inlet_p_min"] = english_value)
         end
 
         if compressor["outlet_p_min"] < 0
-            @_warn ("compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["outlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["outlet_p_min"] = english_value)
         end
@@ -1084,7 +1084,7 @@ function _check_connectivity(data::Dict{String,<:Any})
             for junc_key in _gm_junction_keys
                 if haskey(comp, junc_key)
                     if !(comp[junc_key] in junc_ids)
-                        @_warn ("$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
+                        @_warn("$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
                     end
                 end
             end
@@ -1116,7 +1116,7 @@ function _check_status(data::Dict{String,<:Any})
                 if haskey(comp, junc_key)
                     if get(comp, "status", 1) != 0 &&
                        !(comp[junc_key] in active_junction_ids)
-                        @_warn ("active $comp_type $i is connected to inactive junction $(comp[junc_key])")
+                        @_warn("active $comp_type $i is connected to inactive junction $(comp[junc_key])")
                     end
                 end
             end
@@ -1165,7 +1165,7 @@ function _propagate_topology_status!(data::Dict{String,<:Any})
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
                         comp["status"] = 0
-                        @_info ("Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
+                        @_info("Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
                         break
                     end
                 end
@@ -1934,17 +1934,17 @@ function _select_largest_component!(data::Dict{String,<:Any})
     ccs = calc_connected_components(data)
 
     if length(ccs) > 1
-        @_info ("found $(length(ccs)) components")
+        @_info("found $(length(ccs)) components")
 
         ccs_order = sort(collect(ccs); by=length)
         largest_cc = ccs_order[end]
 
-        @_info ("largest component has $(length(largest_cc)) junctions")
+        @_info("largest component has $(length(largest_cc)) junctions")
 
         for (i,junction) in data["junction"]
             if junction["status"] != 0 && !(junction["id"] in largest_cc)
                 junction["status"] = 0
-                @_info ("deactivating junction $(i) due to small connected component")
+                @_info("deactivating junction $(i) due to small connected component")
             end
         end
 

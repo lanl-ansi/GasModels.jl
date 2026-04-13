@@ -329,7 +329,7 @@ function parse_m_string(data_string::String)
     if func_name !== nothing
         case["name"] = func_name
     else
-        @_warn ("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
+        @_warn("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
         case["name"] = "no_name_found"
     end
 
@@ -337,7 +337,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        @_warn ("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
+        @_warn("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
         case["source_version"] = "0.0.0+"
     end
 
@@ -406,7 +406,7 @@ This value will be auto-assigned based on the pressure limits provided in the da
     if haskey(matlab_data, "mgc.is_per_unit")
         case["per_unit"] = matlab_data["mgc.is_per_unit"]
     else
-        @_warn (string("no is_per_unit found in .m file.
+        @_warn(string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the per_unit field"))
         case["per_unit"] = false
     end
@@ -437,7 +437,7 @@ This value will be auto-assigned based on the pressure limits provided in the da
         case["economic_weighting"] = matlab_data["mgc.economic_weighting"]
     else
         case["economic_weighting"] = 1.0
-        @_warn (
+        @_warn(
             "economic_weighting value set to 1.0; the transient ogf
 objective is economic_weighting * (load shed) +
 (1-economic_weighting) * (compressor power)",
@@ -684,10 +684,10 @@ objective is economic_weighting * (load shed) +
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                @_info ("extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
+                @_info("extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
-                @_info ("extending matlab format with constant data: $(case_name)")
+                @_info("extending matlab format with constant data: $(case_name)")
             end
         end
     end
@@ -718,7 +718,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
 
     num_supplies = receipts + transfers + storages
     if num_supplies == 0
-        @_warn ("no supply points are present in the data file")
+        @_warn("no supply points are present in the data file")
     end
 
     for field in check_fields
@@ -752,7 +752,7 @@ function _merge_generic_data!(data::Dict{String,Any})
                         @_error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
                     end
 
-                    @_info ("extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
+                    @_info("extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
 
                     for (i, row) in enumerate(mg_matrix)
                         merge_row = v[i]

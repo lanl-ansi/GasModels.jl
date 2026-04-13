@@ -368,7 +368,7 @@ provide a time step that exactly divides 3600.0",
     end
 
     if total_time > 86400.0
-        @_warn (
+        @_warn(
             "the solver takes a substantial performance hit when trying to solve
 transient optimization problems for more than a day's worth of data; if it takes too long to
 converge, please restrict the final time horizon to a day or less",

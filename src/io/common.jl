@@ -67,7 +67,7 @@ function check_pipeline_geometry!(data::Dict{String,Any})
                 end
             end
         else
-            @_warn ("Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
+            @_warn("Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
         end
     end
 end
