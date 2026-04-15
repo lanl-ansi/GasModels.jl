@@ -115,7 +115,7 @@ function _normalize_flow_partition_units(units)
 
     if units_norm in ("si",)
         return "si"
-    elseif units_norm in ("pu", "per_unit")
+    elseif units_norm in ("pu", "per_unit", "per-unit")
         return "pu"
     else
         error("unsupported flow partition units `$units`; expected `si` or `pu`")
