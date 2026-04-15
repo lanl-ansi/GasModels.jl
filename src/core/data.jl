@@ -103,7 +103,7 @@ function get_flow_partition(component::Dict{String, <:Any}, f_min::Real, f_max::
 end
 
 
-const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor", "loss_resistor"]
+const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor"]
 
 
 function _normalize_flow_partition_units(units)
