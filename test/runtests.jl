@@ -12,6 +12,7 @@ Logging.disable_logging(Logging.Info)
 Logging.disable_logging(Logging.Warn)
 
 import JuMP
+import JSON
 
 import Ipopt
 import HiGHS
