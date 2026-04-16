@@ -215,10 +215,56 @@ end
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
-    #TODO
+    r = var(gm, n, :rsqr, k)
+    f = var(gm, n, :f_compressor, k)
+
+    r_pow_m = JuMP.@variable(gm.model)
+    f_r_pow_m = JuMP.@variable(gm.model)
+
+    min_ratio = ref(gm, n, :compressor, k)["c_ratio_min"]
+    max_ratio = ref(gm, n, :compressor, k)["c_ratio_max"]
+    JuMP.set_lower_bound(r_pow_m, min_ratio^(2*m) - 1)
+    JuMP.set_upper_bound(r_pow_m, max_ratio^(2*m) - 1)
+
+    if min_ratio == max_ratio
+        _add_constraint!(gm, n, :compressor_energy_1, k, JuMP.@constraint(gm.model, f*(min_ratio^m - 1) <= power_max / work))
+        _add_constraint!(gm, n, :compressor_energy_2, k, JuMP.@constraint(gm.model, -f*(min_ratio^m - 1) <= power_max / work))
+    else
+        partition = [min_ratio^2,max_ratio^2];
+        construct_univariate_relaxation!(gm.model, a -> (a^m)-1, r, r_pow_m, partition, false)
+        _IM.relaxation_product(gm.model, f, r_pow_m, f_r_pow_m)
+
+        _add_constraint!(gm, n, :compressor_energy_1, k, JuMP.@constraint(gm.model, f_r_pow_m <= power_max / work))
+        _add_constraint!(gm, n, :compressor_energy_2, k, JuMP.@constraint(gm.model, -f_r_pow_m <= power_max / work))
+
+        _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
+    end
 end
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy_ne(gm::AbstractLRDWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
-    #TODO
+        r = var(gm, n, :rsqr, k)
+        f = var(gm, n, :f_compressor, k)
+
+        r_pow_m = JuMP.@variable(gm.model)
+        f_r_pow_m = JuMP.@variable(gm.model)
+
+        min_ratio = ref(gm, n, :compressor, k)["c_ratio_min"]
+        max_ratio = ref(gm, n, :compressor, k)["c_ratio_max"]
+        JuMP.set_lower_bound(r_pow_m, min_ratio^(2*m) - 1)
+        JuMP.set_upper_bound(r_pow_m, max_ratio^(2*m) - 1)
+
+        if min_ratio == max_ratio
+            _add_constraint!(gm, n, :compressor_energy_1, k, JuMP.@constraint(gm.model, f*(min_ratio^m - 1) <= power_max / work))
+            _add_constraint!(gm, n, :compressor_energy_2, k, JuMP.@constraint(gm.model, -f*(min_ratio^m - 1) <= power_max / work))
+        else
+            partition = [min_ratio^2,max_ratio^2];
+            construct_univariate_relaxation!(gm.model, a -> (a^m)-1, r, r_pow_m, partition, false)
+            _IM.relaxation_product(gm.model, f, r_pow_m, f_r_pow_m)
+
+            _add_constraint!(gm, n, :compressor_energy_1, k, JuMP.@constraint(gm.model, f_r_pow_m <= power_max / work))
+            _add_constraint!(gm, n, :compressor_energy_2, k, JuMP.@constraint(gm.model, -f_r_pow_m <= power_max / work))
+
+            _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
+        end
 end
