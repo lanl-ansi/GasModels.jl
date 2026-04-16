@@ -36,6 +36,29 @@ function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min,
 
 end
 
+"Constraint: Pressure drop for inclined pipe"
+function constraint_inclined_pipe_pressure_drop(gm::AbstractLRWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pipe = ref(gm, n, :pipe, k)
+    pii = var(gm, n, :psqr, i)
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+    fmf_l = var(gm, n, :fmf_l_pipe, k)
+
+    inc_pi = exp(r_2)* pii
+    w = 1/(r_1 * (1 - exp(r_2)))
+
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (inc_pi - pj) == 0.0))
+    elseif f_min == f_max
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min*abs(f_min)))
+    else
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == fmf_l))
+        # fmf_l incorporates the univariate relaxation for f*(abs(f))
+        partition = get_flow_partition(pipe, f_min, f_max)
+        construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
+    end
+
+end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
@@ -337,11 +360,11 @@ end
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy(gm::AbstractLRWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
-    #TODO Linear convex hull equations in wp.jl
+    #TODO
 end
 
 
 "Constraint: constrains the energy of the compressor"
 function constraint_compressor_energy_ne(gm::AbstractLRWPModel, n::Int, k, power_max, m, work, flow_max, ratio_max)
-    #TODO Linear convex hull equations in wp.jl
+    #TODO
 end
