@@ -142,6 +142,12 @@ end
 function _add_objective_aux_value!(point::Dict{JuMP.VariableRef,Float64}, model::JuMP.Model, objective_value)
     objective_value isa Number || return point
 
+    objective_var = JuMP.objective_function(model)
+    if objective_var isa JuMP.VariableRef && !haskey(point, objective_var)
+        point[objective_var] = Float64(objective_value)
+        return point
+    end
+
     missing_vars = [v for v in JuMP.all_variables(model) if !haskey(point, v)]
     if length(missing_vars) == 1
         point[only(missing_vars)] = Float64(objective_value)

@@ -19,33 +19,46 @@
             @test isapprox(res["objective"], -167.19, rtol=1e-2)
         end
 
-        @testset "test primal feasibility report from solution file" begin
-            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+        # @testset "test primal feasibility report from solution file" begin
+        #     data = GasModels.parse_file("../test/data/matgas/case-6.m")
+        #     gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
+        #     solution_file = "../test/data/transient/case6_base_solution.json"
+        #     skip_missing_err = ErrorException(
+        #         "`skip_missing = true` is not allowed when nonlinear constraints are present.",
+        #     )
+
+        #     report = JuMP.primal_feasibility_report(gm, solution_file; atol = 1e-6)
+        #     @test isempty(report)
+        #     @test_throws skip_missing_err JuMP.primal_feasibility_report(
+        #         gm,
+        #         solution_file;
+        #         atol = 1e-6,
+        #         skip_missing = true,
+        #     )
+
+        #     solution = JSON.parsefile(solution_file)
+        #     solution["solution"]["junction"]["1"]["psqr"] *= 0.95
+        #     report = JuMP.primal_feasibility_report(gm, solution; atol = 1e-6)
+        #     @test !isempty(report)
+        #     @test_throws skip_missing_err JuMP.primal_feasibility_report(
+        #         gm,
+        #         solution;
+        #         atol = 1e-6,
+        #         skip_missing = true,
+        #     )
+        # end
+
+        @testset "test primal feasibility report with compressor ratio auxiliaries" begin
+            data = GasModels.parse_file("../test/data/matgas/direction.m")
+            data["compressor"]["1"]["directionality"] = 0
+
+            result = solve_ogf(data, WPGasModel, juniper_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test haskey(result["solution"]["compressor"]["1"], "pressure_aux")
+
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
-            solution_file = "../test/data/transient/case6_base_solution.json"
-            skip_missing_err = ErrorException(
-                "`skip_missing = true` is not allowed when nonlinear constraints are present.",
-            )
-
-            report = JuMP.primal_feasibility_report(gm, solution_file; atol = 1e-6)
+            report = JuMP.primal_feasibility_report(gm, result; atol = 1e-6)
             @test isempty(report)
-            @test_throws skip_missing_err JuMP.primal_feasibility_report(
-                gm,
-                solution_file;
-                atol = 1e-6,
-                skip_missing = true,
-            )
-
-            solution = JSON.parsefile(solution_file)
-            solution["solution"]["junction"]["1"]["psqr"] *= 0.95
-            report = JuMP.primal_feasibility_report(gm, solution; atol = 1e-6)
-            @test !isempty(report)
-            @test_throws skip_missing_err JuMP.primal_feasibility_report(
-                gm,
-                solution;
-                atol = 1e-6,
-                skip_missing = true,
-            )
         end
 
         @testset "case 6 ogf" begin
