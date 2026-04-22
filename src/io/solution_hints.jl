@@ -1,8 +1,7 @@
 function parse_solution(solution_file::String)::Dict
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
     sol = JSON.parsefile(solution_file)
-    sol = haskey(sol, "solution") ? sol["solution"] : sol
-    return haskey(sol, "result") ? sol["result"] : sol
+    return _solution_root(sol)
 end
 
 
@@ -26,7 +25,7 @@ end
 function build_solution_point(gm::_IM.AbstractInfrastructureModel, solution::Dict)::Dict{JuMP.VariableRef,Float64}
     point = Dict{JuMP.VariableRef,Float64}()
     objective_value = _solution_objective(solution)
-    sol_root = haskey(solution, "solution") || haskey(solution, "result") ? _solution_root(solution) : solution
+    sol_root = _solution_root(solution)
     nw_sol = gm.sol[:it][gm_it_sym][:nw]
 
     if haskey(sol_root, "nw")
@@ -85,16 +84,18 @@ end
 
 
 function _solution_root(solution::Dict)::Dict
-    sol = haskey(solution, "solution") ? solution["solution"] : solution
-    return haskey(sol, "result") ? sol["result"] : sol
+    if haskey(solution, "solution")
+        solution["solution"] isa Dict || error("Unsupported solution format: `solution` must map to a dictionary")
+        return solution["solution"]
+    end
+
+    return solution
 end
 
 
 function _solution_objective(solution::Dict)
     if haskey(solution, "objective") && solution["objective"] isa Number
         return solution["objective"]
-    elseif haskey(solution, "result") && solution["result"] isa Dict
-        return _solution_objective(solution["result"])
     else
         return nothing
     end
@@ -109,10 +110,6 @@ function _build_solution_point!(point::Dict{JuMP.VariableRef,Float64}, template,
             template_key = _lookup_template_key(template, key)
             isnothing(template_key) && continue
             _build_solution_point!(point, template[template_key], subval)
-        end
-    elseif template isa AbstractArray && value isa AbstractArray
-        for (template_item, value_item) in zip(template, value)
-            _build_solution_point!(point, template_item, value_item)
         end
     end
 
@@ -145,12 +142,6 @@ function _add_objective_aux_value!(point::Dict{JuMP.VariableRef,Float64}, model:
     objective_var = JuMP.objective_function(model)
     if objective_var isa JuMP.VariableRef && !haskey(point, objective_var)
         point[objective_var] = Float64(objective_value)
-        return point
-    end
-
-    missing_vars = [v for v in JuMP.all_variables(model) if !haskey(point, v)]
-    if length(missing_vars) == 1
-        point[only(missing_vars)] = Float64(objective_value)
     end
 
     return point
