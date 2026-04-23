@@ -1,7 +1,7 @@
 @testset "test ogf" begin
     @testset "test wp ogf" begin
         @testset "case 6 ogf" begin
-            @info "Testing OGF"
+            @_info "Testing OGF"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -20,7 +20,7 @@
         end
 
         @testset "case 6 ogf" begin
-            @info "Testing OGF"
+            @_info "Testing OGF"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf(data, CWPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -30,7 +30,7 @@
         end
 
         @testset "case 6 ogf weymouth lin rel" begin
-            @info "Testing OGF Linear Relaxation of Pipe Weymouth Physics"
+            @_info "Testing OGF Linear Relaxation of Pipe Weymouth Physics"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf(data, LRWPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -41,7 +41,7 @@
 
 
         @testset "case 6 wp ogf binding energy constraint" begin
-            @info "Testing OGF Binding Energy Cosntraint"
+            @_info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = solve_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -51,7 +51,7 @@
         end
 
         @testset "case 6 wp ogf elevation constraint" begin
-            @info "Testing OGF Elevation Constraint"
+            @_info "Testing OGF Elevation Constraint"
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -61,7 +61,7 @@
         end
 
         @testset "case 6 cwp ogf binding energy constraint" begin
-            @info "Testing OGF Binding Energy Cosntraint"
+            @_info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = solve_ogf(data, CWPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -71,7 +71,7 @@
         end
 
         @testset "case 6 cwp ogf elevation constraint" begin
-            @info "Testing OGF Elevation Cosntraint"
+            @_info "Testing OGF Elevation Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf(data, CWPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -80,7 +80,7 @@
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.2727; atol = 1e-2)
         end
          @testset "6-bus case solution with duals" begin
-            @info "Testing OGF Report Duals"
+            @_info "Testing OGF Report Duals"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             settings = Dict("output" => Dict("duals" => true))
             result = solve_ogf(data, CWPGasModel, nlp_solver, setting=settings)

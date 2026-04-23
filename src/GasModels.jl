@@ -6,33 +6,78 @@ module GasModels
 
     import JSON
     import JuMP
-    import Memento
     import Printf
     import Statistics
 
     using Dates
+    import Logging
     using Dierckx
     using PolyhedralRelaxations
+    
+    const _LOGGER = Ref{Logging.ConsoleLogger}()
 
-
-
-    # Create our module level logger (this will get precompiled)
-    const _LOGGER = Memento.getlogger(@__MODULE__)
-
-    # Register the module level logger at runtime so that folks can access the logger via `getlogger(GasModels)`
-    # NOTE: If this line is not included then the precompiled `GasModels.LOGGER` won't be registered at runtime.
-    __init__() = Memento.register(_LOGGER)
-
-    "Suppresses information and warning messages output by GasModels, for fine grained control use the Memento package"
-    function silence()
-        Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
-        Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
-        Memento.setlevel!(Memento.getlogger(GasModels), "error")
+    function __init__()
+        logger_config!("info")
+        return
     end
 
-    "alows the user to set the logging level without the need to add Memento"
-    function logger_config!(level)
-        Memento.config!(Memento.getlogger("GasModels"), level)
+    """
+        silence()
+
+    Silence logging within GasModels and InfrastructureModels.
+
+    This is equivalent to calling `logger_config!("error")`.
+    """
+    function silence()
+        logger_config!("error")
+        _IM.logger_config!("error")
+        return
+    end
+
+    function _meta_formatter(level::Logging.LogLevel, _module, args...)
+        return Logging.default_logcolor(level), "$(_module) | $level]:", ""
+    end
+
+    function logger_config!(level::Logging.LogLevel)
+        _LOGGER[] =
+            Logging.ConsoleLogger(stdout, level; meta_formatter = _meta_formatter)
+        return
+    end
+
+    """
+        logger_config!(level::String)
+
+    Set the logging level within GasModels. `level` just be one of `"error"`,
+    `"warn"`, `"info"`, or `"debug"`.
+    """
+    function logger_config!(level::String)
+        return getfield(Logging, level |> titlecase |> Symbol) |> logger_config!
+    end
+
+    function _log_if_level(f, level, logger = _LOGGER[])
+        if level >= Logging.min_enabled_level(logger)
+            Logging.with_logger(f, logger)
+        end
+        return
+    end
+
+    macro _error(msg)
+        return quote
+            GasModels._log_if_level(() -> @error($msg), Logging.Error)
+            error($msg)
+        end |> esc
+    end
+
+    macro _warn(msg)
+        return :(GasModels._log_if_level(() -> @warn($msg), Logging.Warn)) |> esc
+    end
+
+    macro _debug(msg)
+        return :(GasModels._log_if_level(() -> @debug($msg), Logging.Debug)) |> esc
+    end
+
+    macro _info(msg)
+        return :(GasModels._log_if_level(() -> @info($msg), Logging.Info)) |> esc
     end
 
     const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",

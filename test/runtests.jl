@@ -1,15 +1,9 @@
 using GasModels
 
 import InfrastructureModels
-import Memento
 import Logging
 
-# Suppress warnings during testing.
-const TESTLOG = Memento.getlogger(GasModels)
-Memento.setlevel!(TESTLOG, "error")
-Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
-Logging.disable_logging(Logging.Info)
-Logging.disable_logging(Logging.Warn)
+GasModels.silence()
 
 import JuMP
 
@@ -17,9 +11,10 @@ import Ipopt
 import HiGHS
 import Juniper
 
-using MathOptInterface
+using MathOptInterface, Test
 
 const MOI = MathOptInterface
+
 
 ipopt_solver = JuMP.optimizer_with_attributes(
     Ipopt.Optimizer,
