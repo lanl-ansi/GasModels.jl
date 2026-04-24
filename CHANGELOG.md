@@ -3,6 +3,11 @@
 ## staged 
 - nothing
 
+## v0.13.0
+- Remove Memento and switch to Logging.jl
+- Drop support for Julia 1.6 and move base version requirement to 1.10LTS.
+- Update Documenter.jl to current version
+
 ## v0.12.0
 - change units flags from 1 or 0 (`is_english_units = 0`) to booleans (`per_unit = true`)
 - this is a breaking change for any code that asserts/checks/modifies the units flag
