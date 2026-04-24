@@ -956,14 +956,14 @@ const _mg_extra_data_columns = Dict{String,Vector{String}}(
     write_matgas(filename::String, gm_data::Dict{String,<:Any})
     write_matgas(io::IO, gm_data::Dict{String,<:Any})
 """
-function write_matgas(filename::String, gm_data::Dict{String,<:Any}, precision::Int)
+function write_matgas(filename::String, gm_data::Dict{String,<:Any}, precision::Int=6)
     #precision is number of digits that floats will be written in
     open(filename, "w") do io
         write_matgas(io, gm_data, precision)
     end
 end
 
-function write_matgas(io::IO, gm_data::Dict{String,<:Any}, precison::Int=6)
+function write_matgas(io::IO, gm_data::Dict{String,<:Any}, precision::Int=6)
     make_si_units!(gm_data)
     case_name = get(gm_data, "name", "gas_network")
     func_name = _sanitize_matlab_identifier(String(case_name))
