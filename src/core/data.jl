@@ -27,43 +27,27 @@ end
 @inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; apply_to_subnetworks = false)
 @inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; apply_to_subnetworks = false)
 @inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; apply_to_subnetworks = false)
-@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; apply_to_subnetworks = false)
-@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; apply_to_subnetworks = false)
-@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
-@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; apply_to_subnetworks = false)
-@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; apply_to_subnetworks = false)
-@inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
-@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
+@inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return x["sound_speed"]), data; apply_to_subnetworks = false)
+@inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return x["specific_heat_capacity_ratio"]), data; apply_to_subnetworks = false)
+@inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return x["gas_specific_gravity"]), data; apply_to_subnetworks = false)
+@inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return x["R"]), data; apply_to_subnetworks = false)
+@inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return x["temperature"]), data; apply_to_subnetworks = false)
+@inline get_base_mass(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_mass"]), data; apply_to_subnetworks = false)
+@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return x["economic_weighting"]), data; apply_to_subnetworks = false)
 
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
-    p_squares = [junc["p_max"]^2 for junc in values(data["junction"])]
+    p_diff = [(junc["p_max"] - junc["p_min"]) for junc in values(data["junction"])]
 
-    if length(p_squares) > 0
-        # Use the square root of the median max squared pressure.
-        return sqrt(Statistics.median(p_squares))
+    if length(p_diff) > 0
+        return Statistics.median(p_diff)
     else
-        return 1.379e6 # In Pascals, 200 PSI.
+        return 3.0e6 # In Pascals, 435 PSI.
     end
 end
 
-"calculates the base_time"
-function calc_base_time(data::Dict{String,<:Any})
-    return get_base_length(data) / get_sound_speed(data)
-end
-
-"calculates the base_flow - this is actually wrong terminology (has to be base_flux - kg/m^2/s, flow is kg/s)"
-function calc_base_flow(data::Dict{String,<:Any})
-    return get_base_pressure(data) / get_sound_speed(data)
-end
-
-"calculates the base_flux"
-function calc_base_flux(data::Dict{String,<:Any})
-    return get_base_density(data) * get_sound_speed(data)
-end
-
-"calculates the base density"
+"calculates base_density"
 function calc_base_density(data::Dict{String,<:Any})
     return get_base_pressure(data) / get_sound_speed(data)^2
 end
@@ -95,25 +79,24 @@ end
 
 
 "if original data is in per-unit ensure it has base values"
+# TODO: We need to remove this completely, this is a stupid thing to do and can lead to lot or errors"
+# I would go further and stop support for per_unit data inputs."
 function _per_unit_data_field_check!(data::Dict{String,Any})
     if get(data, "per_unit", false) == true
-        if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
-            @_error("data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
+        if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false || get(data, "sound_speed", false) == false || get(data, "temperature", false) == false
+            @_error(string("data in .m file is in per unit but no base_pressure (in Pa), base_length (in m), sound speed (in m/s), temperature (in K) values are provided"))
         else
-            if get(data, "base_density", false) == false
-                data["base_density"] = calc_base_density(data)
-            end
-
-            data["base_diameter"] = 1.0
-            data["base_time"] = calc_base_time(data)
-
-            if get(data, "base_flow", false) == false
-                data["base_flow"] = calc_base_flow(data)
-            end
-
-            if get(data, "base_flux", false) == false
-                data["base_flux"] = calc_base_flux(data)
-            end
+            (isnan(data["base_density"])) && (data["base_density"] = calc_base_density(data))
+            (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/3.0))
+            data["base_area"] = 1.0
+            data["base_diameter"] = data["base_length"]
+            data["base_flux"] = data["base_density"] * data["base_velocity"]
+            data["base_flow"] = data["base_flux"] * data["base_area"]
+            data["euler_num"] = data["base_pressure"] / (data["base_density"] * data["sound_speed"]^2)
+            data["mach_num"] =  data["base_velocity"] / data["sound_speed"]^2
+            data["base_time"] = data["base_length"] / data["base_velocity"]
+            data["base_volume"] = data["base_length"] * data["base_area"]
+            data["base_mass"] = data["base_density"] * data["base_volume"]
         end
     end
 end
@@ -127,36 +110,18 @@ end
 
 "adds additional non-dimensional constants to data dictionary"
 function _add_base_values!(data::Dict{String,Any})
-    if get(data, "base_pressure", false) == false
-        data["base_pressure"] = calc_base_pressure(data)
-    end
-
-    if get(data, "base_density", false) == false
-        data["base_density"] = calc_base_density(data)
-    end
-
-    if get(data, "base_length", false) == false
-        data["base_length"] = 5000.0
-    end
-
-    data["base_diameter"] = 1.0
-    data["base_time"] = calc_base_time(data)
-
-    if get(data, "base_flow", false) == false
-        data["base_flow"] = calc_base_flow(data)
-    end
-
-    if get(data, "base_flux", false) == false
-        data["base_flux"] = calc_base_flux(data)
-    end
-
-    if get(data, "base_volume", false) == false
-        data["base_volume"] = data["base_length"]
-    end
-
-    if get(data, "base_mass", false) == false
-        data["base_mass"] = data["base_density"] * data["base_volume"]
-    end
+    (isnan(data["base_pressure"])) && (data["base_pressure"] = calc_base_pressure(data))
+    (isnan(data["base_density"])) && (data["base_density"] = calc_base_density(data))
+    (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/3.0))
+    data["base_area"] = 1.0
+    data["base_diameter"] = data["base_length"]
+    data["base_flux"] = data["base_density"] * data["base_velocity"]
+    data["base_flow"] = data["base_flux"] * data["base_area"]
+    data["euler_num"] = data["base_pressure"] / (data["base_density"] * data["sound_speed"]^2)
+    data["mach_num"] =  data["base_velocity"] / data["sound_speed"]^2
+    data["base_time"] = data["base_length"] / data["base_velocity"]
+    data["base_volume"] = data["base_length"] * data["base_area"]
+    data["base_mass"] = data["base_density"] * data["base_volume"]
 end
 
 
