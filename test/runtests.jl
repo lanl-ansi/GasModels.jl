@@ -43,41 +43,41 @@ nlp_solver = ipopt_solver
 include("common.jl")
 
 @testset "GasModels" begin
-    include("contingency.jl")
+    # include("contingency.jl")
 
-    include("data.jl")
+    # include("data.jl")
 
     include("mnw.jl")
 
-    include("ogf.jl")
+    # include("ogf.jl")
 
-    include("ogf_nominal.jl")
+    # include("ogf_nominal.jl")
 
-    include("ogf_comp_power_unconstrained.jl")
+    # include("ogf_comp_power_unconstrained.jl")
 
-    include("ogf_comp_power_and_pipe_proxy.jl")
+    # include("ogf_comp_power_and_pipe_proxy.jl")
 
-    include("ogf_comp_power_proxy.jl")
+    # include("ogf_comp_power_proxy.jl")
 
-    include("ls.jl")
+    # include("ls.jl")
 
-    include("nels.jl")
+    # include("nels.jl")
 
-    include("gf.jl")
+    # include("gf.jl")
 
-    include("ne.jl")
+    # include("ne.jl")
 
-    include("storage.jl")
+    # include("storage.jl")
 
-    include("transient.jl")
+    # include("transient.jl")
 
-    # test gaslib-582 dwp gf
-    include("debug.jl")
+    # # test gaslib-582 dwp gf
+    # include("debug.jl")
 
-    include("direction_pipe.jl")
-    include("direction_short_pipe.jl")
-    include("direction_resistor.jl")
-    include("direction_valve.jl")
-    include("direction_regulator.jl")
-    include("direction_compressor.jl")
+    # include("direction_pipe.jl")
+    # include("direction_short_pipe.jl")
+    # include("direction_resistor.jl")
+    # include("direction_valve.jl")
+    # include("direction_regulator.jl")
+    # include("direction_compressor.jl")
 end

@@ -81,13 +81,14 @@ module GasModels
         return :(GasModels._log_if_level(() -> @info($msg), Logging.Info)) |> esc
     end
 
-    const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
+    const _gm_global_keys = Set([
+        "gas_specific_gravity", "specific_heat_capacity_ratio",
         "temperature", "sound_speed", "compressibility_factor", "R",
         "base_pressure", "base_length", "base_flow", "base_time",
-        "base_flux", "base_density", "base_diameter", "base_volume", "base_mass",
+        "base_flux", "base_density", "base_diameter", "base_volume", "base_mass", "base_area", 
+        "ideal_coeffs", "b1", "b2", "non_ideal_coeffs",
         "units", "per_unit", "english_units", "si_units",
-        "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
-        "economic_weighting"])
+        "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass", "economic_weighting"])
 
     const acceleration_gravity = 9.81
     const gm_it_name = "gm"

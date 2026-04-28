@@ -97,6 +97,13 @@ function _per_unit_data_field_check!(data::Dict{String,Any})
             data["base_time"] = data["base_length"] / data["base_velocity"]
             data["base_volume"] = data["base_length"] * data["base_area"]
             data["base_mass"] = data["base_density"] * data["base_volume"]
+            data["ideal_coeffs"] = (data["euler_num"], 0.0)
+            data["b1"] = 1.00300865  # dimensionless
+            data["b2"] = 2.96848838e-8 # units 1/pressure
+            data["non_ideal_coeffs"] = (
+                data["euler_num"] * data["b1"], 
+                data["euler_num"] * data["base_pressure"] * data["b2"])            
+
         end
     end
 end

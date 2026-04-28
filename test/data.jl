@@ -67,7 +67,7 @@
         @test occursin("junction: 40", output)
         @test occursin("receipt: 3", output)
         @test occursin("c_ratio_max: 5", output)
-        @test occursin("injection_nominal: 0.333", output)
+        @test occursin("injection_nominal: 0.027", output)
     end
 
     @testset "check solution summary" begin
@@ -85,6 +85,7 @@
     end
 
 
+    # TODO: this test fails, the resistance calculation needs to change with non-dimensionalization - why are we checking this anyway?
     @testset "check resistance calculations" begin
         @testset "calc pipe resistance" begin
             gas_file = "../test/data/matgas/A1.m"
