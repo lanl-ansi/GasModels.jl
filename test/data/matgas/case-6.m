@@ -1,18 +1,8 @@
 function mgc = model6_new_format
 
-mgc.gas_specific_gravity         = 0.6;
-mgc.specific_heat_capacity_ratio = 1.4;
 mgc.temperature                  = 288.706;
-mgc.R                            = 8.314;
-mgc.compressibility_factor       = 1;
-mgc.base_pressure                = 3000000; % all base values are in same units as specified by units field
-mgc.base_length                  = 5000; % all base values are in same units as specified by units field
-mgc.base_flow                    = 8071.8;
 mgc.units                        = 'si';
-mgc.is_per_unit                  = 0;
 mgc.economic_weighting           = 0.95;
-mgc.sound_speed                  = 371.6643;
-
 
 %% sources data
 %column_names% name agreement_year description

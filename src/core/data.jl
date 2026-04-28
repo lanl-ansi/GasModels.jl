@@ -87,7 +87,7 @@ function _per_unit_data_field_check!(data::Dict{String,Any})
             @_error(string("data in .m file is in per unit but no base_pressure (in Pa), base_length (in m), sound speed (in m/s), temperature (in K) values are provided"))
         else
             (isnan(data["base_density"])) && (data["base_density"] = calc_base_density(data))
-            (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/3.0))
+            (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/100.0))
             data["base_area"] = 1.0
             data["base_diameter"] = data["base_length"]
             data["base_flux"] = data["base_density"] * data["base_velocity"]
@@ -119,7 +119,7 @@ end
 function _add_base_values!(data::Dict{String,Any})
     (isnan(data["base_pressure"])) && (data["base_pressure"] = calc_base_pressure(data))
     (isnan(data["base_density"])) && (data["base_density"] = calc_base_density(data))
-    (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/3.0))
+    (isnan(data["base_velocity"])) && (data["base_velocity"] = ceil(data["sound_speed"]/100.0))
     data["base_area"] = 1.0
     data["base_diameter"] = data["base_length"]
     data["base_flux"] = data["base_density"] * data["base_velocity"]
