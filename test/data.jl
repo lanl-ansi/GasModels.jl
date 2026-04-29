@@ -125,16 +125,16 @@
 
     @testset "flow partition helpers" begin
         @test_throws ErrorException GasModels.build_flow_partition(-4.0, 6.0, 0)
+        @test GasModels.build_flow_partition(1.0, 5.0, 0) == [1.0, 5.0]
         @test GasModels.build_flow_partition(1.0, 5.0, 1) == [1.0, 3.0, 5.0]
         @test GasModels.build_flow_partition(-4.0, 6.0, 1) == [-4.0, 0.0, 6.0]
         @test GasModels.build_flow_partition(-4.0, 6.0, 3) ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
-        @test GasModels.build_flow_partition(-4.0, 6.0, [-1.0, 2.0]) == [-4.0, -1.0, 0.0, 2.0, 6.0]
-        @test GasModels.build_flow_partition(2.0, 2.0, [2.0]) == [2.0]
-        @test_throws ErrorException GasModels.build_flow_partition(-1.0, 1.0, -1)
-        @test_throws ErrorException GasModels.build_flow_partition(-1.0, 1.0, [-2.0, 0.0])
+        @test GasModels.build_flow_partition(2.0, 2.0, 0) == [2.0]
+        @test_throws ErrorException GasModels.build_flow_partition(-1.0, 1.0, 0)
+        @test_throws MethodError GasModels.build_flow_partition(-1.0, 1.0, [-0.5, 0.5])
     end
 
-    @testset "flow partition unit conversions" begin
+    @testset "flow breakpoint counts are unitless" begin
         data = Dict{String,Any}(
             "base_pressure" => 100.0,
             "base_density" => 10.0,
@@ -153,7 +153,7 @@
                     "per_unit" => false,
                     "flow_min" => -40.0,
                     "flow_max" => 60.0,
-                    "flow_partition" => [-10.0, 0.0, 30.0],
+                    "num_flow_breakpoints" => 3,
                 ),
             ),
         )
@@ -161,12 +161,22 @@
         GasModels.make_per_unit!(data)
         @test data["pipe"]["1"]["flow_min"] == -2.0
         @test data["pipe"]["1"]["flow_max"] == 3.0
-        @test data["pipe"]["1"]["flow_partition"] == [-0.5, 0.0, 1.5]
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(
+            data["pipe"]["1"],
+            data["pipe"]["1"]["flow_min"],
+            data["pipe"]["1"]["flow_max"],
+        ) ≈ [-2.0, -1.0 / 3.0, 0.0, 4.0 / 3.0, 3.0]
 
         GasModels.make_si_units!(data)
         @test data["pipe"]["1"]["flow_min"] == -40.0
         @test data["pipe"]["1"]["flow_max"] == 60.0
-        @test data["pipe"]["1"]["flow_partition"] == [-10.0, 0.0, 30.0]
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(
+            data["pipe"]["1"],
+            data["pipe"]["1"]["flow_min"],
+            data["pipe"]["1"]["flow_max"],
+        ) ≈ [-40.0, -20.0 / 3.0, 0.0, 80.0 / 3.0, 60.0]
     end
 
     @testset "set flow partitions on parsed data" begin
@@ -180,31 +190,14 @@
             ),
         )
 
+        
         GasModels.set_flow_partitions!(data, 3)
 
-        @test data["pipe"]["1"]["flow_partition"] ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
-        @test data["pipe"]["2"]["flow_partition"] == [1.0, 2.0, 3.0, 4.0, 5.0]
-        @test data["resistor"]["1"]["flow_partition"] == [-3.0, -1.0, 0.0, 1.0, 3.0]
-    end
-
-    @testset "set flow partitions on parsed data with si points" begin
-        data = Dict{String,Any}(
-            "base_pressure" => 100.0,
-            "base_density" => 10.0,
-            "base_length" => 5.0,
-            "base_flow" => 20.0,
-            "base_time" => 2.0,
-            "base_diameter" => 1.0,
-            "si_units" => false,
-            "english_units" => false,
-            "per_unit" => true,
-            "pipe" => Dict(
-                "1" => Dict{String,Any}("flow_min" => -2.0, "flow_max" => 3.0),
-            ),
-        )
-
-        GasModels.set_flow_partitions!(data, [-10.0, 30.0]; units = "si")
-
-        @test data["pipe"]["1"]["flow_partition"] == [-2.0, -0.5, 0.0, 1.5, 3.0]
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test data["pipe"]["2"]["num_flow_breakpoints"] == 3
+        @test data["resistor"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(data["pipe"]["1"], -4.0, 6.0) ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
+        @test GasModels.get_flow_partition(data["pipe"]["2"], 1.0, 5.0) == [1.0, 2.0, 3.0, 4.0, 5.0]
+        @test GasModels.get_flow_partition(data["resistor"]["1"], -3.0, 3.0) == [-3.0, -1.0, 0.0, 1.0, 3.0]
     end
 end
