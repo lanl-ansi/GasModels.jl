@@ -1,7 +1,25 @@
 function parse_solution(solution_file::String)::Dict
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
-    sol = JSON.parsefile(solution_file)
-    return _solution_root(sol)
+    return parse_solution(JSON.parsefile(solution_file))
+end
+
+
+function parse_solution(result::Dict)::Dict
+    solution = deepcopy(_solution_root(result))
+    @assert _is_solution_root(solution) "Unsupported solution dictionary."
+    @assert get(solution, "si_units", false) == true "Solution files must be in SI units."
+    @assert get(solution, "per_unit", false) == false "Solution files must be in SI units."
+    make_per_unit!(solution)
+    if haskey(result, "objective") && !haskey(solution, "objective")
+        solution["objective"] = result["objective"]
+    end
+    return solution
+end
+
+
+function _is_solution_root(solution::Dict)::Bool
+    return haskey(solution, "nw") ||
+        any(haskey(solution, component) for component in keys(_params_for_unit_conversions))
 end
 
 
@@ -49,7 +67,7 @@ function JuMP.primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    point = build_solution_point(gm, solution)
+    point = build_solution_point(gm, parse_solution(solution))
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 
@@ -60,8 +78,8 @@ function JuMP.primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
-    return JuMP.primal_feasibility_report(gm, JSON.parsefile(solution_file); atol = atol, skip_missing = skip_missing)
+    point = build_solution_point(gm, parse_solution(solution_file))
+    return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 
 function _apply_hints!(src::Dict, dst::Dict)

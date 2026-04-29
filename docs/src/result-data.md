@@ -88,13 +88,13 @@ update a data dictionary with the values from a solution as follows,
 InfrastructureModels.update_data!(data, result["solution"])
 ```
 
-By default, all results are reported in per-unit (non-dimenionalized). Below are common outputs of implemented optimization models
+By default, all solution results are reported in SI units. Below are common outputs of implemented optimization models
 
 ```json
 {
 "junction":{
     "1":{
-      "p": <float>,      # pressure. Non-dimensional quantity. Multiply by baseP to get pascals
+      "p": <float>,      # pressure in pascals
        ...
     },
     "2":{...},
@@ -102,7 +102,7 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
 },
 "delivery":{
     "1":{
-      "fl": <float>,  # variable mass flow consumed. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
+      "fl": <float>,  # variable mass flow consumed in kg/s.
        ...
     },
     "2":{...},
@@ -110,14 +110,14 @@ By default, all results are reported in per-unit (non-dimenionalized). Below are
 },
 "receipt":{
     "1":{
-      "fg": <float>,  # variable mass flow produced. Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s.
+      "fg": <float>,  # variable mass flow produced in kg/s.
     },
     "2":{...},
     ...
 },
 "pipe":{
     "1":{
-      "f": <float>,                 # mass flow through the pipe.  Non-dimensional quantity. Multiply by baseQ/standard_density to get kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
+      "f": <float>,                 # mass flow through the pipe in kg/s. Mass flux is obtained through division of the cross-sectional area (A) of the pipe. A= (pi*diameter^2)/4
       "yp": <int>,                  # 1 if flux flows from f_junction. 0 otherwise
       "yn": <int>,                  # 1 if flux flows from t_junction. 0 otherwise
         ...

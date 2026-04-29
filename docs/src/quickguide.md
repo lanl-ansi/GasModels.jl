@@ -97,8 +97,8 @@ JuMP.optimize!(gm.model, juniper_solver)
 
 ## Solution conversion
 
-The default behavior of GasModels produces solution results in non-dimensionalized units. To recover solutions in SI units, the following function can be used
+The default behavior of GasModels produces solution results in SI units. To recover non-dimensionalized solution values, the following function can be used
 
 ```julia
-GasModels.make_si_units!(result["solution"])
+GasModels.make_per_unit!(result["solution"])
 ```

@@ -1,6 +1,9 @@
 "Ensures that junction pressure solution resides within bounds."
 function check_pressure_status(sol, gm)
-    for (idx, val) in sol["junction"]
+    sol_pu = deepcopy(sol)
+    GasModels.make_per_unit!(sol_pu)
+
+    for (idx, val) in sol_pu["junction"]
         @test val["p"] <= ref(gm, :junction, parse(Int, idx))["p_max"]
         @test val["p"] >= ref(gm, :junction, parse(Int, idx))["p_min"]
     end
