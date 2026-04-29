@@ -40,10 +40,9 @@
 
             result = solve_ogf(data, WPGasModel, juniper_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-            @test haskey(result["solution"]["compressor"]["20"], "pressure_aux")
 
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
-            report = JuMP.primal_feasibility_report(gm, result; atol = 1e-6)
+            report = JuMP.primal_feasibility_report(gm, result; atol = 1e-6, skip_missing=true)
             @test isempty(report)
         end
 

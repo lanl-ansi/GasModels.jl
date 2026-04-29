@@ -712,23 +712,6 @@ function variable_compressor_minpower_proxy(gm::AbstractGasModel, nw::Int=nw_id_
 end
 
 
-function _register_component_value_if_missing!(
-    gm::AbstractGasModel,
-    n::Int,
-    comp_name::Symbol,
-    field_name::Symbol,
-    comp_id,
-    variable,
-)
-    comp_sol = _IM.sol(gm, gm_it_sym, n, comp_name, comp_id)
-    if !haskey(comp_sol, field_name)
-        comp_sol[field_name] = variable
-    end
-
-    return variable
-end
-
-
 "Support function for getting a one off y direction variable"
 function get_compressor_y(gm::AbstractGasModel, n::Int, k)
     if !haskey(var(gm, n),:y_compressor)
@@ -737,7 +720,6 @@ function get_compressor_y(gm::AbstractGasModel, n::Int, k)
 
     if !haskey(var(gm, n)[:y_compressor],k)
         var(gm, n)[:y_compressor][k] = JuMP.@variable(gm.model, binary=true)
-        _register_component_value_if_missing!(gm, n, :compressor, :y, k, var(gm, n)[:y_compressor][k])
     end
 
     return var(gm, n)[:y_compressor][k]
@@ -751,38 +733,9 @@ function get_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
 
     if !haskey(var(gm, n)[:pressure_aux_compressor],k)
         var(gm, n)[:pressure_aux_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :compressor, :pressure_aux, k, var(gm, n)[:pressure_aux_compressor][k])
     end
 
     return var(gm, n)[:pressure_aux_compressor][k]
-end
-
-
-function get_compressor_ratio_product_aux_fr(gm::AbstractGasModel, n::Int, k)
-    if !haskey(var(gm, n), :ratio_product_aux_fr_compressor)
-        var(gm, n)[:ratio_product_aux_fr_compressor] = Dict()
-    end
-
-    if !haskey(var(gm, n)[:ratio_product_aux_fr_compressor], k)
-        var(gm, n)[:ratio_product_aux_fr_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :compressor, :ratio_product_aux_fr, k, var(gm, n)[:ratio_product_aux_fr_compressor][k])
-    end
-
-    return var(gm, n)[:ratio_product_aux_fr_compressor][k]
-end
-
-
-function get_compressor_ratio_product_aux_to(gm::AbstractGasModel, n::Int, k)
-    if !haskey(var(gm, n), :ratio_product_aux_to_compressor)
-        var(gm, n)[:ratio_product_aux_to_compressor] = Dict()
-    end
-
-    if !haskey(var(gm, n)[:ratio_product_aux_to_compressor], k)
-        var(gm, n)[:ratio_product_aux_to_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :compressor, :ratio_product_aux_to, k, var(gm, n)[:ratio_product_aux_to_compressor][k])
-    end
-
-    return var(gm, n)[:ratio_product_aux_to_compressor][k]
 end
 
 
@@ -794,7 +747,6 @@ function get_ne_compressor_pressure_aux(gm::AbstractGasModel, n::Int, k)
 
     if !haskey(var(gm, n)[:ne_pressure_aux_compressor],k)
         var(gm, n)[:ne_pressure_aux_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :ne_compressor, :pressure_aux, k, var(gm, n)[:ne_pressure_aux_compressor][k])
     end
 
     return var(gm, n)[:ne_pressure_aux_compressor][k]
@@ -808,41 +760,9 @@ function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)
 
     if !haskey(var(gm, n)[:y_ne_compressor],k)
         var(gm, n)[:y_ne_compressor][k] = JuMP.@variable(gm.model, binary=true)
-        _register_component_value_if_missing!(gm, n, :ne_compressor, :y, k, var(gm, n)[:y_ne_compressor][k])
     end
 
     return var(gm, n)[:y_ne_compressor][k]
-end
-
-
-get_ne_compressor_y_wp(gm::AbstractGasModel, n::Int, k) = get_ne_compressor_y(gm, n, k)
-
-
-function get_ne_compressor_ratio_product_aux_fr(gm::AbstractGasModel, n::Int, k)
-    if !haskey(var(gm, n), :ratio_product_aux_fr_ne_compressor)
-        var(gm, n)[:ratio_product_aux_fr_ne_compressor] = Dict()
-    end
-
-    if !haskey(var(gm, n)[:ratio_product_aux_fr_ne_compressor], k)
-        var(gm, n)[:ratio_product_aux_fr_ne_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :ne_compressor, :ratio_product_aux_fr, k, var(gm, n)[:ratio_product_aux_fr_ne_compressor][k])
-    end
-
-    return var(gm, n)[:ratio_product_aux_fr_ne_compressor][k]
-end
-
-
-function get_ne_compressor_ratio_product_aux_to(gm::AbstractGasModel, n::Int, k)
-    if !haskey(var(gm, n), :ratio_product_aux_to_ne_compressor)
-        var(gm, n)[:ratio_product_aux_to_ne_compressor] = Dict()
-    end
-
-    if !haskey(var(gm, n)[:ratio_product_aux_to_ne_compressor], k)
-        var(gm, n)[:ratio_product_aux_to_ne_compressor][k] = JuMP.@variable(gm.model)
-        _register_component_value_if_missing!(gm, n, :ne_compressor, :ratio_product_aux_to, k, var(gm, n)[:ratio_product_aux_to_ne_compressor][k])
-    end
-
-    return var(gm, n)[:ratio_product_aux_to_ne_compressor][k]
 end
 
 "variables associated with storage flows"
