@@ -147,10 +147,10 @@ function build_ogf_nominal(gm::AbstractGasModel)
     variable_storage(gm)
     variable_form_specific(gm)
 
-    objective_min_economic_costs(gm)
+    objective_min_economic_costs(gm, is_nominal=true)
 
     for (i, junction) in ref(gm, :junction)
-        constraint_mass_flow_balance(gm, i)
+        constraint_mass_flow_balance(gm, i, is_nominal=true)
 
         if (junction["junction_type"] == 1)
             constraint_pressure(gm, i)
