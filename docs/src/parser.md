@@ -10,6 +10,7 @@ The json file format is a direct JSON serialization of GasModels internal data m
 
 ```@docs
 parse_file
+parse_separated_data
 parse_json
 ```
 
@@ -119,3 +120,9 @@ parse_files
 ```
 
 The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument.
+
+```@docs; canonical=false
+parse_separated_data
+```
+
+The above function is used to parse the a Matgas file and a CSV containing nomination data for a single timestep. This is useful when the scenario-specific data has been removed, but data for multiple timesteps is not available for running a transient gas flow. Only the Matgas file and the CSV file are passed into the function as strings: `data = parse_separated_data("m_path", "csv_path")`. 
