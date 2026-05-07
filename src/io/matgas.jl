@@ -353,7 +353,7 @@ function parse_m_string(data_string::String)
         "mgc.economic_weighting", 
         "mgc.is_per_unit"]
 
-    defaults_exhaustive = [288.706, 0.6, 1.4, 5000.0, NaN, NaN, NaN, "si", 1.0, false]
+    defaults_exhaustive = [288.706, 0.6, 1.3, 5000.0, NaN, NaN, NaN, "si", 1.0, false]
 
     required_metadata_names = ["mgc.units"]
 

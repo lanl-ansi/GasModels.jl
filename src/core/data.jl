@@ -782,7 +782,7 @@ function _check_global_parameters(data::Dict{String, <:Any})
         @_warn("temperature of $(data["temperature"]) K is unrealistic")
     end
 
-    if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
+    if get(data, "specific_heat_capacity_ratio", 1.3) < 1.25 || get(data, "specific_heat_capacity_ratio", 1.3) > 1.31
         @_warn("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
