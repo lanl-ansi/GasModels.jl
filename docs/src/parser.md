@@ -121,6 +121,7 @@ parse_files
 
 The data dictionary returned by the above function is a multi-network data dictionary with spatial discretization performed on pipelines with length greater than `spatial_discretization` keyword argument.
 
+## Parsing Separated Static Data
 ```@docs; canonical=false
 parse_separated_data
 ```
