@@ -1,4 +1,4 @@
-@testset "parse_files slack node correction" begin
+@testset "parse_file slack node correction" begin
     
     const _PKG_ROOT = dirname(dirname(pathof(GasModels)))
     const CASE6NOSLACK = joinpath(
