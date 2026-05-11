@@ -1988,3 +1988,103 @@ function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
 
     return f_max * (max_ratio^2^m - 1) > power_max / work
 end
+
+function junction_connected_components(data::Dict)
+    # `data` may contain inactive buses, which we want to filter out
+    junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
+    junction_lookup = Dict("$(key)" => i for (i, key) in enumerate(junction_keys))
+    graph = Graphs.SimpleGraph(length(junction_keys))
+
+    for component_key in ("pipe", "compressor")
+        if !haskey(data, component_key)
+            continue
+        end
+        for edge in values(data[component_key])
+            if edge["status"] == 0
+                continue
+            end
+            fr_key = "$(edge["fr_junction"])"
+            to_key = "$(edge["to_junction"])"
+            if !(haskey(junction_lookup, fr_key) && haskey(junction_lookup, to_key))
+                # An edge may be connected to an inactive junction. We could just
+                # ignore this edge, but I'd like to know if this ever happens.
+                error("""
+                    One of the incident buses ($fr_key or $to_key) on edge
+                    $(edge["id"]) is inactive, but the edge is active.
+                """)
+            end
+            fr = junction_lookup[fr_key]
+            to = junction_lookup[to_key]
+            Graphs.add_edge!(graph, fr, to)
+        end
+    end
+
+    return [junction_keys[component] for component in Graphs.connected_components(graph)]
+end
+
+function correct_slack_nodes!(data::Dict)
+    """pin some junctions to have fixed pressure, variable flow"""
+    junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
+    receipts_by_node = Dict(j => Any[] for j in junction_keys)
+    deliveries_by_node = Dict(j => Any[] for j in junction_keys)
+    transfers_by_node = Dict(j => Any[] for j in junction_keys)
+    if haskey(data, "receipt")
+        for (key, receipt) in data["receipt"]
+            j = "$(receipt["junction_id"])"
+            # If the receipt or bus are inactive, we continue
+            if receipt["status"] == 0 || data["junction"][j]["status"] == 0
+                continue
+            end
+            push!(receipts_by_node[j], key)
+        end
+    end
+    if haskey(data, "delivery")
+        for (key, delivery) in data["delivery"]
+            j = "$(delivery["junction_id"])"
+            if delivery["status"] == 0 || data["junction"][j]["status"] == 0
+                continue
+            end
+            push!(deliveries_by_node[j], key)
+        end
+    end
+    if haskey(data, "transfer")
+        for (key, transfer) in data["transfer"]
+            j = "$(transfer["junction_id"])"
+            if transfer["status"] == 0 || data["junction"][j]["status"] == 0
+                continue
+            end
+            push!(transfers_by_node[j], key)
+        end
+    end
+    max_injections = map(k -> map(r -> data["receipt"][r]["injection_max"], receipts_by_node[k]), junction_keys)
+    max_withdrawals = map(k -> map(w -> data["delivery"][w]["withdrawal_max"], deliveries_by_node[k]), junction_keys)
+    max_transfers = map(
+        k -> map(
+            t -> max(abs(data["transfer"][t]["withdrawal_min"]), abs(data["transfer"][t]["withdrawal_max"])),
+            transfers_by_node[k],
+        ),
+        junction_keys,
+    )
+    injection_capacities = map(injections -> sum(injections; init = 0.0), max_injections)
+    withdrawal_capacities = map(withdrawals -> sum(withdrawals; init = 0.0), max_withdrawals)
+    transfer_capacities = map(transfers -> sum(transfers; init = 0.0), max_transfers)
+    injection_capacity_by_node = Dict(zip(junction_keys, injection_capacities))
+    withdrawal_capacity_by_node = Dict(zip(junction_keys, withdrawal_capacities))
+    transfer_capacity_by_node = Dict(zip(junction_keys, transfer_capacities))
+
+    for junctions_in_cc in junction_connected_components(data)
+        if any(data["junction"][j]["junction_type"] == 1 for j in junctions_in_cc)
+            continue
+        end
+        nodes_by_capacity = sort(junctions_in_cc; by = j -> (
+            # Note that this is sorting first by injection capacity, then
+            # by transfer capacity, then by withdrawal capacity.
+            injection_capacity_by_node[j],
+            transfer_capacity_by_node[j],
+            withdrawal_capacity_by_node[j],
+        ), rev = true)
+        slack_node = nodes_by_capacity[1]
+        data["junction"][slack_node]["junction_type"] = 1
+    end
+    return data
+end

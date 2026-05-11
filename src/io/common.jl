@@ -3,7 +3,7 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false)
+function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false, correct_slack_nodes::Bool = false)
     if filetype == "m"
         gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
@@ -15,7 +15,7 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
     end
 
     if !skip_correct
-        correct_network_data!(gm_data)
+        correct_network_data!(gm_data, correct_slack_nodes)
     end
 
     return gm_data
@@ -23,9 +23,9 @@ end
 
 
 ""
-function parse_file(file::String; skip_correct::Bool = false)
+function parse_file(file::String; skip_correct::Bool = false, correct_slack_nodes::Bool=false)
     gm_data = open(file) do io
-        parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct)
+        parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct, correct_slack_nodes=correct_slack_nodes)
     end
 
     return gm_data
@@ -96,7 +96,7 @@ function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
     return nothing
 end
 
-function correct_network_data!(data::Dict{String,Any})
+function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false)
     check_non_negativity(data)
     check_pipeline_geometry!(data) #geo must be checked before per-unit conversion
     check_non_zero(data)
@@ -120,4 +120,7 @@ function correct_network_data!(data::Dict{String,Any})
     check_status(data)
     check_edge_loops(data)
     check_global_parameters(data)
+    if slack_nodes
+        correct_slack_nodes!(data)
+    end
 end
