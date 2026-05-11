@@ -50,15 +50,26 @@ end
 
 "construct the ogf problem"
 function build_ogf(gm::AbstractGasModel)
-    bounded_compressors = Dict(
-        x for x in ref(gm, :compressor) if
-        _calc_is_compressor_energy_bounded(
-            get_specific_heat_capacity_ratio(gm.data),
-            get_gas_specific_gravity(gm.data),
-            get_temperature(gm.data),
-            x.second
-        )
-    )
+    # bounded_compressors = Dict(
+    #     x for x in ref(gm, :compressor) if
+    #     _calc_is_compressor_energy_bounded(
+    #         get_specific_heat_capacity_ratio(gm.data),
+    #         get_gas_specific_gravity(gm.data),
+    #         get_temperature(gm.data),
+    #         x.second
+    #     )
+    # )
+
+    variable_potential(gm) 
+    variable_flow(gm)
+    # variable_flow(gm)
+    # variable_injection(gm) 
+    # variable_withdrawal(gm)
+    # variable_transfer(gm)
+    # variable_storage(gm)
+
+    # objective_min_economic_costs(gm)
+
 
     variable_pressure(gm)
     variable_pressure_sqr(gm)

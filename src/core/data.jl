@@ -93,7 +93,7 @@ function _per_unit_data_field_check!(data::Dict{String,Any})
             data["base_flux"] = data["base_density"] * data["base_velocity"]
             data["base_flow"] = data["base_flux"] * data["base_area"]
             data["euler_num"] = data["base_pressure"] / (data["base_density"] * data["sound_speed"]^2)
-            data["mach_num"] =  data["base_velocity"] / data["sound_speed"]^2
+            data["mach_num"] =  data["base_velocity"] / data["sound_speed"]
             data["base_time"] = data["base_length"] / data["base_velocity"]
             data["base_volume"] = data["base_length"] * data["base_area"]
             data["base_mass"] = data["base_density"] * data["base_volume"]
@@ -125,10 +125,16 @@ function _add_base_values!(data::Dict{String,Any})
     data["base_flux"] = data["base_density"] * data["base_velocity"]
     data["base_flow"] = data["base_flux"] * data["base_area"]
     data["euler_num"] = data["base_pressure"] / (data["base_density"] * data["sound_speed"]^2)
-    data["mach_num"] =  data["base_velocity"] / data["sound_speed"]^2
+    data["mach_num"] =  data["base_velocity"] / data["sound_speed"]
     data["base_time"] = data["base_length"] / data["base_velocity"]
     data["base_volume"] = data["base_length"] * data["base_area"]
     data["base_mass"] = data["base_density"] * data["base_volume"]
+    data["ideal_coeffs"] = (data["euler_num"], 0.0)
+    data["b1"] = 1.00300865  # dimensionless
+    data["b2"] = 2.96848838e-8 # units 1/pressure
+    data["non_ideal_coeffs"] = (
+        data["euler_num"] * data["b1"], 
+        data["euler_num"] * data["base_pressure"] * data["b2"])       
 end
 
 
@@ -1372,6 +1378,7 @@ function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_len
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
+
     pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
     w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
     pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
