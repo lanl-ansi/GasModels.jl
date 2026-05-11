@@ -1998,24 +1998,26 @@ function junction_connected_components(data::Dict)
         @_error("no junctions found in data!") #safety error
     end
 
-    for edge_key in ("pipe", "compressor")
-        if !haskey(data, edge_key)
+    for component_key in ("pipe", "compressor")
+        if !haskey(data, component_key)
             continue
         end
-        for edge in values(data[edge_key])
+
+        for (edge_key, edge) in data[component_key]
             if edge["status"] == 0
                 continue
             end
+
             fr_key = "$(edge["fr_junction"])"
             to_key = "$(edge["to_junction"])"
+
             if !(haskey(junction_lookup, fr_key) && haskey(junction_lookup, to_key))
-                # An edge may be connected to an inactive junction. We could just
-                # ignore this edge, but I'd like to know if this ever happens.
-                @_error("""
-                    One of the incident junction ($fr_key or $to_key) on edge
-                    $(edge["id"]) is inactive, but the edge is active.
-                """)
+                @_warn(
+                    "Skipping active edge because one or more incident junctions are inactive or missing: $fr_key to $to_key"
+                )
+                continue
             end
+
             fr = junction_lookup[fr_key]
             to = junction_lookup[to_key]
             Graphs.add_edge!(graph, fr, to)
