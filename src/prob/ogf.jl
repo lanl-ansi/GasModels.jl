@@ -62,27 +62,26 @@ function build_ogf(gm::AbstractGasModel)
 
     variable_potential(gm) 
     variable_flow(gm)
-    # variable_flow(gm)
-    # variable_injection(gm) 
-    # variable_withdrawal(gm)
-    # variable_transfer(gm)
-    # variable_storage(gm)
-
-    # objective_min_economic_costs(gm)
-
-
-    variable_pressure(gm)
-    variable_pressure_sqr(gm)
-    variable_flow(gm)
-    variable_on_off_operation(gm)
-    variable_load_mass_flow(gm)
-    variable_production_mass_flow(gm)
-    variable_transfer_mass_flow(gm)
-    variable_compressor_ratio_sqr(gm)
+    variable_receipt(gm) 
+    variable_delivery(gm)
+    variable_transfer(gm)
     variable_storage(gm)
-    variable_form_specific(gm)
 
     objective_min_economic_costs(gm)
+
+
+    # variable_pressure(gm)
+    # variable_pressure_sqr(gm)
+    # variable_flow(gm)
+    # variable_on_off_operation(gm)
+    # variable_load_mass_flow(gm)
+    # variable_production_mass_flow(gm)
+    # variable_transfer_mass_flow(gm)
+    # variable_compressor_ratio_sqr(gm)
+    # variable_storage(gm)
+    # variable_form_specific(gm)
+
+    # objective_min_economic_costs(gm)
 
     for (i, junction) in ref(gm, :junction)
         constraint_mass_flow_balance(gm, i)

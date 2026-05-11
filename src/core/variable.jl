@@ -195,6 +195,96 @@ function variable_regulator_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
     report && sol_component_value(gm, nw, :regulator, :f, ids(gm, nw, :regulator), f_regulator)
 end
 
+"variables associated with demand"
+function variable_delivery(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
+    fl = var(gm, nw)[:withdrawal_delivery] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_delivery)],
+        base_name="$(nw)_fl",
+        start=comp_start_value(ref(gm, nw, :delivery), i, "fl_start", 
+        ref(gm,nw,:delivery,i)[withdrawal_type])
+    )
+
+    if bounded
+        for (i, delivery) in ref(gm, nw, :dispatchable_delivery)
+            JuMP.set_lower_bound(fl[i], ref(gm,nw,:delivery,i)["withdrawal_min"])
+            JuMP.set_upper_bound(fl[i], ref(gm,nw,:delivery,i)[withdrawal_type])
+        end
+    end
+
+    if report
+        sol_component_value(gm, nw, :delivery, :withdrawal_delivery, ids(gm, nw, :dispatchable_delivery), fl)
+    end
+end
+
+
+"variables associated with transfer"
+function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
+    ft = var(gm, nw)[:withdrawal_transfer] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_transfer)],
+        base_name="$(nw)_ft",
+        start= ref(gm, nw, :transfer, i)["withdrawal_min"] < 0.0 ?
+            ref(gm, nw, :transfer, i)["withdrawal_min"] :
+            ref(gm, nw, :transfer, i)[withdrawal_type]
+    )
+
+    if bounded
+        for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
+            JuMP.set_lower_bound(ft[i], ref(gm, nw, :transfer, i)["withdrawal_min"])
+            JuMP.set_upper_bound(ft[i], ref(gm, nw, :transfer, i)[withdrawal_type])
+        end
+    end
+
+    if report
+        sol_component_value(gm, nw, :transfer, :withdrawal_transfer, ids(gm, nw, :dispatchable_transfer), ft)
+    end
+end
+
+
+"variables associated with production"
+function variable_receipt(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
+    injection_type = is_nominal ? "injection_nominal" : "injection_max"
+    
+    fg = var(gm, nw)[:injection_receipt] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_receipt)],
+        base_name="$(nw)_fg",
+        start=comp_start_value(ref(gm, nw, :receipt), i, "fg_start", 
+        ref(gm,nw,:receipt,i)[injection_type]
+        )
+    )
+
+    if bounded
+        for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
+            JuMP.set_lower_bound(fg[i], ref(gm,nw,:receipt,i)["injection_min"])
+            JuMP.set_upper_bound(fg[i], ref(gm,nw,:receipt,i)[injection_type])
+        end
+    end
+
+    if report
+        sol_component_value(gm, nw, :receipt, :injection_receipt, ids(gm, nw, :dispatchable_receipt), fg)
+    end
+end
+
+"variables associated with storage flows"
+function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true,report::Bool = true)
+    f_wh = var(gm, nw)[:storage_withdrawal] = 
+        JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
+
+    if bounded
+        for (i, storage) in ref(gm, nw, :storage)
+            lb = min(-storage["flow_injection_rate_max"], 0.0)
+            ub = max(storage["flow_withdrawal_rate_max"], 0.0)
+            JuMP.set_lower_bound(f_wh[i], lb)
+            JuMP.set_upper_bound(f_wh[i], ub)
+        end
+    end
+
+    if report
+        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:storage_withdrawal,ids(gm, nw, :storage),f_wh)
+    end
+end
+
 
 "variables associated with (nonsquared) pressure"
 function variable_pressure(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
