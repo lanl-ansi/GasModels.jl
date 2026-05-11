@@ -1990,16 +1990,19 @@ function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
 end
 
 function junction_connected_components(data::Dict)
-    # `data` may contain inactive buses, which we want to filter out
+    # `data` may contain inactive junctions, which we want to filter out
     junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
     junction_lookup = Dict("$(key)" => i for (i, key) in enumerate(junction_keys))
     graph = Graphs.SimpleGraph(length(junction_keys))
+    if !haskey(data, "junction")
+        @_error("no junctions found in data!") #safety error
+    end
 
-    for component_key in ("pipe", "compressor")
-        if !haskey(data, component_key)
+    for edge_key in ("pipe", "compressor")
+        if !haskey(data, edge_key)
             continue
         end
-        for edge in values(data[component_key])
+        for edge in values(data[edge_key])
             if edge["status"] == 0
                 continue
             end
@@ -2008,8 +2011,8 @@ function junction_connected_components(data::Dict)
             if !(haskey(junction_lookup, fr_key) && haskey(junction_lookup, to_key))
                 # An edge may be connected to an inactive junction. We could just
                 # ignore this edge, but I'd like to know if this ever happens.
-                error("""
-                    One of the incident buses ($fr_key or $to_key) on edge
+                @_error("""
+                    One of the incident junction ($fr_key or $to_key) on edge
                     $(edge["id"]) is inactive, but the edge is active.
                 """)
             end
@@ -2028,32 +2031,18 @@ function correct_slack_nodes!(data::Dict)
     receipts_by_node = Dict(j => Any[] for j in junction_keys)
     deliveries_by_node = Dict(j => Any[] for j in junction_keys)
     transfers_by_node = Dict(j => Any[] for j in junction_keys)
-    if haskey(data, "receipt")
-        for (key, receipt) in data["receipt"]
-            j = "$(receipt["junction_id"])"
-            # If the receipt or bus are inactive, we continue
-            if receipt["status"] == 0 || data["junction"][j]["status"] == 0
-                continue
+    component_names = ("receipt", "delivery", "transfer")
+    lookups = (receipts_by_node, deliveries_by_node, transfers_by_node)
+    for (component_name, lookup) in zip(component_names, lookups)
+        if haskey(data, component_name)
+            for (key, component) in data[component_name]
+                j = "$(component["junction_id"])"
+                # If the receipt/delivery/transfer or bus are inactive, we continue
+                if component["status"] == 0 || data["junction"][j]["status"] == 0
+                    continue
+                end
+                push!(lookup[j], key)
             end
-            push!(receipts_by_node[j], key)
-        end
-    end
-    if haskey(data, "delivery")
-        for (key, delivery) in data["delivery"]
-            j = "$(delivery["junction_id"])"
-            if delivery["status"] == 0 || data["junction"][j]["status"] == 0
-                continue
-            end
-            push!(deliveries_by_node[j], key)
-        end
-    end
-    if haskey(data, "transfer")
-        for (key, transfer) in data["transfer"]
-            j = "$(transfer["junction_id"])"
-            if transfer["status"] == 0 || data["junction"][j]["status"] == 0
-                continue
-            end
-            push!(transfers_by_node[j], key)
         end
     end
     max_injections = map(k -> map(r -> data["receipt"][r]["injection_max"], receipts_by_node[k]), junction_keys)
