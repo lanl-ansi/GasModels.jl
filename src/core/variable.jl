@@ -77,6 +77,13 @@ function variable_pipe_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded
         base_name="$(nw)_f_pipe",
         start=comp_start_value(ref(gm, nw, :pipe), i, "f_start", 0)
     )
+
+    if bounded
+        for (i, pipe) in ref(gm, nw, :pipe)
+            JuMP.set_lower_bound(f_pipe[i], pipe["flow_min"])
+            JuMP.set_upper_bound(f_pipe[i], pipe["flow_max"])
+        end
+    end
     
     report && sol_component_value(gm, nw, :pipe, :f, ids(gm, nw, :pipe), f_pipe)
 end
