@@ -1,7 +1,7 @@
 function add_solution_hints!(case::Dict, solution_file::String)::Dict
     """add the results from a solution file as starting values. helps ensure solver consistency for testing"""
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
-    sol = JSON.parsefile(solution_file)["solution"]
+    sol = JSON.parsefile(solution_file; dicttype = Dict{String, Any})["solution"]
     sol_root = haskey(sol, "result") ? sol["result"] : sol #handle the case of "solution = solve_ogf" vs "result = solve_ogf"
 
     if haskey(sol_root, "nw")
@@ -16,7 +16,7 @@ function add_solution_hints!(case::Dict, solution_file::String)::Dict
     return case
 end
 
-function _apply_hints!(src::Dict, dst::Dict)
+function _apply_hints!(src::AbstractDict, dst::AbstractDict)
     for (comp, comp_sol) in src     # junction, pipe, etc
         haskey(dst, comp) || continue
         comp_sol isa AbstractDict || continue   # skip objective
