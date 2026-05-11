@@ -25,8 +25,8 @@
         @test count(j -> j["junction_type"] == 1, values(data["junction"])) == 0
     end
 
-    @testset "parse_files adds slack when requested" begin
-        data = parse_files(CASE6NOSLACK; correct_slack_nodes = true)
+    @testset "parse_file adds slack when requested" begin
+        data = parse_file(CASE6NOSLACK; correct_slack_nodes = true)
 
         slacks = [
             k for (k, j) in data["junction"]
