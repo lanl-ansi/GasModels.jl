@@ -1196,6 +1196,26 @@ function _calc_resistor_pd_bounds(resistor::Dict{String,Any}, i::Dict{String,Any
     return pd_min, pd_max
 end
 
+"Calculate the bounds on minimum and maximum potential difference squared for a pipe"
+function _calc_pipe_potential_difference_bounds(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any}, non_ideal_coeffs)
+    b1, b2 = non_ideal_coeffs 
+    get_potential = p -> b1 * p^2/2.0 + b2 * p^3/3.0
+    pid_max = get_potential(i["p_max"]) - get_potential(j["p_min"])
+    pid_min = get_potential(i["p_min"]) - get_potential(j["p_max"])
+
+    is_bidirectional = get(pipe, "is_bidirectional", 1)
+    flow_direction   = get(pipe, "flow_direction", 0)
+
+    if is_bidirectional == 0 || flow_direction == 1
+        pid_min = max(0, pid_min)
+    end
+
+    if flow_direction == -1
+        pid_max = min(0, pid_max)
+    end
+
+    return pid_min, pid_max
+end
 
 "Calculate the bounds on minimum and maximum pressure difference squared for a pipe"
 function _calc_pipe_pd_bounds_sqr(pipe::Dict{String,Any}, i::Dict{String,Any}, j::Dict{String,Any})
@@ -1374,19 +1394,26 @@ function  _calc_inclined_pipe_resistance_rho_phi_space(pipe::Dict{String,Any}, b
 end
 
 "calculates the minimum flow on a pipe"
-function _calc_pipe_flow_min(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
+function _calc_pipe_flow_min(mf::Float64, 
+    pipe::Dict, i::Dict, j::Dict, 
+    mach_num, euler_num, non_ideal_coeffs)
     is_bidirectional = get(pipe, "is_bidirectional", 1)
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
 
-    pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
-    w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_min           = pd_min < 0 ? -sqrt(w * abs(pd_min)) : sqrt(w * abs(pd_min))
+    # pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
+    pid_min, pid_max = _calc_pipe_potential_difference_bounds(pipe, i, j, non_ideal_coeffs)
+    w                = pipe["friction_factor"] * pipe["length"] / 
+        (2.0 * pipe["diameter"] * pipe["area"]^2) * mach_num^2 / euler_num
+    # w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pif_min = pid_min < 0 ? -sqrt(abs(pid_min)/w) : sqrt(abs(pid_min)/w) 
+    pif_max = pid_max < 0 ? -sqrt(abs(pid_max)/w) : sqrt(abs(pid_max)/w) 
+
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(mf, pf_min, flow_min, 0)
+        return max(mf, pif_min, flow_min, 0)
     else
-        return max(mf, pf_min, flow_min)
+        return max(mf, pif_min, flow_min)
     end
 end
 
