@@ -805,6 +805,25 @@ function _check_global_parameters(data::Dict{String, <:Any})
     end
 end
 
+"Add pipe area"
+function add_pipe_fields!(data::Dict{String, <:Any})
+    apply_gm!(_add_pipe_fields!, data; apply_to_subnetworks = false)
+end 
+
+"Add pipe area"
+function _add_pipe_fields!(data::Dict{String, <:Any})
+    for (i, pipe) in get(data, "pipe", [])
+        pipe["area"] = pi * 0.25 * pipe["diameter"] * pipe["diameter"]
+    end 
+
+    for (i, pipe) in get(data, "ne_pipe", [])
+        pipe["area"] = pi * 0.25 * pipe["diameter"] * pipe["diameter"]
+    end
+
+    for (i, resistor) in get(data, "resistor", [])
+        resistor["area"] = pi * 0.25 * resistor["diameter"] * resistor["diameter"]
+    end 
+end 
 
 "Correct mass flow bounds"
 function correct_f_bounds!(data::Dict{String, <:Any})
@@ -825,20 +844,16 @@ function _correct_f_bounds!(data::Dict{String,Any})
             pipe,
             data["junction"][string(pipe["fr_junction"])],
             data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["mach_num"], data["euler_num"], 
+            data["non_ideal_coeffs"]
         )
         pipe["flow_max"] = _calc_pipe_flow_max(
             mf,
             pipe,
             data["junction"][string(pipe["fr_junction"])],
             data["junction"][string(pipe["to_junction"])],
-            data["base_length"],
-            data["base_pressure"],
-            data["base_flow"],
-            data["sound_speed"],
+            data["mach_num"], data["euler_num"], 
+            data["non_ideal_coeffs"]
         )
     end
 
@@ -862,12 +877,12 @@ function _correct_f_bounds!(data::Dict{String,Any})
         resistor["flow_min"] = _calc_resistor_flow_min(
             -mf, resistor, data["junction"][string(resistor["fr_junction"])],
             data["junction"][string(resistor["to_junction"])],
-            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
+            data["mach_num"], data["euler_num"], data["non_ideal_coeffs"])
 
         resistor["flow_max"] = _calc_resistor_flow_max(
             mf, resistor, data["junction"][string(resistor["fr_junction"])],
             data["junction"][string(resistor["to_junction"])],
-            Float64(data["base_pressure"]), Float64(data["base_flow"]), density)
+            data["mach_num"], data["euler_num"], data["non_ideal_coeffs"])
     end
 
     for (idx, loss_resistor) in get(data, "loss_resistor", Dict())
@@ -1401,15 +1416,11 @@ function _calc_pipe_flow_min(mf::Float64,
     flow_direction   = get(pipe, "flow_direction", 0)
     flow_min         = get(pipe, "flow_min", mf)
 
-    # pd_min, pd_max   = _calc_pipe_pd_bounds_sqr(pipe, i, j)
-    pid_min, pid_max = _calc_pipe_potential_difference_bounds(pipe, i, j, non_ideal_coeffs)
-    w                = pipe["friction_factor"] * pipe["length"] / 
-        (2.0 * pipe["diameter"] * pipe["area"]^2) * mach_num^2 / euler_num
-    # w                = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
+    pid_min, _ = _calc_pipe_potential_difference_bounds(pipe, i, j, non_ideal_coeffs)
+    area = pi * pipe["diameter"]
+    w = pipe["friction_factor"] * pipe["length"] / (2.0 * pipe["diameter"] * pipe["area"]^2) * mach_num^2 / euler_num
     pif_min = pid_min < 0 ? -sqrt(abs(pid_min)/w) : sqrt(abs(pid_min)/w) 
-    pif_max = pid_max < 0 ? -sqrt(abs(pid_max)/w) : sqrt(abs(pid_max)/w) 
-
-
+   
     if is_bidirectional == 0 || flow_direction == 1
         return max(mf, pif_min, flow_min, 0)
     else
@@ -1419,50 +1430,59 @@ end
 
 
 "calculates the maximum flow on a pipe"
-function _calc_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict, base_length::Number, base_pressure::Number, base_flow::Number, sound_speed::Number)
+function _calc_pipe_flow_max(mf::Float64, pipe::Dict, i::Dict, j::Dict,
+    mach_num, euler_num, non_ideal_coeffs)
     flow_direction = get(pipe, "flow_direction", 0)
     flow_max = get(pipe, "flow_max", mf)
-    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, i, j)
-    w = _calc_pipe_resistance(pipe, base_length, base_pressure, base_flow, sound_speed)
-    pf_max = pd_max < 0 ? -sqrt(w * abs(pd_max)) : sqrt(w * abs(pd_max))
+    
+    _, pid_max = _calc_pipe_potential_difference_bounds(pipe, i, j, non_ideal_coeffs)
+    w = pipe["friction_factor"] * pipe["length"] / (2.0 * pipe["diameter"] * pipe["area"]^2) * mach_num^2 / euler_num
+    pif_max = pid_max < 0 ? -sqrt(abs(pid_max)/w) : sqrt(abs(pid_max)/w)
+
 
     if flow_direction == -1
-        return min(mf, pf_max, flow_max, 0)
+        return min(mf, pif_max, flow_max, 0)
     else
-        return min(mf, pf_max, flow_max)
+        return min(mf, pif_max, flow_max)
     end
 end
 
 
 "calculates the minimum flow on a resistor"
-function _calc_resistor_flow_min(mf::Float64, resistor::Dict, i::Dict, j::Dict, base_pressure::Float64, base_flow::Float64, density::Float64)
+function _calc_resistor_flow_min(mf::Float64, resistor::Dict, i::Dict, j::Dict, 
+    mach_num::Float64, euler_num::Float64, non_ideal_coeffs)
     is_bidirectional = get(resistor, "is_bidirectional", 1)
     flow_direction   = get(resistor, "flow_direction", 0)
     flow_min         = get(resistor, "flow_min", mf)
     pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, i, j)
-    w                = _calc_resistor_resistance(resistor, base_pressure, base_flow, density)
-    pf_min           = pd_min < 0.0 ? -sqrt(inv(w) * abs(pd_min)) : sqrt(inv(w) * abs(pd_min))
+    pid_min, pid_max = _calc_pipe_potential_difference_bounds(resistor, i, j, non_ideal_coeffs)
+    # w                = _calc_resistor_resistance(resistor, base_pressure, base_flow, density)
+    w = resistor["drag"] / (2 * resistor["area"]^2) * mach_num^2 / euler_num
+    pif_min           = pid_min < 0.0 ? -sqrt(inv(w) * abs(pid_min)) : sqrt(inv(w) * abs(pid_min))
 
     if is_bidirectional == 0 || flow_direction == 1
-        return max(mf, pf_min, flow_min, 0.0)
+        return max(mf, pif_min, flow_min, 0.0)
     else
-        return max(mf, pf_min, flow_min)
+        return max(mf, pif_min, flow_min)
     end
 end
 
 
 "calculates the maximum flow on a resistor"
-function _calc_resistor_flow_max(mf::Float64, resistor::Dict, i::Dict, j::Dict, base_pressure::Float64, base_flow::Float64, density::Float64)
+function _calc_resistor_flow_max(mf::Float64, resistor::Dict, i::Dict, j::Dict, 
+    mach_num::Float64, euler_num::Float64, non_ideal_coeffs)
     flow_direction = get(resistor, "flow_direction", 0)
     flow_max       = get(resistor, "flow_max", mf)
-    pd_min, pd_max = _calc_resistor_pd_bounds(resistor, i, j)
-    w              = _calc_resistor_resistance(resistor, base_pressure, base_flow, density)
-    pf_max         = pd_max < 0.0 ? -sqrt(inv(w) * abs(pd_max)) : sqrt(inv(w) * abs(pd_max))
+    # pd_min, pd_max = _calc_resistor_pd_bounds(resistor, i, j)
+    pid_min, pid_max = _calc_pipe_potential_difference_bounds(resistor, i, j, non_ideal_coeffs)
+    # w              = _calc_resistor_resistance(resistor, base_pressure, base_flow, density)
+    w = resistor["drag"] / (2 * resistor["area"]^2) * mach_num^2 / euler_num
+    pif_max         = pid_max < 0.0 ? -sqrt(inv(w) * abs(pid_max)) : sqrt(inv(w) * abs(pid_max))
 
     if flow_direction == -1
-        return min(mf, pf_max, flow_max, 0.0)
+        return min(mf, pif_max, flow_max, 0.0)
     else
-        return min(mf, pf_max, flow_max)
+        return min(mf, pif_max, flow_max)
     end
 end
 
