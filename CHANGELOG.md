@@ -3,6 +3,9 @@
 ## staged 
 - nothing
 
+## v0.13.1
+- Add optional function to correct slack nodes in static OGF. If `correct_slack_nodes` == true in the OGF function call, active components are found, existing slack junctions are skipped, and a new slack is chosen for junctions that lack one. 
+
 ## v0.13.0
 - Remove Memento and switch to Logging.jl
 - Drop support for Julia 1.6 and move base version requirement to 1.10LTS.
