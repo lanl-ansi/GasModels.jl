@@ -30,10 +30,6 @@ function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method
         result["objective"] *= data["objective_normalization"]
     end
 
-    if haskey(result, "solution")
-        make_si_units!(result["solution"])
-    end
-
     # Add model_type to the top-level result dict
     result["model_type"] = model_type
 

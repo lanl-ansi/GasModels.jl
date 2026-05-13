@@ -5,14 +5,11 @@ end
 
 
 function parse_solution(result::Dict; data::Union{Dict{String,<:Any},String}=nothing)::Dict
-    solution = deepcopy(_solution_root(result))
-    @assert _is_solution_root(solution) "Unsupported solution dictionary."
     @assert data !== nothing "parse_solution requires a data dictionary or filename to normalize base values"
 
-    normalize_solution_base_values!(solution, data)
+    result = deepcopy(result)
+    solution = normalize_solution_base_values!(result, data)
 
-    @assert get(solution, "si_units", false) == true "Solution files must be in SI units."
-    @assert get(solution, "per_unit", false) == false "Solution files must be in SI units."
     make_per_unit!(solution)
     if haskey(result, "objective") && !haskey(solution, "objective")
         solution["objective"] = result["objective"]
@@ -27,17 +24,28 @@ function _is_solution_root(solution::Dict)::Bool
 end
 
 
-function normalize_solution_base_values!(solution::Dict, data::Union{Dict{String,<:Any},String})::Dict
+function normalize_solution_base_values!(result::Dict, data::Union{Dict{String,<:Any},String})::Dict
     if isa(data, String)
         data = GasModels.parse_file(data)
     end
 
-    if get(solution, "si_units", false) == false
-        make_si_units!(solution)
+    sol = _solution_root(result)
+    @assert _is_solution_root(sol) "Unsupported solution dictionary."
+
+    if get(sol, "si_units", false) == false
+        make_si_units!(sol)
     end
+    @assert get(sol, "si_units", false) == true "Solution data could not be normalized to SI units."
+    @assert get(sol, "per_unit", false) == false "Solution data could not be normalized to SI units."
 
     data = get_gm_data(data)
+    _replace_base_values!(sol, data)
 
+    return sol
+end
+
+
+function _replace_base_values!(solution::Dict, data::Dict)
     for key in collect(keys(solution))
         startswith(key, "base_") && delete!(solution, key)
     end

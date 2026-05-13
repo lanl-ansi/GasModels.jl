@@ -6,8 +6,6 @@
             result = solve_ogf(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -253.683; atol = 1e-2)
-            @test result["solution"]["si_units"] == true
-            @test result["solution"]["per_unit"] == false
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219; atol = 1e-2)
         end
@@ -24,16 +22,27 @@
         @testset "test normalize solution base values from data" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = solve_ogf(data, WPGasModel, nlp_solver)
-            result_pu = deepcopy(result)
-            GasModels.make_per_unit!(result_pu["solution"])
-            result_pu["solution"]["base_flow"] = result_pu["solution"]["base_flow"] * 2.0
+            make_si_units!(result["solution"])
 
+            result_pu = deepcopy(result)
+            result_pu["solution"]["base_flow"] = result_pu["solution"]["base_flow"] * 2.0
+            make_per_unit!(result_pu["solution"])
             GasModels.normalize_solution_base_values!(result_pu, data)
 
             @test result_pu["solution"]["si_units"] == true
             @test result_pu["solution"]["per_unit"] == false
             @test result_pu["solution"]["base_flow"] == data["base_flow"]
             @test isapprox(result_pu["solution"]["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
+
+            result_si = deepcopy(result["solution"])
+            result_si["base_flow"] = result_si["base_flow"] * 2.0
+            sol_root = GasModels.normalize_solution_base_values!(result_si, data)
+
+            @test sol_root === result_si
+            @test result_si["si_units"] == true
+            @test result_si["per_unit"] == false
+            @test result_si["base_flow"] == data["base_flow"]
+            @test isapprox(result_si["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
         end
 
         @testset "test primal feasibility report from solution file" begin
@@ -129,20 +138,18 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -167.190; atol = 1e-2)
 
-            result_pu = deepcopy(result)
-            GasModels.make_per_unit!(result_pu["solution"])
-            @test isapprox(result_pu["solution"]["junction"]["1"]["lam_junction_mfb"], 9585.2624, atol=1e-2)
-            @test isapprox(result_pu["solution"]["junction"]["2"]["lam_junction_mfb"], 23004.6300, atol=1e-2)
-            @test isapprox(result_pu["solution"]["junction"]["3"]["lam_junction_mfb"], 30672.8399, atol=1e-2)
-            @test isapprox(result_pu["solution"]["junction"]["4"]["lam_junction_mfb"], 24621.9535, atol=1e-2)
-            @test isapprox(result_pu["solution"]["junction"]["5"]["lam_junction_mfb"], 9584.9839, atol=1e-2)
-            @test isapprox(result_pu["solution"]["junction"]["6"]["lam_junction_mfb"], 23004.3516, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["1"]["lam_junction_mfb"], 9585.2624, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["2"]["lam_junction_mfb"], 23004.6300, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["3"]["lam_junction_mfb"], 30672.8399, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["4"]["lam_junction_mfb"], 24621.9535, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["5"]["lam_junction_mfb"], 9584.9839, atol=1e-2)
+            @test isapprox(result["solution"]["junction"]["6"]["lam_junction_mfb"], 23004.3516, atol=1e-2)
 
             # test the unit conversions on duals work
             result_base = deepcopy(result)
             GasModels.make_english_units!(result["solution"])
-            GasModels.make_per_unit!(result["solution"])
             GasModels.make_si_units!(result["solution"])
+            GasModels.make_per_unit!(result["solution"])
 
             @test compare(result["solution"], result_base["solution"], rtol=1e-6)
         end
