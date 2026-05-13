@@ -1,12 +1,16 @@
-function parse_solution(solution_file::String)::Dict
+function parse_solution(solution_file::String; data::Union{Dict{String,<:Any},String}=nothing)::Dict
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
-    return parse_solution(JSON.parsefile(solution_file))
+    return parse_solution(JSON.parsefile(solution_file); data=data)
 end
 
 
-function parse_solution(result::Dict)::Dict
+function parse_solution(result::Dict; data::Union{Dict{String,<:Any},String}=nothing)::Dict
     solution = deepcopy(_solution_root(result))
     @assert _is_solution_root(solution) "Unsupported solution dictionary."
+    @assert data !== nothing "parse_solution requires a data dictionary or filename to normalize base values"
+
+    normalize_solution_base_values!(solution, data)
+
     @assert get(solution, "si_units", false) == true "Solution files must be in SI units."
     @assert get(solution, "per_unit", false) == false "Solution files must be in SI units."
     make_per_unit!(solution)
@@ -23,9 +27,32 @@ function _is_solution_root(solution::Dict)::Bool
 end
 
 
+function normalize_solution_base_values!(solution::Dict, data::Union{Dict{String,<:Any},String})::Dict
+    if isa(data, String)
+        data = GasModels.parse_file(data)
+    end
+
+    if get(solution, "si_units", false) == false
+        make_si_units!(solution)
+    end
+
+    data = get_gm_data(data)
+
+    for key in collect(keys(solution))
+        startswith(key, "base_") && delete!(solution, key)
+    end
+
+    for key in keys(data)
+        startswith(key, "base_") && (solution[key] = data[key])
+    end
+
+    return solution
+end
+
+
 function add_solution_hints!(case::Dict, solution_file::String)::Dict
     """add the results from a solution file as starting values. helps ensure solver consistency for testing"""
-    sol_root = parse_solution(solution_file)
+    sol_root = parse_solution(solution_file; data=case)
 
     if haskey(sol_root, "nw")
         for (nw_id, nw_sol) in sol_root["nw"]
@@ -67,7 +94,7 @@ function JuMP.primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    point = build_solution_point(gm, parse_solution(solution))
+    point = build_solution_point(gm, parse_solution(solution; data=gm.data))
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 
@@ -78,7 +105,7 @@ function JuMP.primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    point = build_solution_point(gm, parse_solution(solution_file))
+    point = build_solution_point(gm, parse_solution(solution_file; data=gm.data))
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 

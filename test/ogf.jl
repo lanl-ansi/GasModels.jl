@@ -21,6 +21,21 @@
             @test isapprox(res["objective"], -167.19, rtol=1e-2)
         end
 
+        @testset "test normalize solution base values from data" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            result = solve_ogf(data, WPGasModel, nlp_solver)
+            result_pu = deepcopy(result)
+            GasModels.make_per_unit!(result_pu["solution"])
+            result_pu["solution"]["base_flow"] = result_pu["solution"]["base_flow"] * 2.0
+
+            GasModels.normalize_solution_base_values!(result_pu, data)
+
+            @test result_pu["solution"]["si_units"] == true
+            @test result_pu["solution"]["per_unit"] == false
+            @test result_pu["solution"]["base_flow"] == data["base_flow"]
+            @test isapprox(result_pu["solution"]["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
+        end
+
         @testset "test primal feasibility report from solution file" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
