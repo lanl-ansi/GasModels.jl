@@ -1112,24 +1112,30 @@ function _write_section_if_present(io::IO, section_name::String, rows, canonical
         _present_columns(row_dicts, canonical_cols; exclude=Set(extra_cols))
 
     # always write the main section, even if there are no rows
-    _write_table(io, section_name, row_dicts, main_cols)
+    _write_table(io, section_name, row_dicts, main_cols, precision)
 
     # only write *_data if there is actual extra data present
     if haskey(_mg_extra_data_columns, section_name) && !isempty(row_dicts)
         data_cols = _present_extra_columns(row_dicts, _mg_extra_data_columns[section_name])
         if !isempty(data_cols)
-            _write_table(io, section_name * "_data", row_dicts, data_cols)
+            _write_table(io, section_name * "_data", row_dicts, data_cols, precision)
         end
     end
 end
 
-function _write_table(io::IO, table_name::String, row_dicts::Vector{Dict{String,Any}}, cols::Vector{String})
+function _write_table(
+    io::IO,
+    table_name::String,
+    row_dicts::Vector{Dict{String,Any}},
+    cols::Vector{String},
+    precision::Int,
+)
     println(io, "%% ", table_name)
 
     if isempty(row_dicts)
         println(io, "% ", join(cols, " "))
     else
-        println(io, "%column_names% ", join(cols, " ")) # %column_names% with a blank matrix breaks the IMs parser
+        println(io, "%column_names% ", join(cols, " "))
     end
 
     println(io, "mgc.", table_name, " = [")
