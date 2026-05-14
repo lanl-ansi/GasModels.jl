@@ -28,3 +28,48 @@ function constraint_junction_flow_balance(gm::AbstractGasModel, i; n::Int = nw_i
 
     constraint_junction_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
 end
+
+"Template: Constraints for fixing pressure at a node"
+function constraint_slack_potential(gm::AbstractGasModel, i; n::Int = nw_id_default)
+    b1, b2 = ref(gm, nw, :non_ideal_coeffs)
+    get_potential = x -> b1 * x^2/2.0 + b2 * x^3/3.0 
+    junction = ref(gm, n, :junction)[i]
+    is_slack = junction["junction_type"] == 1
+    if is_slack
+        potential = get_potential(junction["p_nominal"])
+        constraint_slack_potential(gm, n, i, potential)
+    end 
+end
+
+"Template: Weymouth equation for defining the relationship between pressure drop and flow across a pipe"
+function constraint_pipe_physics(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    pipe = ref(gm, n, :pipe, k)
+    i = pipe["fr_junction"]
+    j = pipe["to_junction"]
+    D = pipe["diameter"]
+    L = pipe["length"]
+    A = pipe["area"]
+    euler_num = ref(gm, n, :euler_num) 
+    mach_num = ref(gm, n, :mach_num)
+    lambda = pipe["friction_factor"]
+    resistance = (D == 0.0) ? 0. : (-lambda * L * mach_num^2 / 2.0 / D / A^2 / euler_num) 
+    constraint_pipe_physics(gm, n, k, i, j, resistance)
+end
+
+"Template: Compression ratios for a compressor"
+function constraint_compressor_physics(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    b1, b2 = ref(gm, nw, :non_ideal_coeffs)
+    get_potential = x -> b1 * x^2/2.0 + b2 * x^3/3.0 
+    compressor = ref(gm, n, :compressor, k)
+    i = compressor["fr_junction"]
+    j = compressor["to_junction"]
+    max_ratio = compressor["c_ratio_max"]
+    min_ratio = compressor["c_ratio_min"]
+    j_potential_max = get_potential(ref(gm, n, :junction, j)["p_max"])
+    i_potential_max = get_potential(ref(gm, n, :junction, i)["p_max"])
+    j_potential_min = get_potential(ref(gm, n, :junction, j)["p_min"])
+    i_potential_min = get_potential(ref(gm, n, :junction, i)["p_min"])
+    type = get(compressor, "directionality", 0)
+
+    constraint_compressor_physics(gm, n, k, i, j, min_ratio, max_ratio, i_potential_min, i_potenial_max, j_potential_min, j_potential_max, type)
+end

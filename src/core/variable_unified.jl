@@ -2,7 +2,7 @@
 function variable_potential(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     b1, b2 = ref(gm, nw, :non_ideal_coeffs)
 
-    get_potential = x -> b1 * x^2/0.5 + b2 * x^3/3.0 
+    get_potential = x -> b1 * x^2/2.0 + b2 * x^3/3.0 
     
     function find_ub(val::Float64, ub::Float64)::Float64
         @assert ub > 0

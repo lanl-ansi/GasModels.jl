@@ -221,6 +221,7 @@ const _params_for_unit_conversions = Dict(
     "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
     "pipe" => [
         "length",
+        "diameter",
         "p_min",
         "p_max",
         "f",
@@ -237,7 +238,7 @@ const _params_for_unit_conversions = Dict(
         "flow_fr",
         "flow_to",
     ],
-    "original_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max"],
+    "original_pipe" => ["length", "diameter", "p_min", "p_max", "f", "flow_min", "flow_max"],
     "ne_pipe" => ["length", "p_min", "p_max", "f", "flow_min", "flow_max"],
     "compressor" => [
         "length",

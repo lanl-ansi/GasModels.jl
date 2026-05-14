@@ -15,3 +15,45 @@ function constraint_junction_flow_balance(gm::AbstractGasModel, n::Int, i, f_pip
         sol(gm, n)[:junction][i][:lam_junction_mfb] = cstr_mfb
     end
 end
+
+"Constraint: pin potential to a specific value "
+function constraint_slack_potential(gm::AbstractGasModel, n::Int, i, val)
+    potential = var(gm, n, :potential, i)
+    _add_constraint!(gm, n, :slack_potential, i, JuMP.@constraint(gm.model, potential == val))
+end
+
+"Weymouth equation with absolute value"
+function constraint_pipe_physics(gm::AbstractWPModel, n::Int, k, i, j, resistance)
+    potential_i = var(gm, n, :potential, i)
+    potential_j = var(gm, n, :potential, j)
+    f = var(gm, n, :f_pipe, k)
+    _add_constraint!(gm, n, :pipe_physics, k, JuMP.@constraint(gm.model, (potential_j - potential_i) == resistance * f * abs(f)))
+end
+
+"enforces potential changes bounds that obey compression ratios"
+function constraint_compressor_physics(gm::AbstractWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
+    potential_i = var(gm, n, :potential, i)
+    potential_j = var(gm, n, :potential, j)
+    f = var(gm, n, :f_compressor, k)
+    g = x -> 0.9 * x^2 + 0.1 * x^3
+
+    # compression in both directions
+    if type == 0
+        potential_k = var(gm, n, :potential_compressor, k)
+        _add_constraint!(gm, :compressor_ratios_forward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_i))
+        _add_constraint!(gm, :compressor_ratios_forward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_i))
+        _add_constraint!(gm, :compressor_ratios_backward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_j))
+        _add_constraint!(gm, :compressor_ratios_backward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_forward_flow, k, JuMP.@constraint(gm.model, f * (potential_k - potential_i) >= 0))
+        _add_constraint!(gm, n, :compressor_ratios_backward_flow, k, JuMP.@constraint(gm.model, f * (potential_j - potential_k) <= 0))
+        # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
+    elseif type == 1
+        _add_constraint!(gm, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_i))
+        _add_constraint!(gm, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_i))
+        # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio = 1
+    else # type 2
+        _add_constraint!(gm, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_j))
+        _add_constraint!(gm, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_direction, k, JuMP.@constraint(gm.model, f * (potential_j - potential_i) >= 0))
+    end
+end
