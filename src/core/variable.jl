@@ -324,19 +324,23 @@ end
 
 "variables associated with transfer"
 function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
-    withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"
+    flow_start(transfer) = is_nominal ? transfer["withdrawal_nominal"] :
+        (transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"])
+
+    flow_bounds(transfer) = is_nominal ? minmax(0.0, transfer["withdrawal_nominal"]) :
+        (transfer["withdrawal_min"], transfer["withdrawal_max"])
+
     ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_transfer)],
         base_name="$(nw)_ft",
-        start= ref(gm, nw, :transfer, i)["withdrawal_min"] < 0.0 ?
-            ref(gm, nw, :transfer, i)["withdrawal_min"] :
-            ref(gm, nw, :transfer, i)[withdrawal_type]
+        start=flow_start(ref(gm, nw, :transfer, i))
     )
 
     if bounded
         for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
-            JuMP.set_lower_bound(ft[i], ref(gm, nw, :transfer, i)["withdrawal_min"])
-            JuMP.set_upper_bound(ft[i], ref(gm, nw, :transfer, i)[withdrawal_type])
+            lb, ub = flow_bounds(transfer)
+            JuMP.set_lower_bound(ft[i], lb)
+            JuMP.set_upper_bound(ft[i], ub)
         end
     end
 

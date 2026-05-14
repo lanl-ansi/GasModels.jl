@@ -114,7 +114,7 @@ The reader is referred to [Matgas Format (.m)](@ref) for detailed description on
 ## Parsing Transient Data
 To run the transient formulations, apart from parsing the network file [Matgas Format (.m)](@ref), a time-series [Transient Data Format (CSV)](@ref) file has to be parsed. The following method provides a way to do so:
 
-```@docs
+```@docs; canonical=false
 parse_files
 ```
 
