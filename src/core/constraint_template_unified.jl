@@ -36,7 +36,7 @@ function constraint_slack_potential(gm::AbstractGasModel, i; n::Int = nw_id_defa
     junction = ref(gm, n, :junction)[i]
     is_slack = junction["junction_type"] == 1
     if is_slack
-        potential = get_potential(junction["p_nominal"])
+        potential = get_potential(junction["p_max"])
         constraint_slack_potential(gm, n, i, potential)
     end 
 end
@@ -72,4 +72,15 @@ function constraint_compressor_physics(gm::AbstractGasModel, k; n::Int = nw_id_d
     type = get(compressor, "directionality", 0)
 
     constraint_compressor_physics(gm, n, k, i, j, min_ratio, max_ratio, i_potential_min, i_potenial_max, j_potential_min, j_potential_max, type)
+end
+
+"Template: Constraints on the compressor power"
+function constraint_compressor_power(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    compressor = ref(gm, n, :compressor, k)
+    power_max = compressor["power_max"]
+    gamma = get_specific_heat_capacity_ratio(gm.data)
+    T = get_temperature(gm.data)
+    G = get_gas_specific_gravity(gm.data)
+    C = gamma / (gamma - 1) * 286.0 / G * T
+    constraint_compressor_power(gm, n, k, power_max, C)
 end

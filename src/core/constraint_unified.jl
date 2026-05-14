@@ -40,20 +40,27 @@ function constraint_compressor_physics(gm::AbstractWPModel, n::Int, k, i, j, min
     # compression in both directions
     if type == 0
         potential_k = var(gm, n, :potential_compressor, k)
-        _add_constraint!(gm, :compressor_ratios_forward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_i))
-        _add_constraint!(gm, :compressor_ratios_forward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_i))
-        _add_constraint!(gm, :compressor_ratios_backward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_j))
-        _add_constraint!(gm, :compressor_ratios_backward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_forward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_i))
+        _add_constraint!(gm, n, :compressor_ratios_forward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_i))
+        _add_constraint!(gm, n, :compressor_ratios_backward_lb, k, JuMP.@constraint(gm.model, potential_k >= potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_backward_ub, k, JuMP.@constraint(gm.model, potential_k <= g(max_ratio) * potential_j))
         _add_constraint!(gm, n, :compressor_ratios_forward_flow, k, JuMP.@constraint(gm.model, f * (potential_k - potential_i) >= 0))
         _add_constraint!(gm, n, :compressor_ratios_backward_flow, k, JuMP.@constraint(gm.model, f * (potential_j - potential_k) <= 0))
         # compression when flow is from i to j.  No flow in reverse, so nothing to model in that direction
     elseif type == 1
-        _add_constraint!(gm, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_i))
-        _add_constraint!(gm, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_i))
+        _add_constraint!(gm, n, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_i))
+        _add_constraint!(gm, n, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_i))
         # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio = 1
     else # type 2
-        _add_constraint!(gm, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_j))
-        _add_constraint!(gm, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_j))
         _add_constraint!(gm, n, :compressor_ratios_direction, k, JuMP.@constraint(gm.model, f * (potential_j - potential_i) >= 0))
     end
+end
+
+"Constraint: constrains the energy of the compressor"
+function constraint_compressor_power(gm::AbstractWPModel, n::Int, k, power_max, m, work)
+    r = var(gm, n, :rsqr, k)
+    f = var(gm, n, :f_compressor, k)
+    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
 end

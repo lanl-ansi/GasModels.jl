@@ -2054,10 +2054,11 @@ function junction_connected_components(data::Dict)
     return [junction_keys[component] for component in Graphs.connected_components(graph)]
 end
 
-function correct_slack_nodes!(data::Dict)
+function correct_slack_nodes!(data::Dict; percent=10.0)
     """pin some junctions to have fixed pressure, variable flow"""
     junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
     receipts_by_node = Dict(j => Any[] for j in junction_keys)
+    num_receipts = length(data["receipt"])
     deliveries_by_node = Dict(j => Any[] for j in junction_keys)
     transfers_by_node = Dict(j => Any[] for j in junction_keys)
     component_names = ("receipt", "delivery", "transfer")
@@ -2101,8 +2102,10 @@ function correct_slack_nodes!(data::Dict)
             transfer_capacity_by_node[j],
             withdrawal_capacity_by_node[j],
         ), rev = true)
-        slack_node = nodes_by_capacity[1]
-        data["junction"][slack_node]["junction_type"] = 1
+        for i in 1:ceil(num_receipts * percent * 0.01)
+            slack_node = nodes_by_capacity[i]
+            data["junction"][slack_node]["junction_type"] = 1
+        end 
     end
     return data
 end
