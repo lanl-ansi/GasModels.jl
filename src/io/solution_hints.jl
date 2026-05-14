@@ -1,10 +1,10 @@
-function parse_solution(solution_file::String; data::Union{Dict{String,<:Any},String}=nothing)::Dict
+function parse_solution(solution_file::String; data::Union{AbstractDict{String,<:Any},String}=nothing)::Dict
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
     return parse_solution(JSON.parsefile(solution_file); data=data)
 end
 
 
-function parse_solution(result::Dict; data::Union{Dict{String,<:Any},String}=nothing)::Dict
+function parse_solution(result::AbstractDict; data::Union{AbstractDict{String,<:Any},String}=nothing)::Dict
     @assert data !== nothing "parse_solution requires a data dictionary or filename to normalize base values"
 
     result = deepcopy(result)
@@ -18,13 +18,13 @@ function parse_solution(result::Dict; data::Union{Dict{String,<:Any},String}=not
 end
 
 
-function _is_solution_root(solution::Dict)::Bool
+function _is_solution_root(solution::AbstractDict)::Bool
     return haskey(solution, "nw") ||
         any(haskey(solution, component) for component in keys(_params_for_unit_conversions))
 end
 
 
-function normalize_solution_base_values!(result::Dict, data::Union{Dict{String,<:Any},String})::Dict
+function normalize_solution_base_values!(result::AbstractDict, data::Union{AbstractDict{String,<:Any},String})::Dict
     if isa(data, String)
         data = GasModels.parse_file(data)
     end
@@ -45,7 +45,7 @@ function normalize_solution_base_values!(result::Dict, data::Union{Dict{String,<
 end
 
 
-function _replace_base_values!(solution::Dict, data::Dict)
+function _replace_base_values!(solution::AbstractDict, data::AbstractDict)
     for key in collect(keys(solution))
         startswith(key, "base_") && delete!(solution, key)
     end
@@ -58,7 +58,7 @@ function _replace_base_values!(solution::Dict, data::Dict)
 end
 
 
-function add_solution_hints!(case::Dict, solution_file::String)::Dict
+function add_solution_hints!(case::AbstractDict, solution_file::String)::Dict
     """add the results from a solution file as starting values. helps ensure solver consistency for testing"""
     sol_root = parse_solution(solution_file; data=case)
 
@@ -75,7 +75,7 @@ function add_solution_hints!(case::Dict, solution_file::String)::Dict
 end
 
 
-function build_solution_point(gm::_IM.AbstractInfrastructureModel, solution::Dict)::Dict{JuMP.VariableRef,Float64}
+function build_solution_point(gm::_IM.AbstractInfrastructureModel, solution::AbstractDict)::Dict{JuMP.VariableRef,Float64}
     point = Dict{JuMP.VariableRef,Float64}()
     objective_value = _solution_objective(solution)
     sol_root = _solution_root(solution)
@@ -98,7 +98,7 @@ end
 
 function JuMP.primal_feasibility_report(
     gm::_IM.AbstractInfrastructureModel,
-    solution::Dict;
+    solution::AbstractDict;
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
@@ -117,7 +117,7 @@ function JuMP.primal_feasibility_report(
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 
-function _apply_hints!(src::Dict, dst::Dict)
+function _apply_hints!(src::AbstractDict, dst::AbstractDict)
     for (comp, comp_sol) in src     # junction, pipe, etc
         haskey(dst, comp) || continue
         comp_sol isa AbstractDict || continue   # skip objective
@@ -136,9 +136,9 @@ function _apply_hints!(src::Dict, dst::Dict)
 end
 
 
-function _solution_root(solution::Dict)::Dict
+function _solution_root(solution::AbstractDict)::AbstractDict
     if haskey(solution, "solution")
-        solution["solution"] isa Dict || error("Unsupported solution format: `solution` must map to a dictionary")
+        solution["solution"] isa AbstractDict || error("Unsupported solution format: `solution` must map to a dictionary")
         return solution["solution"]
     end
 
@@ -146,7 +146,7 @@ function _solution_root(solution::Dict)::Dict
 end
 
 
-function _solution_objective(solution::Dict)
+function _solution_objective(solution::AbstractDict)
     if haskey(solution, "objective") && solution["objective"] isa Number
         return solution["objective"]
     else
@@ -155,7 +155,7 @@ function _solution_objective(solution::Dict)
 end
 
 
-function _build_solution_point!(point::Dict{JuMP.VariableRef,Float64}, template, value)
+function _build_solution_point!(point::AbstractDict{JuMP.VariableRef,Float64}, template, value)
     if template isa JuMP.VariableRef && value isa Number
         point[template] = Float64(value)
     elseif template isa AbstractDict && value isa AbstractDict
@@ -189,7 +189,7 @@ function _lookup_template_key(template::AbstractDict, key)
 end
 
 
-function _add_objective_aux_value!(point::Dict{JuMP.VariableRef,Float64}, model::JuMP.Model, objective_value)
+function _add_objective_aux_value!(point::AbstractDict{JuMP.VariableRef,Float64}, model::JuMP.Model, objective_value)
     objective_value isa Number || return point
 
     objective_var = JuMP.objective_function(model)
