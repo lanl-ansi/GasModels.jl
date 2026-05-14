@@ -101,6 +101,14 @@ function variable_compressor_flow(gm::AbstractGasModel, nw::Int=nw_id_default; b
     report && sol_component_value(gm, nw, :compressor, :f, ids(gm, nw, :compressor), f_compressor)
 end
 
+function variable_bidirectional_compressor_potential(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+    potential_compressor = var(gm, nw)[:potential_compressor] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:compressor); get(ref(gm, nw, :compressor)[i], "directionality",0) == 0],
+        base_name="$(nw)_potential_compressor",
+        start=1.0
+    )
+end 
+
 "variables associated with demand"
 function variable_delivery(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
     withdrawal_type = is_nominal ? "withdrawal_nominal" : "withdrawal_max"

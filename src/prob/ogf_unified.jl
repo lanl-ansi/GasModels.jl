@@ -18,6 +18,7 @@ function build_ogf_unified(gm::AbstractGasModel)
 
     variable_potential(gm) 
     variable_flow_unified(gm)
+    variable_bidirectional_compressor_potential(gm)
     variable_receipt(gm) 
     variable_delivery(gm)
     variable_transfer(gm)
