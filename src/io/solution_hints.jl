@@ -96,7 +96,7 @@ function build_solution_point(gm::_IM.AbstractInfrastructureModel, solution::Abs
 end
 
 
-function JuMP.primal_feasibility_report(
+function primal_feasibility_report(
     gm::_IM.AbstractInfrastructureModel,
     solution::AbstractDict;
     atol::Float64 = 0.0,
@@ -107,7 +107,7 @@ function JuMP.primal_feasibility_report(
 end
 
 
-function JuMP.primal_feasibility_report(
+function primal_feasibility_report(
     gm::_IM.AbstractInfrastructureModel,
     solution_file::String;
     atol::Float64 = 0.0,

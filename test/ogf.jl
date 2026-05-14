@@ -49,12 +49,12 @@
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
             solution_file = "../test/data/transient/case6_base_solution.json"
-            report = JuMP.primal_feasibility_report(gm, solution_file; atol = 1e-6)
+            report = GasModels.primal_feasibility_report(gm, solution_file; atol = 1e-6)
             @test isempty(report)
 
             solution = JSON.parsefile(solution_file)
             solution["solution"]["junction"]["1"]["psqr"] *= 0.95
-            report = JuMP.primal_feasibility_report(gm, solution; atol = 1e-6)
+            report = GasModels.primal_feasibility_report(gm, solution; atol = 1e-6)
             @test !isempty(report)
         end
 
@@ -66,7 +66,7 @@
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
 
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
-            report = JuMP.primal_feasibility_report(gm, result; atol = 1e-6, skip_missing=true)
+            report = GasModels.primal_feasibility_report(gm, result; atol = 1e-6, skip_missing=true)
             @test isempty(report)
         end
 
