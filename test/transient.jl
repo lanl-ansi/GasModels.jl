@@ -38,7 +38,6 @@ end
         build_transient_ogf; 
         ref_extensions=[ref_add_transient!], 
         solution_processors=[sol_status_zero_components!],
-        kwargs...
         )
     @test result["termination_status"] == LOCALLY_SOLVED
     @test haskey(result["solution"]["nw"]["1"]["junction"], "1")

@@ -21,7 +21,6 @@
                 sol_compressor_p_to_r!,
                 sol_regulator_p_to_r!,
                 sol_status_zero_components!],
-                kwargs...
             )
             @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test haskey(res["solution"]["junction"], "1")
