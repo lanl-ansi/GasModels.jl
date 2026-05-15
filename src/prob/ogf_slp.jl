@@ -522,7 +522,7 @@ function solve_ogf(
 
     unchanged_keys = [
         "base_density",
-        "is_per_unit",
+        "per_unit",
         "multinetwork",
         "base_volume",
         "base_mass",
