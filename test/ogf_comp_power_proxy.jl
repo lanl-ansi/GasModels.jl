@@ -1,7 +1,7 @@
 @testset "test new ogf" begin
     @testset "test wp new ogf" begin
         @testset "case 6 new ogf" begin
-            @info "Testing OGF with compressor power proxy (linear)"
+            @_info "Testing OGF with compressor power proxy (linear)"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf_comp_power_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -11,7 +11,7 @@
         end
 
         @testset "case 6 new ogf weymouth lin rel" begin
-            @info "Testing  OGF with compressor power proxy Linear Relaxation of Pipe Weymouth Physics"
+            @_info "Testing  OGF with compressor power proxy Linear Relaxation of Pipe Weymouth Physics"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf_comp_power_proxy(data, LRWPGasModel, lp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -22,7 +22,7 @@
 
 
         @testset "case 6 wp new ogf binding energy constraint" begin
-            @info "Testing  OGF with compressor power proxy Binding Energy Cosntraint"
+            @_info "Testing  OGF with compressor power proxy Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = solve_ogf_comp_power_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -32,13 +32,13 @@
         end
 
         @testset "case 6 wp new ogf elevation constraint" begin
-            @info "Testing  OGF with compressor power proxy Elevation Cosntraint"
+            @_info "Testing  OGF with compressor power proxy Elevation Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf_comp_power_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             @test isapprox(result["objective"], -245.251; atol = 1e-2)
             GasModels.make_si_units!(result["solution"])
-            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 102.5677270604986; atol = 1e-2)
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 102.5677; atol = 1e-2)
         end
     end
 end

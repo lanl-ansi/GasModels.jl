@@ -39,8 +39,7 @@ function _create_tsb(
         if !haskey(root, comp_type)
             root[comp_type] = Dict{String,Any}()
         elseif !(root[comp_type] isa Dict)
-            Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$comp_type\" is both a parameter and a container")
+                @_error("Inconsistent column naming – \"$comp_type\" is both a parameter and a container")
         end
         comp_type_dict = root[comp_type]
 
@@ -48,8 +47,7 @@ function _create_tsb(
         if !haskey(comp_type_dict, comp_id)
             comp_type_dict[comp_id] = Dict{String,Any}()
         elseif !(comp_type_dict[comp_id] isa Dict)
-            Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$comp_id\" is both a parameter and a container")
+                @_error("Inconsistent column naming – \"$comp_id\" is both a parameter and a container")
         end
         id_dict = comp_type_dict[comp_id]
 
@@ -57,8 +55,7 @@ function _create_tsb(
         if !haskey(id_dict, param)
             id_dict[param] = Vector{Any}(undef, n_steps)
         elseif !(id_dict[param] isa Vector)
-            Memento.error(_LOGGER,
-                "Inconsistent column naming – \"$param\" is both a container and a parameter")
+                @_error("Inconsistent column naming – \"$param\" is both a container and a parameter")
         end
         return id_dict[param]   # the leaf vector
     end

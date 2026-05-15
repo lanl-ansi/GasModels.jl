@@ -39,9 +39,9 @@ Note: Different problem formulations require different types of solvers. For con
 Once GasModels is installed, a optimizer is installed, and a network data file  has been acquired, a Gas Flow can be executed with,
 ```
 using GasModels, Ipopt
-ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0)
-casepath = "case-6.m"
-result = solve_ogf(casepath, CWPGasModel, ipopt_solver)
+ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer)
+#CASE6PATH is exported by GasModels as a utility - this is the recommended default case
+result = solve_ogf(CASE6PATH, WPGasModel, ipopt_solver)
 ```
 
 For discrete problems requiring the Juniper optimizer, refer to the following example:
@@ -55,8 +55,7 @@ juniper_solver = optimizer_with_attributes(
     "nl_solver" => nl_solver,
     "mip_solver" => mip_solver
 )
-casepath = "case-6.m"
-result = solve_ogf(casepath, DWPGasModel, juniper_solver)
+result = solve_ogf(CASE6PATH, DWPGasModel, juniper_solver)
 ```
 
 Similarly, an expansion optimizer can be executed with,
