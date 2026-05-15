@@ -13,7 +13,16 @@
         @testset "test status zero components in solution" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             data["junction"]["1"]["status"] = 0
-            res = solve_ogf(data, WPGasModel, nlp_solver, include_status_zero_components=true)
+            res = run_model(data, 
+                WPGasModel, 
+                nlp_solver, 
+                build_ogf;
+                solution_processors=[sol_psqr_to_p!,
+                sol_compressor_p_to_r!,
+                sol_regulator_p_to_r!,
+                sol_status_zero_components!],
+                kwargs...
+            )
             @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test haskey(res["solution"]["junction"], "1")
         end

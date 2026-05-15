@@ -32,7 +32,14 @@ end
 @testset "deactivated components in solution" begin
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 0.0)
     mn_data["nw"]["1"]["junction"]["1"]["status"] = 0
-    result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver, include_status_zero_components=true)
+    result = run_model(mn_data, 
+        WPGasModel, 
+        nlp_solver, 
+        build_transient_ogf; 
+        ref_extensions=[ref_add_transient!], 
+        solution_processors=[sol_status_zero_components!],
+        kwargs...
+        )
     @test result["termination_status"] == LOCALLY_SOLVED
     @test haskey(result["solution"]["nw"]["1"]["junction"], "1")
 end

@@ -8,7 +8,6 @@ module GasModels
     import JuMP
     import Printf
     import Statistics
-    import Graphs
 
     using Dates
     import Logging
@@ -92,15 +91,6 @@ module GasModels
     const acceleration_gravity = 9.81
     const gm_it_name = "gm"
     const gm_it_sym = Symbol(gm_it_name)
-    const _PKG_ROOT = dirname(dirname(pathof(GasModels)))
-    const CASE6PATH = joinpath(
-        _PKG_ROOT,
-        "test",
-        "data",
-        "matgas",
-        "case-6.m",
-    )
-
     const _PKG_ROOT = dirname(dirname(pathof(GasModels)))
     const CASE6PATH = joinpath(
         _PKG_ROOT,
