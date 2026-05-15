@@ -141,12 +141,11 @@ function sol_status_zero_components!(gm::AbstractGasModel, solution::Dict)
         n = parse(Int, n_str)
         nw_data = nws_data[n_str]
 
+        for (comp_name, defaults) in STATUS_ZERO_DEFAULTS
+            _backfill_status_zero_components!(gm, n, nw_data, nw_sol, comp_name, defaults)
+        end
+
         _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
-        _backfill_status_zero_pipes!(gm, n, nw_data, nw_sol)
-        _backfill_status_zero_compressors!(gm, n, nw_data, nw_sol)
-        _backfill_status_zero_transfers!(gm, n, nw_data, nw_sol)
-        _backfill_status_zero_receipts!(gm, n, nw_data, nw_sol)
-        _backfill_status_zero_deliveries!(gm, n, nw_data, nw_sol)
     end
 end
 
@@ -182,6 +181,14 @@ function _status_zero_missing_ids(
     return out
 end
 
+const STATUS_ZERO_DEFAULTS = Dict(
+    :pipe => Dict("f" => 0.0),
+    :compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr" => 1.0),
+    :transfer => Dict("ft" => 0.0),
+    :receipt => Dict("fg" => 0.0),
+    :delivery => Dict("fd" => 0.0),
+)
+
 function _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
     ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :junction)
     isempty(ids0) && return
@@ -207,69 +214,26 @@ function _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
     end
 end
 
-
-function _backfill_status_zero_pipes!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :pipe)
+function _backfill_status_zero_components!(
+    gm::AbstractGasModel,
+    n::Int,
+    nw_data::Dict,
+    nw_sol::Dict,
+    comp_name::Symbol,
+    defaults::Dict{String,<:Any},
+)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, comp_name)
     isempty(ids0) && return
 
-    sol_comps = get!(nw_sol, "pipe", Dict{String,Any}())
+    comp_key = string(comp_name)
+    sol_comps = get!(nw_sol, comp_key, Dict{String,Any}())
+
     for i in ids0
         sol = get!(sol_comps, string(i), Dict{String,Any}())
         sol["status"] = 0
-        sol["f"] = 0.0
-    end
-end
 
-
-function _backfill_status_zero_compressors!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :compressor)
-    isempty(ids0) && return
-
-    sol_comps = get!(nw_sol, "compressor", Dict{String,Any}())
-    for i in ids0
-        sol = get!(sol_comps, string(i), Dict{String,Any}())
-        sol["status"] = 0
-        sol["f"] = 0.0
-        sol["r"] = 1.0
-        sol["rsqr"] = 1.0
-    end
-end
-
-
-function _backfill_status_zero_transfers!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :transfer)
-    isempty(ids0) && return
-
-    sol_comps = get!(nw_sol, "transfer", Dict{String,Any}())
-    for i in ids0
-        sol = get!(sol_comps, string(i), Dict{String,Any}())
-        sol["status"] = 0
-        sol["ft"] = 0.0
-    end
-end
-
-
-function _backfill_status_zero_receipts!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :receipt)
-    isempty(ids0) && return
-
-    sol_comps = get!(nw_sol, "receipt", Dict{String,Any}())
-    for i in ids0
-        sol = get!(sol_comps, string(i), Dict{String,Any}())
-        sol["status"] = 0
-        sol["fg"] = 0.0
-    end
-end
-
-
-function _backfill_status_zero_deliveries!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :delivery)
-    isempty(ids0) && return
-
-    sol_comps = get!(nw_sol, "delivery", Dict{String,Any}())
-    for i in ids0
-        sol = get!(sol_comps, string(i), Dict{String,Any}())
-        sol["status"] = 0
-        sol["fd"] = 0.0
+        for (var, value) in defaults
+            sol[var] = value
+        end
     end
 end
