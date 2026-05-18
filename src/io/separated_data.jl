@@ -31,24 +31,30 @@ end
 function _parse_csv(
     gm_static_data::Dict,
     csv_filepath::AbstractString;
-    time_step=3600.0, # 1 hour
+    time_step = 3600.0, # 1 hour
 )::Union{Dict{Int, Dict{String, Any}}, Nothing}
     @assert (isfile(csv_filepath) && endswith(csv_filepath, ".csv")) "Error: no valid csv file found at $csv_filepath"
 
-    timeseries_data = GasModels.parse_transient(csv_filepath)
-    GasModels.make_si_units!(timeseries_data, gm_static_data)
+    csv_units = open(csv_filepath, "r") do io
+        GasModels._read_transient_units(io)
+    end
 
-    #this function has interpolation/splining disabled
+    timeseries_data = GasModels.parse_transient(csv_filepath)
+
+    conversion_data = GasModels._transient_conversion_data(gm_static_data, csv_units)
+    GasModels.make_si_units!(timeseries_data, conversion_data)
+
+    # this function has interpolation/splining disabled
     time_series_block = GasModels.make_time_series_block(
         timeseries_data;
-        total_time=24 * 3600.0,
-        time_step=time_step,
+        total_time = 24 * 3600.0,
+        time_step = time_step,
     )
 
     nominations = Dict{Int, Dict{String, Any}}()
     for index in 1:time_series_block["num_steps"]
         nomination = _build_nomination_step(time_series_block, index)
-        step_id = index - 1 # zero indexing for nominations dict
+        step_id = index - 1
 
         nominations[step_id] = nomination
         if !nomination["has_changed"] && haskey(nominations, step_id - 1)
@@ -60,6 +66,7 @@ function _parse_csv(
             end
         end
     end
+
     return nominations
 end
 
@@ -87,8 +94,12 @@ end
 function parse_separated_data(m_file::String, static_csv::String)::Dict{String, Any}
     """return a case with the updated pricing and withdrawal/injection information"""
     case = parse_file(m_file)
+    make_si_units!(case)
+
     nominations = _parse_csv(case, static_csv)
-    @assert length(nominations)==1 "Error: more than one timestep detected in the csv file. Use parse_files or parse_multinetwork instead"
+
+    @assert length(nominations) == 1 "Error: more than one timestep detected in the csv file. Use parse_files or parse_multinetwork instead"
+
     _apply_nominations!(case, nominations[0])
-    return case #you can call solve_ogf directly on this
+    return case
 end
