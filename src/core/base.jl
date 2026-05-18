@@ -30,8 +30,8 @@ function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method
         result["objective"] *= data["objective_normalization"]
     end
 
-    # Add model_type to the top-level result dict
     result["model_type"] = model_type
+    result["model_name"] = data["name"]
 
     return result
 end
