@@ -31,7 +31,7 @@ function constraint_pipe_physics(gm::AbstractWPModel, n::Int, k, i, j, resistanc
 end
 
 "enforces potential changes bounds that obey compression ratios"
-function constraint_compressor_physics(gm::AbstractWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
+function constraint_compressor_physics_unified(gm::AbstractWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
     potential_i = var(gm, n, :potential, i)
     potential_j = var(gm, n, :potential, j)
     f = var(gm, n, :f_compressor, k)
@@ -52,15 +52,27 @@ function constraint_compressor_physics(gm::AbstractWPModel, n::Int, k, i, j, min
         _add_constraint!(gm, n, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_i))
         # compression when flow is from i to j.  no compression when flow is from j to i. min_ratio = 1
     else # type 2
-        _add_constraint!(gm, n, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_j))
-        _add_constraint!(gm, n, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_j))
+        _add_constraint!(gm, n, :compressor_ratios_lb, k, JuMP.@constraint(gm.model, potential_j >= potential_i))
+        _add_constraint!(gm, n, :compressor_ratios_ub, k, JuMP.@constraint(gm.model, potential_j <= g(max_ratio) * potential_i))
         _add_constraint!(gm, n, :compressor_ratios_direction, k, JuMP.@constraint(gm.model, f * (potential_j - potential_i) >= 0))
     end
 end
 
 "Constraint: constrains the energy of the compressor"
-function constraint_compressor_power(gm::AbstractWPModel, n::Int, k, power_max, m, work)
-    r = var(gm, n, :rsqr, k)
+function constraint_compressor_power_unified(gm::AbstractWPModel, n::Int, i, j, k, power_max, mul_constant, exponent, type)
+    potential_i = var(gm, n, :potential, i)
+    potential_j = var(gm, n, :potential, j)
     f = var(gm, n, :f_compressor, k)
-    _add_constraint!(gm, n, :compressor_energy, k, JuMP.@constraint(gm.model, abs(f) * (r^m - 1) <= power_max / work))
+    m = round(0.5 * exponent; digits=3)
+
+    if type == 0 
+        potential_k = var(gm, n, :potential_compressor, k)
+        _add_constraint!(gm, n, :compressor_power_forward, k, 
+            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_k - potential_i) <= power_max * potential_i))
+        _add_constraint!(gm, n, :compressor_power_backward, k, 
+            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_k - potential_j) <= power_max * potential_j))
+    else 
+        _add_constraint!(gm, n, :compressor_power_backward, k, 
+            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_j - potential_i) <= power_max * potential_i))
+    end 
 end

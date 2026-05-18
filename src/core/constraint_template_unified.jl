@@ -31,7 +31,7 @@ end
 
 "Template: Constraints for fixing pressure at a node"
 function constraint_slack_potential(gm::AbstractGasModel, i; n::Int = nw_id_default)
-    b1, b2 = ref(gm, nw, :non_ideal_coeffs)
+    b1, b2 = gm.data["non_ideal_coeffs"]
     get_potential = x -> b1 * x^2/2.0 + b2 * x^3/3.0 
     junction = ref(gm, n, :junction)[i]
     is_slack = junction["junction_type"] == 1
@@ -57,8 +57,8 @@ function constraint_pipe_physics(gm::AbstractGasModel, k; n::Int = nw_id_default
 end
 
 "Template: Compression ratios for a compressor"
-function constraint_compressor_physics(gm::AbstractGasModel, k; n::Int = nw_id_default)
-    b1, b2 = ref(gm, nw, :non_ideal_coeffs)
+function constraint_compressor_physics_unified(gm::AbstractGasModel, k; n::Int = nw_id_default)
+    b1, b2 = gm.data["non_ideal_coeffs"]
     get_potential = x -> b1 * x^2/2.0 + b2 * x^3/3.0 
     compressor = ref(gm, n, :compressor, k)
     i = compressor["fr_junction"]
@@ -71,16 +71,21 @@ function constraint_compressor_physics(gm::AbstractGasModel, k; n::Int = nw_id_d
     i_potential_min = get_potential(ref(gm, n, :junction, i)["p_min"])
     type = get(compressor, "directionality", 0)
 
-    constraint_compressor_physics(gm, n, k, i, j, min_ratio, max_ratio, i_potential_min, i_potenial_max, j_potential_min, j_potential_max, type)
+    constraint_compressor_physics_unified(gm, n, k, i, j, min_ratio, max_ratio, i_potential_min, i_potential_max, j_potential_min, j_potential_max, type)
 end
 
 "Template: Constraints on the compressor power"
-function constraint_compressor_power(gm::AbstractGasModel, k; n::Int = nw_id_default)
+function constraint_compressor_power_unified(gm::AbstractGasModel, k; n::Int = nw_id_default)
     compressor = ref(gm, n, :compressor, k)
+    i = ref(gm, n, :compressor, k)["fr_junction"]
+    j = ref(gm, n, :compressor, k)["to_junction"]
+    type = get(compressor, "directionality", 0)
+
     power_max = compressor["power_max"]
     gamma = get_specific_heat_capacity_ratio(gm.data)
     T = get_temperature(gm.data)
     G = get_gas_specific_gravity(gm.data)
     C = gamma / (gamma - 1) * 286.0 / G * T
-    constraint_compressor_power(gm, n, k, power_max, C)
+    exponent = (gamma - 1) / gamma
+    constraint_compressor_power_unified(gm, n, i, j, k, power_max, C, exponent, type)
 end

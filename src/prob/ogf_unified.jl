@@ -7,7 +7,12 @@ function solve_ogf_unified(file, model_type, optimizer; kwargs...)
         file,
         model_type,
         optimizer,
-        build_ogf;
+        build_ogf_unified;
+        solution_processors = [
+            sol_pressure!,
+            sol_compressor_ratio!,
+            sol_compressor_power!
+        ],
         kwargs...,
     )
 end
@@ -24,7 +29,7 @@ function build_ogf_unified(gm::AbstractGasModel)
     variable_transfer(gm)
     variable_storage_unified(gm)
 
-    objective_min_economic_costs(gm)
+    objective_min_economic_costs_unified(gm)
 
     for (i, junction) in ref(gm, :junction)
         constraint_junction_flow_balance(gm, i)
@@ -39,7 +44,7 @@ function build_ogf_unified(gm::AbstractGasModel)
     end
 
     for i in ids(gm, :compressor)
-        constraint_compressor_physics(gm, i)
-        constraint_compressor_power(gm, i)
+        constraint_compressor_physics_unified(gm, i)
+        constraint_compressor_power_unified(gm, i)
     end
 end

@@ -130,6 +130,7 @@ module GasModels
     include("core/constraint_mi.jl")
     include("core/constraint_template_mi.jl")
     include("core/objective.jl")
+    include("core/objective_unified.jl")
     include("core/solution.jl")
     include("core/ref.jl")
     include("core/storage_archived.jl")

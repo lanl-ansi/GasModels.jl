@@ -312,7 +312,8 @@ const _params_for_unit_conversions = Dict(
         "reservoir_density",
         "reservoir_pressure",
         "well_pressure",
-        "storage_flow"
+        "storage_flow",
+        "withdrawal"
     ],
     "loss_resistor" => [
         "f",
@@ -2102,9 +2103,12 @@ function correct_slack_nodes!(data::Dict; percent=10.0)
             transfer_capacity_by_node[j],
             withdrawal_capacity_by_node[j],
         ), rev = true)
-        for i in 1:ceil(num_receipts * percent * 0.01)
+        count = Int(ceil(num_receipts * percent * 0.01))
+        count = count < 1 ? 1 : count
+        for i in 1:count
             slack_node = nodes_by_capacity[i]
             data["junction"][slack_node]["junction_type"] = 1
+            @info "making junction $slack_node slack"
         end 
     end
     return data

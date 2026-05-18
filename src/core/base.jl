@@ -171,11 +171,11 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         ref_storage!(ref, sound_speed)
         ref_pipe_theta!(ref,base_length)
 
-        for (idx, pipe) in ref[:pipe]
-            i = pipe["fr_junction"]
-            j = pipe["to_junction"]
-            pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
-        end
+        # for (idx, pipe) in ref[:pipe]
+        #     i = pipe["fr_junction"]
+        #     j = pipe["to_junction"]
+        #     pipe["area"] = pi * pipe["diameter"] * pipe["diameter"] / 4.0
+        # end
 
         for (idx, compressor) in ref[:compressor]
             i = compressor["fr_junction"]
