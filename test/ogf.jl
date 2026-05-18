@@ -18,6 +18,28 @@
             @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test isapprox(res["objective"], -167.19, rtol=1e-2)
         end
+        
+        @testset "test is_dispatchable zero components in solution" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+
+            data["receipt"]["1"]["is_dispatchable"] = 0
+
+            res = run_model(
+                data,
+                WPGasModel,
+                nlp_solver,
+                build_ogf;
+                solution_processors = [
+                    sol_psqr_to_p!,
+                    sol_compressor_p_to_r!,
+                    sol_regulator_p_to_r!,
+                    sol_is_dispatchable_zero_components!,
+                ],
+            )
+
+            @test res["primal_status"] in [MathOptInterface.FEASIBLE_POINT]
+            @test haskey(res["solution"]["receipt"], "1")
+        end
 
         @testset "case 6 ogf" begin
             @_info "Testing OGF"
