@@ -22,7 +22,7 @@
         @testset "test is_dispatchable zero components in solution" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
 
-            data["receipt"]["1"]["is_dispatchable"] = 0
+            data["transfer"]["1"]["is_dispatchable"] = 0
 
             res = run_model(
                 data,
@@ -38,7 +38,7 @@
             )
 
             @test res["primal_status"] in [MathOptInterface.FEASIBLE_POINT]
-            @test haskey(res["solution"]["receipt"], "1")
+            @test haskey(res["solution"]["transfer"], "1")
         end
 
         @testset "case 6 ogf" begin
