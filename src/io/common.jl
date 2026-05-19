@@ -96,6 +96,34 @@ function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
     return nothing
 end
 
+"""
+    _move_global_temperature_to_pipes!(data::Dict{String,Any})
+
+Temporary migration helper.
+
+Copies the global `data["temperature"]` value into every pipe dictionary as
+`pipe["temperature"]`, then removes `data["temperature"]`.
+
+Operates in-place on the base data dictionary returned by `parse_file`.
+"""
+function _move_global_temperature_to_pipes!(data::Dict{String,Any})
+    if !haskey(data, "temperature")
+        return data
+    end
+
+    temperature = data["temperature"]
+
+    if haskey(data, "pipe")
+        for (_, pipe) in data["pipe"]
+            pipe["temperature"] = temperature
+        end
+    end
+
+    delete!(data, "temperature")
+
+    return data
+end
+
 function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false)
     check_non_negativity(data)
     check_pipeline_geometry!(data) #geo must be checked before per-unit conversion
@@ -120,6 +148,7 @@ function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false
     check_status(data)
     check_edge_loops(data)
     check_global_parameters(data)
+    _move_global_temperature_to_pipes!(data)
     if slack_nodes
         correct_slack_nodes!(data)
     end
