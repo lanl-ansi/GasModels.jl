@@ -135,7 +135,7 @@ function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false
     add_compressor_fields!(data)
 
     make_si_units!(data)
-    check_soundspeed!(data)
+    # check_soundspeed!(data)
     # select_largest_component!(data)
     propagate_topology_status!(data)
     add_base_values!(data)
