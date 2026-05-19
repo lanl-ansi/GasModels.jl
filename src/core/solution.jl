@@ -122,29 +122,25 @@ function sol_regulator_p_to_r!(gm::AbstractGasModel, solution::Dict)
     end
 end
 
-const IS_DISPATCHABLE_ZERO_DEFAULTS = Dict(
+const _IS_DISPATCHABLE_ZERO_DEFAULTS = Dict(
     :receipt => Dict("fg" => "injection_nominal"),
     :delivery => Dict("fd" => "withdrawal_nominal"),
     :transfer => Dict("ft" => "withdrawal_nominal"),
 )
 
 function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Dict)
-    println("[dispatchable-zero] entered processor")
+    @_info("[dispatchable-zero] entered processor")
 
     if haskey(solution["it"][gm_it_name], "nw")
         nws_sol = solution["it"][gm_it_name]["nw"]
-        println("[dispatchable-zero] solution is multinetwork with networks: ", collect(keys(nws_sol)))
     else
         nws_sol = Dict("0" => solution["it"][gm_it_name])
-        println("[dispatchable-zero] solution is single network")
     end
 
     nws_data =
         if get(gm.data, "multinetwork", false)
-            println("[dispatchable-zero] gm.data is multinetwork with networks: ", collect(keys(gm.data["nw"])))
             gm.data["nw"]
         else
-            println("[dispatchable-zero] gm.data is single network")
             Dict("0" => gm.data)
         end
 
@@ -152,12 +148,7 @@ function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Di
         n = parse(Int, n_str)
         nw_data = nws_data[n_str]
 
-        println("[dispatchable-zero] processing network ", n_str)
-        println("[dispatchable-zero] nw_sol component keys: ", collect(keys(nw_sol)))
-        println("[dispatchable-zero] nw_data component keys: ", collect(keys(nw_data)))
-
-        for (comp_name, defaults) in IS_DISPATCHABLE_ZERO_DEFAULTS
-            println("[dispatchable-zero] checking component type: ", comp_name)
+        for (comp_name, defaults) in _IS_DISPATCHABLE_ZERO_DEFAULTS
             _backfill_is_dispatchable_zero_components!(
                 gm,
                 n,
@@ -169,7 +160,7 @@ function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Di
         end
     end
 
-    println("[dispatchable-zero] finished processor")
+    @_info("[dispatchable-zero] finished processor")
 end
 
 function _is_dispatchable_zero_missing_ids(
@@ -201,6 +192,7 @@ function _is_dispatchable_zero_missing_ids(
 
     return out
 end
+
 function _backfill_is_dispatchable_zero_components!(
     gm::AbstractGasModel,
     n::Int,
@@ -212,7 +204,7 @@ function _backfill_is_dispatchable_zero_components!(
     ids0 = _is_dispatchable_zero_missing_ids(gm, n, nw_data, nw_sol, comp_name)
 
     if isempty(ids0)
-        println("[dispatchable-zero] no components to backfill for ", comp_name, " on network ", n)
+        @_info("[dispatchable-zero] no components to backfill for ", comp_name, " on network ", n)
         return
     end
 
@@ -225,30 +217,17 @@ function _backfill_is_dispatchable_zero_components!(
         dat = data_comps[k]
         sol = get!(sol_comps, k, Dict{String,Any}())
 
-        println("[dispatchable-zero] backfilling ", comp_key, " ", k)
-        println("[dispatchable-zero]   data keys: ", collect(keys(dat)))
-        println("[dispatchable-zero]   defaults: ", defaults)
-
         sol["is_dispatchable"] = 0
 
         if haskey(dat, "status")
             sol["status"] = dat["status"]
-            println("[dispatchable-zero]   set status=", dat["status"])
         end
 
         for (sol_var, data_field) in defaults
             if haskey(dat, data_field)
                 sol[sol_var] = dat[data_field]
-                println(
-                    "[dispatchable-zero]   set ",
-                    sol_var,
-                    " = ",
-                    dat[data_field],
-                    " from ",
-                    data_field,
-                )
             else
-                println(
+                @_info(
                     "[dispatchable-zero]   MISSING required data field ",
                     data_field,
                     " for ",
@@ -259,6 +238,6 @@ function _backfill_is_dispatchable_zero_components!(
             end
         end
 
-        println("[dispatchable-zero]   final sol entry: ", sol)
+        @_info("[dispatchable-zero]   final sol entry: ", sol)
     end
 end
