@@ -59,6 +59,7 @@ function parse_files(
     static_data = parse_file(static_io) 
     make_si_units!(static_data)
     prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
+    _move_global_temperature_to_pipes!(static_data)
 
     # --- Read and convert transient data ---
     transient_data = parse_transient(transient_io)
@@ -80,9 +81,18 @@ function parse_files(
     )
 
     mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
+    # for (i, pipe) in static_data["pipe"]
+    #     @assert haskey(pipe, "temperature") "temperature missing from static_data[\"pipe\"][$i]"
+    # end
+    @assert !haskey(static_data, "temperature")
 
     # --- Final per-unit conversion --- 
     make_per_unit!(mn_data)
+    # for (i, pipe) in static_data["pipe"]
+    #     @assert haskey(pipe, "temperature") "temperature missing from static_data[\"pipe\"][$i]"
+    # end
+    @assert !haskey(static_data, "temperature")
+
 
     return mn_data
 end
@@ -256,7 +266,8 @@ function _prep_transient_data!(
                 "english_units",
                 "per_unit",
                 "flow_min", 
-                "flow_max"
+                "flow_max",
+                "temperature"
             ]
 
             data["pipe"][key] = Dict{String,Any}()
@@ -336,7 +347,8 @@ function _prep_transient_data!(
                 "english_units" => data["english_units"],
                 "per_unit" => data["per_unit"],
                 "flow_min" => pipe["flow_min"],
-                "flow_max" => pipe["flow_max"]
+                "flow_max" => pipe["flow_max"],
+                "temperature" => pipe["temperature"],
             )
         end
     end
@@ -357,7 +369,7 @@ function _create_time_series_block(
     end_time = total_time + additional_time
 
     if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
-        error(
+        @_error(
             "the 3600 seconds has to be exactly divisible by the time step,
 provide a time step that exactly divides 3600.0",
         )
