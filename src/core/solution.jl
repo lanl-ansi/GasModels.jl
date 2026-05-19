@@ -204,7 +204,7 @@ function _backfill_is_dispatchable_zero_components!(
     ids0 = _is_dispatchable_zero_missing_ids(gm, n, nw_data, nw_sol, comp_name)
 
     if isempty(ids0)
-        @_info("[dispatchable-zero] no components to backfill for ", comp_name, " on network ", n)
+        @_info(string("[dispatchable-zero] no components to backfill for ", comp_name, " on network ", n))
         return
     end
 
@@ -227,17 +227,17 @@ function _backfill_is_dispatchable_zero_components!(
             if haskey(dat, data_field)
                 sol[sol_var] = dat[data_field]
             else
-                @_info(
+                @_info(string(
                     "[dispatchable-zero]   MISSING required data field ",
                     data_field,
                     " for ",
                     comp_key,
                     " ",
                     k,
-                )
+                ))
             end
         end
 
-        @_info("[dispatchable-zero]   final sol entry: ", sol)
+        @_info(string("[dispatchable-zero]   final sol entry: ", sol))
     end
 end
