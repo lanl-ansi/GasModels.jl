@@ -63,16 +63,22 @@ function constraint_compressor_power_unified(gm::AbstractWPModel, n::Int, i, j, 
     potential_i = var(gm, n, :potential, i)
     potential_j = var(gm, n, :potential, j)
     f = var(gm, n, :f_compressor, k)
-    m = round(0.5 * exponent; digits=3)
+    # drawing a secant between 1 and 1.4 and moving it up to 1.2 to make it an inner approxation of (r^exponent -1)
+    g = x -> x^(0.5 * exponent) - 1 # potential space
+    slope = (g(1.96) - g(1)) / (1.96 - 1)
+    unshifted_secant = x -> slope * (x - 1)
+    shift = g(1.44) - unshifted_secant(1.44)
+    m = round(slope; digits=6)
+    delta = round(shift; digits=6)
 
     if type == 0 
         potential_k = var(gm, n, :potential_compressor, k)
         _add_constraint!(gm, n, :compressor_power_forward, k, 
-            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_k - potential_i) <= power_max * potential_i))
+            JuMP.@constraint(gm.model, mul_constant * f * (m * (potential_k - potential_i) + delta * potential_i) <= power_max * potential_i))
         _add_constraint!(gm, n, :compressor_power_backward, k, 
-            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_k - potential_j) <= power_max * potential_j))
+            JuMP.@constraint(gm.model, mul_constant * f * (m * (potential_k - potential_j) + delta * potential_j) <= power_max * potential_j))
     else 
         _add_constraint!(gm, n, :compressor_power_backward, k, 
-            JuMP.@constraint(gm.model, mul_constant * f * m * (potential_j - potential_i) <= power_max * potential_i))
+            JuMP.@constraint(gm.model, mul_constant * f * (m * (potential_j - potential_i) + delta * potential_i) <= power_max * potential_i))
     end 
 end

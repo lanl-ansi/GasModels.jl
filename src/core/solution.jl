@@ -109,6 +109,13 @@ function sol_compressor_power!(gm, solution::Dict)
     G = get_gas_specific_gravity(gm.data)
     mul_constant = gamma / (gamma - 1) * 286.0 / G * T
     exponent = (gamma - 1) / gamma
+    # drawing a secant between 1 and 1.4 and moving it up to 1.2 to make it an inner approxation of (r^exponent -1)
+    g = x -> x^(0.5 * exponent) - 1 # potential space
+    slope = (g(1.96) - g(1)) / (1.96 - 1)
+    unshifted_secant = x -> slope * (x - 1)
+    shift = g(1.44) - unshifted_secant(1.44)
+    m = round(slope; digits=6)
+    delta = round(shift; digits=6)
     for (n, nw_data) in nws_data
         for (i, compressor) in get(nw_data, "compressor", [])
             flow = compressor["flow"]
@@ -122,7 +129,7 @@ function sol_compressor_power!(gm, solution::Dict)
             else 
                 ratio = tmp_ratio
             end 
-            power_consumed = mul_constant * round(exponent * 0.5; digits=3) * abs(flow) * (ratio - 1)
+            power_consumed = mul_constant * abs(flow) * (m * (ratio - 1) + delta)
             compressor["power"] = power_consumed
         end
     end
