@@ -6,6 +6,7 @@ import Logging
 GasModels.silence()
 
 import JuMP
+import JSON
 
 import Ipopt
 import HiGHS
