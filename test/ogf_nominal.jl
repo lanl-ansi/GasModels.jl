@@ -6,7 +6,7 @@
         transfer["withdrawal_min"] = -12.0
         transfer["withdrawal_max"] = 30.0
         transfer["withdrawal_nominal"] = -5.0
-        gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf_nominal)
+        gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf; ref_extensions = [ref_nominal_flow_as_capacity!])
 
         receipt = ref(gm, :receipt, 1)
         delivery = ref(gm, :delivery, 1)

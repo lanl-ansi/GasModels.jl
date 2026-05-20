@@ -208,13 +208,13 @@ end
 
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default, is_nominal::Bool = false)
+function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default)
     receipt_min(receipt) = receipt["injection_min"]
-    receipt_max(receipt) = is_nominal ? receipt["injection_nominal"] : receipt["injection_max"]
+    receipt_max(receipt) =  receipt["injection_max"]
     delivery_min(delivery) = delivery["withdrawal_min"]
-    delivery_max(delivery) = is_nominal ? delivery["withdrawal_nominal"] : delivery["withdrawal_max"]
-    transfer_min(transfer) = is_nominal ? min(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_min"]
-    transfer_max(transfer) = is_nominal ? max(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_max"]
+    delivery_max(delivery) = delivery["withdrawal_max"]
+    transfer_min(transfer) = transfer["withdrawal_min"]
+    transfer_max(transfer) = transfer["withdrawal_max"]
 
     junction = ref(gm, n, :junction, i)
     f_pipes = ref(gm, n, :pipes_fr, i)
