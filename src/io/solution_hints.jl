@@ -1,12 +1,10 @@
-function parse_solution(solution_file::String; data::Union{AbstractDict{String,<:Any},String}=nothing)::Dict
+function parse_solution(solution_file::String, data::Union{AbstractDict{String,<:Any},String})::Dict
     @assert endswith(lowercase(solution_file), ".json") "Only JSON solution files are supported"
-    return parse_solution(JSON.parsefile(solution_file); data=data)
+    return parse_solution(JSON.parsefile(solution_file; dicttype=Dict{String,Any}), data)
 end
 
 
-function parse_solution(result::AbstractDict; data::Union{AbstractDict{String,<:Any},String}=nothing)::Dict
-    @assert data !== nothing "parse_solution requires a data dictionary or filename to normalize base values"
-
+function parse_solution(result::AbstractDict, data::Union{AbstractDict{String,<:Any},String})::Dict
     result = deepcopy(result)
     solution = normalize_solution_base_values!(result, data)
 
@@ -60,7 +58,7 @@ end
 
 function add_solution_hints!(case::AbstractDict, solution_file::String)::Dict
     """add the results from a solution file as starting values. helps ensure solver consistency for testing"""
-    sol_root = parse_solution(solution_file; data=case)
+    sol_root = parse_solution(solution_file, case)
 
     if haskey(sol_root, "nw")
         for (nw_id, nw_sol) in sol_root["nw"]
@@ -102,7 +100,7 @@ function primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    point = build_solution_point(gm, parse_solution(solution; data=gm.data))
+    point = build_solution_point(gm, parse_solution(solution, gm.data))
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 
@@ -113,7 +111,7 @@ function primal_feasibility_report(
     atol::Float64 = 0.0,
     skip_missing::Bool = false,
 )
-    point = build_solution_point(gm, parse_solution(solution_file; data=gm.data))
+    point = build_solution_point(gm, parse_solution(solution_file, gm.data))
     return JuMP.primal_feasibility_report(gm.model, point; atol = atol, skip_missing = skip_missing)
 end
 

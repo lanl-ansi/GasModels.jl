@@ -27,12 +27,13 @@
             result_pu = deepcopy(result)
             result_pu["solution"]["base_flow"] = result_pu["solution"]["base_flow"] * 2.0
             make_per_unit!(result_pu["solution"])
-            GasModels.normalize_solution_base_values!(result_pu, data)
+            pu_solution = GasModels.normalize_solution_base_values!(result_pu, data)
 
-            @test result_pu["solution"]["si_units"] == true
-            @test result_pu["solution"]["per_unit"] == false
-            @test result_pu["solution"]["base_flow"] == data["base_flow"]
-            @test isapprox(result_pu["solution"]["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
+            @test pu_solution === result_pu["solution"]
+            @test pu_solution["si_units"] == true
+            @test pu_solution["per_unit"] == false
+            @test pu_solution["base_flow"] == data["base_flow"]
+            @test isapprox(pu_solution["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
 
             result_si = deepcopy(result["solution"])
             result_si["base_flow"] = result_si["base_flow"] * 2.0
