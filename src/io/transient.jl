@@ -22,19 +22,14 @@ end
 function _set_data_units!(data::Dict{String,Any}, units::String)
     data["si_units"] = units == "si"
     data["english_units"] = units == "english"
-    data["per_unit"] = units == "pu"
     return data
 end
 
 function _detect_csv_units(first_line::AbstractString)::String
     line = lowercase(strip(first_line))
 
-    if occursin("#si", line)
-        return "si"
-    elseif occursin("#english", line)
+    if occursin("#english", line)
         return "english"
-    elseif occursin("#pu", line)
-        return "pu"
     else
         return "si"
     end
@@ -42,7 +37,7 @@ end
 
 function _has_units_comment(first_line::AbstractString)::Bool
     line = lowercase(strip(first_line))
-    return occursin("#si", line) || occursin("#english", line) || occursin("#pu", line)
+    return occursin("#si", line) || occursin("#english", line) || occursin("#", line)
 end
 
 function _transient_conversion_data(static_data::Dict{String,Any}, units::String)::Dict{String,Any}
