@@ -431,6 +431,12 @@ function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = nw_id
     flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
     ratio_max = compressor["c_ratio_max"]
 
+    # avoid posting the non-convex constraint if it is never binding
+    max_energy = flow_max * (ratio_max^m - 1)
+    if max_energy <= power_max / work
+        return
+    end
+
     constraint_compressor_energy_ne(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
@@ -471,6 +477,13 @@ function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = nw_id_de
     work = _calc_compressor_work(gamma, G, T)
     flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
     ratio_max = compressor["c_ratio_max"]
+
+    # avoid posting the non-convex constraint if it is never binding
+    max_energy = flow_max * (ratio_max^m - 1)
+    if max_energy <= power_max / work
+        return
+    end
+
     constraint_compressor_energy(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
