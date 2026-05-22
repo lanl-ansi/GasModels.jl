@@ -15,6 +15,12 @@ This tutorial uses an optimal gas flow problem derived from the
 GasLib-11 network.
 
 Here is the matgas file for the network:
+
+```@raw html
+<details>
+<summary>gaslib11.m</summary>
+```
+
 ```matlab
 function mgc = gaslib11
 
@@ -90,6 +96,11 @@ mgc.delivery = [
 
 end
 ```
+```@raw html
+</details>
+<br>
+```
+
 
 This network is also distributed with the GasModels source code. This is how we will access
 it for this tutorial:
