@@ -208,7 +208,14 @@ end
 
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default)
+function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default, is_nominal::Bool = false)
+    receipt_min(receipt) = receipt["injection_min"]
+    receipt_max(receipt) = is_nominal ? receipt["injection_nominal"] : receipt["injection_max"]
+    delivery_min(delivery) = delivery["withdrawal_min"]
+    delivery_max(delivery) = is_nominal ? delivery["withdrawal_nominal"] : delivery["withdrawal_max"]
+    transfer_min(transfer) = is_nominal ? min(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_min"]
+    transfer_max(transfer) = is_nominal ? max(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_max"]
+
     junction = ref(gm, n, :junction, i)
     f_pipes = ref(gm, n, :pipes_fr, i)
     t_pipes = ref(gm, n, :pipes_to, i)
@@ -238,12 +245,12 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_de
     fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
     fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
     fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
-    fgmax = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_max"] for j in dispatch_receipts) : 0
-    flmax = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_max"] for j in dispatch_deliveries) : 0
-    flmax += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_max"] for j in dispatch_transfers) : 0
-    fgmin = length(dispatch_receipts) > 0 ? sum(receipt[j]["injection_min"] for j in dispatch_receipts) : 0
-    flmin = length(dispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_min"] for j in dispatch_deliveries) : 0
-    flmin += length(dispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_min"] for j in dispatch_transfers) : 0
+    fgmax = length(dispatch_receipts) > 0 ? sum(receipt_max(receipt[j]) for j in dispatch_receipts) : 0
+    flmax = length(dispatch_deliveries) > 0 ? sum(delivery_max(delivery[j]) for j in dispatch_deliveries) : 0
+    flmax += length(dispatch_transfers) > 0 ? sum(transfer_max(transfer[j]) for j in dispatch_transfers) : 0
+    fgmin = length(dispatch_receipts) > 0 ? sum(receipt_min(receipt[j]) for j in dispatch_receipts) : 0
+    flmin = length(dispatch_deliveries) > 0 ? sum(delivery_min(delivery[j]) for j in dispatch_deliveries) : 0
+    flmin += length(dispatch_transfers) > 0 ? sum(transfer_min(transfer[j]) for j in dispatch_transfers) : 0
 
     constraint_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
 end

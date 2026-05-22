@@ -42,7 +42,6 @@ The primary constraints related to pipes ensure that that pressure drop and flow
 ```@docs
 constraint_pipe_weymouth
 constraint_pipe_weymouth_ne
-constraint_pipe_weymouth_ne
 ```
 
 ### Mass flow and pressure drop constraints
@@ -72,14 +71,6 @@ constraint_ne_pipe_parallel_flow
 ```
 
 ## Resistor Constraints
-
-### Weymouth's law constraints
-
-The primary constraints related to resistor ensure that that pressure drop and flow across a resistor is related through the Weymouth relationships.
-
-```@docs
-constraint_resistor_weymouth
-```
 
 ### Mass flow and pressure drop constraints
 

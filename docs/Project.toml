@@ -6,4 +6,4 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathProgIncidence = "892fab00-3092-4bd0-9c46-66676a93f84e"
 
 [compat]
-Documenter = "0.27"
+Documenter = "~1.17"
