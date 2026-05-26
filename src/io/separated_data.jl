@@ -91,15 +91,21 @@ function _apply_nominations!(
     end
 end
 
+"""
+    parse_separated_data(m_file::String, static_csv::String)::Dict{String, Any}
+
+Return a case with updated pricing and withdrawal/injection information.
+
+The CSV file must contain nomination data for exactly one timestep. Use
+`parse_files` or `parse_multinetwork` when the CSV contains multiple timesteps.
+"""
 function parse_separated_data(m_file::String, static_csv::String)::Dict{String, Any}
-    """return a case with the updated pricing and withdrawal/injection information"""
     case = parse_file(m_file)
     make_si_units!(case)
 
     nominations = _parse_csv(case, static_csv)
 
     @assert length(nominations) == 1 "Error: more than one timestep detected in the csv file. Use parse_files or parse_multinetwork instead"
-
     _apply_nominations!(case, nominations[0])
     return case
 end
