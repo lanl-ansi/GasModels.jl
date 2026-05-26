@@ -102,7 +102,6 @@ function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false
     check_non_zero(data)
     check_rouge_junction_ids(data)
     correct_p_mins!(data)
-    @assert (data["units"] !== "per_unit" || !data["per_unit"]) "per unit input data is not supported: use SI or English units instead"
 
     per_unit_data_field_check!(data)
     add_compressor_fields!(data)
