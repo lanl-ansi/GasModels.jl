@@ -1,3 +1,7 @@
+```@meta
+ShareDefaultModule = true
+```
+
 # Explaining Solutions
 
 GasModels contains a `MathProgIncidence` extension to help explain
@@ -6,7 +10,7 @@ provides an example demonstrating how this tool can be used.
 
 ## Step 0: Imports
 This tutorial depends on GasModels, MathProgIncidence, JuMP, and Ipopt.
-```julia
+```@repl
 import GasModels, MathProgIncidence as MPIN, JuMP, Ipopt
 ```
 
@@ -104,15 +108,15 @@ end
 
 This network is also distributed with the GasModels source code. This is how we will access
 it for this tutorial:
-```julia
-file = joinpath(dirname(dirname(pathof(GasModels))), "examples", "data", "matgas", "gaslib11.m")
-data = GasModels.parse_file(file)
+```@repl
+file = joinpath(dirname(dirname(pathof(GasModels))), "examples", "data", "matgas", "gaslib11.m");
+data = GasModels.parse_file(file);
 ```
 
 ## Step 2: Data checks
 This tutorial will explain why a delivery is satisfied at less than its upper bound.
 To do this, we need to make sure this delivery is dispatchable.
-```julia
+```@repl
 for delivery in values(data["delivery"])
     delivery["is_dispatchable"] = 1
 end
@@ -122,7 +126,7 @@ Later in this tutorial, we will generate a "reduced-space" explanation.
 The reduced-space projection we will is is only defined for models with fixed
 compressor directionality (i.e., directionality = 1). We hope to relax
 this requirement in future versions of GasModels.
-```julia
+```@repl
 for compressor in values(data["compressor"])
     compressor["directionality"] = 1
 end
@@ -132,16 +136,17 @@ end
 Now we instantiate and solve the model. We use `intantiate_model` instead of
 `solve_ogf` because we will need to access the underlying JuMP model
 (i.e., `gm.model`) to compute an explanation.
-```julia
-gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_ogf)
+```@repl
+gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_ogf);
 JuMP.set_optimizer(gm.model, Ipopt.Optimizer)
+JuMP.set_silent(gm.model)
 JuMP.optimize!(gm.model)
 @assert JuMP.is_solved_and_feasible(gm.model)
 ```
 
 Suppose we care about delivery 4. Let's check its value.
-```julia
-delivery4 = GasModels.var(gm, :fl, 4)
+```@repl
+delivery4 = GasModels.var(gm, :fl, 4);
 println("delivery[4] = $(JuMP.value(delivery4)); UB = $(JuMP.upper_bound(delivery4))")
 ```
 
@@ -174,10 +179,9 @@ gradient of the Lagrangian corresponding to a specified variable.
 
 To keep explanations concise, we usually want to filter out terms with
 magnitudes below some threshold or keep only the top $k$ terms (in magnitude).
-```julia
+```@repl
 options = MPIN.ExplanationOptions(atol = 1e-2)
 explanation = MPIN.explain(delivery4; options)
-display(explanation)
 ```
 
 This explanation indicates that the variable has a "force" of 300 pushing
@@ -197,10 +201,9 @@ and explain this variable's value in terms of active inequalities.
 When we provide the `GasModels.AbstractGasModel` struct, `gm`, to the `explain`
 function, the nodal pressures, pipeline and compressor flow rates, and
 associated equations are projected out of the explanation.
-```julia
+```@repl
 explanation = MPIN.explain(gm, :fl, 4; options)
 # This also works: MPIN.explain(gm, delivery4; options)
-display(explanation)
 ```
 
 We now see a different pattern of constraints influencing the variable:
@@ -218,8 +221,8 @@ in this delivery. However, we can also use this knowledge to relax constraints
 to improve demand satisfaction.
 Let's relax the constraint with the most significant negative coefficient
 (i.e., the constraint pushing the variable down "the hardest").
-```julia
-p9 = GasModels.var(gm, :p_sqr, 9)
+```@repl
+p9 = GasModels.var(gm, :psqr, 9)
 JuMP.set_lower_bound(p9, 1.5)
 ```
 
@@ -227,16 +230,15 @@ Admittedly, the amount by which we relax this bound is somewhat arbitrary.
 Some trial-and-error will be necessary here.
 
 We now solve the problem and check whether we can deliver more gas:
-```julia
+```@repl
 JuMP.optimize!(gm.model)
 println("delivery[4] = $(JuMP.value(delivery4)); UB = $(JuMP.upper_bound(delivery4))")
 ```
 
 We can now satisfy more of delivery 4, but we still have a shortfall
 of 0.4 units.
-```julia
+```@repl
 explanation = MPIN.explain(gm, :fl, 4; options)
-display(explanation)
 ```
 
 The lower bound on $p_9$ no longer has the strongest negative
@@ -244,9 +246,8 @@ impact on our target delivery. Instead, the slack balance equation
 does. To interpret the slack balance equation, we can explain
 the variables it contains. We'll explain the flow rate through
 pipe 1.
-```julia
+```@repl
 explanation = MPIN.explain(gm, :f_pipe, 1; options)
-display(explanation)
 ```
 
 To increase the flow _leaving_ the slack node, we would like to
@@ -259,13 +260,12 @@ Let's relax the upper bound on receipt 2.
 (This is not the receipt bound with the most negative coefficient,
 but receipt 4 is on the same junction as delivery 4. This is a bit
 too obvious, so let's suppose it's not practical.)
-```julia
+```@repl
 receipt2 = GasModels.var(gm, :fg, 2)
 JuMP.set_upper_bound(receipt2, 0.1)
 JuMP.optimize!(gm.model)
 println("delivery[4] = $(JuMP.value(delivery4)); UB = $(JuMP.upper_bound(delivery4))")
 explanation = MPIN.explain(gm, :fl, 4; options)
-display(explanation)
 ```
 
 We have now satisfied another 0.06 units of delivery 4.
