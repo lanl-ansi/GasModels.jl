@@ -238,9 +238,9 @@ const _params_for_unit_conversions = Dict(
         "net_injection",
         "net_nodal_edge_out_flow",
         "elevation",
-        "lam_junction_mfb"
+        "lam_junction_mfb",
     ],
-    "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
+    "original_junction" => ["p_min", "p_max", "p_nominal", "p", "elevation"],
     "pipe" => [
         "length",
         "p_min",
