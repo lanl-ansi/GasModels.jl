@@ -208,13 +208,13 @@ end
 
 
 "Template: Constraints for mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default, is_nominal::Bool = false)
+function constraint_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default)
     receipt_min(receipt) = receipt["injection_min"]
-    receipt_max(receipt) = is_nominal ? receipt["injection_nominal"] : receipt["injection_max"]
+    receipt_max(receipt) =  receipt["injection_max"]
     delivery_min(delivery) = delivery["withdrawal_min"]
-    delivery_max(delivery) = is_nominal ? delivery["withdrawal_nominal"] : delivery["withdrawal_max"]
-    transfer_min(transfer) = is_nominal ? min(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_min"]
-    transfer_max(transfer) = is_nominal ? max(0.0, transfer["withdrawal_nominal"]) : transfer["withdrawal_max"]
+    delivery_max(delivery) = delivery["withdrawal_max"]
+    transfer_min(transfer) = transfer["withdrawal_min"]
+    transfer_max(transfer) = transfer["withdrawal_max"]
 
     junction = ref(gm, n, :junction, i)
     f_pipes = ref(gm, n, :pipes_fr, i)
@@ -431,6 +431,12 @@ function constraint_compressor_energy_ne(gm::AbstractGasModel, k; n::Int = nw_id
     flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
     ratio_max = compressor["c_ratio_max"]
 
+    # avoid posting the non-convex constraint if it is never binding
+    max_energy = flow_max * (ratio_max^m - 1)
+    if max_energy <= power_max / work
+        return
+    end
+
     constraint_compressor_energy_ne(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
@@ -471,6 +477,13 @@ function constraint_compressor_energy(gm::AbstractGasModel, k; n::Int = nw_id_de
     work = _calc_compressor_work(gamma, G, T)
     flow_max = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
     ratio_max = compressor["c_ratio_max"]
+
+    # avoid posting the non-convex constraint if it is never binding
+    max_energy = flow_max * (ratio_max^m - 1)
+    if max_energy <= power_max / work
+        return
+    end
+
     constraint_compressor_energy(gm, n, k, power_max, m, work, flow_max, ratio_max)
 end
 
