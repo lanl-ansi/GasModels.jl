@@ -5,19 +5,69 @@ function parse_transient(file::AbstractString)::Array{Dict{String,Any},1}
     end
 end
 
+function _read_transient_units(io::IO)::String
+    pos = position(io)
 
-"parses transient data format CSV into "
+    if eof(io)
+        seek(io, pos)
+        return "si"
+    end
+
+    first_line = readline(io)
+    seek(io, pos)
+
+    return _detect_csv_units(first_line)
+end
+
+function _set_data_units!(data::Dict{String,Any}, units::String)
+    data["si_units"] = units == "si"
+    data["english_units"] = units == "english"
+    return data
+end
+
+function _detect_csv_units(first_line::AbstractString)::String
+    line = lowercase(strip(first_line))
+
+    if occursin("#english", line)
+        return "english"
+    else
+        return "si"
+    end
+end
+
+function _has_units_comment(first_line::AbstractString)::Bool
+    line = lowercase(strip(first_line))
+    return occursin("#si", line) || occursin("#english", line) || occursin("#", line)
+end
+
+function _transient_conversion_data(static_data::Dict{String,Any}, units::String)::Dict{String,Any}
+    conversion_data = copy(static_data)
+    _set_data_units!(conversion_data, units)
+    return conversion_data
+end
+
+"parses transient data format CSV into list of dictionaries"
 function parse_transient(io::IO)::Array{Dict{String,Any},1}
     raw = readlines(io)
+    isempty(raw) && return Dict{String,Any}[]
 
-    data = []
+    has_units_comment = _has_units_comment(raw[1])
+    data_start = has_units_comment ? 3 : 2
+
+    data = Dict{String,Any}[]
     timestamps = Set{String}()
-    for line in raw[2:end]
-        timestamp, component_type, component_id, parameter, value = split(line, ",")
+
+    for line in raw[data_start:end]
+        line = strip(line)
+        isempty(line) && continue
+        startswith(line, "#") && continue
+
+        timestamp, component_type, component_id, parameter, value = strip.(split(line, ","))
+
         push!(timestamps, timestamp)
         push!(
             data,
-            Dict(
+            Dict{String,Any}(
                 "timestamp" => timestamp,
                 "component_type" => component_type,
                 "component_id" => component_id,
@@ -30,8 +80,6 @@ function parse_transient(io::IO)::Array{Dict{String,Any},1}
     return data
 end
 
-
-""
 function parse_files(static_file::AbstractString, transient_file::AbstractString; kwargs...)::Dict{String,Any}
     open(static_file, "r") do static_io
         open(transient_file, "r") do transient_io
@@ -41,10 +89,9 @@ function parse_files(static_file::AbstractString, transient_file::AbstractString
 end
 
 
-"""
-Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments:
-(i) `total_time` (defaults to 86400 seconds or 24 hours) - this is the total time for which transient optimization needs to be solved (ii) `time_step` (defaults to 3600 seconds or 1 hours) - this argument specifies the time discretization step (iii) `spatial_discretization` (defaults to 10000 m or 10 km) - this argument specifies the spatial discretization step (iv) `additional_time` (defaults to 21600 seconds or 6 hours) - this argument decides the time horizon that needs to be padded to the total time to in case the user wishes to perform a moving horizon transient optimization.
-"""
+"""Parses two files - a static file and a transient csv file and prepares the data object. The static file is the .m file and the transient file is a .csv file that contains the time-series data information. The function takes in the following keyword arguments:
+(i) `total_time` (defaults to 86400 seconds or 24 hours) - this is the total time for which transient optimization needs to be solved (ii) `time_step` (defaults to 3600 seconds or 1 hours) - this argument specifies the time discretization step (iii) `spatial_discretization` (defaults to 10000 m or 10 km)
+- this argument specifies the spatial discretization step (iv) `additional_time` (defaults to 21600 seconds or 6 hours) - this argument decides the time horizon that needs to be padded to the total time to in case the user wishes to perform a moving horizon transient optimization."""
 function parse_files(
     static_io::IO,
     transient_io::IO;
@@ -55,16 +102,19 @@ function parse_files(
 )
     periodic = true
 
-    # --- Read static network data ---
-    static_data = parse_file(static_io) 
+    transient_units = _read_transient_units(transient_io)
+
+    # uses units from file
+    static_data = parse_file(static_io)
     make_si_units!(static_data)
-    prep_transient_data!(static_data; spatial_discretization=spatial_discretization)
+    prep_transient_data!(static_data; spatial_discretization = spatial_discretization)
 
-    # --- Read and convert transient data ---
+    # units from file header, else SI
     transient_data = parse_transient(transient_io)
-    make_si_units!(transient_data, static_data)
 
-    # --- Build time series ---
+    conversion_data = _transient_conversion_data(static_data, transient_units)
+    make_si_units!(transient_data, conversion_data)
+
     time_series_block = _create_time_series_block(
         transient_data,
         total_time = total_time,
@@ -76,18 +126,15 @@ function parse_files(
     apply_gm!(
         x -> x["time_series"] = deepcopy(time_series_block),
         static_data;
-        apply_to_subnetworks = false
+        apply_to_subnetworks = false,
     )
 
     mn_data = _IM.make_multinetwork(static_data, gm_it_name, _gm_global_keys)
 
-    # --- Final per-unit conversion --- 
     make_per_unit!(mn_data)
 
     return mn_data
 end
-
-
 "function to get the maximum pipe id"
 function _get_max_pipe_id(pipes::Dict{String,Any})::Int
     max_pipe_id = 0
@@ -357,20 +404,18 @@ function _create_time_series_block(
     end_time = total_time + additional_time
 
     if (time_step > 3600.0 && time_step % 3600.0 != 0.0)
-        Memento.error(
-            _LOGGER,
+        error(
             "the 3600 seconds has to be exactly divisible by the time step,
 provide a time step that exactly divides 3600.0",
         )
     end
 
     if time_step < 3600.0 && !isinteger(3600.0 / time_step)
-        Memento.error(_LOGGER, "time step should divide 3600.0 exactly when < 3600.0")
+        @_error("time step should divide 3600.0 exactly when < 3600.0")
     end
 
     if total_time > 86400.0
-        Memento.warn(
-            _LOGGER,
+        @_warn(
             "the solver takes a substantial performance hit when trying to solve
 transient optimization problems for more than a day's worth of data; if it takes too long to
 converge, please restrict the final time horizon to a day or less",
@@ -378,8 +423,7 @@ converge, please restrict the final time horizon to a day or less",
     end
 
     if (additional_time == 0.0)
-        Memento.warn(
-            _LOGGER,
+        @_warn(
             "the transient optimization problem will only work for time-periodic
 time-series data. Please ensure the time-series data is time-periodic with a period of $total_time;
 if the data is not time-periodic GasModels will perform a time-periodic spline interpolation if

@@ -1,7 +1,7 @@
 @testset "test new ogf" begin
     @testset "test wp new ogf" begin
         @testset "case 6 new ogf" begin
-            @info "Testing OGF with compressor power and pipe weymouth proxy (linear)"
+            @_info "Testing OGF with compressor power and pipe weymouth proxy (linear)"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf_comp_power_and_pipe_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -11,7 +11,7 @@
         end
 
         @testset "case 6 new ogf weymouth lin rel" begin
-            @info "Testing  OGF with compressor power proxy and pipe weymouth proxy"
+            @_info "Testing  OGF with compressor power proxy and pipe weymouth proxy"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits.m")
             result = solve_ogf_comp_power_and_pipe_proxy(data, LRWPGasModel, lp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -22,7 +22,7 @@
 
 
         @testset "case 6 wp new ogf binding energy constraint" begin
-            @info "Testing  OGF with compressor power and pipe weymouth proxy Binding Energy Cosntraint"
+            @_info "Testing  OGF with compressor power and pipe weymouth proxy Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             result = solve_ogf_comp_power_and_pipe_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
@@ -32,7 +32,7 @@
         end
 
         @testset "case 6 wp new ogf elevation constraint" begin
-            @info "Testing  OGF with compressor power and pipe weymouth proxy Elevation Cosntraint"
+            @_info "Testing  OGF with compressor power and pipe weymouth proxy Elevation Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
             result = solve_ogf_comp_power_and_pipe_proxy(data, WPGasModel, nlp_solver)
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]

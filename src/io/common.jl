@@ -3,7 +3,7 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false)
+function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false, correct_slack_nodes::Bool = false)
     if filetype == "m"
         gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
@@ -11,11 +11,11 @@ function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool =
     elseif filetype == "zip"
         gm_data = GasModels.parse_gaslib(io)
     else
-        Memento.error(_LOGGER, "only .m and .json files are supported")
+        @_error("only .m and .json files are supported")
     end
 
     if !skip_correct
-        correct_network_data!(gm_data)
+        correct_network_data!(gm_data, correct_slack_nodes)
     end
 
     return gm_data
@@ -23,9 +23,9 @@ end
 
 
 ""
-function parse_file(file::String; skip_correct::Bool = false)
+function parse_file(file::String; skip_correct::Bool = false, correct_slack_nodes::Bool=false)
     gm_data = open(file) do io
-        parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct)
+        parse_file(io; filetype = split(lowercase(file), '.')[end], skip_correct = skip_correct, correct_slack_nodes=correct_slack_nodes)
     end
 
     return gm_data
@@ -46,10 +46,10 @@ function check_pipeline_geometry!(data::Dict{String,Any})
         diameter = pipe["diameter"]
 
         if length <= 0.0
-            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive length: $length")
+            @_error("Pipeline $pipe_id has non-positive length: $length")
         end
         if diameter <= 0.0
-            Memento.error(_LOGGER, "Pipeline $pipe_id has non-positive diameter: $diameter")
+            @_error("Pipeline $pipe_id has non-positive diameter: $diameter")
         end
 
         # Convert junction indices to strings before lookup
@@ -63,11 +63,11 @@ function check_pipeline_geometry!(data::Dict{String,Any})
             if haskey(f_junc, "elevation") && haskey(t_junc, "elevation")
                 dz = abs(f_junc["elevation"] - t_junc["elevation"])
                 if dz > length
-                    Memento.error(_LOGGER, "Pipeline $pipe_id has elevation change ($dz) greater than length ($length)")
+                    @_error("Pipeline $pipe_id has elevation change ($dz) greater than length ($length)")
                 end
             end
         else
-            Memento.warn(_LOGGER,"Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
+            @_warn("Pipeline $pipe_id refers to missing junction(s): $fr_id or $to_id")
         end
     end
 end
@@ -88,8 +88,7 @@ function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
 
     #check for mismatch
     if abs(a_given - a_expected) > tol
-        Memento.warn(
-            _LOGGER,
+        @_warn(
             "Sound speed mismatch: provided=$(a_given), calculated=$(a_expected), Δ=$(a_given - a_expected). The calculated speed will be used."
         )
     end
@@ -97,7 +96,7 @@ function check_soundspeed!(mn_data::Dict{String,Any}; tol=0.5)
     return nothing
 end
 
-function correct_network_data!(data::Dict{String,Any})
+function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false)
     check_non_negativity(data)
     check_pipeline_geometry!(data) #geo must be checked before per-unit conversion
     check_non_zero(data)
@@ -121,4 +120,7 @@ function correct_network_data!(data::Dict{String,Any})
     check_status(data)
     check_edge_loops(data)
     check_global_parameters(data)
+    if slack_nodes
+        correct_slack_nodes!(data)
+    end
 end

@@ -329,7 +329,7 @@ function parse_m_string(data_string::String)
     if func_name !== nothing
         case["name"] = func_name
     else
-        Memento.warn(_LOGGER, "no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
+        @_warn("no case name found in .m file.  The file seems to be missing \"function mgc = ...\"")
         case["name"] = "no_name_found"
     end
 
@@ -337,7 +337,7 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.version")
         case["source_version"] = VersionNumber(matlab_data["mgc.version"])
     else
-        Memento.warn(_LOGGER, "no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
+        @_warn("no case version found in .m file.  The file seems to be missing \"mgc.version = ...\"")
         case["source_version"] = "0.0.0+"
     end
 
@@ -365,7 +365,7 @@ function parse_m_string(data_string::String)
         if haskey(matlab_data, data_name)
             case[data_name[5:end]] = matlab_data[data_name]
         else
-            Memento.error(_LOGGER, string("no $data_name found in .m file"))
+            @_error(string("no $data_name found in .m file"))
         end
     end
 
@@ -378,10 +378,10 @@ function parse_m_string(data_string::String)
             case["english_units"] = true
             case["si_units"] = false
         else
-            Memento.error(_LOGGER, string("the possible values for units field in .m file are \"si\" or \"usc\""))
+            @_error(string("the possible values for units field in .m file are \"si\" or \"usc\""))
         end
     else
-        Memento.error(_LOGGER, string("no units field found in .m file.
+        @_error(string("no units field found in .m file.
         The file seems to be missing \"mgc.units = ...;\" \n
         Possible values are 1 (SI) or 2 (English units)"))
     end
@@ -390,24 +390,23 @@ function parse_m_string(data_string::String)
     if haskey(matlab_data, "mgc.base_pressure")
         case["base_pressure"] = matlab_data["mgc.base_pressure"]
     else
-        Memento.warn(
-            _LOGGER,
-            string("no base_pressure found in .m file.
-This value will be auto-assigned based on the pressure limits provided in the data"),
+        @_warn(
+            "no base_pressure found in .m file.
+This value will be auto-assigned based on the pressure limits provided in the data"
         )
     end
 
     if haskey(matlab_data, "mgc.base_length")
         case["base_length"] = matlab_data["mgc.base_length"]
     else
-        Memento.warn(_LOGGER, string("no base_length found in .m file.
-            This value will be auto-assigned based on the pipe data"))
+        @_warn string("no base_length found in .m file.
+            This value will be auto-assigned based on the pipe data")
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
         case["per_unit"] = matlab_data["mgc.is_per_unit"]
     else
-        Memento.warn(_LOGGER, string("no is_per_unit found in .m file.
+        @_warn(string("no is_per_unit found in .m file.
             Auto assigning a value of 0 (false) for the per_unit field"))
         case["per_unit"] = false
     end
@@ -438,8 +437,7 @@ This value will be auto-assigned based on the pressure limits provided in the da
         case["economic_weighting"] = matlab_data["mgc.economic_weighting"]
     else
         case["economic_weighting"] = 1.0
-        Memento.warn(
-            _LOGGER,
+        @_warn(
             "economic_weighting value set to 1.0; the transient ogf
 objective is economic_weighting * (load shed) +
 (1-economic_weighting) * (compressor power)",
@@ -470,7 +468,7 @@ objective is economic_weighting * (load shed) +
         end
         case["junction"] = junctions
     else
-        Memento.error(_LOGGER, string("no junction table found in .m file.
+        @_error(string("no junction table found in .m file.
             The file seems to be missing \"mgc.junction = [...];\""))
     end
 
@@ -489,7 +487,7 @@ objective is economic_weighting * (load shed) +
         end
         case["pipe"] = pipes
     else
-        Memento.error(_LOGGER, string("no pipe table found in .m file.
+        @_error(string("no pipe table found in .m file.
             The file seems to be missing \"mgc.pipe = [...];\""))
     end
 
@@ -686,10 +684,10 @@ objective is economic_weighting * (load shed) +
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                Memento.info(_LOGGER, "extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
+                @_info("extending matlab format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
-                Memento.info(_LOGGER, "extending matlab format with constant data: $(case_name)")
+                @_info("extending matlab format with constant data: $(case_name)")
             end
         end
     end
@@ -720,7 +718,7 @@ function _matgas_to_gasmodels(mg_data::Dict{String,Any})
 
     num_supplies = receipts + transfers + storages
     if num_supplies == 0
-        Memento.warn(_LOGGER, "no supply points are present in the data file")
+        @_warn("no supply points are present in the data file")
     end
 
     for field in check_fields
@@ -751,17 +749,17 @@ function _merge_generic_data!(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mg_matrix) != length(v)
-                        Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
+                        @_error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mg_matrix)) and $(length(v)) respectively.")
                     end
 
-                    Memento.info(_LOGGER, "extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
+                    @_info("extending matlab format by appending matrix \"$(k)\" in to \"$(mg_name)\"")
 
                     for (i, row) in enumerate(mg_matrix)
                         merge_row = v[i]
                         delete!(merge_row, "index")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                Memento.error(_LOGGER, "failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                @_error("failed to extend the matlab matrix \"$(mg_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end
@@ -929,42 +927,9 @@ const rouge_junction_id_fields = Dict{String,Vector{String}}(
     "storage" => ["junction_id"],
 )
 
-
-"write to matgas"
-function _gasmodels_to_matgas_string(
-        data::Dict{String,Any};
-        units::String = "si",
-        include_extended::Bool = false,
-    )::String
-
-    (data["english_units"] == true) && (units = "usc")
-    lines = ["function mgc = $(replace(data["name"], " " => "_"))", ""]
-
-    for param in _matlab_global_params_order_required
-        line = isa(data[param], Float64) ?
-            Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
-            "mgc.$(param) = $(data[param]);"
-        haskey(_units[units], param) && (line *= "  % $(_units[units][param])")
-        push!(lines, line)
-    end
-    pipeline_name = data["pipeline_name"]
-    push!(lines, "mgc.units = '$units';", "")
-    push!(lines, "mgc.pipeline_name = '$pipeline_name';", "")
-
-    for param in _matlab_global_params_order_optional
-        line = isa(data[param], Float64) ?
-            Printf.@sprintf("mgc.%s = %.12g;", param, data[param]) :
-            "mgc.$(param) = $(data[param]);"
-        haskey(_units[units], param) && (line *= "  % $(_units[units][param])")
-        push!(lines, line)
-    end
-    push!(lines, "")
-
-    #dict/vector helper
-    _entry(container, i) = container isa AbstractDict ? container["$i"] : container[i]
-
-    # ------------------------------------------------------------------------
-    for data_type in _matlab_data_order
+function _validate_schema(data)
+    """prevent writer from silently crashing if data is missing"""
+    for (data_type, fields) in _matlab_field_order
         if haskey(data, data_type)
             push!(lines, "%% $data_type data")
 
@@ -998,8 +963,7 @@ function _gasmodels_to_matgas_string(
                         else
                             # special handling for the optional edi_id column
                             field == "edi_id" ? push!(entries, "0") :
-                                Memento.error(_LOGGER,
-                                    string("$(data_type) $(i) is missing field $(field)"))
+                                    @_error(string("$(data_type) $(i) is missing field $(field)"))
                         end
                     end
                     push!(lines, "$(join(entries, "\t"))")
@@ -1039,52 +1003,313 @@ function _gasmodels_to_matgas_string(
             end
         end
     end
-
-    push!(lines, "end\n")
-    return join(lines, "\n")
 end
 
-# ------------------------------------------------------------------------
-_key(i) = i isa Integer ? string(i) : i
-
-
-"writes data structure to matlab format"
-function write_matgas!(
-    data::Dict{String,Any},
-    fileout::String;
-    units::String = "si",
-    include_extended::Bool = false,
+const _mg_extra_data_columns = Dict{String,Vector{String}}(
+    "junction"   => ["coordinates", "elevation"],
+    "pipe"       => ["coordinates"],
+    "compressor" => ["coordinates", "mapping_id"],
+    "transfer"   => ["coordinates", "wmg_location_role_id", "mapping_id", "market_id"],
+    "receipt"    => ["coordinates", "wmg_location_role_id", "mapping_id", "market_id"],
+    "delivery"   => ["coordinates", "wmg_location_role_id", "mapping_id", "market_id"],
 )
-    if haskey(data, "original_pipe")
-        data["new_pipe"] = deepcopy(data["pipe"])
-        data["pipe"] = deepcopy(data["original_pipe"])
-        delete!(data, "original_pipe")
+
+
+"""
+    write_matgas(filename::String, gm_data::Dict{String,<:Any})
+    write_matgas(io::IO, gm_data::Dict{String,<:Any})
+"""
+function write_matgas(filename::String, gm_data::Dict{String,<:Any}, precision::Int=6)
+    #precision is number of digits that floats will be written in
+    open(filename, "w") do io
+        write_matgas(io, gm_data, precision)
     end
-    if haskey(data, "original_junction")
-        data["new_junction"] = deepcopy(data["junction"])
-        data["junction"] = deepcopy(data["original_junction"])
-        delete!(data, "original_junction")
+end
+
+function write_matgas(io::IO, gm_data::Dict{String,<:Any}, precision::Int=6)
+    make_si_units!(gm_data)
+    case_name = get(gm_data, "name", "gas_network")
+    func_name = _sanitize_matlab_identifier(String(case_name))
+
+    println(io, "function mgc = ", func_name)
+    println(io)
+
+    # ---- scalar metadata ----
+    _write_scalar_if_present(io, "mgc.version", get(gm_data, "source_version", v"0.0.0"), precision)
+    _write_scalar_if_present(io, "mgc.name", get(gm_data, "name", func_name), precision)
+    _write_scalar_if_present(io, "mgc.gas_specific_gravity", gm_data["gas_specific_gravity"], precision)
+    _write_scalar_if_present(io, "mgc.specific_heat_capacity_ratio", gm_data["specific_heat_capacity_ratio"], precision)
+    _write_scalar_if_present(io, "mgc.temperature", gm_data["temperature"], precision)
+    _write_scalar_if_present(io, "mgc.sound_speed", get(gm_data, "sound_speed", nothing), precision)
+    _write_scalar_if_present(io, "mgc.compressibility_factor", gm_data["compressibility_factor"], precision)
+    _write_scalar_if_present(io, "mgc.R", get(gm_data, "R", nothing), precision)
+    _write_scalar_if_present(io, "mgc.gas_molar_mass", get(gm_data, "gas_molar_mass", nothing), precision)
+    _write_scalar_if_present(io, "mgc.base_pressure", get(gm_data, "base_pressure", nothing), precision)
+    _write_scalar_if_present(io, "mgc.base_length", get(gm_data, "base_length", nothing), precision)
+    _write_scalar_if_present(io, "mgc.units", gm_data["units"], precision)
+    _write_scalar_if_present(io, "mgc.per_unit", get(gm_data, "per_unit", nothing), precision)
+    _write_scalar_if_present(io, "mgc.economic_weighting", get(gm_data, "economic_weighting", nothing), precision)
+    println(io)
+
+    # ---- tabular sections ----
+    _write_section_if_present(io, "sources", get(gm_data, "sources", nothing), _mg_sources_columns, precision)
+    _write_section_if_present(io, "junction", get(gm_data, "junction", nothing), _mg_junction_columns, precision)
+    _write_section_if_present(io, "pipe", get(gm_data, "pipe", nothing), _mg_pipe_columns, precision)
+    _write_section_if_present(io, "ne_pipe", get(gm_data, "ne_pipe", nothing), _mg_ne_pipe_columns, precision)
+    _write_section_if_present(io, "compressor", get(gm_data, "compressor", nothing), _mg_compressor_columns, precision)
+    _write_section_if_present(io, "ne_compressor", get(gm_data, "ne_compressor", nothing), _mg_ne_compressor_columns, precision)
+    _write_section_if_present(io, "transfer", get(gm_data, "transfer", nothing), _mg_transfer_columns, precision)
+    _write_section_if_present(io, "receipt", get(gm_data, "receipt", nothing), _mg_receipt_columns, precision)
+    _write_section_if_present(io, "delivery", get(gm_data, "delivery", nothing), _mg_delivery_columns, precision)
+    _write_section_if_present(io, "short_pipe", get(gm_data, "short_pipe", nothing), _mg_short_pipe_columns, precision)
+    _write_section_if_present(io, "resistor", get(gm_data, "resistor", nothing), _mg_resistor_columns, precision)
+    _write_section_if_present(io, "regulator", get(gm_data, "regulator", nothing), _mg_regulator_columns, precision)
+    _write_section_if_present(io, "valve", get(gm_data, "valve", nothing), _mg_valve_columns, precision)
+    _write_section_if_present(io, "storage", get(gm_data, "storage", nothing), _mg_storage_columns, precision)
+end
+
+
+# ------------------------------------------------------------------
+# scalar writers
+# ------------------------------------------------------------------
+
+function _write_scalar_if_present(io::IO, lhs::String, value, precision::Int)
+    value === nothing && return
+    println(io, lhs, " = ", _format_matgas_scalar(value, precision), ";")
+end
+
+function _format_matgas_scalar(x, precision::Int)
+    if x isa VersionNumber
+        return "'" * string(x) * "'"
+    elseif x isa AbstractString || x isa SubString{String}
+        return "'" * _escape_matgas_string(String(x)) * "'"
+    elseif x isa Bool
+        return x ? "1" : "0"
+    elseif x isa Integer
+        return string(x)
+    elseif x isa AbstractFloat
+        return isnan(x) ? "NaN" : _format_float(x, precision)
+    else
+        return "'" * _escape_matgas_string(string(x)) * "'"
+    end
+end
+
+
+# ------------------------------------------------------------------
+# section writers
+# ------------------------------------------------------------------
+
+function _write_section_if_present(io::IO, section_name::String, rows, canonical_cols::Vector{Tuple{String,Type}}, precision::Int=6)
+    rows === nothing && return
+
+    row_dicts = _normalize_rows(rows, section_name)
+
+    extra_cols = get(_mg_extra_data_columns, section_name, String[])
+
+    main_cols =
+        isempty(row_dicts) ?
+        [name for (name, _) in canonical_cols if !(name in Set(extra_cols))] :
+        _present_columns(row_dicts, canonical_cols; exclude=Set(extra_cols))
+
+    # always write the main section, even if there are no rows
+    _write_table(io, section_name, row_dicts, main_cols, precision)
+
+    # only write *_data if there is actual extra data present
+    if haskey(_mg_extra_data_columns, section_name) && !isempty(row_dicts)
+        data_cols = _present_extra_columns(row_dicts, _mg_extra_data_columns[section_name])
+        if !isempty(data_cols)
+            _write_table(io, section_name * "_data", row_dicts, data_cols, precision)
+        end
+    end
+end
+
+function _write_table(
+    io::IO,
+    table_name::String,
+    row_dicts::Vector{Dict{String,Any}},
+    cols::Vector{String},
+    precision::Int,
+)
+    println(io, "%% ", table_name)
+
+    if isempty(row_dicts)
+        println(io, "% ", join(cols, " "))
+    else
+        println(io, "%column_names% ", join(cols, " "))
     end
 
-    open(fileout, "w") do f
-        write(
-            f,
-            _gasmodels_to_matgas_string(
-                data;
-                units = units,
-                include_extended = include_extended,
-            ),
+    println(io, "mgc.", table_name, " = [")
+
+    for row in row_dicts
+        vals = [_format_matgas_cell(_row_get(row, col), precision) for col in cols]
+        println(io, join(vals, "\t"))
+    end
+
+    println(io, "];")
+    println(io)
+end
+
+# ------------------------------------------------------------------
+# row normalization
+# ------------------------------------------------------------------
+
+function _normalize_rows(rows::AbstractVector, section_name::String)
+    out = Vector{Dict{String,Any}}()
+    sizehint!(out, length(rows))
+    for row in rows
+        push!(out, _normalize_row(row, section_name))
+    end
+    return out
+end
+
+function _normalize_rows(rows::AbstractDict, section_name::String)
+    vals = collect(values(rows))
+
+    sort!(vals; by = row -> begin
+        if haskey(row, "id")
+            row["id"]
+        elseif haskey(row, :id)
+            row[:id]
+        elseif haskey(row, "index")
+            row["index"]
+        elseif haskey(row, :index)
+            row[:index]
+        else
+            typemax(Int)
+        end
+    end)
+
+    out = Vector{Dict{String,Any}}()
+    sizehint!(out, length(vals))
+    for xrow in vals
+        push!(out, _normalize_row(xrow, section_name))
+    end
+    return out
+end
+
+function _normalize_row(row::AbstractDict, section_name::String)
+    out = Dict{String,Any}()
+
+    for (k, v) in row
+        ks = String(k)
+
+        # internal bookkeeping
+        if ks in (
+            "si_units", "english_units", "per_unit",
+            "is_si_units", "is_english_units", "is_per_unit"
         )
+            continue
+        end
+
+        # don't write index directly
+        if ks == "index"
+            continue
+        end
+
+        out[ks] = v
     end
 
-    if haskey(data, "new_pipe")
-        data["original_pipe"] = deepcopy(data["pipe"])
-        data["pipe"] = deepcopy(data["new_pipe"])
-        delete!(data, "new_pipe")
+    # ensure id exists
+    if !haskey(out, "id")
+        if haskey(row, "id")
+            out["id"] = row["id"]
+        elseif haskey(row, :id)
+            out["id"] = row[:id]
+        elseif haskey(row, "index")
+            out["id"] = row["index"]
+        elseif haskey(row, :index)
+            out["id"] = row[:index]
+        end
     end
-    if haskey(data, "new_junction")
-        data["original_junction"] = deepcopy(data["junction"])
-        data["junction"] = deepcopy(data["new_junction"])
-        delete!(data, "new_junction")
+
+    return out
+end
+
+# ------------------------------------------------------------------
+# column selection
+# ------------------------------------------------------------------
+
+function _present_columns(
+    rows::Vector{Dict{String,Any}},
+    canonical_cols::Vector{Tuple{String,Type}};
+    exclude::Set{String}=Set{String}()
+)
+    canonical_names = [name for (name, _) in canonical_cols if !(name in exclude)]
+    present = Set{String}()
+
+    for row in rows
+        for k in keys(row)
+            if !(k in exclude)
+                push!(present, k)
+            end
+        end
+    end
+
+    # only write canonical and present columns
+    return [name for name in canonical_names if name in present]
+end
+
+function _present_extra_columns(rows::Vector{Dict{String,Any}}, extra_cols::Vector{String})
+    present = Set{String}()
+
+    for row in rows
+        for col in extra_cols
+            val = _row_get(row, col)
+            if !(val === nothing || val isa Missing)
+                push!(present, col)
+            end
+        end
+    end
+
+    return [col for col in extra_cols if col in present]
+end
+
+# ------------------------------------------------------------------
+# cell formatting
+# ------------------------------------------------------------------
+
+function _format_matgas_cell(x, precision::Int)
+    if x === nothing || x isa Missing
+        return "''"
+    elseif x isa Bool
+        return x ? "true" : "false"
+    elseif x isa Integer
+        return string(x)
+    elseif x isa AbstractFloat
+        return isnan(x) ? "''" : _format_float(x, precision)
+    elseif x isa AbstractString || x isa SubString{String}
+        return "'" * _escape_matgas_string(String(x)) * "'"
+    else
+        return "'" * _escape_matgas_string(string(x)) * "'"
+    end
+end
+
+_format_float(x::AbstractFloat, precision::Int=6) = Printf.format(Printf.Format("%.$(precision)g"), x)
+
+_escape_matgas_string(s::String) = replace(s, "'" => "''")
+
+
+# ------------------------------------------------------------------
+# lookup helpers
+# ------------------------------------------------------------------
+
+function _row_get(row::AbstractDict, col::String)
+    if haskey(row, col)
+        return row[col]
+    elseif haskey(row, Symbol(col))
+        return row[Symbol(col)]
+    else
+        return nothing
+    end
+end
+
+function _sanitize_matlab_identifier(s::String)
+    s2 = replace(s, r"[^A-Za-z0-9_]" => "_")
+    if isempty(s2)
+        return "gas_network"
+    elseif occursin(r"^[0-9]", s2)
+        return "case_" * s2
+    else
+        return s2
     end
 end

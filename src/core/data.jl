@@ -129,7 +129,7 @@ function _estimate_standard_density(data::Dict{String,<:Any})
 end
 
 "apply a function on a dict entry"
-function _apply_func!(data::Dict{String,Any}, key::String, func)
+function _apply_func!(data::AbstractDict{String,Any}, key::String, func)
     if haskey(data, key)
         data[key] = func(data[key])
     end
@@ -146,7 +146,7 @@ end
 function _per_unit_data_field_check!(data::Dict{String,Any})
     if get(data, "per_unit", false) == true
         if get(data, "base_pressure", false) == false || get(data, "base_length", false) == false
-            Memento.error(_LOGGER, "data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
+            @_error("data in .m file is in per unit but no base_pressure (in Pa) and base_length (in m) values are provided")
         else
             if get(data, "base_density", false) == false
                 data["base_density"] = calc_base_density(data)
@@ -286,9 +286,9 @@ const _params_for_unit_conversions = Dict(
         "net_injection",
         "net_nodal_edge_out_flow",
         "elevation",
-        "lam_junction_mfb"
+        "lam_junction_mfb",
     ],
-    "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
+    "original_junction" => ["p_min", "p_max", "p_nominal", "p", "elevation"],
     "pipe" => [
         "length",
         "p_min",
@@ -499,7 +499,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -548,7 +548,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -595,7 +595,7 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -642,7 +642,7 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
     for (component, parameters) in _params_for_unit_conversions
         for (i, comp) in get(gm_nw_data, component, [])
             if !haskey(comp, "per_unit") && !haskey(gm_data, "per_unit")
-                Memento.error(_LOGGER, "the current units of the data/result dictionary unknown")
+                @_error("the current units of the data/result dictionary unknown")
             end
 
             if !haskey(comp, "per_unit") && haskey(gm_data, "per_unit")
@@ -805,7 +805,7 @@ function _check_rouge_junction_ids(data::Dict{String,<:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(rouge_junction_id_fields, field, [])
                 if !(table[column_name] in junction_ids)
-                    Memento.error(_LOGGER, "junction_id of $field[$i] does not exist in junction table.")
+                    @_error("junction_id of $field[$i] does not exist in junction table.")
                 end
             end
         end
@@ -816,7 +816,7 @@ end
 function _check_non_negativity(data::Dict{String, <:Any})
     for field in non_negative_metadata
         if get(data, field, 0.0) < 0.0
-            Memento.error(_LOGGER, "Metadata $field is less than zero.")
+            @_error("Metadata $field is less than zero.")
         end
     end
 
@@ -824,7 +824,7 @@ function _check_non_negativity(data::Dict{String, <:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
-                    Memento.error(_LOGGER, "$field[$i][$column_name] is less than zero.")
+                    @_error("$field[$i][$column_name] is less than zero.")
                 end
             end
         end
@@ -838,7 +838,7 @@ function _check_non_zero(data::Dict{String, <:Any})
         for (i, table) in get(data, field, [])
             for column_name in get(non_negative_data, field, [])
                 if get(table, column_name, 0.0) < 0.0
-                    Memento.error(_LOGGER, "$field[$i][$column_name] is zero.")
+                    @_error("$field[$i][$column_name] is zero.")
                 end
             end
         end
@@ -855,23 +855,23 @@ end
 "checks validity of global-level parameters"
 function _check_global_parameters(data::Dict{String, <:Any})
     if get(data, "temperature", 273.15) < 260 || get(data, "temperature", 273.15) > 320
-        Memento.warn(_LOGGER, "temperature of $(data["temperature"]) K is unrealistic")
+        @_warn("temperature of $(data["temperature"]) K is unrealistic")
     end
 
     if get(data, "specific_heat_capacity_ratio", 1.4) < 1.2 || get(data, "specific_heat_capacity_ratio", 1.4) > 1.6
-        Memento.warn(_LOGGER, "specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
+        @_warn("specific heat capacity ratio of $(data["specific_heat_capacity_ratio"]) is unrealistic")
     end
 
     if get(data, "gas_specific_gravity", 0.6) < 0.5 || get(data, "gas_specific_gravity", 0.6) > 0.7
-        Memento.warn(_LOGGER, "gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
+        @_warn("gas specific gravity $(data["gas_specific_gravity"]) is unrealistic")
     end
 
     if get(data, "sound_speed", 355.0) < 300.0 || get(data, "sound_speed", 355.0) > 410.0
-        Memento.warn(_LOGGER, "sound speed of $(data["sound_speed"]) m/s is unrealistic")
+        @_warn("sound speed of $(data["sound_speed"]) m/s is unrealistic")
     end
 
     if get(data, "compressibility_factor", 0.8) < 0.7 || get(data, "compressibility_factor", 0.8) > 1.0
-        Memento.warn(_LOGGER, "compressibility_factor $(data["compressibility_factor"]) is unrealistic")
+        @_warn("compressibility_factor $(data["compressibility_factor"]) is unrealistic")
     end
 end
 
@@ -996,7 +996,7 @@ end
 function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_value = 200.0)
     for (i, junction) in get(data, "junction", [])
         if junction["p_min"] < 0.0
-            Memento.warn(_LOGGER, "junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("junction $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (junction["p_min"] = si_value)
             (data["english_units"] == true) && (junction["p_min"] = english_value)
         end
@@ -1004,7 +1004,7 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, pipe) in get(data, "pipe", [])
         if pipe["p_min"] < 0.0
-            Memento.warn(_LOGGER, "pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("pipe $i's p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (pipe["p_min"] = si_value)
             (data["english_units"] == true) && (pipe["p_min"] = english_value)
         end
@@ -1012,13 +1012,13 @@ function _correct_p_mins!(data::Dict{String,Any}; si_value = 1.37e6, english_val
 
     for (i, compressor) in get(data, "compressor", [])
         if compressor["inlet_p_min"] < 0
-            Memento.warn(_LOGGER, "compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("compressor $i's inlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["inlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["inlet_p_min"] = english_value)
         end
 
         if compressor["outlet_p_min"] < 0
-            Memento.warn(_LOGGER, "compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
+            @_warn("compressor $i's outlet_p_min changed to 1.37E6 Pa (200 PSI) from < 0")
             (data["si_units"] == true) && (compressor["outlet_p_min"] = si_value)
             (data["english_units"] == true) && (compressor["outlet_p_min"] = english_value)
         end
@@ -1132,7 +1132,7 @@ function _check_connectivity(data::Dict{String,<:Any})
             for junc_key in _gm_junction_keys
                 if haskey(comp, junc_key)
                     if !(comp[junc_key] in junc_ids)
-                        Memento.warn(_LOGGER, "$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
+                        @_warn("$junc_key $(comp[junc_key]) in $comp_type $i is not defined")
                     end
                 end
             end
@@ -1150,7 +1150,7 @@ end
 "checks that active components are not connected to inactive buses, otherwise prints warnings"
 function _check_status(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        Memento.error(_LOGGER, "check_status does not yet support multinetwork data")
+        @_error("check_status does not yet support multinetwork data")
     end
 
     active_junction_ids = Set(
@@ -1164,7 +1164,7 @@ function _check_status(data::Dict{String,<:Any})
                 if haskey(comp, junc_key)
                     if get(comp, "status", 1) != 0 &&
                        !(comp[junc_key] in active_junction_ids)
-                        Memento.warn(_LOGGER, "active $comp_type $i is connected to inactive junction $(comp[junc_key])")
+                        @_warn("active $comp_type $i is connected to inactive junction $(comp[junc_key])")
                     end
                 end
             end
@@ -1182,14 +1182,14 @@ end
 "checks that all edges connect two distinct junctions"
 function _check_edge_loops(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        Memento.error(_LOGGER, "check_edge_loops does not yet support multinetwork data")
+        @_error("check_edge_loops does not yet support multinetwork data")
     end
 
     for edge_type in _gm_edge_types
         if haskey(data, edge_type)
             for edge in values(data[edge_type])
                 if edge["fr_junction"] == edge["to_junction"]
-                    Memento.error(_LOGGER, "both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
+                    @_error("both sides of $edge_type $(edge["index"]) connect to junction $(edge["fr_junction"])")
                 end
             end
         end
@@ -1213,7 +1213,7 @@ function _propagate_topology_status!(data::Dict{String,<:Any})
                 for junc_key in _gm_junction_keys
                     if haskey(comp, junc_key) && comp[junc_key] in disabled_junctions
                         comp["status"] = 0
-                        Memento.info(_LOGGER, "Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
+                        @_info("Change status of $comp_type $(comp["index"]) because connecting junction $(comp[junc_key]) is disabled")
                         break
                     end
                 end
@@ -1942,7 +1942,7 @@ function calc_connected_components(data::Dict{String,<:Any}; edges = _gm_edge_ty
     gm_data = get_gm_data(data)
 
     if _IM.ismultinetwork(gm_data)
-        Memento.error(_LOGGER, "calc_connected_components does not yet support multinetwork data")
+        @_error("calc_connected_components does not yet support multinetwork data")
     end
 
     active_junction = Dict(x for x in gm_data["junction"] if x.second["status"] != 0)
@@ -1982,17 +1982,17 @@ function _select_largest_component!(data::Dict{String,<:Any})
     ccs = calc_connected_components(data)
 
     if length(ccs) > 1
-        Memento.info(_LOGGER, "found $(length(ccs)) components")
+        @_info("found $(length(ccs)) components")
 
         ccs_order = sort(collect(ccs); by=length)
         largest_cc = ccs_order[end]
 
-        Memento.info(_LOGGER, "largest component has $(length(largest_cc)) junctions")
+        @_info("largest component has $(length(largest_cc)) junctions")
 
         for (i,junction) in data["junction"]
             if junction["status"] != 0 && !(junction["id"] in largest_cc)
                 junction["status"] = 0
-                Memento.info(_LOGGER, "deactivating junction $(i) due to small connected component")
+                @_info("deactivating junction $(i) due to small connected component")
             end
         end
 
@@ -2035,4 +2035,95 @@ function _calc_is_compressor_energy_bounded(gamma, G, T, compressor::Dict)
     m = _calc_compressor_m_sqr(gamma, compressor)
 
     return f_max * (max_ratio^2^m - 1) > power_max / work
+end
+
+function junction_connected_components(data::Dict)
+    # `data` may contain inactive junctions, which we want to filter out
+    junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
+    junction_lookup = Dict("$(key)" => i for (i, key) in enumerate(junction_keys))
+    graph = Graphs.SimpleGraph(length(junction_keys))
+    if !haskey(data, "junction")
+        @_error("no junctions found in data!") #safety error
+    end
+
+    for component_key in ("pipe", "compressor")
+        if !haskey(data, component_key)
+            continue
+        end
+
+        for (edge_key, edge) in data[component_key]
+            if edge["status"] == 0
+                continue
+            end
+
+            fr_key = "$(edge["fr_junction"])"
+            to_key = "$(edge["to_junction"])"
+
+            if !(haskey(junction_lookup, fr_key) && haskey(junction_lookup, to_key))
+                @_warn(
+                    "Skipping active edge because one or more incident junctions are inactive or missing: $fr_key to $to_key"
+                )
+                continue
+            end
+
+            fr = junction_lookup[fr_key]
+            to = junction_lookup[to_key]
+            Graphs.add_edge!(graph, fr, to)
+        end
+    end
+
+    return [junction_keys[component] for component in Graphs.connected_components(graph)]
+end
+
+function correct_slack_nodes!(data::Dict)
+    """pin some junctions to have fixed pressure, variable flow"""
+    junction_keys = sort(filter(k -> data["junction"][k]["status"] == 1, collect(keys(data["junction"]))))
+    receipts_by_node = Dict(j => Any[] for j in junction_keys)
+    deliveries_by_node = Dict(j => Any[] for j in junction_keys)
+    transfers_by_node = Dict(j => Any[] for j in junction_keys)
+    component_names = ("receipt", "delivery", "transfer")
+    lookups = (receipts_by_node, deliveries_by_node, transfers_by_node)
+    for (component_name, lookup) in zip(component_names, lookups)
+        if haskey(data, component_name)
+            for (key, component) in data[component_name]
+                j = "$(component["junction_id"])"
+                # If the receipt/delivery/transfer or bus are inactive, we continue
+                if component["status"] == 0 || data["junction"][j]["status"] == 0
+                    continue
+                end
+                push!(lookup[j], key)
+            end
+        end
+    end
+    max_injections = map(k -> map(r -> data["receipt"][r]["injection_max"], receipts_by_node[k]), junction_keys)
+    max_withdrawals = map(k -> map(w -> data["delivery"][w]["withdrawal_max"], deliveries_by_node[k]), junction_keys)
+    max_transfers = map(
+        k -> map(
+            t -> max(abs(data["transfer"][t]["withdrawal_min"]), abs(data["transfer"][t]["withdrawal_max"])),
+            transfers_by_node[k],
+        ),
+        junction_keys,
+    )
+    injection_capacities = map(injections -> sum(injections; init = 0.0), max_injections)
+    withdrawal_capacities = map(withdrawals -> sum(withdrawals; init = 0.0), max_withdrawals)
+    transfer_capacities = map(transfers -> sum(transfers; init = 0.0), max_transfers)
+    injection_capacity_by_node = Dict(zip(junction_keys, injection_capacities))
+    withdrawal_capacity_by_node = Dict(zip(junction_keys, withdrawal_capacities))
+    transfer_capacity_by_node = Dict(zip(junction_keys, transfer_capacities))
+
+    for junctions_in_cc in junction_connected_components(data)
+        if any(data["junction"][j]["junction_type"] == 1 for j in junctions_in_cc)
+            continue
+        end
+        nodes_by_capacity = sort(junctions_in_cc; by = j -> (
+            # Note that this is sorting first by injection capacity, then
+            # by transfer capacity, then by withdrawal capacity.
+            injection_capacity_by_node[j],
+            transfer_capacity_by_node[j],
+            withdrawal_capacity_by_node[j],
+        ), rev = true)
+        slack_node = nodes_by_capacity[1]
+        data["junction"][slack_node]["junction_type"] = 1
+    end
+    return data
 end

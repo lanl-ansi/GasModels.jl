@@ -134,14 +134,78 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
 
         if length(slack_junctions) == 0
-            Memento.warn(_LOGGER, "No slack junctions found in the data - add a slack junction")
+            @_warn("No slack junctions found in the data - add a slack junction")
         end
 
         if length(slack_junctions) > 1
-            Memento.warn(_LOGGER, "multiple slack junctions, $(keys(slack_junctions))")
+            @_warn("multiple slack junctions, $(keys(slack_junctions))")
         end
 
         nw_ref[:slack_junctions] = slack_junctions
         nw_ref[:non_slack_junction_ids] = non_slack_junction_ids
+    end
+end
+
+"adjusts the capacity limits of deliveries, receipts and transfers to use nominal data rather than operating limits"
+function ref_nominal_flow_as_capacity!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
+
+    if _IM.ismultinetwork(data_it)
+        nws_data = data_it["nw"]
+    else
+        nws_data = Dict("0" => data_it)
+    end
+
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
+
+        for (i, delivery) in nw_ref[:delivery]           
+            if (delivery["withdrawal_nominal"] >= 0)           
+                delivery["withdrawal_max"] = delivery["withdrawal_nominal"]
+                delivery["withdrawal_min"] = max(0.0, delivery["withdrawal_min"])
+            else
+                delivery["withdrawal_max"] = min(0.0, delivery["withdrawal_max"]) 
+                delivery["withdrawal_min"] = delivery["withdrawal_nominal"]
+            end
+        end
+
+        for (i, receipt) in nw_ref[:receipt]
+            if (receipt["injection_nominal"] >= 0)
+                receipt["injection_max"] = receipt["injection_nominal"]
+                receipt["injection_min"] = max(0.0, receipt["injection_min"])
+            else
+                receipt["injection_max"] = min(0.0, receipt["injection_max"]) 
+                receipt["injection_min"] = receipt["injection_nominal"]
+            end
+        end
+
+        for (i, transfer) in nw_ref[:transfer]
+            if (transfer["withdrawal_nominal"] >= 0)
+                transfer["withdrawal_max"] = transfer["withdrawal_nominal"]
+                transfer["withdrawal_min"] = max(0.0, transfer["withdrawal_min"])
+            else
+                transfer["withdrawal_max"] = min(0.0, transfer["withdrawal_max"])
+                transfer["withdrawal_min"] = transfer["withdrawal_nominal"] 
+            end
+        end
+
+        for (i, storage) in nw_ref[:storage]
+            # force everything to be a withdrawal
+            if (storage["storage_nominal"] >= 0)
+                storage["flow_withdrawal_rate_max"] = storage["storage_nominal"]
+                storage["flow_withdrawal_rate_min"] = max(0.0, storage["flow_withdrawal_rate_min"])
+
+                storage["flow_injection_rate_max"]  = 0.0 
+                storage["flow_injection_rate_min"]  = 0.0 
+            else
+                storage["flow_injection_rate_max"]  = -storage["storage_nominal"] # need to flip the sign since injection is considered to be positive
+                storage["flow_injection_rate_min"]  = max(0.0, storage["flow_injection_rate_min"])
+
+                storage["flow_withdrawal_rate_max"] = 0.0 
+                storage["flow_withdrawal_rate_min"] = 0.0            
+            end
+        end
+
     end
 end
