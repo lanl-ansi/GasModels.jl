@@ -150,15 +150,37 @@ function expression_non_slack_affine_derivative(
     end
 end
 
+function _get_compressor_pipe(ref_pipe, compressor)
+    fr = compressor[:fr_junction]
+    to = compressor[:to_junction]
+
+    for (_, pipe) in ref_pipe
+        if pipe[:fr_junction] == fr && pipe[:to_junction] == to
+            return pipe
+        end
+    end
+
+    @_error("No pipe found for compressor from junction $fr to junction $to")
+end
+
 "compression power"
 function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool = false)
     comp_power = var(gm, nw)[:compressor_power_expr] = Dict{Int,Any}()
+
     for (i, compressor) in ref(gm, nw, :compressor)
         alpha = var(gm, nw, :compressor_ratio, i)
         f = var(gm, nw, :compressor_flow, i)
-        m = (gm.ref[:it][gm_it_sym][:specific_heat_capacity_ratio] - 1) /
-            gm.ref[:it][gm_it_sym][:specific_heat_capacity_ratio]
-        W = 286.76 * gm.ref[:it][gm_it_sym][:temperature] / gm.ref[:it][gm_it_sym][:gas_specific_gravity] / m
-        var(gm, nw, :compressor_power_expr)[i] = JuMP.@expression(gm.model, W * abs(f) * (alpha^m - 1.0))
+
+        gamma = gm.ref[:it][gm_it_sym][:specific_heat_capacity_ratio]
+        m = (gamma - 1) / gamma
+
+        pipe = ref(gm, nw, :pipe, i)
+        if !haskey(pipe, :temperature)
+            @_error("temperature missing from pipe $i while building compressor power expression")
+        end
+
+        W = 286.76 * pipe[:temperature] / gm.ref[:it][gm_it_sym][:gas_specific_gravity] / m
+
+        comp_power[i] = JuMP.@expression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
 end
