@@ -199,7 +199,7 @@
         @test GasModels.get_flow_partition(data["pipe"]["1"], -4.0, 6.0) ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
         @test GasModels.get_flow_partition(data["pipe"]["2"], 1.0, 5.0) == [1.0, 2.0, 3.0, 4.0, 5.0]
         @test GasModels.get_flow_partition(data["resistor"]["1"], -3.0, 3.0) == [-3.0, -1.0, 0.0, 1.0, 3.0]
-    
+    end
     @testset "check english units in csv file" begin
         gas_file = CASE6PATH
         transient_file = "../test/data/transient/time-series-case-6a-english.csv"
