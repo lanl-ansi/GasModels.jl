@@ -188,8 +188,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, 
 
     fmf_l = JuMP.@variable(gm.model)
 
-    @assert f_min != f_max "Expansion modeling does not support this case yet"
-    if w == 0.0
+    if (w == 0.0) || ((f_min == 0) && (f_max == 0))
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else
