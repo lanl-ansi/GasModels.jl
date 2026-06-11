@@ -35,7 +35,7 @@ module GasModels
     end
 
     function _meta_formatter(level::Logging.LogLevel, _module, args...)
-        return Logging.default_logcolor(level), "$(_module) | $level]:", ""
+        return Logging.default_logcolor(level), "$(_module) | $level ]:", ""
     end
 
     function logger_config!(level::Logging.LogLevel)
