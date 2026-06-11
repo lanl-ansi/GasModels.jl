@@ -13,6 +13,7 @@ end
     mn_data = parse_multinetwork("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
+    # very bad test, you should not be checking non-dimensionlized objective value, this will keep changing with non-dimensionalization 
     @test isapprox(result["objective"], -16708.421, atol = 1e-1) 
 end
 
@@ -21,6 +22,7 @@ end
     add_solution_hints!(mn_data, elevation_solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED 
+    # very bad test, you should not be checking non-dimensionlized objective value, this will keep changing with non-dimensionalization 
     @test isapprox(result["objective"], -25216.73, atol = 1e-1) 
 end
 
@@ -29,6 +31,7 @@ end
     add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
+    # very bad test, you should not be checking non-dimensionlized objective value, this will keep changing with non-dimensionalization 
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) #
 end
 
@@ -52,5 +55,6 @@ end
     add_solution_hints!(mn_data, solution_file)
     result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
     @test result["termination_status"] == LOCALLY_SOLVED
+    # very bad test, you should not be checking non-dimensionlized objective value, this will keep changing with non-dimensionalization 
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
 end

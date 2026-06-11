@@ -25,7 +25,7 @@ function variable_density(
 end
 
 "variables associated with compressor mass flow (transient)"
-function variable_compressor_flow(
+function variable_compressor_flow_transient(
     gm::AbstractGasModel,
     nw::Int = nw_id_default;
     bounded::Bool = true,

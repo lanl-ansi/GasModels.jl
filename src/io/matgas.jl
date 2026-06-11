@@ -341,24 +341,21 @@ function parse_m_string(data_string::String)
         case["source_version"] = "0.0.0+"
     end
 
-    required_metadata_names = [
+    exhaustive_metadata_names = [
+        "mgc.temperature", 
         "mgc.gas_specific_gravity",
         "mgc.specific_heat_capacity_ratio",
-        "mgc.temperature",
-        "mgc.compressibility_factor",
-        "mgc.units",
-    ]
-
-    optional_metadata_names = [
-        "mgc.name",
-        "mgc.sound_speed",
-        "mgc.R",
+        "mgc.base_length", 
+        "mgc.base_velocity", 
         "mgc.base_pressure",
-        "mgc.base_length",
-        "mgc.per_unit",
-        "mgc.gas_molar_mass",
-        "mgc.economic_weighting",
-    ]
+        "mgc.base_density",
+        "mgc.units", 
+        "mgc.economic_weighting", 
+        "mgc.is_per_unit"]
+
+    defaults_exhaustive = [288.706, 0.6, 1.3, 5000.0, NaN, NaN, NaN, "si", 1.0, false]
+
+    required_metadata_names = ["mgc.units"]
 
     for data_name in required_metadata_names
         (data_name == "mgc.units") && (continue)
@@ -386,22 +383,23 @@ function parse_m_string(data_string::String)
         Possible values are 1 (SI) or 2 (English units)"))
     end
 
-    # handling optional meta data names
-    if haskey(matlab_data, "mgc.base_pressure")
-        case["base_pressure"] = matlab_data["mgc.base_pressure"]
-    else
-        @_warn(
-            "no base_pressure found in .m file.
-This value will be auto-assigned based on the pressure limits provided in the data"
-        )
-    end
 
-    if haskey(matlab_data, "mgc.base_length")
-        case["base_length"] = matlab_data["mgc.base_length"]
-    else
-        @_warn string("no base_length found in .m file.
-            This value will be auto-assigned based on the pipe data")
-    end
+    for (i, name) in enumerate(exhaustive_metadata_names)
+        (name in required_metadata_names) && (continue)
+        (name == "mgc.is_per_unit") && (continue)
+        if haskey(matlab_data, name)
+            case[name[5:end]] = matlab_data[name]
+        else 
+            if name == "mgc.economic_weighting" 
+                @_warn(string(
+                    "economic_weighting value set to 1.0; the transient ogf
+                    objective is economic_weighting * (load shed) +
+                    (1-economic_weighting) * (compressor power)",
+                ))
+            end 
+            case[name[5:end]] = defaults_exhaustive[i]
+        end 
+    end 
 
     if haskey(matlab_data, "mgc.is_per_unit")
         case["per_unit"] = matlab_data["mgc.is_per_unit"]
@@ -424,25 +422,13 @@ This value will be auto-assigned based on the pressure limits provided in the da
     end
 
     if haskey(matlab_data, "mgc.sound_speed")
-        case["sound_speed"] = matlab_data["mgc.sound_speed"]
-    else
-        # v = sqrt(R_g * T); R_g = R/M_g = R/M_a/G; R_g is specific gas constant; g-gas, a-air
-        molecular_mass = case["gas_molar_mass"] # kg/mol
-        T = case["temperature"] # K
-        R = case["R"] # J/mol/K
-        case["sound_speed"] = sqrt(R * T / molecular_mass) # m/s
-    end
-
-    if haskey(matlab_data, "mgc.economic_weighting")
-        case["economic_weighting"] = matlab_data["mgc.economic_weighting"]
-    else
-        case["economic_weighting"] = 1.0
-        @_warn(
-            "economic_weighting value set to 1.0; the transient ogf
-objective is economic_weighting * (load shed) +
-(1-economic_weighting) * (compressor power)",
-        )
-    end
+        @_warn(string("the user need not provide sound_speed, this will be calculated"))
+    end 
+    # v = sqrt(R_g * T); R_g = R/M_g = R/M_a/G; R_g is specific gas constant; g-gas, a-air
+    molecular_mass = case["gas_molar_mass"] # kg/mol
+    T = case["temperature"] # K
+    R = case["R"] # J/mol/K
+    case["sound_speed"] = sqrt(R * T / molecular_mass) # m/s
 
     if haskey(matlab_data, "mgc.sources")
         sources = []

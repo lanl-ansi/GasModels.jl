@@ -27,7 +27,7 @@ function build_transient_ogf_archived_storage(gm::AbstractGasModel)
             variable_density(gm, n)
 
             # compressor variables
-            variable_compressor_flow(gm, n)
+            variable_compressor_flow_transient(gm, n)
             variable_c_ratio(gm, n)
             variable_compressor_power(gm, n)
 

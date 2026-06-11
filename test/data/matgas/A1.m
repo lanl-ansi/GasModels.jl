@@ -1,20 +1,10 @@
 function mgc = A1
 
 %% required global data
-mgc.gas_specific_gravity         = 0.6;
-mgc.specific_heat_capacity_ratio = 1.4;  % unitless
-mgc.temperature                  = 281.15;  % K
-mgc.compressibility_factor       = 0.8;  % unitless
 mgc.units                        = 'si';
 
 %% optional global data (that was either provided or computed based on required global data)
-mgc.gas_molar_mass               = 0.0186; % kg/mol
-mgc.R                            = 8.3140;  % J/(mol K)
-mgc.base_pressure                = 8000000;  % Pa
-mgc.base_length                  = 5000;  % m
-mgc.base_flow                    = 550
-mgc.is_per_unit                  = 0;
-mgc.sound_speed                  = 317.353652234;
+mgc.temperature                  = 281.15;  % K
 
 %% junction data
 % id	p_min	p_max	p_nominal	junction_type	status	pipeline_name	edi_id	lat	lon

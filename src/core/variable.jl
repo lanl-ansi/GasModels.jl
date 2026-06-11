@@ -2,7 +2,6 @@
 # The purpose of this file is to define commonly used and created variables used in gas flow models
 ##########################################################################################################
 
-
 "variables associated with (nonsquared) pressure"
 function variable_pressure(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     # Set to be used in the construction of pressures along resistors.

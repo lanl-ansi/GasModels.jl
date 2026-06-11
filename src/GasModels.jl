@@ -81,13 +81,14 @@ module GasModels
         return :(GasModels._log_if_level(() -> @info($msg), Logging.Info)) |> esc
     end
 
-    const _gm_global_keys = Set(["gas_specific_gravity", "specific_heat_capacity_ratio",
+    const _gm_global_keys = Set([
+        "gas_specific_gravity", "specific_heat_capacity_ratio",
         "temperature", "sound_speed", "compressibility_factor", "R",
-        "base_pressure", "base_length", "base_flow", "base_time",
-        "base_flux", "base_density", "base_diameter", "base_volume", "base_mass",
+        "base_pressure", "base_length", "base_flow", "base_time", "base_velocity",
+        "base_flux", "base_density", "base_diameter", "base_volume", "base_mass", "base_area", 
+        "ideal_coeffs", "b1", "b2", "non_ideal_coeffs",
         "units", "per_unit", "english_units", "si_units",
-        "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass",
-        "economic_weighting"])
+        "num_time_points", "time_step", "num_physical_time_points", "gas_molar_mass", "economic_weighting"])
 
     const acceleration_gravity = 9.81
     const gm_it_name = "gm"
@@ -125,15 +126,19 @@ module GasModels
     include("core/unit_converters.jl")
     include("core/data.jl")
     include("core/variable.jl")
+    include("core/variable_unified.jl")
     include("core/transient_variable.jl")
     include("core/transient_expression.jl")
     include("core/constraint_transient.jl")
     include("core/constraint_template_transient.jl")
     include("core/constraint.jl")
+    include("core/constraint_unified.jl")
     include("core/constraint_template.jl")
+    include("core/constraint_template_unified.jl")
     include("core/constraint_mi.jl")
     include("core/constraint_template_mi.jl")
     include("core/objective.jl")
+    include("core/objective_unified.jl")
     include("core/solution.jl")
     include("core/ref.jl")
     include("core/storage_archived.jl")
@@ -152,6 +157,7 @@ module GasModels
     include("prob/ls.jl")
     include("prob/nels.jl")
     include("prob/ogf.jl")
+    include("prob/ogf_unified.jl")
     include("prob/ogf_comp_power_unconstrained.jl")
     include("prob/ogf_comp_power_proxy.jl")
     include("prob/ogf_comp_power_and_pipe_proxy.jl")

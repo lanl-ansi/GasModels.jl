@@ -3,7 +3,7 @@
 
 Parses the IOStream of a file into a GasModels data structure.
 """
-function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false, correct_slack_nodes::Bool = false)
+function parse_file(io::IO; filetype::AbstractString = "m", skip_correct::Bool = false, correct_slack_nodes::Bool = true)
     if filetype == "m"
         gm_data = GasModels.parse_matgas(io)
     elseif filetype == "json"
@@ -102,15 +102,16 @@ function correct_network_data!(data::Dict{String,Any}, slack_nodes::Bool = false
     check_non_zero(data)
     check_rouge_junction_ids(data)
     correct_p_mins!(data)
+    add_base_values!(data)
 
     per_unit_data_field_check!(data)
     add_compressor_fields!(data)
 
     make_si_units!(data)
-    check_soundspeed!(data)
+    add_pipe_fields!(data)
+    # check_soundspeed!(data)
     # select_largest_component!(data)
     propagate_topology_status!(data)
-    add_base_values!(data)
     make_per_unit!(data)
 
     # Assumes everything is in per unit.

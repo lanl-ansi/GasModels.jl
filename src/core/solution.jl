@@ -16,6 +16,125 @@ function sol_component_value(aim::AbstractGasModel, n::Int, comp_name::Symbol, f
     return _IM.sol_component_value(aim, gm_it_sym, n, comp_name, field_name, comp_ids, variables)
 end
 
+function get_potential(gm::AbstractGasModel, x)
+    b1, b2 = gm.data["non_ideal_coeffs"]
+    return b1 * x^2/2.0 + b2 * x^3/3.0 
+end 
+
+function find_ub(gm::AbstractGasModel, val::Float64, ub::Float64)::Float64
+    @assert ub > 0
+    while get_potential(gm, ub) < val
+        ub = 1.5 * ub
+    end 
+    return ub
+end 
+
+function find_lb(gm::AbstractGasModel,val::Float64, lb::Float64)::Float64
+    @assert lb < 0
+    while get_potential(gm, lb) > val
+        lb = 1.5 * lb
+    end 
+    return lb
+end 
+
+function bisect(gm::AbstractGasModel, lb::Float64, ub::Float64, val::Float64)::Float64  
+    @assert ub > lb
+    mb = 1.0
+    while (ub - lb) > 1e-7
+        mb = (ub + lb) / 2.0
+        if get_potential(gm, mb) > val
+            ub = mb
+        else
+            lb = mb 
+        end
+    end
+    return mb
+end
+
+invert_positive_potential(gm::AbstractGasModel, val) = bisect(gm, 0.0, find_ub(gm, val, 1.0), val)
+invert_negative_potential(gm::AbstractGasModel, val) = bisect(gm, find_lb(gm, val, -1.0), 0.0, val)
+invert_potential(gm::AbstractGasModel, val) = (val >= 0) ? invert_positive_potential(gm, val) : invert_negative_potential(gm, val)
+
+function sol_pressure!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][gm_it_name])
+    end
+
+    for (n, nw_data) in nws_data
+        if haskey(nw_data, "junction")
+            for (i, junction) in nw_data["junction"]
+                if haskey(junction, "potential")
+                    junction["pressure"] = invert_potential(gm, junction["potential"])
+                end
+            end
+        end
+    end
+end 
+
+function sol_compressor_ratio!(gm, solution::Dict)
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][gm_it_name])
+    end
+
+    for (n, nw_data) in nws_data
+        for (i, compressor) in get(nw_data, "compressor", [])
+            fr_junction = ref(gm, parse(Int64, n), :compressor, parse(Int64, i))["fr_junction"]
+            to_junction = ref(gm, parse(Int64, n), :compressor, parse(Int64, i))["to_junction"]
+            type = get(ref(gm, parse(Int64, n), :compressor, parse(Int64, i)), "directionality", 0)
+            ratio = nw_data["junction"][string(to_junction)]["pressure"] /
+                nw_data["junction"][string(fr_junction)]["pressure"]
+            if type == 0 
+                compressor["c_ratio"] = (ratio < 1) ? 1/ratio : ratio
+            else 
+                compressor["c_ratio"] = ratio 
+            end 
+        end
+    end
+end 
+
+function sol_compressor_power!(gm, solution::Dict)
+
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_data = solution["it"][gm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][gm_it_name])
+    end
+
+    gamma = get_specific_heat_capacity_ratio(gm.data)
+    T = get_temperature(gm.data)
+    G = get_gas_specific_gravity(gm.data)
+    mul_constant = gamma / (gamma - 1) * 286.0 / G * T
+    exponent = (gamma - 1) / gamma
+    # drawing a secant between 1 and 1.4 and moving it up to 1.2 to make it an inner approxation of (r^exponent -1)
+    g = x -> x^(0.5 * exponent) - 1 # potential space
+    slope = (g(1.96) - g(1)) / (1.96 - 1)
+    unshifted_secant = x -> slope * (x - 1)
+    shift = g(1.44) - unshifted_secant(1.44)
+    m = round(slope; digits=6)
+    delta = round(shift; digits=6)
+    for (n, nw_data) in nws_data
+        for (i, compressor) in get(nw_data, "compressor", [])
+            flow = compressor["flow"]
+            fr_junction = ref(gm, parse(Int64, n), :compressor, parse(Int64, i))["fr_junction"]
+            to_junction = ref(gm, parse(Int64, n), :compressor, parse(Int64, i))["to_junction"]
+            type = get(ref(gm, parse(Int64, n), :compressor, parse(Int64, i)), "directionality", 0)
+            tmp_ratio = nw_data["junction"][string(to_junction)]["potential"] /
+                nw_data["junction"][string(fr_junction)]["potential"]
+            if type == 0 
+                ratio = (tmp_ratio < 1) ? 1/tmp_ratio : tmp_ratio
+            else 
+                ratio = tmp_ratio
+            end 
+            power_consumed = mul_constant * abs(flow) * (m * (ratio - 1) + delta)
+            compressor["power"] = power_consumed
+        end
+    end
+end 
+
 
 function sol_psqr_to_p!(gm::AbstractGasModel, solution::Dict)
     if haskey(solution["it"][gm_it_name], "nw")
