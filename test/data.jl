@@ -122,4 +122,15 @@
         @test length(gas_data["sources"]) == 1
         @test gas_data["sources"][1]["name"] == "test" && gas_data["sources"][1]["agreement_year"] == 2020
     end
+    
+    @testset "check english units in csv file" begin
+        gas_file = CASE6PATH
+        transient_file = "../test/data/transient/time-series-case-6a-english.csv"
+        case = parse_files(gas_file, transient_file)
+        make_si_units!(case)
+        @test case["units"] == "si"
+        @test !case["english_units"]
+        @test !case["per_unit"]
+        @test case["si_units"]
+    end
 end
