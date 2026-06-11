@@ -144,8 +144,6 @@ function sol_status_zero_components!(gm::AbstractGasModel, solution::Dict)
         for (comp_name, defaults) in STATUS_ZERO_DEFAULTS
             _backfill_status_zero_components!(gm, n, nw_data, nw_sol, comp_name, defaults)
         end
-
-        _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
     end
 end
 
@@ -181,38 +179,64 @@ function _status_zero_missing_ids(
     return out
 end
 
+function _status_zero_neutral_pressure(data_comp::Dict)
+    if haskey(data_comp, "p")
+        return data_comp["p"]
+    elseif haskey(data_comp, "psqr")
+        return sqrt(max(0.0, data_comp["psqr"]))
+    end
+
+    p_min = get(data_comp, "p_min", nothing)
+    p_max = get(data_comp, "p_max", nothing)
+
+    if p_min !== nothing && p_max !== nothing
+        #split diff between min and max
+        return 0.5 * (p_min + p_max)
+    elseif p_min !== nothing
+        return p_min
+    elseif p_max !== nothing
+        return p_max
+    else
+        return 1.0 #was 0.0 before
+    end
+end
+
+function _status_zero_neutral_pressure(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    return _status_zero_neutral_pressure(data_comp)
+end
+
+function _status_zero_neutral_pressure_sqr(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    if haskey(data_comp, "psqr")
+        return data_comp["psqr"]
+    else
+        return _status_zero_neutral_pressure(data_comp)^2
+    end
+end
+
+function _status_zero_default_value(default, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    return default
+end
+
+function _status_zero_default_value(default::Function, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    return default(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+end
+
 const STATUS_ZERO_DEFAULTS = Dict(
-    :pipe => Dict("f" => 0.0),
-    :compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr" => 1.0),
+    :junction => Dict("p" => _status_zero_neutral_pressure, "psqr" => _status_zero_neutral_pressure_sqr),
+    :pipe => Dict("f" => 0.0, "f_plus_pipe" => 0.0, "f_minus_pipe" => 0.0, "y" => 0.0),
+    :compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr" => 1.0, "y" => 0.0),
+    :resistor => Dict("f" => 0.0, "y" => 0.0),
+    :loss_resistor => Dict("f" => 0.0, "y" => 0.0), #extra comps added for future safety
+    :short_pipe => Dict("f" => 0.0, "y" => 0.0),
+    :valve => Dict("f" => 0.0, "v" => 0.0, "y" => 0.0),
+    :regulator => Dict("f" => 0.0, "r" => 1.0, "v" => 0.0, "y" => 0.0),
+    :ne_pipe => Dict("f" => 0.0, "f_plus_ne_pipe" => 0.0, "f_minus_ne_pipe" => 0.0, "z" => 0.0, "y" => 0.0),
+    :ne_compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr_ne" => 1.0, "z" => 0.0, "y" => 0.0),
     :transfer => Dict("ft" => 0.0),
     :receipt => Dict("fg" => 0.0),
     :delivery => Dict("fd" => 0.0),
+    :storage => Dict("withdrawal" => 0.0),
 )
-
-function _backfill_status_zero_junctions!(gm, n, nw_data, nw_sol)
-    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, :junction)
-    isempty(ids0) && return
-
-    data_comps = nw_data["junction"]
-    sol_comps = get!(nw_sol, "junction", Dict{String,Any}())
-
-    for i in ids0
-        k = string(i)
-        dat = data_comps[k]
-        sol = get!(sol_comps, k, Dict{String,Any}())
-
-        sol["status"] = 0
-
-        if haskey(dat, "psqr")
-            sol["psqr"] = dat["psqr"]
-        end
-        if haskey(dat, "p")
-            sol["p"] = dat["p"]
-        elseif haskey(sol, "psqr")
-            sol["p"] = sqrt(max(0.0, sol["psqr"]))
-        end
-    end
-end
 
 function _backfill_status_zero_components!(
     gm::AbstractGasModel,
@@ -226,14 +250,17 @@ function _backfill_status_zero_components!(
     isempty(ids0) && return
 
     comp_key = string(comp_name)
+    data_comps = nw_data[comp_key]
     sol_comps = get!(nw_sol, comp_key, Dict{String,Any}())
 
     for i in ids0
-        sol = get!(sol_comps, string(i), Dict{String,Any}())
+        k = string(i)
+        data_comp = data_comps[k]
+        sol = get!(sol_comps, k, Dict{String,Any}())
         sol["status"] = 0
 
-        for (var, value) in defaults
-            sol[var] = value
+        for (var, default) in defaults
+            sol[var] = _status_zero_default_value(default, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
         end
     end
 end

@@ -32,6 +32,7 @@ end
 @testset "deactivated components in solution" begin
     mn_data = parse_files("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6b.csv", spatial_discretization = 1e4, additional_time = 0.0)
     mn_data["nw"]["1"]["junction"]["1"]["status"] = 0
+    p_default = 0.5 * (mn_data["nw"]["1"]["junction"]["1"]["p_min"] + mn_data["nw"]["1"]["junction"]["1"]["p_max"])
     result = run_model(mn_data, 
         WPGasModel, 
         nlp_solver, 
@@ -41,6 +42,9 @@ end
         )
     @test result["termination_status"] == LOCALLY_SOLVED
     @test haskey(result["solution"]["nw"]["1"]["junction"], "1")
+    @test result["solution"]["nw"]["1"]["junction"]["1"]["status"] == 0
+    @test result["solution"]["nw"]["1"]["junction"]["1"]["p"] == p_default
+    @test result["solution"]["nw"]["1"]["junction"]["1"]["psqr"] == p_default^2
 end
 
 @testset "transient time-periodic withdrawal case" begin

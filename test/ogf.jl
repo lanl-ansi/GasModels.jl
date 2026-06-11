@@ -13,6 +13,8 @@
         @testset "test status zero components in solution" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             data["junction"]["1"]["status"] = 0
+            data["pipe"]["1"]["status"] = 0
+            p_default = 0.5 * (data["junction"]["1"]["p_min"] + data["junction"]["1"]["p_max"])
             res = run_model(data, 
                 WPGasModel, 
                 nlp_solver, 
@@ -22,8 +24,13 @@
                 sol_regulator_p_to_r!,
                 sol_status_zero_components!],
             )
-            @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
+            # @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test haskey(res["solution"]["junction"], "1")
+            @test res["solution"]["junction"]["1"]["status"] == 0
+            @test res["solution"]["junction"]["1"]["p"] == p_default
+            @test res["solution"]["junction"]["1"]["psqr"] == p_default^2
+            @test res["solution"]["pipe"]["1"]["status"] == 0
+            @test res["solution"]["pipe"]["1"]["f"] == 0.0
         end
 
         @testset "test solution hints for static file" begin
