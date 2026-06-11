@@ -6,6 +6,7 @@ import Logging
 GasModels.silence()
 
 import JuMP
+import JSON
 
 import Ipopt
 import HiGHS
@@ -43,7 +44,10 @@ nlp_solver = ipopt_solver
 include("common.jl")
 
 @testset "GasModels" begin
+    include("matgaswriter.jl")
+  
     include("transient.jl")
+  
     include("contingency.jl")
 
     include("data.jl")

@@ -41,6 +41,80 @@
             @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test isapprox(res["objective"], -167.19, rtol=1e-2)
         end
+        
+        @testset "test is_dispatchable zero components in solution" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+
+            data["transfer"]["1"]["is_dispatchable"] = 0
+
+            res = run_model(
+                data,
+                WPGasModel,
+                nlp_solver,
+                build_ogf;
+                solution_processors = [
+                    sol_psqr_to_p!,
+                    sol_compressor_p_to_r!,
+                    sol_regulator_p_to_r!,
+                    sol_is_dispatchable_zero_components!,
+                ],
+            )
+
+            @test res["primal_status"] in [MathOptInterface.FEASIBLE_POINT]
+            @test haskey(res["solution"]["transfer"], "1")
+        end
+
+        @testset "test normalize solution base values from data" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            result = solve_ogf(data, WPGasModel, nlp_solver)
+            make_si_units!(result["solution"])
+
+            result_pu = deepcopy(result)
+            result_pu["solution"]["base_flow"] = result_pu["solution"]["base_flow"] * 2.0
+            make_per_unit!(result_pu["solution"])
+            pu_solution = GasModels.normalize_solution_base_values!(result_pu, data)
+
+            @test pu_solution === result_pu["solution"]
+            @test pu_solution["si_units"] == true
+            @test pu_solution["per_unit"] == false
+            @test pu_solution["base_flow"] == data["base_flow"]
+            @test isapprox(pu_solution["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
+
+            result_si = deepcopy(result["solution"])
+            result_si["base_flow"] = result_si["base_flow"] * 2.0
+            sol_root = GasModels.normalize_solution_base_values!(result_si, data)
+
+            @test sol_root === result_si
+            @test result_si["si_units"] == true
+            @test result_si["per_unit"] == false
+            @test result_si["base_flow"] == data["base_flow"]
+            @test isapprox(result_si["receipt"]["1"]["fg"], result["solution"]["receipt"]["1"]["fg"], atol=1e-6)
+        end
+
+        @testset "test primal feasibility report from solution file" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
+            solution_file = "../test/data/transient/case6_base_solution.json"
+            report = GasModels.primal_feasibility_report(gm, solution_file; atol = 1e-6)
+            @test isempty(report)
+
+            solution = JSON.parsefile(solution_file)
+            solution["solution"]["junction"]["1"]["psqr"] *= 0.95
+            report = GasModels.primal_feasibility_report(gm, solution; atol = 1e-6)
+            @test !isempty(report)
+        end
+
+        @testset "test primal feasibility report with compressor ratio auxiliaries" begin
+            data = GasModels.parse_file("../test/data/matgas/direction.m")
+            data["compressor"]["20"]["directionality"] = 0
+
+            result = solve_ogf(data, WPGasModel, juniper_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+
+            gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
+            report = GasModels.primal_feasibility_report(gm, result; atol = 1e-6, skip_missing=true)
+            @test isempty(report)
+        end
 
         @testset "case 6 ogf" begin
             @_info "Testing OGF"

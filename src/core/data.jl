@@ -81,7 +81,7 @@ function _estimate_standard_density(data::Dict{String,<:Any})
 end
 
 "apply a function on a dict entry"
-function _apply_func!(data::Dict{String,Any}, key::String, func)
+function _apply_func!(data::AbstractDict{String,Any}, key::String, func)
     if haskey(data, key)
         data[key] = func(data[key])
     end
@@ -238,9 +238,9 @@ const _params_for_unit_conversions = Dict(
         "net_injection",
         "net_nodal_edge_out_flow",
         "elevation",
-        "lam_junction_mfb"
+        "lam_junction_mfb",
     ],
-    "original_junction" => ["p_min", "p_max", "p_nominal", "p"],
+    "original_junction" => ["p_min", "p_max", "p_nominal", "p", "elevation"],
     "pipe" => [
         "length",
         "p_min",

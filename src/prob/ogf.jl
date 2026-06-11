@@ -19,14 +19,16 @@ function solve_ogf(data::AbstractDict, model_type::DataType, optimizer; kwargs..
 end
 
 
-"entry point into running the nominal ogf problem"
-#TODO: could use better documentation of what this problem is
+"Helper function to run a version of the OGF problem which uses nominal values as bounds on gas consumption and production rather than
+the physical engineering bounds on consumption and production. This allows the seperatation of engineering limits from a specific proposed
+usage scenario"
 function solve_ogf_nominal(file, model_type, optimizer; kwargs...)
     return run_model(
         file,
         model_type,
         optimizer,
-        build_ogf_nominal;
+        build_ogf;
+        ref_extensions = [ref_nominal_flow_as_capacity!],
         solution_processors = [
             sol_psqr_to_p!,
             sol_compressor_p_to_r!,
@@ -126,78 +128,3 @@ function build_ogf(gm::AbstractGasModel)
 
 end
 
-function build_ogf_nominal(gm::AbstractGasModel)
-    bounded_compressors = Dict(
-        x for x in ref(gm, :compressor) if
-        _calc_is_compressor_energy_bounded(
-            get_specific_heat_capacity_ratio(gm.data),
-            get_gas_specific_gravity(gm.data),
-            get_temperature(gm.data),
-            x.second
-        )
-    )
-
-    variable_pressure(gm)
-    variable_pressure_sqr(gm)
-    variable_flow(gm)
-    variable_on_off_operation(gm)
-    variable_load_mass_flow(gm, is_nominal=true)
-    variable_production_mass_flow(gm, is_nominal=true)
-    variable_transfer_mass_flow(gm, is_nominal=true)
-    variable_compressor_ratio_sqr(gm)
-    variable_storage(gm)
-    variable_form_specific(gm)
-
-    objective_min_economic_costs(gm, is_nominal=true)
-
-    for (i, junction) in ref(gm, :junction)
-        constraint_mass_flow_balance(gm, i, is_nominal=true)
-
-        if (junction["junction_type"] == 1)
-            constraint_pressure(gm, i)
-        end
-    end
-
-    for i in ids(gm, :pipe)
-        constraint_pipe_pressure(gm, i)
-        constraint_pipe_mass_flow(gm, i)
-        constraint_pipe_weymouth(gm, i)
-    end
-
-    for i in ids(gm, :resistor)
-        constraint_resistor_pressure(gm, i)
-        constraint_resistor_mass_flow(gm,i)
-        constraint_resistor_darcy_weisbach(gm,i)
-    end
-
-    for i in ids(gm, :loss_resistor)
-        constraint_loss_resistor_pressure(gm, i)
-        constraint_loss_resistor_mass_flow(gm, i)
-    end
-
-    for i in ids(gm, :short_pipe)
-        constraint_short_pipe_pressure(gm, i)
-        constraint_short_pipe_mass_flow(gm, i)
-    end
-
-    for i in ids(gm, :compressor)
-        constraint_compressor_ratios(gm, i)
-        constraint_compressor_mass_flow(gm, i)
-        constraint_compressor_ratio_value(gm, i)
-    end
-
-    for i in keys(bounded_compressors)
-        constraint_compressor_energy(gm, i)
-    end
-
-    for i in ids(gm, :valve)
-        constraint_on_off_valve_mass_flow(gm, i)
-        constraint_on_off_valve_pressure(gm, i)
-    end
-
-    for i in ids(gm, :regulator)
-        constraint_on_off_regulator_mass_flow(gm, i)
-        constraint_on_off_regulator_pressure(gm, i)
-    end
-
-end
