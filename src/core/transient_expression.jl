@@ -175,11 +175,12 @@ function expression_compressor_power(gm::AbstractGasModel, nw::Int; report::Bool
         m = (gamma - 1) / gamma
 
         pipe = ref(gm, nw, :pipe, i)
-        if !haskey(pipe, :temperature)
+        # @show pipe
+        if !haskey(pipe, "temperature")
             @_error("temperature missing from pipe $i while building compressor power expression")
         end
 
-        W = 286.76 * pipe[:temperature] / gm.ref[:it][gm_it_sym][:gas_specific_gravity] / m
+        W = 286.76 * pipe["temperature"] / gm.ref[:it][gm_it_sym][:gas_specific_gravity] / m
 
         comp_power[i] = JuMP.@expression(gm.model, W * abs(f) * (alpha^m - 1.0))
     end
