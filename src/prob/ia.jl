@@ -305,18 +305,23 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
     ft = var(gm, n, :ft)
     fs = var(gm, n, :well_head_flow)
 
-    cstr_mfb = _add_constraint!(gm, n, :junction_mass_flow_balance, i, JuMP.@constraint(gm.model, fg_constant - fl_constant + sum(fg[a] for a in receipts) - sum(fl[a] for a in deliveries) - sum(ft[a] for a in transfers) - sum(fs[a] for a in storages) ==
-                                                                            sum(f_pipe[a] for a in f_pipes) - sum(f_pipe[a] for a in t_pipes) +
-                                                                            sum(f_compressor[a] for a in f_compressors) - sum(f_compressor[a] for a in t_compressors) +
-                                                                            sum(f_resistor[a] for a in f_resistors) - sum(f_resistor[a] for a in t_resistors) +
-                                                                            sum(f_loss_resistor[a] for a in f_loss_resistors) - sum(f_loss_resistor[a] for a in t_loss_resistors) +
-                                                                            sum(f_short_pipe[a] for a in f_short_pipes) - sum(f_short_pipe[a] for a in t_short_pipes) +
-                                                                            sum(f_valve[a] for a in f_valves) - sum(f_valve[a] for a in t_valves) +
-                                                                            sum(f_regulator[a] for a in f_regulators) - sum(f_regulator[a] for a in t_regulators)
+
+    _add_constraint!(gm, n, :junction_mass_flow_balance_1, i, JuMP.@constraint(gm.model, - sum(l_fg_n[a] for a in receipts) - sum(l_fl_p[a] for a in deliveries) - sum(l_ft_p[a] for a in transfers) - sum(l_fs_p[a] for a in storages) >=
+                                                                            -sum(l_f_pipe_n[a] for a in f_pipes) - sum(l_f_pipe_p[a] for a in t_pipes) 
+                                                                            - sum(l_f_compressor_n[a] for a in f_compressors) - sum(l_f_compressor_p[a] for a in t_compressors)
                                                                         ))
-    if _IM.report_duals(gm)
-        sol(gm, n)[:junction][i][:lam_junction_mfb] = cstr_mfb
-    end
+    _add_constraint!(gm, n, :junction_mass_flow_balance_2, i, JuMP.@constraint(gm.model, sum(l_fg_p[a] for a in receipts) + sum(l_fl_n[a] for a in deliveries) + sum(l_ft_n[a] for a in transfers) + sum(l_fs_n[a] for a in storages) <=
+                                                                            sum(l_f_pipe_p[a] for a in f_pipes) + sum(l_f_pipe_n[a] for a in t_pipes) +
+                                                                            sum(l_f_compressor_p[a] for a in f_compressors) + sum(l_f_compressor_n[a] for a in t_compressors)
+                                                                        ))
+    
+
+
+#TODO 
+#Define variables 
+#Take care of 
+# 1. Constants
+# 2. Sign changes, especially transfers and storages
 end
 
 #TODO
