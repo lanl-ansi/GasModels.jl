@@ -157,7 +157,7 @@ module GasModels
     include("prob/ogf_comp_power_and_pipe_proxy.jl")
     include("prob/transient_ogf.jl")
     include("prob/transient_ogf_archived_storage.jl")
-
+    include("prob/ia.jl")
 
     include("io/diagnostics.jl")
 
