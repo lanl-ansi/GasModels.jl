@@ -158,13 +158,13 @@ function variable_ia(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=
         [i in ids(gm, nw, :compressor)],
         base_name="$(nw)_l_f_compressor_p",
     )
-    report && sol_component_value(gm, nw, :pipe, :l_f_compressor_p, ids(gm, nw, :compressor), l_f_compressor_p)
+    report && sol_component_value(gm, nw, :compressor, :l_f_compressor_p, ids(gm, nw, :compressor), l_f_compressor_p)
     ## compressor_n
     l_f_compressor_n = var(gm, nw)[:l_f_compressor_n] = JuMP.@variable(gm.model,
         [i in ids(gm, nw, :compressor)],
         base_name="$(nw)_l_f_compressor_n",
     )
-    report && sol_component_value(gm, nw, :pipe, :l_f_compressor_n, ids(gm, nw, :compressor), l_f_compressor_n)
+    report && sol_component_value(gm, nw, :compressor, :l_f_compressor_n, ids(gm, nw, :compressor), l_f_compressor_n)
 
     # compression ratio square
     # cr_p
@@ -182,6 +182,76 @@ function variable_ia(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=
         # start=comp_start_value(ref(gm, nw, :compressor), i, "ratio_start", 1.0)
     )
     report && sol_component_value(gm, nw, :compressor, :l_a2_n, keys(compressors), l_a2_n)
+
+    # receipts, deliveries, transfers & storage
+    l_fg_p = var(gm, nw)[:l_fg_p] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_receipt)],
+        base_name="$(nw)_l_fg_p",
+        )
+
+    if report
+        sol_component_value(gm, nw, :receipt, :l_fg_p, ids(gm, nw, :dispatchable_receipt), l_fg_p)
+    end
+
+    l_fg_n = var(gm, nw)[:l_fg_n] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_receipt)],
+        base_name="$(nw)_l_fg_n",
+        )
+
+    if report
+        sol_component_value(gm, nw, :receipt, :l_fg_n, ids(gm, nw, :dispatchable_receipt), l_fg_n)
+    end
+
+    l_fl_p = var(gm, nw)[:l_fl_p] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_delivery)],
+        base_name="$(nw)_l_fl_p",
+    )
+
+    if report
+        sol_component_value(gm, nw, :delivery, :l_fd_p, ids(gm, nw, :dispatchable_delivery), l_fl_p)
+    end
+
+    l_fl_n = var(gm, nw)[:l_fl_n] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_delivery)],
+        base_name="$(nw)_l_fl_n",
+    )
+
+    if report
+        sol_component_value(gm, nw, :delivery, :l_fd_n, ids(gm, nw, :dispatchable_delivery), l_fl_n)
+    end
+
+
+
+    l_ft_p = var(gm, nw)[:l_ft_p] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_transfer)],
+        base_name="$(nw)_l_ft_p",
+    )
+
+    if report
+        sol_component_value(gm, nw, :transfer, :l_ft_p, ids(gm, nw, :dispatchable_transfer), l_ft_p)
+    end
+
+
+    l_ft_n = var(gm, nw)[:l_ft_n] = JuMP.@variable(gm.model,
+        [i in ids(gm,nw,:dispatchable_transfer)],
+        base_name="$(nw)_l_ft_n",
+    )
+
+    if report
+        sol_component_value(gm, nw, :transfer, :l_ft_n, ids(gm, nw, :dispatchable_transfer), l_ft_n)
+    end
+
+    l_f_wh_p = var(gm, nw)[:l_well_head_flow_p] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head_p")
+
+    if report
+        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:l_withdrawal_p,ids(gm, nw, :storage),l_f_wh_p)
+    end
+
+    l_f_wh_n = var(gm, nw)[:l_well_head_flow_n] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head_n")
+
+    if report
+        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:l_withdrawal_n,ids(gm, nw, :storage),l_f_wh_n)
+    end
 end
 
 "Template: pipe weymouth ia"
@@ -291,20 +361,21 @@ function constraint_ia_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id
     constraint_ia_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
 end
 
-"Constraint: standard flow balance equation where demand and production are variables"
-function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, storages, flmin, flmax, fgmin, fgmax)
-    f_pipe = var(gm, n, :f_pipe)
-    f_compressor = var(gm, n, :f_compressor)
-    f_resistor = var(gm, n, :f_resistor)
-    f_loss_resistor = var(gm, n, :f_loss_resistor)
-    f_short_pipe = var(gm, n, :f_short_pipe)
-    f_valve = var(gm, n, :f_valve)
-    f_regulator = var(gm, n, :f_regulator)
-    fg = var(gm, n, :fg)
-    fl = var(gm, n, :fl)
-    ft = var(gm, n, :ft)
-    fs = var(gm, n, :well_head_flow)
-
+"Constraint: IA flow balance equation where demand and production are variables"
+function constraint_ia_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, storages, flmin, flmax, fgmin, fgmax)
+    l_f_pipe_p = var(gm, n, :l_f_pipe_p)
+    l_f_pipe_n = var(gm, n, :l_f_pipe_n)
+    l_f_compressor_p = var(gm, n, :l_f_compressor_p)
+    l_f_compressor_n = var(gm, n, :l_f_compressor_n)
+    
+    l_fg_p = var(gm, n, :l_fg_p)
+    l_fg_n = var(gm, n, :l_fg_n)
+    l_fl_p = var(gm, n, :l_fl_p)
+    l_fl_n = var(gm, n, :l_fl_n)
+    l_ft_p = var(gm, n, :l_ft_p)
+    l_ft_n = var(gm, n, :l_ft_n)
+    l_fs_p = var(gm, n, :l_well_head_flow_p)
+    l_fs_n = var(gm, n, :l_well_head_flow_n)
 
     _add_constraint!(gm, n, :junction_mass_flow_balance_1, i, JuMP.@constraint(gm.model, - sum(l_fg_n[a] for a in receipts) - sum(l_fl_p[a] for a in deliveries) - sum(l_ft_p[a] for a in transfers) - sum(l_fs_p[a] for a in storages) >=
                                                                             -sum(l_f_pipe_n[a] for a in f_pipes) - sum(l_f_pipe_p[a] for a in t_pipes) 
@@ -314,14 +385,7 @@ function constraint_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, 
                                                                             sum(l_f_pipe_p[a] for a in f_pipes) + sum(l_f_pipe_n[a] for a in t_pipes) +
                                                                             sum(l_f_compressor_p[a] for a in f_compressors) + sum(l_f_compressor_n[a] for a in t_compressors)
                                                                         ))
-    
 
-
-#TODO 
-#Define variables 
-#Take care of 
-# 1. Constants
-# 2. Sign changes, especially transfers and storages
 end
 
 #TODO
@@ -346,13 +410,13 @@ function build_ia(gm::AbstractGasModel)
     @info "Added variables"
     # objective_min_economic_costs(gm)
 
-    # for (i, junction) in ref(gm, :junction)
-    #     constraint_ia_mass_flow_balance(gm, i)
+    for (i, junction) in ref(gm, :junction)
+        constraint_ia_mass_flow_balance(gm, i)
 
     #     if (junction["junction_type"] == 1)
     #         constraint_ia_pressure(gm, i)
     #     end
-    # end
+    end
 
     for i in ids(gm, :pipe)
         # constraint_pipe_pressure(gm, i)
