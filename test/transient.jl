@@ -45,6 +45,7 @@ end
     @test result["solution"]["nw"]["1"]["junction"]["1"]["status"] == 0
     @test result["solution"]["nw"]["1"]["junction"]["1"]["p"] == 0
     @test result["solution"]["nw"]["1"]["junction"]["1"]["psqr"] == 0
+    #comparison issues here
 end
 
 @testset "transient time-periodic withdrawal case" begin
