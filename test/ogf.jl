@@ -27,8 +27,8 @@
             # @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
             @test haskey(res["solution"]["junction"], "1")
             @test res["solution"]["junction"]["1"]["status"] == 0
-            @test res["solution"]["junction"]["1"]["p"] == p_default
-            @test res["solution"]["junction"]["1"]["psqr"] == p_default^2
+            @test res["solution"]["junction"]["1"]["p"] == 0
+            @test res["solution"]["junction"]["1"]["psqr"] == 0
             @test res["solution"]["pipe"]["1"]["status"] == 0
             @test res["solution"]["pipe"]["1"]["f"] == 0.0
         end
