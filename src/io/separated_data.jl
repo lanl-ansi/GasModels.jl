@@ -70,16 +70,6 @@ function _parse_csv(
     return nominations
 end
 
-const _NOMINATION_FLOW_COLUMNS = Set([
-    "injection_nominal",
-    "withdrawal_nominal",
-])
-
-const _NOMINATION_PRICE_COLUMNS = Set([
-    "offer_price",
-    "bid_price",
-])
-
 function _apply_nominations!(
     gm_static_data::AbstractDict{String, <:Any},
     bnds::AbstractDict{String, <:Any},
@@ -96,11 +86,6 @@ function _apply_nominations!(
 
             for (col_name, val) in entry
                 if col_name in _NOMINATION_FLOW_COLUMNS
-                    gm_static_data[field][id][col_name] = val / base_flow
-                elseif col_name in _NOMINATION_PRICE_COLUMNS
-                    gm_static_data[field][id][col_name] = val
-                else
-                    # fallback to plain value with no scaling
                     gm_static_data[field][id][col_name] = val
                 end
             end
@@ -124,5 +109,6 @@ function parse_separated_data(m_file::String, static_csv::String)::Dict{String, 
 
     @assert length(nominations) == 1 "Error: more than one timestep detected in the csv file. Use parse_files or parse_multinetwork instead"
     _apply_nominations!(case, nominations[0])
+    make_per_unit!(case)
     return case
 end
