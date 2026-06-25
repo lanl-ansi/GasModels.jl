@@ -281,6 +281,7 @@ const _params_for_unit_conversions = Dict(
         "p_max",
         "p_nominal",
         "p",
+        "psqr",
         "pressure",
         "density",
         "net_injection",
@@ -400,12 +401,13 @@ const _params_for_unit_conversions = Dict(
     ],
 )
 
-function _rescale_functions(rescale_pressure::Function, rescale_density::Function, rescale_length::Function, rescale_diameter::Function, rescale_flow::Function, rescale_mass::Function, rescale_inv_flow::Function)::Dict{String,Function}
+function _rescale_functions(rescale_pressure::Function, rescale_pressure_sqr::Function, rescale_density::Function, rescale_length::Function, rescale_diameter::Function, rescale_flow::Function, rescale_mass::Function, rescale_inv_flow::Function)::Dict{String,Function}
     Dict{String,Function}(
         "p_min" => rescale_pressure,
         "p_max" => rescale_pressure,
         "p_nominal" => rescale_pressure,
         "p" => rescale_pressure,
+        "psqr" => rescale_pressure_sqr,
         "inlet_p_min" => rescale_pressure,
         "inlet_p_max" => rescale_pressure,
         "outlet_p_min" => rescale_pressure,
@@ -477,6 +479,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x / get_base_flow(data)
     rescale_inv_flow = x -> x * get_base_flow(data)
     rescale_pressure = x -> x / get_base_pressure(data)
+    rescale_pressure_sqr = x -> x / get_base_pressure(data)^2
     rescale_density = x -> x / get_base_density(data)
     rescale_length = x -> x / get_base_length(data)
     rescale_time = x -> x / get_base_time(data)
@@ -484,6 +487,7 @@ function si_to_pu!(data::Dict{String,<:Any}; id = "0")
     rescale_diameter = x -> x / get_base_diameter(data)
     functions = _rescale_functions(
         rescale_pressure,
+        rescale_pressure_sqr,
         rescale_density,
         rescale_length,
         rescale_diameter,
@@ -526,6 +530,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_flow = x -> x * get_base_flow(data)
     rescale_inv_flow = x -> x / get_base_flow(data)
     rescale_pressure = x -> x * get_base_pressure(data)
+    rescale_pressure_sqr = x -> x * get_base_pressure(data)^2
     rescale_density = x -> x * get_base_density(data)
     rescale_length = x -> x * get_base_length(data)
     rescale_time = x -> x * get_base_time(data)
@@ -533,6 +538,7 @@ function pu_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_diameter = x -> x * get_base_diameter(data)
     functions = _rescale_functions(
         rescale_pressure,
+        rescale_pressure_sqr,
         rescale_density,
         rescale_length,
         rescale_diameter,
@@ -577,10 +583,12 @@ function si_to_english!(data::Dict{String,<:Any}; id = "0")
     rescale_mass = x -> x / get_mmscfd_to_kgps_conversion_factor(data) / 86400.0
     rescale_density = x -> x
     rescale_pressure = pascal_to_psi
+    rescale_pressure_sqr = x -> x * pascal_to_psi(1.0)^2
     rescale_length = m_to_miles
     rescale_diameter = m_to_inches
     functions = _rescale_functions(
         rescale_pressure,
+        rescale_pressure_sqr,
         rescale_density,
         rescale_length,
         rescale_diameter,
@@ -624,10 +632,12 @@ function english_to_si!(data::Dict{String,<:Any}; id = "0")
     rescale_mass = x -> x * get_mmscfd_to_kgps_conversion_factor(data) * 86400.0
     rescale_density = x -> x
     rescale_pressure = psi_to_pascal
+    rescale_pressure_sqr = x -> x * psi_to_pascal(1.0)^2
     rescale_length = miles_to_m
     rescale_diameter = inches_to_m
     functions = _rescale_functions(
         rescale_pressure,
+        rescale_pressure_sqr,
         rescale_density,
         rescale_length,
         rescale_diameter,
