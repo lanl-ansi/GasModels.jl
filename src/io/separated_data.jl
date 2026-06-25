@@ -70,6 +70,16 @@ function _parse_csv(
     return nominations
 end
 
+const _NOMINATION_FLOW_COLUMNS = Set([
+    "injection_nominal",
+    "withdrawal_nominal",
+])
+
+const _NOMINATION_PRICE_COLUMNS = Set([
+    "offer_price",
+    "bid_price",
+])
+
 function _apply_nominations!(
     gm_static_data::AbstractDict{String, <:Any},
     bnds::AbstractDict{String, <:Any},
@@ -81,11 +91,18 @@ function _apply_nominations!(
     base_flow = gm_static_data["base_flow"]
 
     for field in _NOMINATION_ASSET_TYPES
-        # Use get() with an empty Dict as a default to handle missing fields gracefully
         for (id, entry) in get(bnds, field, Dict())
             !haskey(gm_static_data[field], id) && continue
+
             for (col_name, val) in entry
-                gm_static_data[field][id][col_name] = val / base_flow
+                if col_name in _NOMINATION_FLOW_COLUMNS
+                    gm_static_data[field][id][col_name] = val / base_flow
+                elseif col_name in _NOMINATION_PRICE_COLUMNS
+                    gm_static_data[field][id][col_name] = val
+                else
+                    # fallback to plain value with no scaling
+                    gm_static_data[field][id][col_name] = val
+                end
             end
         end
     end
