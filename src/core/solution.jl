@@ -129,7 +129,7 @@ const _IS_DISPATCHABLE_ZERO_DEFAULTS = Dict(
     :transfer => Dict("ft" => "withdrawal_nominal"),
 )
 
-function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Dict)
+function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Dict, value::Number=NaN)
     if haskey(solution["it"][gm_it_name], "nw")
         nws_sol = solution["it"][gm_it_name]["nw"]
     else
@@ -280,40 +280,6 @@ function _status_zero_missing_ids(
     return out
 end
 
-function _status_zero_neutral_pressure(data_comp::Dict)
-    if haskey(data_comp, "p")
-        return data_comp["p"]
-    elseif haskey(data_comp, "psqr")
-        return sqrt(max(0.0, data_comp["psqr"]))
-    end
-
-    p_min = get(data_comp, "p_min", nothing)
-    p_max = get(data_comp, "p_max", nothing)
-
-    if p_min !== nothing && p_max !== nothing
-        #split diff between min and max
-        return 0.5 * (p_min + p_max)
-    elseif p_min !== nothing
-        return p_min
-    elseif p_max !== nothing
-        return p_max
-    else
-        return 1.0 #was 0.0 before
-    end
-end
-
-function _status_zero_neutral_pressure(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
-    return _status_zero_neutral_pressure(data_comp)
-end
-
-function _status_zero_neutral_pressure_sqr(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
-    if haskey(data_comp, "psqr")
-        return data_comp["psqr"]
-    else
-        return _status_zero_neutral_pressure(data_comp)^2
-    end
-end
-
 function _status_zero_default_value(default, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
     return default
 end
@@ -323,7 +289,7 @@ function _status_zero_default_value(default::Function, gm, n, nw_data, nw_sol, c
 end
 
 const STATUS_ZERO_DEFAULTS = Dict(
-    :junction => Dict("p" => _status_zero_neutral_pressure, "psqr" => _status_zero_neutral_pressure_sqr),
+    :junction => Dict("p" => 0.0, "psqr" => 0.0),
     :pipe => Dict("f" => 0.0, "f_plus_pipe" => 0.0, "f_minus_pipe" => 0.0, "y" => 0.0),
     :compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr" => 1.0, "y" => 0.0),
     :resistor => Dict("f" => 0.0, "y" => 0.0),
