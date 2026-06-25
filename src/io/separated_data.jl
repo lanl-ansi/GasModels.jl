@@ -85,9 +85,7 @@ function _apply_nominations!(
             !haskey(gm_static_data[field], id) && continue
 
             for (col_name, val) in entry
-                if col_name in _NOMINATION_FLOW_COLUMNS
-                    gm_static_data[field][id][col_name] = val
-                end
+                gm_static_data[field][id][col_name] = val
             end
         end
     end
