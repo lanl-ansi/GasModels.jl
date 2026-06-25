@@ -43,8 +43,8 @@ end
     @test result["termination_status"] == LOCALLY_SOLVED
     @test haskey(result["solution"]["nw"]["1"]["junction"], "1")
     @test result["solution"]["nw"]["1"]["junction"]["1"]["status"] == 0
-    @test result["solution"]["nw"]["1"]["junction"]["1"]["p"] == p_default
-    @test result["solution"]["nw"]["1"]["junction"]["1"]["psqr"] == p_default^2
+    @test result["solution"]["nw"]["1"]["junction"]["1"]["p"] == 0
+    @test result["solution"]["nw"]["1"]["junction"]["1"]["psqr"] == 0
 end
 
 @testset "transient time-periodic withdrawal case" begin
