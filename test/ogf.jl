@@ -9,6 +9,29 @@
             GasModels.make_si_units!(result["solution"])
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 123.68219; atol = 1e-2)
         end
+        
+        @testset "test status zero components in solution" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+            data["junction"]["1"]["status"] = 0
+            data["pipe"]["1"]["status"] = 0
+            p_default = 0.5 * (data["junction"]["1"]["p_min"] + data["junction"]["1"]["p_max"])
+            res = run_model(data, 
+                WPGasModel, 
+                nlp_solver, 
+                build_ogf;
+                solution_processors=[sol_psqr_to_p!,
+                sol_compressor_p_to_r!,
+                sol_regulator_p_to_r!,
+                sol_status_zero_components!],
+            )
+            # @test res["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
+            @test haskey(res["solution"]["junction"], "1")
+            @test res["solution"]["junction"]["1"]["status"] == 0
+            @test res["solution"]["junction"]["1"]["p"] == 0
+            @test res["solution"]["junction"]["1"]["psqr"] == 0
+            @test res["solution"]["pipe"]["1"]["status"] == 0
+            @test res["solution"]["pipe"]["1"]["f"] == 0.0
+        end
 
         @testset "test solution hints for static file" begin
             data = GasModels.parse_file("../test/data/matgas/case-6.m")

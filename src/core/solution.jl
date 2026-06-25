@@ -10,6 +10,7 @@ function _IM.solution_preprocessor(gm::AbstractGasModel, solution::Dict)
     solution["it"][gm_it_name]["base_mass"] = gm.ref[:it][gm_it_sym][:base_mass]
 end
 
+# const LAST_SOL_ARG = Ref{Any}(nothing)
 
 "GasModels wrapper for the InfrastructureModels `sol_component_value` function."
 function sol_component_value(aim::AbstractGasModel, n::Int, comp_name::Symbol, field_name::Symbol, comp_ids, variables)
@@ -128,9 +129,7 @@ const _IS_DISPATCHABLE_ZERO_DEFAULTS = Dict(
     :transfer => Dict("ft" => "withdrawal_nominal"),
 )
 
-function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Dict)
-    @_info("[dispatchable-zero] entered processor")
-
+function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Dict, value::Number=NaN)
     if haskey(solution["it"][gm_it_name], "nw")
         nws_sol = solution["it"][gm_it_name]["nw"]
     else
@@ -159,8 +158,6 @@ function sol_is_dispatchable_zero_components!(gm::AbstractGasModel, solution::Di
             )
         end
     end
-
-    @_info("[dispatchable-zero] finished processor")
 end
 
 function _is_dispatchable_zero_missing_ids(
@@ -202,11 +199,7 @@ function _backfill_is_dispatchable_zero_components!(
     defaults::Dict{String,String},
 )
     ids0 = _is_dispatchable_zero_missing_ids(gm, n, nw_data, nw_sol, comp_name)
-
-    if isempty(ids0)
-        @_info(string("[dispatchable-zero] no components to backfill for ", comp_name, " on network ", n))
-        return
-    end
+    isempty(ids0) && return
 
     comp_key = string(comp_name)
     data_comps = nw_data[comp_key]
@@ -226,18 +219,115 @@ function _backfill_is_dispatchable_zero_components!(
         for (sol_var, data_field) in defaults
             if haskey(dat, data_field)
                 sol[sol_var] = dat[data_field]
-            else
-                @_info(string(
-                    "[dispatchable-zero]   MISSING required data field ",
-                    data_field,
-                    " for ",
-                    comp_key,
-                    " ",
-                    k,
-                ))
             end
         end
+    end
+end
 
-        @_info(string("[dispatchable-zero]   final sol entry: ", sol))
+function sol_status_zero_components!(gm::AbstractGasModel, solution::Dict)
+    if haskey(solution["it"][gm_it_name], "nw")
+        nws_sol = solution["it"][gm_it_name]["nw"]
+    else
+        nws_sol = Dict("0" => solution["it"][gm_it_name])
+    end
+
+    nws_data =
+        if get(gm.data, "multinetwork", false)
+            gm.data["nw"]
+        else
+            Dict("0" => gm.data)
+        end
+
+    for (n_str, nw_sol) in nws_sol
+        n = parse(Int, n_str)
+        nw_data = nws_data[n_str]
+
+        for (comp_name, defaults) in STATUS_ZERO_DEFAULTS
+            _backfill_status_zero_components!(gm, n, nw_data, nw_sol, comp_name, defaults)
+        end
+    end
+end
+
+function _status_zero_missing_ids(
+    gm::AbstractGasModel,
+    n::Int,
+    nw_data::Dict,
+    nw_sol::Dict,
+    comp_name::Symbol,
+)
+    comp_key = string(comp_name)
+
+    if !haskey(nw_data, comp_key)
+        return Int[]
+    end
+
+    data_comps = nw_data[comp_key]
+    sol_comps = get(nw_sol, comp_key, Dict{String,Any}())
+
+    ref_ids = Set(ids(gm, n, comp_name))
+    out = Int[]
+
+    for (k, data_comp) in data_comps
+        i = parse(Int, k)
+
+        if get(data_comp, "status", 1) == 0 &&
+           !(i in ref_ids) &&
+           !haskey(sol_comps, k)
+            push!(out, i)
+        end
+    end
+
+    return out
+end
+
+function _status_zero_default_value(default, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    return default
+end
+
+function _status_zero_default_value(default::Function, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+    return default(gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+end
+
+const STATUS_ZERO_DEFAULTS = Dict(
+    :junction => Dict("p" => 0.0, "psqr" => 0.0),
+    :pipe => Dict("f" => 0.0, "f_plus_pipe" => 0.0, "f_minus_pipe" => 0.0, "y" => 0.0),
+    :compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr" => 1.0, "y" => 0.0),
+    :resistor => Dict("f" => 0.0, "y" => 0.0),
+    :loss_resistor => Dict("f" => 0.0, "y" => 0.0), #extra comps added for future safety
+    :short_pipe => Dict("f" => 0.0, "y" => 0.0),
+    :valve => Dict("f" => 0.0, "v" => 0.0, "y" => 0.0),
+    :regulator => Dict("f" => 0.0, "r" => 1.0, "v" => 0.0, "y" => 0.0),
+    :ne_pipe => Dict("f" => 0.0, "f_plus_ne_pipe" => 0.0, "f_minus_ne_pipe" => 0.0, "z" => 0.0, "y" => 0.0),
+    :ne_compressor => Dict("f" => 0.0, "r" => 1.0, "rsqr_ne" => 1.0, "z" => 0.0, "y" => 0.0),
+    :transfer => Dict("ft" => 0.0),
+    :receipt => Dict("fg" => 0.0),
+    :delivery => Dict("fd" => 0.0),
+    :storage => Dict("withdrawal" => 0.0),
+)
+
+function _backfill_status_zero_components!(
+    gm::AbstractGasModel,
+    n::Int,
+    nw_data::Dict,
+    nw_sol::Dict,
+    comp_name::Symbol,
+    defaults::Dict{String,<:Any},
+)
+    ids0 = _status_zero_missing_ids(gm, n, nw_data, nw_sol, comp_name)
+    isempty(ids0) && return
+
+    comp_key = string(comp_name)
+    data_comps = nw_data[comp_key]
+    sol_comps = get!(nw_sol, comp_key, Dict{String,Any}())
+
+    for i in ids0
+        k = string(i)
+        data_comp = data_comps[k]
+        sol = get!(sol_comps, k, Dict{String,Any}())
+        sol["status"] = 0
+
+        for (var, default) in defaults
+            sol[var] = _status_zero_default_value(default, gm, n, nw_data, nw_sol, comp_name, i, data_comp)
+        end
     end
 end
