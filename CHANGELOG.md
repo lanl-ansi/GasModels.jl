@@ -3,6 +3,9 @@
 ## staged 
 - nothing
 
+## v0.13.2
+- Add: ability to include deactivated (status=0) components in the solution dictionary. This is a solution processor that must be manually added to the processors list in `run_model`, and is not user-facing in `solve_ogf`. 
+
 ## v0.13.1
 - Add optional function to correct slack nodes in static OGF. If `correct_slack_nodes` == true in the OGF function call, active components are found, existing slack junctions are skipped, and a new slack is chosen for junctions that lack one. 
 

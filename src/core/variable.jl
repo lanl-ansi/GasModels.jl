@@ -328,6 +328,12 @@ end
 
 #     flow_bounds(transfer) = is_nominal ? minmax(0.0, transfer["withdrawal_nominal"]) :
 #         (transfer["withdrawal_min"], transfer["withdrawal_max"])
+# end
+        
+        
+
+#     flow_bounds(transfer) = is_nominal ? minmax(0.0, transfer["withdrawal_nominal"]) :
+#         (transfer["withdrawal_min"], transfer["withdrawal_max"])
 
 function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     flow_start(transfer)  =  transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"]
