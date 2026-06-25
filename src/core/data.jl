@@ -35,6 +35,54 @@ end
 @inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
 @inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
 
+function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
+    if f_min > f_max
+        error("expected f_min <= f_max, got [$f_min, $f_max]")
+    end
+
+    if f_min == f_max
+        return [float(f_min)]
+    end
+
+    zero_requires_new_breakpoint = f_min < 0 < f_max
+
+    if zero_requires_new_breakpoint && num_breakpoints == 0
+        error("Relaxations require`num_breakpoints` to be at least 1 when 0 is inside the interval and not an endpoint")
+    end
+
+    num_nonzero_breakpoints = zero_requires_new_breakpoint ? num_breakpoints - 1 : num_breakpoints
+    partition = float.(collect(range(f_min, f_max; length = num_nonzero_breakpoints + 2)))
+
+    if zero_requires_new_breakpoint
+        partition = sort(unique(vcat(partition, 0.0)))
+    end
+
+    return partition
+end
+
+
+function get_flow_partition(component::Dict{String, <:Any}, f_min::Real, f_max::Real)
+    num_breakpoints = get(component, "num_flow_breakpoints", f_min < 0 < f_max ? 1 : 0)
+    return build_flow_partition(f_min, f_max, num_breakpoints)
+end
+
+
+const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor"]
+
+
+function set_flow_partitions!(data::Dict{String, <:Any}, num_breakpoints::Int)
+    gm_data = get_gm_data(data)
+
+    num_breakpoints >= 0 || error("`num_breakpoints` must be nonnegative")
+
+    for component_type in _flow_partition_component_types
+        for (_, component) in get(gm_data, component_type, [])
+            component["num_flow_breakpoints"] = num_breakpoints
+        end
+    end
+
+    return data
+end
 
 "calculates base_pressure"
 function calc_base_pressure(data::Dict{String,<:Any})
@@ -339,12 +387,12 @@ const _params_for_unit_conversions = Dict(
         "f",
         "p_loss",
         "flow_min",
-        "flow_max"
+        "flow_max",
     ],
     "resistor" => [
         "f",
         "flow_min",
-        "flow_max"
+        "flow_max",
     ],
     "valve" => [
         "flow_min",
