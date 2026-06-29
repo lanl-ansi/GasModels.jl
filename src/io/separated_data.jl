@@ -81,11 +81,11 @@ function _apply_nominations!(
     base_flow = gm_static_data["base_flow"]
 
     for field in _NOMINATION_ASSET_TYPES
-        # Use get() with an empty Dict as a default to handle missing fields gracefully
         for (id, entry) in get(bnds, field, Dict())
             !haskey(gm_static_data[field], id) && continue
+
             for (col_name, val) in entry
-                gm_static_data[field][id][col_name] = val / base_flow
+                gm_static_data[field][id][col_name] = val
             end
         end
     end
@@ -107,5 +107,6 @@ function parse_separated_data(m_file::String, static_csv::String)::Dict{String, 
 
     @assert length(nominations) == 1 "Error: more than one timestep detected in the csv file. Use parse_files or parse_multinetwork instead"
     _apply_nominations!(case, nominations[0])
+    make_per_unit!(case)
     return case
 end
