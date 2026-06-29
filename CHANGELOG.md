@@ -3,6 +3,9 @@
 ## staged 
 - nothing
 
+## v0.13.3
+- Bug Fix: corrects unit conversion in `parse_separated_data` and the upstream function `apply_nominations`. The previous code, described in Issue #344, incorrectly applied a per-unit conversion to price data. 
+
 ## v0.13.2
 - Add: ability to include deactivated (status=0) components in the solution dictionary. This is a solution processor that must be manually added to the processors list in `run_model`, and is not user-facing in `solve_ogf`. 
 
