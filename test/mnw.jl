@@ -54,3 +54,19 @@ end
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
 end
+
+@testset "test multi network as a set of n indepedent steady-states solved as one large optimization problem" begin
+    mn_data = parse_multinetwork("../test/data/matgas/case-6.m", 
+                                "../test/data/transient/time-series-case-6a.csv", 
+                                time_step=864.0)
+    
+    result = GasModels._solve_mn_ogf(mn_data, WPGasModel, nlp_solver)
+    @test result["termination_status"] == LOCALLY_SOLVED
+    @test isapprox(result["objective"], -16876.54423, atol = 1e-3)
+    
+    # verify that each network has a different solution
+    make_si_units!(result["solution"])
+    @test isapprox(result["solution"]["nw"]["1"]["transfer"]["1"]["ft"], 11.826, atol = 1e-2)
+    @test isapprox(result["solution"]["nw"]["2"]["transfer"]["1"]["ft"], 12.225, atol = 1e-2)
+
+end
