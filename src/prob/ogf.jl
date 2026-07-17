@@ -40,26 +40,6 @@ function solve_ogf_nominal(file, model_type::DataType, optimizer; kwargs...)
     )
 end
 
-"Entry point for solving a multi network ogf.  This is an inefficient model as there are no coupling constraints between the networks, so 
-a more effective approach is to solve each network individually.  This model is here to provide regression testing on a simple multi network model"
-function _solve_mn_ogf(file, model_type::DataType, optimizer; kwargs...)
-    solution_processors = [
-        sol_psqr_to_p!,
-        sol_compressor_p_to_r!,
-        sol_regulator_p_to_r!,
-    ]
-
-    return run_model(
-        file,
-        model_type,
-        optimizer,
-        _build_mn_ogf;
-        solution_processors = solution_processors,
-        kwargs...,
-    )
-end
-
-
 ""
 function solve_soc_ogf(file, optimizer; kwargs...)
     return solve_ogf(file, CRDWPGasModel, optimizer; kwargs...)
@@ -71,8 +51,10 @@ function solve_dwp_ogf(file, optimizer; kwargs...)
     return solve_ogf(file, DWPGasModel, optimizer; kwargs...)
 end
 
-"construct the ogf problem for a specific network in ref"
-function _build_ogf(gm::AbstractGasModel; nws = [nw_id_default])
+"construct the ogf problem for specific networks in ref"
+function build_ogf(gm::AbstractGasModel)
+    nws = haskey(gm.setting, "config") ? get(gm.setting["config"], "networks", [nw_id_default]) : [nw_id_default]
+
     for nw in nws
         bounded_compressors = Dict(
             x for x in ref(gm, :compressor; nw=nw) if
@@ -149,13 +131,3 @@ function _build_ogf(gm::AbstractGasModel; nws = [nw_id_default])
     objective_min_economic_costs(gm, nws)
 end
 
-
-"Standard OGF formulation for a single network"
-function build_ogf(gm::AbstractGasModel)
-    _build_ogf(gm)
-end
-
-"Simple multi network OGF model for regression testing of multi network features"
-function _build_mn_ogf(gm::AbstractGasModel)
-    _build_ogf(gm, nws = nw_ids(gm))
-end
