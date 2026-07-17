@@ -122,7 +122,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
 
     # prices are already normalized by base_flow, so we also need to normalize compressor power by base_flow in the objective
     z = JuMP.@variable(gm.model)
-    JuMP.@constraint(gm.model, z >= sum(
+    c = JuMP.@constraint(gm.model, z >= sum(
                                           economic_weighting * sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) +
                                           economic_weighting *
                                           sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) +
@@ -130,7 +130,7 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
                                           (1.0 - economic_weighting) *
                                           sum(abs(f[n][i]) * (r[n][i]^m - 1) * work * base_flow for (i, compressor) in ref(gm, n, :compressor))
                                           for n in nws
-                                       ))
+                                       )) 
     return JuMP.@objective(gm.model, Min, z)
 end
 

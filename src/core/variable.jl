@@ -312,28 +312,13 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
     if report
         sol_component_value(gm, nw, :delivery, :fd, ids(gm, nw, :dispatchable_delivery), fl)
 
-        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
-            density = get_data_gm((x -> return x["standard_density"]), gm.data)
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data; apply_to_subnetworks = false)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data; apply_to_subnetworks = false)
             sol_ql = Dict(i => fl[i] / density for i in ids(gm, nw, :dispatchable_delivery))
             sol_component_value(gm, nw, :delivery, :qd, ids(gm, nw, :dispatchable_delivery), sol_ql)
         end
     end
 end
-
-
-# "variables associated with transfer"
-# function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, is_nominal::Bool=false)
-#     flow_start(transfer) = is_nominal ? transfer["withdrawal_nominal"] :
-#         (transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"])
-
-#     flow_bounds(transfer) = is_nominal ? minmax(0.0, transfer["withdrawal_nominal"]) :
-#         (transfer["withdrawal_min"], transfer["withdrawal_max"])
-# end
-        
-        
-
-#     flow_bounds(transfer) = is_nominal ? minmax(0.0, transfer["withdrawal_nominal"]) :
-#         (transfer["withdrawal_min"], transfer["withdrawal_max"])
 
 function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
     flow_start(transfer)  =  transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"]
@@ -356,8 +341,8 @@ function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default
     if report
         sol_component_value(gm, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
 
-        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
-            density = get_data_gm((x -> return x["standard_density"]), gm.data)
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data; apply_to_subnetworks = false)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data; apply_to_subnetworks = false)
             sol_qt = Dict(i => ft[i] / density for i in ids(gm, nw, :dispatchable_transfer))
             sol_component_value(gm, nw, :transfer, :qt, ids(gm, nw, :dispatchable_transfer), sol_qt)
         end
@@ -386,8 +371,8 @@ function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_defau
     if report
         sol_component_value(gm, nw, :receipt, :fg, ids(gm, nw, :dispatchable_receipt), fg)
 
-        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data)
-            density = get_data_gm((x -> return x["standard_density"]), gm.data)
+        if get_data_gm((x -> return haskey(x, "standard_density")), gm.data; apply_to_subnetworks = false)
+            density = get_data_gm((x -> return x["standard_density"]), gm.data; apply_to_subnetworks = false)
             sol_qg = Dict(i => fg[i] / density for i in ids(gm, nw, :dispatchable_receipt))
             sol_component_value(gm, nw, :receipt, :qg, ids(gm, nw, :dispatchable_receipt), sol_qg)
         end

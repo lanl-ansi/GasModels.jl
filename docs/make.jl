@@ -28,6 +28,7 @@ makedocs(
                 "Objective" => "objective.md",
                 "Variables" => "variables.md",
                 "Constraints" => "constraints.md",
+                "Settings" => "settings.md",
             ],
             "Transient Specifications" => "transient-specifications.md",
             "File IO" => "parser.md",
