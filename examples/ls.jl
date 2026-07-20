@@ -61,7 +61,6 @@
     @testset "test gaslib 40 wp priority" begin
         @_info "Testing gaslib wp ls priority gaslib 40"
         result = run_ls("../examples/data/matgas/gaslib-40-E-ls-priority.m", WPGasModel, nlp_solver)
-        println(result["termination_status"])
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == :Suboptimal
         @test isapprox(result["objective"] * result["solution"]["base_flow"], 378.82; atol = 1e-1)
     end

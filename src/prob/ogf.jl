@@ -40,6 +40,25 @@ function solve_ogf_nominal(file, model_type::DataType, optimizer; kwargs...)
     )
 end
 
+"Helper function to run a version of the OGF problem which eliminates constraints and objectives related to compressor power"
+function solve_ogf_comp_power_unconstrained(file, model_type, optimizer; kwargs...)
+     return run_model(
+        file,
+        model_type,
+        optimizer,
+        build_ogf;
+        ref_extensions = [ref_disregard_compressor_energy!],
+        solution_processors = [
+            sol_psqr_to_p!,
+            sol_compressor_p_to_r!,
+            sol_regulator_p_to_r!,
+        ],
+        kwargs...,
+    )
+end
+
+
+
 ""
 function solve_soc_ogf(file, optimizer; kwargs...)
     return solve_ogf(file, CRDWPGasModel, optimizer; kwargs...)

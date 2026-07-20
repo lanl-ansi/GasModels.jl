@@ -209,3 +209,32 @@ function ref_nominal_flow_as_capacity!(ref::Dict{Symbol,<:Any}, data::Dict{Strin
 
     end
 end
+
+"adjusts energy parameters of a model so they are no longer considered"
+function ref_disregard_compressor_energy!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
+
+    if _IM.ismultinetwork(data_it)
+        nws_data = data_it["nw"]
+    else
+        nws_data = Dict("0" => data_it)
+    end
+
+    gamma = get_specific_heat_capacity_ratio(data)
+    G     = get_gas_specific_gravity(data)
+    T     = get_temperature(data)
+    work  = _calc_compressor_work(gamma, G, T)
+
+    ref[:it][gm_it_sym][:economic_weighting] = 1.0    
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
+
+        for (i, compressor) in nw_ref[:compressor] 
+            max_ratio               = compressor["c_ratio_max"]
+            f_max                   = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
+            m                       = _calc_compressor_m_sqr(gamma, compressor)
+            compressor["power_max"] = max(compressor["power_max"], f_max * (max_ratio^2^m - 1) * work + 1.0)
+        end
+    end
+end
