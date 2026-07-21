@@ -33,7 +33,6 @@ end
 @inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; apply_to_subnetworks = false)
 @inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; apply_to_subnetworks = false)
 @inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
-@inline get_economic_weighting(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "economic_weighting", 1.0)), data; apply_to_subnetworks = false)
 
 function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
     if f_min > f_max

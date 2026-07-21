@@ -39,6 +39,7 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRDWP models"
 function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    #TODO why not applicable?
     pipe = ref(gm, n, :pipe, k)
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
@@ -68,6 +69,7 @@ end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRDWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    #TODO why not applicable?
     resistor = ref(gm, n, :resistor, k)
     f, y = var(gm, n, :f_resistor, k), var(gm, n, :y_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
@@ -93,11 +95,14 @@ end
 
 "Constraint: Define pressures across a resistor"
 function constraint_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+    #TODO Linear convex hull equations in wp.jl
 end
 
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64) end
+function constraint_loss_resistor_pressure(gm::AbstractLRDWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64) 
+    #TODO Linear convex hull equations in wp.jl
+end
 
 
 "Constraint: Weymouth equation"

@@ -18,6 +18,8 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRWP models"
 function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    #TODO why not applicable?
+
     pipe = ref(gm, n, :pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -39,6 +41,8 @@ end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
+        #TODO why not applicable?
+
     resistor = ref(gm, n, :resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
     f = var(gm, n, :f_resistor, k)
@@ -60,15 +64,20 @@ end
 
 "Constraint: Define pressures across a resistor"
 function constraint_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd_min::Float64, pd_max::Float64)
+    #TODO Linear convex hull equations in wp.jl
 end
 
 
 "Constraint: Constraints which define pressure drop across a loss resistor"
-function constraint_loss_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64) end
+function constraint_loss_resistor_pressure(gm::AbstractLRWPModel, n::Int, k::Int, i::Int, j::Int, pd::Float64) 
+    #TODO Linear convex hull equations in wp.jl
+end
 
 
 "Constraint: Compressor ratio constraints on pressure differentials--not applicable for LRWP models"
 function constraint_compressor_ratios(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, i_pmin, i_pmax, j_pmin, j_pmax, type)
+        #TODO why not applicable?
+
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_compressor, k)
@@ -146,6 +155,8 @@ end
 
 "constraints on pressure drop across control valves--not applicable for LRWP models"
 function constraint_on_off_regulator_pressure(gm::AbstractLRWPModel, n::Int, k, i, j, min_ratio, max_ratio, f_min, i_pmin, i_pmax, j_pmin, j_pmax)
+    #TODO why not applicable?
+
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     v = var(gm, n, :v_regulator, k)
