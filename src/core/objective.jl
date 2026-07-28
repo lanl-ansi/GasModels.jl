@@ -73,7 +73,7 @@ end
     \\sum_{ijk \\in {\\cal C}} \\boldsymbol{f}_{ijk} (\\boldsymbol{\\alpha}_{ijk}^m - 1)``"
 function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default])
     transfer_price(transfer) = transfer["withdrawal_min"] >= 0.0 ?
-        get(transfer, "bid_price", 1.0) : (-1) * get(transfer, "offer_price", 1.0)
+        get(transfer, "bid_price", 1.0) : (1) * get(transfer, "offer_price", 1.0)
 
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
