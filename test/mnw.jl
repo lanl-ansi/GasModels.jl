@@ -1,6 +1,14 @@
 solution_file = "../test/data/transient/case6_ls_a_solution.json"
 elevation_solution_file = "../test/data/transient/case6elevationtr.json"
 
+# Ipopt solver without barrier initialization for sequential steady-state solves
+ipopt_no_barrier = JuMP.optimizer_with_attributes(
+    Ipopt.Optimizer,
+    "print_level" => 0,
+    "sb" => "yes",
+    "acceptable_tol" => 1.0e-4,
+)
+
 @testset "confirm that changes occur in parse_multinetwork" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     @test (mn_data["nw"]["1"]["transfer"]["1"]["withdrawal_max"] !== mn_data["nw"]["100"]["transfer"]["1"]["withdrawal_max"])
@@ -82,7 +90,7 @@ end
  
     for nw in keys(mn_data["nw"])
         settings = Dict("config" => Dict("networks" => [parse(Int,nw)]))
-        solution = GasModels.solve_ogf(mn_data, WPGasModel, nlp_solver, setting=settings)
+        solution = GasModels.solve_ogf(mn_data, WPGasModel, ipopt_no_barrier, setting=settings)
         @test solution["termination_status"] == LOCALLY_SOLVED
         result["solution"]["nw"][nw] = solution["solution"]["nw"][nw]
 

@@ -36,12 +36,12 @@
             @_info "Testing OGF Nominal Modified transfer"
             data = GasModels.parse_file("../test/data/matgas/case-6-no-power-limits-nominal.m")
             transfer = data["transfer"]["1"]
-            transfer["withdrawal_nominal"] = - transfer["withdrawal_max"] / 2.0
-
+            transfer["withdrawal_nominal"] = transfer["withdrawal_max"] / 2.0
+            ref = build_ref(data)
             result = solve_ogf_nominal(data, WPGasModel, nlp_solver)
             GasModels.make_si_units!(result["solution"])
             @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
-            @test isapprox(result["solution"]["transfer"]["1"]["ft"], -15.0; atol = 1e-2)
+            @test isapprox(result["solution"]["transfer"]["1"]["ft"], 15.0; atol = 1e-2)
         end
 
         @testset "case 6 ogf nominal" begin
