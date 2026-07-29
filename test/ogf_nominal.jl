@@ -14,7 +14,6 @@
         fl = var(gm, :fl)[1]
         ft_g = var(gm, :ft_g)[1]
         ft_l = var(gm, :ft_l)[1]
- #       ft   = var(gm, :ft)[1]
 
         @test (JuMP.lower_bound(fg), JuMP.upper_bound(fg), JuMP.start_value(fg)) ==
               (receipt["injection_min"], receipt["injection_nominal"], receipt["injection_nominal"])
@@ -22,8 +21,6 @@
               (delivery["withdrawal_min"], delivery["withdrawal_nominal"], delivery["withdrawal_nominal"])
         @test (JuMP.lower_bound(ft_g), JuMP.upper_bound(ft_g), JuMP.start_value(ft_g)) == (0.0, 5.0, 5.0)
         @test (JuMP.lower_bound(ft_l), JuMP.upper_bound(ft_l), JuMP.start_value(ft_l)) == (0.0, 0.0, 0.0)
-#        @test (JuMP.lower_bound(ft), JuMP.upper_bound(ft), JuMP.start_value(ft)) == (-5.0, 0.0, -5.0)
-
     end
 
     @testset "test wp ogf nominal" begin

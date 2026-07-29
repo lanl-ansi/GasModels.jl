@@ -321,9 +321,6 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
 end
 
 function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
-#    flow_start(transfer)  =  transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"]
- #   flow_bounds(transfer) = (transfer["withdrawal_min"], transfer["withdrawal_max"])
-
     ft_g = var(gm, nw)[:ft_g] = JuMP.@variable(
             gm.model,
             [i in ids(gm, nw, :dispatchable_transfer)],
@@ -345,31 +342,21 @@ function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default
         )
 
 
-
-    #ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
-     #   [i in ids(gm,nw,:dispatchable_transfer)],
-      #  base_name="$(nw)_ft",
-       # start=flow_start(ref(gm, nw, :transfer, i))
-    #)
-
     if bounded
         for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
             JuMP.set_lower_bound(ft_g[i], 0.0)
             JuMP.set_upper_bound(ft_g[i], max(0.0, -transfer["withdrawal_min"]))
             JuMP.set_lower_bound(ft_l[i], 0.0)
             JuMP.set_upper_bound(ft_l[i], max(transfer["withdrawal_max"], 0.0))
-   #         lb, ub = flow_bounds(transfer)
- #           JuMP.set_lower_bound(ft[i], lb)
-  #          JuMP.set_upper_bound(ft[i], ub)
-#            JuMP.@constraint(gm.model, ft[i] == ft_l[i] - ft_g[i])
         end
     end
 
     if report
+        sol_component_value(gm, nw, :transfer, :ft_l, ids(gm, nw, :dispatchable_transfer), ft_l)
+        sol_component_value(gm, nw, :transfer, :ft_g, ids(gm, nw, :dispatchable_transfer), ft_g)
+
         sol_ft = Dict(i => ft_l[i] - ft_g[i] for i in ids(gm, nw, :dispatchable_transfer))
         sol_component_value(gm, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), sol_ft)
- #       sol_component_value(gm, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
-
 
         if get_data_gm((x -> return haskey(x, "standard_density")), gm.data; apply_to_subnetworks = false)
             density = get_data_gm((x -> return x["standard_density"]), gm.data; apply_to_subnetworks = false)
