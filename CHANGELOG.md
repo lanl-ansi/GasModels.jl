@@ -1,6 +1,6 @@
 # GasModels.jl Change Log
 
-## staged 
+## v0.13.4
 - Breaking change: Renamed   solve_ogf_comp_power_unc to solve_ogf_comp_power_unconstrained
 - Merged ogf and ogf_comp_power_unc, with a ref function to reproduce ogf_comp_power_unc model in ogf
 - Merged ogf and ogf_comp_power_nominal, with a ref function to reproduce ogf_comp_power_nominal model in ogf
