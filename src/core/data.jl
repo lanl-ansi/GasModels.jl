@@ -342,6 +342,8 @@ const _params_for_unit_conversions = Dict(
         "withdrawal_max",
         "withdrawal_nominal",
         "ft",
+        "ft_l",
+        "ft_g",
         "bid_price",
         "offer_price",
         "injection",
