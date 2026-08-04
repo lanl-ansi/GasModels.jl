@@ -20,19 +20,47 @@ end
 
 "data getters"
 @inline get_base_pressure(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_pressure"]), data; apply_to_subnetworks = false)
+@inline get_base_pressure(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_pressure]
+
 @inline get_base_density(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_density"]), data; apply_to_subnetworks = false)
+@inline get_base_density(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_density]
+
 @inline get_base_length(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_length"]), data; apply_to_subnetworks = false)
+@inline get_base_length(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_length]
+
 @inline get_base_flow(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flow"]), data; apply_to_subnetworks = false)
+@inline get_base_flow(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_flow]
+
 @inline get_base_flux(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_flux"]), data; apply_to_subnetworks = false)
+@inline get_base_flux(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_flux]
+
 @inline get_base_time(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_time"]), data; apply_to_subnetworks = false)
+@inline get_base_time(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_time]
+
 @inline get_base_diameter(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_diameter"]), data; apply_to_subnetworks = false)
+@inline get_base_diameter(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_diameter]
+
 @inline get_base_volume(data::Dict{String, <:Any}) = get_data_gm((x -> return x["base_volume"]), data; apply_to_subnetworks = false)
+@inline get_base_volume(refs::Dict{Symbol, <:Any}) = refs[:it][gm_it_sym][:base_volume]
+
 @inline get_sound_speed(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "sound_speed", 371.6643)), data; apply_to_subnetworks = false)
+@inline get_sound_speed(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:sound_speed, 371.6643)
+
 @inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; apply_to_subnetworks = false)
+@inline get_specific_heat_capacity_ratio(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:specific_heat_capacity_ratio, 0.6)
+
 @inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
+@inline get_gas_specific_gravity(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:gas_specific_gravity, 0.6)
+
 @inline get_gas_constant(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "R", 8.314)), data; apply_to_subnetworks = false)
+@inline get_gas_constant(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:R, 8.314)
+
 @inline get_temperature(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "temperature", 288.7060)), data; apply_to_subnetworks = false)
+@inline get_temperature(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:temperature, 288.7060)
+
 @inline get_base_mass(data::Dict{String, <:Any}) = get_base_flow(data) * get_base_time(data)
+@inline get_base_mass(refs::Dict{Symbol, <:Any}) = get_base_flow(refs) * get_base_time(refs)
+
 
 function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
     if f_min > f_max
