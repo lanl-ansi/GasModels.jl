@@ -662,33 +662,35 @@ end
 
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
+function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ids(gm, nw, :compressor))
     rsqr = var(gm, nw)[:rsqr] = JuMP.@variable(gm.model,
-        [i in keys(compressors)],
+        [i in compressors],
         base_name="$(nw)_r",
         start=comp_start_value(ref(gm, nw, :compressor), i, "ratio_start", 1.0)
     )
 
     if bounded
-        for (i, compressor) in compressors
+        for i in compressors
+            compressor = ref(gm, nw, :compressor, i)
             JuMP.set_lower_bound(rsqr[i], compressor["c_ratio_min"]^2)
             JuMP.set_upper_bound(rsqr[i], compressor["c_ratio_max"]^2)
         end
     end
 
-    report && sol_component_value(gm, nw, :compressor, :rsqr, keys(compressors), rsqr)
+    report && sol_component_value(gm, nw, :compressor, :rsqr, compressors, rsqr)
 end
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :ne_compressor))
+function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ids(gm, nw, :ne_compressor))
     rsqr = var(gm, nw)[:rsqr_ne] = JuMP.@variable(gm.model,
-        [k in keys(compressors)],
+        [k in compressors],
         base_name="$(nw)_r",
         start=comp_start_value(ref(gm, nw, :ne_compressor), k, "ratio_start", 1.0)
     )
 
     if bounded
-        for (k, compressor) in compressors
+        for k in compressors
+            compressor = ref(gm, nw, :ne_compressor)[k]
             i = ref(gm,nw,:junction,compressor["fr_junction"])
             j = ref(gm,nw,:junction,compressor["to_junction"])
 
@@ -705,7 +707,7 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_de
         end
     end
 
-    report && sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
+    report && sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, compressors, rsqr)
 end
 
 "Variable Set: variables associated with proxy for minimizing compression power"

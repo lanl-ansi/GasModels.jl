@@ -1,14 +1,21 @@
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     refs_ng = refs[:it][gm_it_sym]
-    _ref_add_ne!(refs_ng[:nw], refs_ng[:base_length], refs_ng[:base_pressure],
-        refs_ng[:base_flow], refs_ng[:sound_speed])
+    _ref_add_ne!(refs_ng[:nw], get_base_length(refs), get_base_pressure(refs),
+        get_base_flow(refs), get_sound_speed(refs), get_specific_heat_capacity_ratio(refs), get_gas_specific_gravity(refs), get_temperature(refs))
 end
 
 
-function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
+function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed, specific_heat_capacity_ratio, gas_specific_gravity, temperature)
     for (nw, ref) in nw_refs
         ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+
+        ref[:bounded_compressors_ne] = collect(i for (i, compressor) in ref[:ne_compressor] if _calc_is_compressor_energy_bounded(
+                specific_heat_capacity_ratio,
+                gas_specific_gravity,
+                temperature,
+                compressor
+            ))
 
         ref[:parallel_ne_pipes] = Dict()
         ref[:parallel_ne_compressors] = Dict()

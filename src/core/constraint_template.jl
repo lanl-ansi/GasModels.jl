@@ -105,7 +105,7 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -137,10 +137,10 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_defaul
 
     if(D!=0.0)
         if(rad2deg(abs(theta)) <= 5)
-            w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
             constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
         else
-            r_1,r_2 = _calc_inclined_pipe_resistance(pipe,gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            r_1,r_2 = _calc_inclined_pipe_resistance(pipe,get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
             inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
             constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
         end
@@ -160,10 +160,10 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int 
 
     if(D!=0.0)
         if(rad2deg(abs(theta)) <= 5)
-            w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
             constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
         else
-            r_1,r_2 = _calc_inclined_pipe_resistance(pipe,gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+            r_1,r_2 = _calc_inclined_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
             inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
             constraint_inclined_pipe_pressure_drop_linear_approx(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
         end
@@ -173,7 +173,7 @@ end
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -186,7 +186,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = nw_id_def
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]

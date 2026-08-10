@@ -79,16 +79,6 @@ function build_ogf(gm::AbstractGasModel)
     use_nominal = haskey(gm.setting, "config") ? get(gm.setting["config"], "use_nominal", false) : false
 
     for nw in nws
-        bounded_compressors = Dict(
-            x for x in ref(gm, :compressor; nw=nw) if
-            _calc_is_compressor_energy_bounded(
-                get_specific_heat_capacity_ratio(gm.data),
-                get_gas_specific_gravity(gm.data),
-                get_temperature(gm.data),
-                x.second
-            )
-        )
-
         variable_pressure(gm, nw)
         variable_pressure_sqr(gm, nw)
         variable_flow(gm, nw)
@@ -136,7 +126,7 @@ function build_ogf(gm::AbstractGasModel)
             constraint_compressor_ratio_value(gm, i; n=nw)
         end
 
-        for i in keys(bounded_compressors)
+        for i in ref(gm, :bounded_compressors; nw=nw)
             constraint_compressor_energy(gm, i; n=nw)
         end
 

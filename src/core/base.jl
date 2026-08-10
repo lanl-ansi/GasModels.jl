@@ -123,12 +123,12 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         ref[:storages_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
 
         # compressors that are power bound
-        ref[:bounded_compressors] = Dict([(i, []) for (i, compressor) in ref[:compressor] if _calc_is_compressor_energy_bounded(
+        ref[:bounded_compressors] = collect(i for (i, compressor) in ref[:compressor] if _calc_is_compressor_energy_bounded(
                 specific_heat_capacity_ratio,
                 gas_specific_gravity,
                 temperature,
                 compressor
-            )])
+            ))
 
         _add_junction_map!(ref[:dispatchable_transfers_in_junction], ref[:dispatchable_transfer])
         _add_junction_map!(ref[:nondispatchable_transfers_in_junction], ref[:nondispatchable_transfer])
