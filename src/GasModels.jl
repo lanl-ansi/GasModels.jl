@@ -14,6 +14,8 @@ module GasModels
     import Logging
     using Dierckx
     using PolyhedralRelaxations
+    using LinearAlgebra
+    using SparseArrays
     
     const _LOGGER = Ref{Logging.ConsoleLogger}()
 
@@ -157,6 +159,11 @@ module GasModels
     include("prob/ogf_comp_power_and_pipe_proxy.jl")
     include("prob/transient_ogf.jl")
     include("prob/transient_ogf_archived_storage.jl")
+
+    # Inner Approximation
+    include("prob/ia_topology.jl")
+    include("prob/ia_matrix.jl")
+    include("prob/ia_constraints.jl")
     include("prob/ia.jl")
 
     include("io/diagnostics.jl")
