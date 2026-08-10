@@ -122,7 +122,7 @@
         @test length(gas_data["sources"]) == 1
         @test gas_data["sources"][1]["name"] == "test" && gas_data["sources"][1]["agreement_year"] == 2020
     end
-    
+
     @testset "check english units in csv file" begin
         gas_file = CASE6PATH
         transient_file = "../test/data/transient/time-series-case-6a-english.csv"
@@ -132,5 +132,83 @@
         @test !case["english_units"]
         @test !case["per_unit"]
         @test case["si_units"]
+    end
+    
+    @testset "flow partition helpers" begin
+        @test_throws ErrorException GasModels.build_flow_partition(-4.0, 6.0, 0)
+        @test GasModels.build_flow_partition(1.0, 5.0, 0) == [1.0, 5.0]
+        @test GasModels.build_flow_partition(1.0, 5.0, 1) == [1.0, 3.0, 5.0]
+        @test GasModels.build_flow_partition(-4.0, 6.0, 1) == [-4.0, 0.0, 6.0]
+        @test GasModels.build_flow_partition(-4.0, 6.0, 3) ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
+        @test GasModels.build_flow_partition(2.0, 2.0, 0) == [2.0]
+        @test_throws ErrorException GasModels.build_flow_partition(-1.0, 1.0, 0)
+        @test_throws MethodError GasModels.build_flow_partition(-1.0, 1.0, [-0.5, 0.5])
+    end
+
+    @testset "flow breakpoint counts are unitless" begin
+        data = Dict{String,Any}(
+            "base_pressure" => 100.0,
+            "base_density" => 10.0,
+            "base_length" => 5.0,
+            "base_flow" => 20.0,
+            "base_time" => 2.0,
+            "base_diameter" => 1.0,
+            "si_units" => true,
+            "english_units" => false,
+            "per_unit" => false,
+            "pipe" => Dict(
+                "1" => Dict{String,Any}(
+                    "id" => 1,
+                    "si_units" => true,
+                    "english_units" => false,
+                    "per_unit" => false,
+                    "flow_min" => -40.0,
+                    "flow_max" => 60.0,
+                    "num_flow_breakpoints" => 3,
+                ),
+            ),
+        )
+
+        GasModels.make_per_unit!(data)
+        @test data["pipe"]["1"]["flow_min"] == -2.0
+        @test data["pipe"]["1"]["flow_max"] == 3.0
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(
+            data["pipe"]["1"],
+            data["pipe"]["1"]["flow_min"],
+            data["pipe"]["1"]["flow_max"],
+        ) ≈ [-2.0, -1.0 / 3.0, 0.0, 4.0 / 3.0, 3.0]
+
+        GasModels.make_si_units!(data)
+        @test data["pipe"]["1"]["flow_min"] == -40.0
+        @test data["pipe"]["1"]["flow_max"] == 60.0
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(
+            data["pipe"]["1"],
+            data["pipe"]["1"]["flow_min"],
+            data["pipe"]["1"]["flow_max"],
+        ) ≈ [-40.0, -20.0 / 3.0, 0.0, 80.0 / 3.0, 60.0]
+    end
+
+    @testset "set flow partitions on parsed data" begin
+        data = Dict{String,Any}(
+            "pipe" => Dict(
+                "1" => Dict{String,Any}("flow_min" => -4.0, "flow_max" => 6.0),
+                "2" => Dict{String,Any}("flow_min" => 1.0, "flow_max" => 5.0),
+            ),
+            "resistor" => Dict(
+                "1" => Dict{String,Any}("flow_min" => -3.0, "flow_max" => 3.0),
+            ),
+        )
+
+        
+        GasModels.set_flow_partitions!(data, 3)
+
+        @test data["pipe"]["1"]["num_flow_breakpoints"] == 3
+        @test data["pipe"]["2"]["num_flow_breakpoints"] == 3
+        @test data["resistor"]["1"]["num_flow_breakpoints"] == 3
+        @test GasModels.get_flow_partition(data["pipe"]["1"], -4.0, 6.0) ≈ [-4.0, -2.0 / 3.0, 0.0, 8.0 / 3.0, 6.0]
+        @test GasModels.get_flow_partition(data["pipe"]["2"], 1.0, 5.0) == [1.0, 2.0, 3.0, 4.0, 5.0]
+        @test GasModels.get_flow_partition(data["resistor"]["1"], -3.0, 3.0) == [-3.0, -1.0, 0.0, 1.0, 3.0]
     end
 end
