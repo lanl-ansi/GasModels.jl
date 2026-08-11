@@ -455,17 +455,13 @@
         obj_value = JuMP.objective_value(model)
         @test obj_value > 0.01
 
-        println("\n--- SOLVE TEST ---")
+        println("\n--- SOLVE TEST (Per-Unit) ---")
         println("Termination: $(JuMP.termination_status(model))")
         println("Objective: $(Printf.@sprintf("%.6f", obj_value))")
-        println("\nState bounds (first 5):")
-        for i in 1:min(5, length(ℓ_x_plus))
-            println("  State $i: [-$(Printf.@sprintf("%.4f", ℓ_x_minus[i])), +$(Printf.@sprintf("%.4f", ℓ_x_plus[i]))]")
-        end
-        println("\nInput bounds (first 5):")
-        for i in 1:min(5, length(ℓ_u_plus))
-            println("  Input $i: [-$(Printf.@sprintf("%.4f", ℓ_u_minus[i])), +$(Printf.@sprintf("%.4f", ℓ_u_plus[i]))]")
-        end
+
+        # Extract and display solution in SI units
+        solution = GasModels.extract_ia_solution(gm, model, 0)
+        GasModels.print_ia_solution(solution, max_items=3)
     end
 
 end

@@ -54,23 +54,10 @@ optimize!(model)
 
 if termination_status(model) in [MOI.LOCALLY_SOLVED, MOI.OPTIMAL]
     println("\n✓ Optimization converged!")
-    println("\n  Objective value: ", objective_value(model))
 
-    # Extract solution
-    ℓ_x_plus = value.(model[:ℓ_x_plus])
-    ℓ_x_minus = value.(model[:ℓ_x_minus])
-    ℓ_u_plus = value.(model[:ℓ_u_plus])
-    ℓ_u_minus = value.(model[:ℓ_u_minus])
-
-    println("\n  State bounds (first 5):")
-    for i in 1:min(5, length(ℓ_x_plus))
-        println("    State $i: [-$(ℓ_x_minus[i]), +$(ℓ_x_plus[i])]")
-    end
-
-    println("\n  Input bounds (first 5):")
-    for i in 1:min(5, length(ℓ_u_plus))
-        println("    Input $i: [-$(ℓ_u_minus[i]), +$(ℓ_u_plus[i])]")
-    end
+    # Extract and display solution in SI units
+    solution = GasModels.extract_ia_solution(gm, model, 0)
+    GasModels.print_ia_solution(solution)
 else
     println("\n✗ Optimization failed: ", termination_status(model))
 end

@@ -154,6 +154,7 @@ module GasModels
     include("prob/ia_matrix.jl")
     include("prob/ia_residuals.jl")
     include("prob/ia_constraints.jl")
+    include("prob/ia_solution.jl")
     include("prob/ia.jl")
 
     include("io/diagnostics.jl")
