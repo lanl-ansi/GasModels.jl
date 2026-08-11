@@ -152,6 +152,7 @@ module GasModels
     # Inner Approximation
     include("prob/ia_topology.jl")
     include("prob/ia_matrix.jl")
+    include("prob/ia_residuals.jl")
     include("prob/ia_constraints.jl")
     include("prob/ia.jl")
 

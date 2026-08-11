@@ -1,280 +1,383 @@
 """
-Generate IA sufficient condition constraints from decomposed matrices.
+Constraint generation for Inner Approximation optimization.
 
-This implements the CORRECT approach from your Research_Ideas-2.pdf.
-Key: We write inequalities on equation (83) using decomposed PRODUCTS.
+Uses matrix-based self-mapping with M and N decompositions:
+    Δx = M·Δu + N·r(Δx, Δu)
+
+where M = M^+ - M^- and N = N^+ - N^-.
+
+Self-mapping sufficient conditions:
+    ℓ_x^+ ≥ M^+·ℓ_u^+ + M^-·ℓ_u^- + N^+·r^+ - N^-·r^-
+    ℓ_x^- ≥ M^+·ℓ_u^- + M^-·ℓ_u^+ - N^+·r^- + N^-·r^+
 """
 
-# Placeholder - will be implemented in next step after understanding residual structure
 
+"""
+    build_ia_model(gm, n; optimizer=nothing)
 
+Build the Inner Approximation optimization model.
 
-#### Old
+Creates a JuMP model with:
+- Decision variables: ℓ_x^+, ℓ_x^-, ℓ_u^+, ℓ_u^-
+- Auxiliary variables: r^+, r^- (residual bounds)
+- Self-mapping constraints (matrix-based)
+- Physical feasibility constraints
+- Objective: maximize polytope volume
 
-"variables for inner approximation"
-function variable_ia(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=false, report::Bool=true)
-    # junction pressures
-    ##p
-    l_pi_p = var(gm, nw)[:l_pi_p] = JuMP.@variable(
-        gm.model, [i in ids(gm, nw, :junction)], base_name="$(nw)_l_pi_p",
-        )
-    report && sol_component_value(gm, nw, :junction, :l_pi_p, ids(gm, nw, :junction), l_pi_p)
-    ##n
-    l_pi_n = var(gm, nw)[:l_pi_n] = JuMP.@variable(
-        gm.model, [i in ids(gm, nw, :junction)], base_name="$(nw)_l_pi_n",
-        )
-    report && sol_component_value(gm, nw, :junction, :l_pi_n, ids(gm, nw, :junction), l_pi_n)
+Returns: JuMP model
+"""
+function build_ia_model(
+    gm::AbstractGasModel,
+    n::Int=nw_id_default;
+    optimizer=nothing
+)
+    @info "Building IA optimization model"
 
-    # edge flows
-    ## pipe_p
-    l_f_pipe_p = var(gm, nw)[:l_f_pipe_p] = JuMP.@variable(gm.model,
-        [i in ids(gm, nw, :pipe)],
-        base_name="$(nw)_l_f_pipe_p",
-    )
-    report && sol_component_value(gm, nw, :pipe, :l_f_pipe_p, ids(gm, nw, :pipe), l_f_pipe_p)
-    ## pipe_n
-    l_f_pipe_n = var(gm, nw)[:l_f_pipe_n] = JuMP.@variable(gm.model,
-        [i in ids(gm, nw, :pipe)],
-        base_name="$(nw)_l_f_pipe_n",
-    )
-    report && sol_component_value(gm, nw, :pipe, :l_f_pipe_n, ids(gm, nw, :pipe), l_f_pipe_n)
-    ## compressor_p
-    l_f_compressor_p = var(gm, nw)[:l_f_compressor_p] = JuMP.@variable(gm.model,
-        [i in ids(gm, nw, :compressor)],
-        base_name="$(nw)_l_f_compressor_p",
-    )
-    report && sol_component_value(gm, nw, :compressor, :l_f_compressor_p, ids(gm, nw, :compressor), l_f_compressor_p)
-    ## compressor_n
-    l_f_compressor_n = var(gm, nw)[:l_f_compressor_n] = JuMP.@variable(gm.model,
-        [i in ids(gm, nw, :compressor)],
-        base_name="$(nw)_l_f_compressor_n",
-    )
-    report && sol_component_value(gm, nw, :compressor, :l_f_compressor_n, ids(gm, nw, :compressor), l_f_compressor_n)
+    # Compute coefficient matrices
+    matrices = compute_ia_coefficient_matrices(gm, n)
+    M_pos = matrices.M_pos
+    M_neg = matrices.M_neg
+    N_pos = matrices.N_pos
+    N_neg = matrices.N_neg
+    state_map = matrices.state_map
+    input_map = matrices.input_map
 
-    # compression ratio square
-    # cr_p
-    compressors = ref(gm, nw, :compressor)
-    l_a2_p = var(gm, nw)[:l_a2_p] = JuMP.@variable(gm.model,
-        [i in keys(compressors)],
-        base_name="$(nw)_l_a2_p",
-        # start=comp_start_value(ref(gm, nw, :compressor), i, "ratio_start", 1.0)
-    )
-    report && sol_component_value(gm, nw, :compressor, :l_a2_p, keys(compressors), l_a2_p)
-    # cr_n
-    l_a2_n = var(gm, nw)[:l_a2_n] = JuMP.@variable(gm.model,
-        [i in keys(compressors)],
-        base_name="$(nw)_l_a2_n",
-        # start=comp_start_value(ref(gm, nw, :compressor), i, "ratio_start", 1.0)
-    )
-    report && sol_component_value(gm, nw, :compressor, :l_a2_n, keys(compressors), l_a2_n)
+    n_states = state_map[:dim]
+    n_inputs = input_map[:dim]
 
-    # receipts, deliveries, transfers & storage
-    l_fg_p = var(gm, nw)[:l_fg_p] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_receipt)],
-        base_name="$(nw)_l_fg_p",
-        )
+    # Create JuMP model
+    model = isnothing(optimizer) ? JuMP.Model() : JuMP.Model(optimizer)
 
-    if report
-        sol_component_value(gm, nw, :receipt, :l_fg_p, ids(gm, nw, :dispatchable_receipt), l_fg_p)
-    end
+    # Decision variables: state bounds
+    JuMP.@variable(model, ℓ_x_plus[1:n_states] >= 0)
+    JuMP.@variable(model, ℓ_x_minus[1:n_states] >= 0)
 
-    l_fg_n = var(gm, nw)[:l_fg_n] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_receipt)],
-        base_name="$(nw)_l_fg_n",
-        )
+    # Decision variables: input bounds
+    JuMP.@variable(model, ℓ_u_plus[1:n_inputs] >= 0)
+    JuMP.@variable(model, ℓ_u_minus[1:n_inputs] >= 0)
 
-    if report
-        sol_component_value(gm, nw, :receipt, :l_fg_n, ids(gm, nw, :dispatchable_receipt), l_fg_n)
-    end
+    # Auxiliary variables: residual bounds
+    JuMP.@variable(model, r_plus[1:n_states])
+    JuMP.@variable(model, r_minus[1:n_states])
 
-    l_fl_p = var(gm, nw)[:l_fl_p] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_delivery)],
-        base_name="$(nw)_l_fl_p",
+    @info "Variables created: $(n_states) states, $(n_inputs) inputs"
+
+    # Add residual bound constraints
+    _add_residual_bound_constraints!(
+        model, gm, n, state_map, input_map,
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+        r_plus, r_minus
     )
 
-    if report
-        sol_component_value(gm, nw, :delivery, :l_fd_p, ids(gm, nw, :dispatchable_delivery), l_fl_p)
-    end
-
-    l_fl_n = var(gm, nw)[:l_fl_n] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_delivery)],
-        base_name="$(nw)_l_fl_n",
+    # Add self-mapping constraints
+    _add_self_mapping_constraints!(
+        model, M_pos, M_neg, N_pos, N_neg,
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+        r_plus, r_minus
     )
 
-    if report
-        sol_component_value(gm, nw, :delivery, :l_fd_n, ids(gm, nw, :dispatchable_delivery), l_fl_n)
-    end
-
-
-
-    l_ft_p = var(gm, nw)[:l_ft_p] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_transfer)],
-        base_name="$(nw)_l_ft_p",
+    # Add physical feasibility constraints
+    _add_physical_bounds_constraints!(
+        model, gm, n, state_map, input_map,
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
     )
 
-    if report
-        sol_component_value(gm, nw, :transfer, :l_ft_p, ids(gm, nw, :dispatchable_transfer), l_ft_p)
-    end
-
-
-    l_ft_n = var(gm, nw)[:l_ft_n] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_transfer)],
-        base_name="$(nw)_l_ft_n",
+    # Add objective: maximize polytope volume
+    _add_ia_objective!(
+        model, n_states, n_inputs,
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
     )
 
-    if report
-        sol_component_value(gm, nw, :transfer, :l_ft_n, ids(gm, nw, :dispatchable_transfer), l_ft_n)
-    end
-
-    l_f_wh_p = var(gm, nw)[:l_well_head_flow_p] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head_p")
-
-    if report
-        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:l_withdrawal_p,ids(gm, nw, :storage),l_f_wh_p)
-    end
-
-    l_f_wh_n = var(gm, nw)[:l_well_head_flow_n] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head_n")
-
-    if report
-        _IM.sol_component_value(gm,gm_it_sym,nw,:storage,:l_withdrawal_n,ids(gm, nw, :storage),l_f_wh_n)
-    end
+    @info "Model construction complete"
+    return model
 end
 
-"Template: pipe weymouth ia"
-function constraint_ia_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_default)
-    pipe = ref(gm, n, :pipe, k)
-    i = pipe["fr_junction"]
-    j = pipe["to_junction"]
-    pd_min, pd_max = _calc_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
-    f_min = pipe["flow_min"]
-    f_max = pipe["flow_max"]
-    theta = pipe["theta"]
-    D = pipe["diameter"]
 
-    f_0 = _ia_fp_value(gm, n, :pipe, k, "f")
-    reversal_allowed = _ia_reversal_allowed(gm)
+"""
+Add residual bound constraints: r^- ≤ r(Δx, Δu) ≤ r^+
 
-    if(D!=0.0)
-        if(rad2deg(abs(theta)) <= 5)
-            w = _calc_pipe_resistance(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_pressure], gm.ref[:it][gm_it_sym][:base_flow], gm.ref[:it][gm_it_sym][:sound_speed])
-            constraint_ia_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max, f_0, reversal_allowed)
+Uses two inequalities for max operations (as user requested).
+"""
+function _add_residual_bound_constraints!(
+    model, gm, n, state_map, input_map,
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+    r_plus, r_minus
+)
+    @info "Adding residual bound constraints"
+    row = 1
+
+    # Weymouth residuals: γₑ(Δfₑ) = ωₑ(Δfₑ)²
+    for k in sort(collect(keys(ref(gm, n, :pipe))))
+        pipe = ref(gm, n, :pipe, k)
+        f_star = _ia_fp_value(gm, n, :pipe, k, "f")
+        w = _calc_pipe_resistance(
+            pipe,
+            gm.ref[:it][gm_it_sym][:base_length],
+            gm.ref[:it][gm_it_sym][:base_pressure],
+            gm.ref[:it][gm_it_sym][:base_flow],
+            gm.ref[:it][gm_it_sym][:sound_speed]
+        )
+        ω = 1.0 / w
+
+        flow_idx = state_map[:pipe_flow][k]
+
+        if f_star > 0
+            # Positive flow: r ∈ [0, ω·max(ℓ_f^-, ℓ_f^+)²]
+            JuMP.@constraint(model, r_minus[row] == 0.0)
+            # r^+ ≥ ω·(ℓ_f^-)² and r^+ ≥ ω·(ℓ_f^+)²
+            JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_minus[flow_idx]^2)
+            JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_plus[flow_idx]^2)
         else
-            #TODO Inclined pipes
-            @error "Inclined pipes not yet supported"
+            # Negative flow: r ∈ [-ω·max(ℓ_f^-, ℓ_f^+)², 0]
+            JuMP.@constraint(model, r_plus[row] == 0.0)
+            # -r^- ≥ ω·(ℓ_f^-)² and -r^- ≥ ω·(ℓ_f^+)²
+            JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_minus[flow_idx]^2)
+            JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_plus[flow_idx]^2)
         end
+        row += 1
     end
-end
 
+    # Compressor residuals: ηc(Δα, Δπᵢ) = Δα·Δπᵢ (bilinear)
+    for k in sort(collect(keys(ref(gm, n, :compressor))))
+        comp = ref(gm, n, :compressor, k)
+        i = comp["fr_junction"]
 
-"Weymouth equation with absolute value"
-function constraint_ia_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max, f_0, reversal_allowed::Bool)
-    l_pi_i_p = var(gm, n, :l_pi_p, i)
-    l_pi_i_n = var(gm, n, :l_pi_n, i)
-    l_pi_j_p = var(gm, n, :l_pi_p, j)
-    l_pi_j_n = var(gm, n, :l_pi_n, j)
-    l_f_p = var(gm, n, :l_f_pipe_p, k)
-    l_f_n = var(gm, n, :l_f_pipe_n, k)
-
-    @info "pipe $k fp value $f_0"
-    if w == 0.0
-        #TODO
-        @error " pipe resistance 0"
-    else
-        if reversal_allowed == false
-            if f_0 > 0 
-                _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, -l_pi_i_n - l_pi_j_p - (2*abs(f_0)*l_f_p / w) <= 0))
-                _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l_pi_i_p + l_pi_j_n + (2*abs(f_0)*l_f_n / w) >= l_f_n^2/w))
-                _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l_pi_i_p + l_pi_j_n + (2*abs(f_0)*l_f_n / w) >= l_f_p^2/w))
-            elseif f_0 < 0
-                _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, -l_pi_i_n - l_pi_j_p - (2*abs(f_0)*l_f_p / w) <= -l_f_n^2/w))
-                _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, -l_pi_i_n - l_pi_j_p - (2*abs(f_0)*l_f_p / w) <= -l_f_p^2/w))
-                _add_constraint!(gm, n, :weymouth3, k, JuMP.@constraint(gm.model, l_pi_i_p + l_pi_j_n + (2*abs(f_0)*l_f_n / w) >= 0))
-            elseif f_0 == 0.0
-                #TODO
-                @error "0 flow in pipe not yet supported"
-            end
+        # Get ratio bounds
+        if haskey(input_map[:compressor_ratio], k)
+            ratio_idx = input_map[:compressor_ratio][k]
+            ℓ_α_minus = ℓ_u_minus[ratio_idx]
+            ℓ_α_plus = ℓ_u_plus[ratio_idx]
         else
-            @error "Pipe flow reversal not yet supported"
+            # No control: Δα = 0, residual = 0
+            JuMP.@constraint(model, r_minus[row] == 0.0)
+            JuMP.@constraint(model, r_plus[row] == 0.0)
+            row += 1
+            continue
         end
+
+        # Get inlet pressure bounds
+        pi_i_idx = get_state_index(state_map, :junction_psqr, i)
+        if !isnothing(pi_i_idx)
+            ℓ_π_minus = ℓ_x_minus[pi_i_idx]
+            ℓ_π_plus = ℓ_x_plus[pi_i_idx]
+        else
+            # Inlet is slack: Δπᵢ = 0, residual = 0
+            JuMP.@constraint(model, r_minus[row] == 0.0)
+            JuMP.@constraint(model, r_plus[row] == 0.0)
+            row += 1
+            continue
+        end
+
+        # McCormick envelope: evaluate at 4 corners
+        # r ∈ [min(corners), max(corners)]
+        # Use constraints instead of evaluating corners directly
+
+        # Lower bound: r^- ≤ all 4 corners
+        JuMP.@constraint(model, r_minus[row] <= -ℓ_α_minus * (-ℓ_π_minus))
+        JuMP.@constraint(model, r_minus[row] <= -ℓ_α_minus * ℓ_π_plus)
+        JuMP.@constraint(model, r_minus[row] <= ℓ_α_plus * (-ℓ_π_minus))
+        JuMP.@constraint(model, r_minus[row] <= ℓ_α_plus * ℓ_π_plus)
+
+        # Upper bound: r^+ ≥ all 4 corners
+        JuMP.@constraint(model, r_plus[row] >= -ℓ_α_minus * (-ℓ_π_minus))
+        JuMP.@constraint(model, r_plus[row] >= -ℓ_α_minus * ℓ_π_plus)
+        JuMP.@constraint(model, r_plus[row] >= ℓ_α_plus * (-ℓ_π_minus))
+        JuMP.@constraint(model, r_plus[row] >= ℓ_α_plus * ℓ_π_plus)
+
+        row += 1
     end
-end
 
-"Template: Constraints for inner approximating the mass flow balance equation where demand and production is are a mix of constants and variables"
-function constraint_ia_mass_flow_balance(gm::AbstractGasModel, i; n::Int = nw_id_default)
-    receipt_min(receipt) = receipt["injection_min"]
-    receipt_max(receipt) =  receipt["injection_max"]
-    delivery_min(delivery) = delivery["withdrawal_min"]
-    delivery_max(delivery) = delivery["withdrawal_max"]
-    transfer_min(transfer) = transfer["withdrawal_min"]
-    transfer_max(transfer) = transfer["withdrawal_max"]
+    # Mass balance residuals: always zero (linear)
+    for k in sort(collect(keys(ref(gm, n, :junction))))
+        junction = ref(gm, n, :junction, k)
+        junction["junction_type"] == 1 && continue
 
-    junction = ref(gm, n, :junction, i)
-    f_pipes = ref(gm, n, :pipes_fr, i)
-    t_pipes = ref(gm, n, :pipes_to, i)
-    f_compressors = ref(gm, n, :compressors_fr, i)
-    t_compressors = ref(gm, n, :compressors_to, i)
-    f_resistors = ref(gm, n, :resistors_fr, i)
-    t_resistors = ref(gm, n, :resistors_to, i)
-    f_loss_resistors = ref(gm, n, :loss_resistors_fr, i)
-    t_loss_resistors = ref(gm, n, :loss_resistors_to, i)
-    f_short_pipes = ref(gm, n, :short_pipes_fr, i)
-    t_short_pipes = ref(gm, n, :short_pipes_to, i)
-    f_valves = ref(gm, n, :valves_fr, i)
-    t_valves = ref(gm, n, :valves_to, i)
-    f_regulators = ref(gm, n, :regulators_fr, i)
-    t_regulators = ref(gm, n, :regulators_to, i)
-    delivery = ref(gm, n, :delivery)
-    receipt = ref(gm, n, :receipt)
-    transfer = ref(gm, n, :transfer)
-    dispatch_receipts = ref(gm, n, :dispatchable_receipts_in_junction, i)
-    nondispatch_receipts = ref(gm, n, :nondispatchable_receipts_in_junction, i)
-    dispatch_deliveries = ref(gm, n, :dispatchable_deliveries_in_junction, i)
-    nondispatch_deliveries = ref(gm, n, :nondispatchable_deliveries_in_junction, i)
-    dispatch_transfers = ref(gm, n, :dispatchable_transfers_in_junction, i)
-    nondispatch_transfers = ref(gm, n, :nondispatchable_transfers_in_junction, i)
-    storages = ref(gm, n, :storages_in_junction, i)
+        JuMP.@constraint(model, r_minus[row] == 0.0)
+        JuMP.@constraint(model, r_plus[row] == 0.0)
+        row += 1
+    end
 
-    fg = length(nondispatch_receipts) > 0 ? sum(receipt[j]["injection_nominal"] for j in nondispatch_receipts) : 0
-    fl = length(nondispatch_deliveries) > 0 ? sum(delivery[j]["withdrawal_nominal"] for j in nondispatch_deliveries) : 0
-    fl += length(nondispatch_transfers) > 0 ? sum(transfer[j]["withdrawal_nominal"] for j in nondispatch_transfers) : 0
-    fgmax = length(dispatch_receipts) > 0 ? sum(receipt_max(receipt[j]) for j in dispatch_receipts) : 0
-    flmax = length(dispatch_deliveries) > 0 ? sum(delivery_max(delivery[j]) for j in dispatch_deliveries) : 0
-    flmax += length(dispatch_transfers) > 0 ? sum(transfer_max(transfer[j]) for j in dispatch_transfers) : 0
-    fgmin = length(dispatch_receipts) > 0 ? sum(receipt_min(receipt[j]) for j in dispatch_receipts) : 0
-    flmin = length(dispatch_deliveries) > 0 ? sum(delivery_min(delivery[j]) for j in dispatch_deliveries) : 0
-    flmin += length(dispatch_transfers) > 0 ? sum(transfer_min(transfer[j]) for j in dispatch_transfers) : 0
-
-    constraint_ia_mass_flow_balance(gm, n, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl, fg, dispatch_deliveries, dispatch_receipts, dispatch_transfers, storages, flmin, flmax, fgmin, fgmax)
-end
-
-"Constraint: IA flow balance equation where demand and production are variables"
-function constraint_ia_mass_flow_balance(gm::AbstractGasModel, n::Int, i, f_pipes, t_pipes, f_compressors, t_compressors, f_resistors, t_resistors, f_loss_resistors, t_loss_resistors, f_short_pipes, t_short_pipes, f_valves, t_valves, f_regulators, t_regulators, fl_constant, fg_constant, deliveries, receipts, transfers, storages, flmin, flmax, fgmin, fgmax)
-    l_f_pipe_p = var(gm, n, :l_f_pipe_p)
-    l_f_pipe_n = var(gm, n, :l_f_pipe_n)
-    l_f_compressor_p = var(gm, n, :l_f_compressor_p)
-    l_f_compressor_n = var(gm, n, :l_f_compressor_n)
-    
-    l_fg_p = var(gm, n, :l_fg_p)
-    l_fg_n = var(gm, n, :l_fg_n)
-    l_fl_p = var(gm, n, :l_fl_p)
-    l_fl_n = var(gm, n, :l_fl_n)
-    l_ft_p = var(gm, n, :l_ft_p)
-    l_ft_n = var(gm, n, :l_ft_n)
-    l_fs_p = var(gm, n, :l_well_head_flow_p)
-    l_fs_n = var(gm, n, :l_well_head_flow_n)
-
-    _add_constraint!(gm, n, :junction_mass_flow_balance_1, i, JuMP.@constraint(gm.model, - sum(l_fg_n[a] for a in receipts) - sum(l_fl_p[a] for a in deliveries) - sum(l_ft_p[a] for a in transfers) - sum(l_fs_p[a] for a in storages) >=
-                                                                            -sum(l_f_pipe_n[a] for a in f_pipes) - sum(l_f_pipe_p[a] for a in t_pipes) 
-                                                                            - sum(l_f_compressor_n[a] for a in f_compressors) - sum(l_f_compressor_p[a] for a in t_compressors)
-                                                                        ))
-    _add_constraint!(gm, n, :junction_mass_flow_balance_2, i, JuMP.@constraint(gm.model, sum(l_fg_p[a] for a in receipts) + sum(l_fl_n[a] for a in deliveries) + sum(l_ft_n[a] for a in transfers) + sum(l_fs_n[a] for a in storages) <=
-                                                                            sum(l_f_pipe_p[a] for a in f_pipes) + sum(l_f_pipe_n[a] for a in t_pipes) +
-                                                                            sum(l_f_compressor_p[a] for a in f_compressors) + sum(l_f_compressor_n[a] for a in t_compressors)
-                                                                        ))
-
+    @info "Residual bound constraints added"
 end
 
 
-#TODO
-#Need to create variables for receipts, deliveries and transfers.
-# Need to write the mass_flow_balance equation considering their coefficient signs in the original equation.
-# Need to be careful with receipts, delivereis and transfers
+"""
+Add self-mapping constraints using M and N matrices.
+
+Upper bound: ℓ_x^+ ≥ M^+·ℓ_u^+ + M^-·ℓ_u^- + N^+·r^+ - N^-·r^-
+Lower bound: ℓ_x^- ≥ M^+·ℓ_u^- + M^-·ℓ_u^+ - N^+·r^- + N^-·r^+
+"""
+function _add_self_mapping_constraints!(
+    model, M_pos, M_neg, N_pos, N_neg,
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+    r_plus, r_minus
+)
+    @info "Adding self-mapping constraints"
+
+    n_states = size(M_pos, 1)
+
+    # Upper bound: ℓ_x^+ ≥ M^+·ℓ_u^+ + M^-·ℓ_u^- + N^+·r^+ - N^-·r^-
+    for i in 1:n_states
+        JuMP.@constraint(
+            model,
+            ℓ_x_plus[i] >=
+                sum(M_pos[i, j] * ℓ_u_plus[j] for j in 1:length(ℓ_u_plus)) +
+                sum(M_neg[i, j] * ℓ_u_minus[j] for j in 1:length(ℓ_u_minus)) +
+                sum(N_pos[i, k] * r_plus[k] for k in 1:n_states) -
+                sum(N_neg[i, k] * r_minus[k] for k in 1:n_states)
+        )
+    end
+
+    # Lower bound: ℓ_x^- ≥ M^+·ℓ_u^- + M^-·ℓ_u^+ - N^+·r^- + N^-·r^+
+    for i in 1:n_states
+        JuMP.@constraint(
+            model,
+            ℓ_x_minus[i] >=
+                sum(M_pos[i, j] * ℓ_u_minus[j] for j in 1:length(ℓ_u_minus)) +
+                sum(M_neg[i, j] * ℓ_u_plus[j] for j in 1:length(ℓ_u_plus)) -
+                sum(N_pos[i, k] * r_minus[k] for k in 1:n_states) +
+                sum(N_neg[i, k] * r_plus[k] for k in 1:n_states)
+        )
+    end
+
+    @info "Self-mapping constraints added"
+end
+
+
+"""
+Add physical feasibility constraints.
+
+Ensures state/input bounds respect physical limits:
+- Pressure: within allowed range
+- Flow: within capacity limits
+- Compressor ratio: within operational bounds
+"""
+function _add_physical_bounds_constraints!(
+    model, gm, n, state_map, input_map,
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+)
+    @info "Adding physical feasibility constraints"
+
+    # Pipe flow bounds
+    for k in sort(collect(keys(ref(gm, n, :pipe))))
+        pipe = ref(gm, n, :pipe, k)
+        f_star = _ia_fp_value(gm, n, :pipe, k, "f")
+        flow_idx = state_map[:pipe_flow][k]
+
+        # Physical limits
+        f_min = pipe["flow_min"]
+        f_max = pipe["flow_max"]
+
+        # Deviation bounds must keep flow in [f_min, f_max]
+        JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
+        JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+    end
+
+    # Compressor flow bounds
+    for k in sort(collect(keys(ref(gm, n, :compressor))))
+        comp = ref(gm, n, :compressor, k)
+        f_star = _ia_fp_value(gm, n, :compressor, k, "f")
+        flow_idx = state_map[:compressor_flow][k]
+
+        f_min = comp["flow_min"]
+        f_max = comp["flow_max"]
+
+        JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
+        JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+    end
+
+    # Junction pressure bounds
+    for k in sort(collect(keys(ref(gm, n, :junction))))
+        junction = ref(gm, n, :junction, k)
+        junction["junction_type"] == 1 && continue  # Skip slack
+
+        pi_idx = state_map[:junction_psqr][k]
+        pi_star = _ia_fp_value(gm, n, :junction, k, "psqr")
+
+        p_min = junction["p_min"]
+        p_max = junction["p_max"]
+        pi_min = p_min^2
+        pi_max = p_max^2
+
+        JuMP.@constraint(model, pi_star - ℓ_x_minus[pi_idx] >= pi_min)
+        JuMP.@constraint(model, pi_star + ℓ_x_plus[pi_idx] <= pi_max)
+    end
+
+    # Compressor ratio bounds
+    for k in sort(collect(keys(ref(gm, n, :compressor))))
+        comp = ref(gm, n, :compressor, k)
+        haskey(input_map[:compressor_ratio], k) || continue
+
+        ratio_idx = input_map[:compressor_ratio][k]
+
+        # Get α* (r²)
+        fp_comp = _ia_fixed_point(gm, n)["compressor"][string(k)]
+        α_star = haskey(fp_comp, "rsqr") ? fp_comp["rsqr"] : fp_comp["r"]^2
+
+        # Ratio limits
+        c_ratio_min = comp["c_ratio_min"]
+        c_ratio_max = comp["c_ratio_max"]
+        α_min = c_ratio_min^2
+        α_max = c_ratio_max^2
+
+        JuMP.@constraint(model, α_star - ℓ_u_minus[ratio_idx] >= α_min)
+        JuMP.@constraint(model, α_star + ℓ_u_plus[ratio_idx] <= α_max)
+    end
+
+    # Receipt bounds
+    for k in sort(collect(keys(ref(gm, n, :receipt))))
+        haskey(input_map[:receipt], k) || continue
+        receipt = ref(gm, n, :receipt, k)
+        receipt_idx = input_map[:receipt][k]
+
+        fg_star = _ia_fp_value(gm, n, :receipt, k, "fg")
+        fg_min = receipt["injection_min"]
+        fg_max = receipt["injection_max"]
+
+        JuMP.@constraint(model, fg_star - ℓ_u_minus[receipt_idx] >= fg_min)
+        JuMP.@constraint(model, fg_star + ℓ_u_plus[receipt_idx] <= fg_max)
+    end
+
+    # Transfer bounds
+    for k in sort(collect(keys(ref(gm, n, :transfer))))
+        haskey(input_map[:transfer], k) || continue
+        transfer = ref(gm, n, :transfer, k)
+        transfer_idx = input_map[:transfer][k]
+
+        ft_star = _ia_fp_value(gm, n, :transfer, k, "ft")
+        ft_min = transfer["withdrawal_min"]
+        ft_max = transfer["withdrawal_max"]
+
+        JuMP.@constraint(model, ft_star - ℓ_u_minus[transfer_idx] >= ft_min)
+        JuMP.@constraint(model, ft_star + ℓ_u_plus[transfer_idx] <= ft_max)
+    end
+
+    @info "Physical feasibility constraints added"
+end
+
+
+"""
+Add objective: maximize polytope volume.
+
+Uses product of half-widths: ∏(ℓ_x^+ + ℓ_x^-) × ∏(ℓ_u^+ + ℓ_u^-)
+
+For numerical stability, maximize sum of logs instead:
+    max Σ log(ℓ_x^+ + ℓ_x^-) + Σ log(ℓ_u^+ + ℓ_u^-)
+"""
+function _add_ia_objective!(
+    model, n_states, n_inputs,
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+)
+    @info "Adding objective function"
+
+    # For convex optimization, use sum of half-widths as proxy
+    # (log formulation requires nonlinear solver)
+    JuMP.@objective(
+        model,
+        JuMP.MOI.MAX_SENSE,
+        sum(ℓ_x_plus[i] + ℓ_x_minus[i] for i in 1:n_states) +
+        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in 1:n_inputs)
+    )
+
+    @info "Objective function added"
+end

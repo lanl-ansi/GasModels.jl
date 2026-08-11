@@ -101,17 +101,18 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
     end
 
     # Compressor boost: Δπⱼ - α*Δπᵢ = πᵢ*Δα + ηc(Δα, Δπᵢ)
+    # NOTE: α ≡ r² (ratio-squared), so πⱼ = α·πᵢ is linear in α
     for k in sort(collect(keys(ref(gm, n, :compressor))))
         comp = ref(gm, n, :compressor, k)
         i, j = comp["fr_junction"], comp["to_junction"]
 
         fp_comp = _ia_fixed_point(gm, n)["compressor"][string(k)]
-        a_star = haskey(fp_comp, "r") ? fp_comp["r"] : sqrt(fp_comp["rsqr"])
+        a_sqr_star = haskey(fp_comp, "rsqr") ? fp_comp["rsqr"] : fp_comp["r"]^2
 
         pi_j_idx = get_state_index(state_map, :junction_psqr, j)
         !isnothing(pi_j_idx) && (J[row, pi_j_idx] = 1.0)
         pi_i_idx = get_state_index(state_map, :junction_psqr, i)
-        !isnothing(pi_i_idx) && (J[row, pi_i_idx] = -a_star)
+        !isnothing(pi_i_idx) && (J[row, pi_i_idx] = -a_sqr_star)
         row += 1
     end
 
@@ -163,6 +164,7 @@ function assemble_ia_input_matrix(gm::AbstractGasModel, n::Int=nw_id_default,
     end
 
     # Compressor rows: R⋆[row, α_col] = πᵢ*
+    # From linearization of πⱼ = α·πᵢ where α ≡ r²: Δπⱼ = α*Δπᵢ + πᵢ*Δα
     for k in sort(collect(keys(ref(gm, n, :compressor))))
         comp = ref(gm, n, :compressor, k)
         i = comp["fr_junction"]
@@ -244,21 +246,32 @@ function compute_ia_coefficient_matrices(gm::AbstractGasModel, n::Int=nw_id_defa
     J_inv = inv(J_dense)
     @info "J⋆^{-1} computed"
 
-    # Step 4: Compute PRODUCT
+    # Step 4: Compute transformation matrices
+    # M = J⋆^{-1}R⋆ (input-to-state mapping)
+    # N = J⋆^{-1} (residual-to-state mapping)
     M = J_inv * Matrix(R)
+    N = J_inv
     @info "M = J⋆^{-1}R⋆ computed: $(size(M))"
+    @info "N = J⋆^{-1} computed: $(size(N))"
 
-    # Step 5: Decompose PRODUCT
+    # Step 5: Decompose M = M_pos - M_neg
     M_pos, M_neg = decompose_matrix_positive_negative(M)
-    @info "M = M⁺ - M⁻ decomposed"
+    @info "M = M^+ - M^- decomposed"
+
+    # Step 6: Decompose N = N_pos - N_neg
+    N_pos, N_neg = decompose_matrix_positive_negative(N)
+    @info "N = N^+ - N^- decomposed"
 
     return (
         M_pos = M_pos,
         M_neg = M_neg,
-        J_inv = J_inv,
+        N_pos = N_pos,
+        N_neg = N_neg,
         state_map = state_map,
         input_map = input_map,
-        J = J_dense,
-        R = Matrix(R)
+        J_star = J_dense,
+        R_star = Matrix(R),
+        M = M,
+        N = N
     )
 end
