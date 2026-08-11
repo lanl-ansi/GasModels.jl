@@ -76,7 +76,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            resistance = _calc_pipe_resistance_rho_phi_space(pipe, ref[:it][gm_it_sym][:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(ref))
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]

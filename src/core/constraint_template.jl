@@ -43,8 +43,8 @@ function constraint_resistor_darcy_weisbach(gm::AbstractGasModel, k; n::Int=nw_i
     i                = resistor["fr_junction"]
     j                = resistor["to_junction"]
     density          = get(gm.ref[:it][gm_it_sym], :standard_density, _estimate_standard_density(gm.data))
-    w                = _calc_resistor_resistance(resistor, Float64(gm.ref[:it][gm_it_sym][:base_pressure]),
-                                                 Float64(gm.ref[:it][gm_it_sym][:base_flow]), density)
+    w                = _calc_resistor_resistance(resistor, Float64(get_base_pressure(gm.ref)),
+                                                 Float64(get_base_flow(gm.ref)), density)
     pd_min, pd_max   = _calc_resistor_pd_bounds(resistor, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min            = resistor["flow_min"]
     f_max            = resistor["flow_max"]

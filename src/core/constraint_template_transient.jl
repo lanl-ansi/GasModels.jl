@@ -37,7 +37,7 @@ function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int 
     theta = pipe["theta"]
     if(D!=0.0)
         if(rad2deg(abs(theta)) <= 5)
-            resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref))
             constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
         else
             resistance_1, resistance_2 = _calc_inclined_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref), get_base_flux(gm.ref), get_base_density(gm.ref), get_sound_speed(gm.ref))
@@ -51,7 +51,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = n
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref))
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
