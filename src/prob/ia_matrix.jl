@@ -79,6 +79,7 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
     row = 1
 
     # Weymouth: Δπᵢ - Δπⱼ - kₑΔfₑ = γₑ(Δfₑ) where kₑ = 2ωₑ|fₑ*|
+    # NOTE: _calc_pipe_resistance returns w = 1/ω (reciprocal of resistance)
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
         i, j = pipe["fr_junction"], pipe["to_junction"]
@@ -89,7 +90,7 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
                                    gm.ref[:it][gm_it_sym][:base_pressure],
                                    gm.ref[:it][gm_it_sym][:base_flow],
                                    gm.ref[:it][gm_it_sym][:sound_speed])
-        k_e = 2 * w * abs(f_star)
+        k_e = 2 * abs(f_star) / w  # k_e = 2ω|f*| = 2|f*|/w since w = 1/ω
 
         J[row, state_map[:pipe_flow][k]] = -k_e
         pi_i_idx = get_state_index(state_map, :junction_psqr, i)
