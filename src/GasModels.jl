@@ -13,8 +13,8 @@ module GasModels
     import Logging
     using Dierckx
     using PolyhedralRelaxations
-    using LinearAlgebra
-    using SparseArrays
+    import LinearAlgebra: det, inv
+    import SparseArrays: spzeros, nnz
     
     const _LOGGER = Ref{Logging.ConsoleLogger}()
 
