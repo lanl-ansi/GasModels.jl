@@ -128,10 +128,16 @@ function constraint_resistor_darcy_weisbach(gm::AbstractDWPModel, n::Int, k, i, 
     f, y = var(gm, n, :f_resistor, k), var(gm, n, :y_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) >= f^2 - (1.0 - y) * (f_min^2-(1.0/w)*pd_min)))
-    _add_constraint!(gm, n, :darcy_weisbach_2, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) <= f^2))
-    _add_constraint!(gm, n, :darcy_weisbach_3, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) >= f^2 - y * (f_max^2+(1.0/w)*pd_max)))
-    _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) <= f^2))
+    if w == 0.0
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, p_i - p_j == 0.0))
+    elseif w == Inf
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, f == 0.0))
+    else
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) >= f^2 - (1.0 - y) * (f_min^2-(1.0/w)*pd_min)))
+        _add_constraint!(gm, n, :darcy_weisbach_2, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) <= f^2))
+        _add_constraint!(gm, n, :darcy_weisbach_3, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) >= f^2 - y * (f_max^2+(1.0/w)*pd_max)))
+        _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) <= f^2))
+    end
 end
 
 

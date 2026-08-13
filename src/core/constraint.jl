@@ -156,6 +156,8 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, n::Int, k,
 
     slope = max(abs(f_max),abs(f_min))
     if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
     elseif f_min == f_max
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min))
@@ -179,6 +181,8 @@ function constraint_inclined_pipe_pressure_drop_linear_approx(gm::AbstractGasMod
     slope = max(abs(f_max),abs(f_min))
 
     if w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
     elseif f_min == f_max
         _add_constraint!(gm, n, :inclined_pipe_pressure_drop_lin_approx1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min))

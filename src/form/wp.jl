@@ -65,7 +65,13 @@ function constraint_resistor_darcy_weisbach(gm::AbstractWPModel, n::Int, k, i, j
     f = var(gm, n, :f_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
+    if w == 0.0
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, p_i - p_j == 0.0))
+    elseif w == Inf
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, f == 0.0))
+    else
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
+    end
 end
 
 

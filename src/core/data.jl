@@ -1609,8 +1609,19 @@ end
 
 "calculates resistor resistances as per Equation (2.30) in Evaluating Gas Network Capacities"
 function _calc_resistor_resistance(resistor::Dict{String,Any}, base_pressure::Float64, base_flow::Float64, density::Float64)
-    resistance = 8.0 * resistor["drag"] * inv(pi^2 * resistor["diameter"]^4) * inv(density)
-    return resistance * base_flow^2 * inv(base_pressure) # Nondimensionalization.
+    drag = resistor["drag"]
+    diameter = resistor["diameter"]
+
+    resistance = 8.0 * drag * inv(pi^2 * diameter^4) * inv(density)
+    resistance = resistance * base_flow^2 * inv(base_pressure) # Nondimensionalization.
+
+    if isapprox(diameter, 0.0; atol=1e-6)
+        resistance = Inf
+    elseif isapprox(drag, 0.0; atol=1e-6)
+        resistance = 0.0
+    end
+
+    return resistance
 end
 
 
