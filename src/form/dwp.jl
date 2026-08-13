@@ -80,7 +80,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractDWPModel, n::Int, k,
 
     w = 1/(r_1 * (1 - exp(r_2)))
     if w == Inf
-        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, inc_pi - pj == 0.0))
     elseif w == 0.0
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
