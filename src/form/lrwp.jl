@@ -25,8 +25,10 @@ function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min,
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
     fmf_l = var(gm, n, :fmf_l_pipe, k)
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
+    elseif w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     elseif f_min == f_max
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min*abs(f_min)))
     else
@@ -50,6 +52,8 @@ function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i,
 
     if w == 0.0
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, (p_i - p_j) == 0.0))
+    elseif w == Inf
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, f == 0.0))
     elseif f_min == f_max
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min*abs(f_min)))
     else
@@ -199,7 +203,9 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, 
 
     fmf_l = JuMP.@variable(gm.model)
 
-    if (w == 0.0) || ((f_min == 0) && (f_max == 0))
+    if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif (w == Inf) || ((f_min == 0) && (f_max == 0))
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else

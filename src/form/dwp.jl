@@ -57,8 +57,10 @@ function constraint_pipe_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, 
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
+    elseif w == 0.0
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pii - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
         _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, w * (pii - pj) <= f^2))
@@ -77,8 +79,10 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractDWPModel, n::Int, k,
     inc_pi = exp(r_2) * pii
 
     w = 1/(r_1 * (1 - exp(r_2)))
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
+    elseif w == 0.0
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) >=  f^2 - (1 - y) * (f_min^2 - w * inc_pd_min)))
         _add_constraint!(gm, n, :inclined_weymouth2, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) <= f^2))
@@ -185,6 +189,8 @@ function constraint_pipe_weymouth_ne(gm::AbstractDWPModel, n::Int, k, i, j, w, f
     f = var(gm, n, :f_ne_pipe, k)
 
     if w == 0.0
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf || ((f_min == 0) && (f_max == 0))
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else

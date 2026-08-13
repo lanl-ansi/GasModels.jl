@@ -1329,8 +1329,10 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     a_sqr = sound_speed^2
     A = pi * D^2 / 4.0 # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
-    if lambda == 0.0 || D == 0.0 || L == 0.0
+    if isapprox(D, 0.0; atol = 1e-6)
         resistance = 0.0
+    elseif isapprox(lambda, 0.0; atol = 1e-6) || isapprox(L, 0.0; atol = 1e-6)
+        resistance = Inf
     end
 
     return resistance
