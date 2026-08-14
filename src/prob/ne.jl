@@ -24,26 +24,6 @@ function build_ne(gm::AbstractGasModel)
     nws = haskey(gm.setting, "config") ? get(gm.setting["config"], "networks", [nw_id_default]) : [nw_id_default]
 
     for nw in nws
-        bounded_compressors = Dict(
-            x for x in ref(gm, :compressor, nw=nw) if
-            _calc_is_compressor_energy_bounded(
-                get_specific_heat_capacity_ratio(gm.data),
-                get_gas_specific_gravity(gm.data),
-                get_temperature(gm.data),
-                x.second
-         )
-        )
-
-        bounded_compressors_ne = Dict(
-            x for x in ref(gm, :ne_compressor, nw=nw) if
-            _calc_is_compressor_energy_bounded(
-                get_specific_heat_capacity_ratio(gm.data),
-                get_gas_specific_gravity(gm.data),
-                get_temperature(gm.data),
-                x.second
-            )
-        )
-
         variable_pressure(gm, nw)
         variable_pressure_sqr(gm, nw)
         variable_flow(gm, nw)
@@ -54,8 +34,8 @@ function build_ne(gm::AbstractGasModel)
         variable_load_mass_flow(gm, nw)
         variable_production_mass_flow(gm, nw)
         variable_transfer_mass_flow(gm, nw)
-        variable_compressor_ratio_sqr(gm, nw; compressors = bounded_compressors)
-        variable_compressor_ratio_sqr_ne(gm, nw; compressors = bounded_compressors_ne)
+        variable_compressor_ratio_sqr(gm, nw; compressors = ref(gm, :bounded_compressors; nw=nw))
+        variable_compressor_ratio_sqr_ne(gm, nw;  compressors = ref(gm, :bounded_compressors_ne; nw=nw))
         variable_storage(gm, nw)
         variable_form_specific(gm, nw)
 
@@ -100,7 +80,7 @@ function build_ne(gm::AbstractGasModel)
             constraint_compressor_ratios(gm, i; n=nw)
         end
 
-        for i in keys(bounded_compressors)
+        for i in ref(gm, :bounded_compressors; nw=nw)
             constraint_compressor_ratio_value(gm, i; n=nw)
             constraint_compressor_energy(gm, i; n=nw)
         end
@@ -111,7 +91,7 @@ function build_ne(gm::AbstractGasModel)
             constraint_compressor_mass_flow_ne(gm, i; n=nw)
         end
 
-        for i in keys(bounded_compressors_ne)
+        for i in ref(gm, :bounded_compressors_ne; nw=nw)
             constraint_compressor_ratio_value_ne(gm, i; n=nw)
             constraint_compressor_energy_ne(gm, i; n=nw)
         end

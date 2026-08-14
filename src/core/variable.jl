@@ -294,18 +294,18 @@ end
 
 
 "variables associated with demand"
-function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, use_nominal::Bool=false)
     fl = var(gm, nw)[:fl] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_delivery)],
         base_name="$(nw)_fl",
         start=comp_start_value(ref(gm, nw, :delivery), i, "fl_start", 
-        ref(gm,nw,:delivery,i)["withdrawal_max"])
+        use_nominal ? ref(gm,nw,:delivery,i)["withdrawal_nominal"] : ref(gm,nw,:delivery,i)["withdrawal_max"])
     )
 
     if bounded
         for (i, delivery) in ref(gm, nw, :dispatchable_delivery)
             JuMP.set_lower_bound(fl[i], ref(gm,nw,:delivery,i)["withdrawal_min"])
-            JuMP.set_upper_bound(fl[i], ref(gm,nw,:delivery,i)["withdrawal_max"])
+            JuMP.set_upper_bound(fl[i], use_nominal ? ref(gm,nw,:delivery,i)["withdrawal_nominal"] : ref(gm,nw,:delivery,i)["withdrawal_max"])
         end
     end
 
@@ -320,26 +320,43 @@ function variable_load_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bo
     end
 end
 
-function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
-    flow_start(transfer)  =  transfer["withdrawal_min"] < 0.0 ? transfer["withdrawal_min"] : transfer["withdrawal_max"]
-    flow_bounds(transfer) = (transfer["withdrawal_min"], transfer["withdrawal_max"])
+function variable_transfer_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, use_nominal::Bool=false)
+    ft_g = var(gm, nw)[:ft_g] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            base_name = "$(nw)_ft_g",
+            start=max(0.0, use_nominal ? -ref(gm,nw,:transfer,i)["withdrawal_nominal"] : ref(gm,nw,:transfer,i)["withdrawal_min"])
+        )
 
-    ft = var(gm, nw)[:ft] = JuMP.@variable(gm.model,
-        [i in ids(gm,nw,:dispatchable_transfer)],
-        base_name="$(nw)_ft",
-        start=flow_start(ref(gm, nw, :transfer, i))
-    )
+    ft_l = var(gm, nw)[:ft_l] = JuMP.@variable(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            base_name = "$(nw)_ft_l",
+            start=max(use_nominal ? ref(gm,nw,:transfer,i)["withdrawal_nominal"] : ref(gm,nw,:transfer,i)["withdrawal_max"], 0.0)
+        )
+
+    ft = var(gm, nw)[:ft] = JuMP.@expression(
+            gm.model,
+            [i in ids(gm, nw, :dispatchable_transfer)],
+            ft_l[i] - ft_g[i]
+        )
+
 
     if bounded
         for (i, transfer) in ref(gm, nw, :dispatchable_transfer)
-            lb, ub = flow_bounds(transfer)
-            JuMP.set_lower_bound(ft[i], lb)
-            JuMP.set_upper_bound(ft[i], ub)
+            JuMP.set_lower_bound(ft_g[i], 0.0)
+            JuMP.set_upper_bound(ft_g[i], use_nominal ? transfer["withdrawal_nominal"] <  0 ? -transfer["withdrawal_nominal"] : 0 : max(0.0, -transfer["withdrawal_min"]))
+            JuMP.set_lower_bound(ft_l[i], 0.0)
+            JuMP.set_upper_bound(ft_l[i], use_nominal ? transfer["withdrawal_nominal"] >= 0 ?  transfer["withdrawal_nominal"] : 0 : max(transfer["withdrawal_max"], 0.0))
         end
     end
 
     if report
-        sol_component_value(gm, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), ft)
+        sol_component_value(gm, nw, :transfer, :ft_l, ids(gm, nw, :dispatchable_transfer), ft_l)
+        sol_component_value(gm, nw, :transfer, :ft_g, ids(gm, nw, :dispatchable_transfer), ft_g)
+
+        sol_ft = Dict(i => ft_l[i] - ft_g[i] for i in ids(gm, nw, :dispatchable_transfer))
+        sol_component_value(gm, nw, :transfer, :ft, ids(gm, nw, :dispatchable_transfer), sol_ft)
 
         if get_data_gm((x -> return haskey(x, "standard_density")), gm.data; apply_to_subnetworks = false)
             density = get_data_gm((x -> return x["standard_density"]), gm.data; apply_to_subnetworks = false)
@@ -351,20 +368,20 @@ end
 
 
 "variables associated with production"
-function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
+function variable_production_mass_flow(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, use_nominal::Bool=false)
     
     fg = var(gm, nw)[:fg] = JuMP.@variable(gm.model,
         [i in ids(gm,nw,:dispatchable_receipt)],
         base_name="$(nw)_fg",
         start=comp_start_value(ref(gm, nw, :receipt), i, "fg_start", 
-        ref(gm,nw,:receipt,i)["injection_max"]
+        use_nominal ? ref(gm,nw,:receipt,i)["injection_nominal"] : ref(gm,nw,:receipt,i)["injection_max"]
         )
     )
 
     if bounded
         for (i, receipt) in ref(gm, nw, :dispatchable_receipt)
             JuMP.set_lower_bound(fg[i], ref(gm,nw,:receipt,i)["injection_min"])
-            JuMP.set_upper_bound(fg[i], ref(gm,nw,:receipt,i)["injection_max"])
+            JuMP.set_upper_bound(fg[i], use_nominal ? ref(gm,nw,:receipt,i)["injection_nominal"] : ref(gm,nw,:receipt,i)["injection_max"])
         end
     end
 
@@ -634,8 +651,8 @@ end
 
 
 "Variable Set: Define variables needed for modeling flow across storage"
-function variable_storage(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true)
-    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report)
+function variable_storage(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, use_nominal=false)
+    variable_storage_mass_flow(gm,nw,bounded=bounded,report=report,use_nominal=use_nominal)
 end
 
 "Variable Set: Define variables needed for modeling flow across connections that are expansions"
@@ -645,33 +662,35 @@ end
 
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :compressor))
+function variable_compressor_ratio_sqr(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ids(gm, nw, :compressor))
     rsqr = var(gm, nw)[:rsqr] = JuMP.@variable(gm.model,
-        [i in keys(compressors)],
+        [i in compressors],
         base_name="$(nw)_r",
         start=comp_start_value(ref(gm, nw, :compressor), i, "ratio_start", 1.0)
     )
 
     if bounded
-        for (i, compressor) in compressors
+        for i in compressors
+            compressor = ref(gm, nw, :compressor, i)
             JuMP.set_lower_bound(rsqr[i], compressor["c_ratio_min"]^2)
             JuMP.set_upper_bound(rsqr[i], compressor["c_ratio_max"]^2)
         end
     end
 
-    report && sol_component_value(gm, nw, :compressor, :rsqr, keys(compressors), rsqr)
+    report && sol_component_value(gm, nw, :compressor, :rsqr, compressors, rsqr)
 end
 
 "Variable Set: variables associated with compression ratios"
-function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ref(gm, nw, :ne_compressor))
+function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_default; bounded::Bool=true, report::Bool=true, compressors = ids(gm, nw, :ne_compressor))
     rsqr = var(gm, nw)[:rsqr_ne] = JuMP.@variable(gm.model,
-        [k in keys(compressors)],
+        [k in compressors],
         base_name="$(nw)_r",
         start=comp_start_value(ref(gm, nw, :ne_compressor), k, "ratio_start", 1.0)
     )
 
     if bounded
-        for (k, compressor) in compressors
+        for k in compressors
+            compressor = ref(gm, nw, :ne_compressor)[k]
             i = ref(gm,nw,:junction,compressor["fr_junction"])
             j = ref(gm,nw,:junction,compressor["to_junction"])
 
@@ -688,7 +707,7 @@ function variable_compressor_ratio_sqr_ne(gm::AbstractGasModel, nw::Int=nw_id_de
         end
     end
 
-    report && sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, keys(compressors), rsqr)
+    report && sol_component_value(gm, nw, :ne_compressor, :rsqr_ne, compressors, rsqr)
 end
 
 "Variable Set: variables associated with proxy for minimizing compression power"
@@ -763,13 +782,13 @@ function get_ne_compressor_y(gm::AbstractGasModel, n::Int, k)
 end
 
 "variables associated with storage flows"
-function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true,report::Bool = true)
-    f_wh = var(gm, nw)[:well_head_flow]             = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
+function variable_storage_mass_flow(gm::AbstractGasModel,nw::Int = nw_id_default; bounded::Bool = true, report::Bool = true, use_nominal::Bool = false)
+    f_wh = var(gm, nw)[:well_head_flow] = JuMP.@variable(gm.model,[i in ids(gm, nw, :storage)],base_name = "$(nw)_storage_well_head")
 
     if bounded
         for (i, storage) in ref(gm, nw, :storage)
-            lb = min(-storage["flow_injection_rate_max"], 0.0)
-            ub = max(storage["flow_withdrawal_rate_max"], 0.0)
+            lb = use_nominal ? storage["storage_nominal"] <  0 ? -storage["storage_nominal"] : 0 : min(-storage["flow_injection_rate_max"], 0.0)
+            ub = use_nominal ? storage["storage_nominal"] >= 0 ?  storage["storage_nominal"] : 0 : max(storage["flow_withdrawal_rate_max"], 0.0)
             JuMP.set_lower_bound(f_wh[i], lb)
             JuMP.set_upper_bound(f_wh[i], ub)
         end

@@ -37,10 +37,10 @@ function constraint_pipe_momentum_balance(gm::AbstractGasModel, i::Int, nw::Int 
     theta = pipe["theta"]
     if(D!=0.0)
         if(rad2deg(abs(theta)) <= 5)
-            resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref))
             constraint_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance)
         else
-            resistance_1, resistance_2 = _calc_inclined_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:sound_speed])
+            resistance_1, resistance_2 = _calc_inclined_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref), get_base_flux(gm.ref), get_base_density(gm.ref), get_sound_speed(gm.ref))
             constraint_inclined_pipe_momentum_balance(gm, nw, i, fr_junction, to_junction, resistance_1, resistance_2)
         end
     end
@@ -51,7 +51,7 @@ function constraint_pipe_physics_ideal(gm::AbstractGasModel, i::Int, nw::Int = n
     pipe = ref(gm, nw, :pipe, i)
     fr_junction = pipe["fr_junction"]
     to_junction = pipe["to_junction"]
-    resistance = _calc_pipe_resistance_rho_phi_space(pipe, gm.ref[:it][gm_it_sym][:base_length])
+    resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(gm.ref))
     constraint_pipe_physics_ideal(gm, nw, i, fr_junction, to_junction, resistance)
 end
 
@@ -87,8 +87,8 @@ function constraint_storage_well_momentum_balance(
     well = ref(gm, nw, :storage, i)
     length_per_well_segment = well["well_depth"] / num_discretizations
     g = acceleration_gravity
-    beta = (-2.0 * gm.ref[:it][gm_it_sym][:base_length] * g * length_per_well_segment) / gm.ref[:it][gm_it_sym][:sound_speed]^2
-    resistance = well["well_friction_factor"] * gm.ref[:it][gm_it_sym][:base_length] * length_per_well_segment / well["well_diameter"]
+    beta = (-2.0 * get_base_length(gm.ref) * g * length_per_well_segment) / get_sound_speed(gm.ref)^2
+    resistance = well["well_friction_factor"] * get_base_length(gm.ref) * length_per_well_segment / well["well_diameter"]
     constraint_storage_well_momentum_balance(gm, nw, num_discretizations, i, beta, resistance)
 end
 
@@ -116,7 +116,7 @@ function constraint_storage_flow_bounds(gm::AbstractGasModel, i::Int, nw::Int = 
     junction = ref(gm, nw, :junction, j)
     rho_top_max = junction["p_max"]*storage["c_ratio_max"]
     rho_top_min = junction["p_min"]*storage["reduction_factor_max"]
-    b0w, b1w = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "withdrawal", gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:sound_speed]; n_disc=100)
-    b0i, b1i = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "injection", gm.ref[:it][gm_it_sym][:base_flux], gm.ref[:it][gm_it_sym][:base_density], gm.ref[:it][gm_it_sym][:base_length], gm.ref[:it][gm_it_sym][:sound_speed]; n_disc=100)
+    b0w, b1w = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "withdrawal", get_base_flux(gm.ref), get_base_density(gm.ref), get_base_length(gm.ref), get_sound_speed(gm.ref); n_disc=100)
+    b0i, b1i = _calc_storage_parameters(storage, rho_top_max, rho_top_min, "injection", get_base_flux(gm.ref), get_base_density(gm.ref), get_base_length(gm.ref), get_sound_speed(gm.ref); n_disc=100)
     constraint_storage_flow_bounds(gm, i, nw, b0w, b1w, b0i, b1i)
 end

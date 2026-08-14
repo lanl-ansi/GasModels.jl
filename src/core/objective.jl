@@ -72,14 +72,12 @@ end
 "function for minimizing economic costs: ``\\min \\sum_{j \\in {\\cal D}} \\kappa_j \\boldsymbol{d}_j - \\sum_{j \\in {\\cal T}} \\kappa_j \\boldsymbol{\\tau}_j - \\sum_{j \\in {\\cal R}} \\kappa_j \\boldsymbol{r}_j -
     \\sum_{ijk \\in {\\cal C}} \\boldsymbol{f}_{ijk} (\\boldsymbol{\\alpha}_{ijk}^m - 1)``"
 function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default])
-    transfer_price(transfer) = transfer["withdrawal_min"] >= 0.0 ?
-        get(transfer, "bid_price", 1.0) : (1) * get(transfer, "offer_price", 1.0)
-
     r = Dict(n => var(gm, n, :rsqr) for n in nws)
     f = Dict(n => var(gm, n, :f_compressor) for n in nws)
     fl = Dict(n => var(gm, n, :fl) for n in nws)
     fg = Dict(n => var(gm, n, :fg) for n in nws)
-    ft = Dict(n => var(gm, n, :ft) for n in nws)
+    ft_g = Dict(n => var(gm, n, :ft_g) for n in nws)
+    ft_l = Dict(n => var(gm, n, :ft_l) for n in nws)
     gamma = get_specific_heat_capacity_ratio(gm.data)
     m = ((gamma - 1) / gamma) / 2
     T = get_temperature(gm.data)
@@ -112,16 +110,22 @@ function objective_min_economic_costs(gm::AbstractGasModel, nws = [nw_id_default
             i => get(ref(gm, n, :receipt, i), "offer_price", 1.0) for i in prod_set[n]
         ) for n in nws
     )
-    transfer_prices = Dict(
+    transfer_offer_prices = Dict(
         n => Dict(
-            i => transfer_price(ref(gm, n, :transfer, i)) for i in transfer_set[n]
+            i => get(ref(gm, n, :transfer, i), "offer_price", 1.0) for i in transfer_set[n]
+        ) for n in nws
+    )
+    transfer_bid_prices = Dict(
+        n => Dict(
+            i => get(ref(gm, n, :transfer, i), "bid_price", 1.0) for i in transfer_set[n]
         ) for n in nws
     )
 
     economic_weighting = get(gm.ref[:it][gm_it_sym],:economic_weighting, 1.0)
     
-    supply_demand_costs_expression = JuMP.@expression(gm.model, sum(sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) + 
-                                                                    sum(-transfer_prices[n][i] * ft[n][i] for i in transfer_set[n]) + 
+    supply_demand_costs_expression = JuMP.@expression(gm.model, sum(sum(-load_prices[n][i] * fl[n][i] for i in load_set[n]) +
+                                                                    sum(-transfer_bid_prices[n][i] * ft_l[n][i] for i in transfer_set[n]) + 
+                                                                    sum(transfer_offer_prices[n][i] * ft_g[n][i] for i in transfer_set[n]) +
                                                                     sum(prod_prices[n][i] * fg[n][i] for i in prod_set[n]) 
                                                                 for n in nws
                                                                 )
