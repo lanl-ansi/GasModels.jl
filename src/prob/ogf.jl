@@ -29,13 +29,16 @@ function solve_ogf_nominal(file, model_type::DataType, optimizer; kwargs...)
         sol_regulator_p_to_r!,
     ]
 
+    settings                          = get(kwargs, :setting, Dict{String,Any}())
+    settings["config"]                = get(settings, "config", Dict{String,Any}())
+    settings["config"]["use_nominal"] = true
+
     return run_model(
         file,
         model_type,
         optimizer,
         build_ogf;
-        ref_extensions = [ref_nominal_flow_as_capacity!],
-        solution_processors = solution_processors,
+        solution_processors = solution_processors, setting=settings,
         kwargs...,
     )
 end
@@ -72,28 +75,19 @@ end
 
 "construct the ogf problem for specific networks in ref"
 function build_ogf(gm::AbstractGasModel)
-    nws = haskey(gm.setting, "config") ? get(gm.setting["config"], "networks", [nw_id_default]) : [nw_id_default]
+    nws         = haskey(gm.setting, "config") ? get(gm.setting["config"], "networks", [nw_id_default]) : [nw_id_default]
+    use_nominal = haskey(gm.setting, "config") ? get(gm.setting["config"], "use_nominal", false) : false
 
     for nw in nws
-        bounded_compressors = Dict(
-            x for x in ref(gm, :compressor; nw=nw) if
-            _calc_is_compressor_energy_bounded(
-                get_specific_heat_capacity_ratio(gm.data),
-                get_gas_specific_gravity(gm.data),
-                get_temperature(gm.data),
-                x.second
-            )
-        )
-
         variable_pressure(gm, nw)
         variable_pressure_sqr(gm, nw)
         variable_flow(gm, nw)
         variable_on_off_operation(gm, nw)
-        variable_load_mass_flow(gm, nw)
-        variable_production_mass_flow(gm, nw)
-        variable_transfer_mass_flow(gm, nw)
+        variable_load_mass_flow(gm, nw; use_nominal=use_nominal)
+        variable_production_mass_flow(gm, nw; use_nominal=use_nominal)
+        variable_transfer_mass_flow(gm, nw; use_nominal=use_nominal)
         variable_compressor_ratio_sqr(gm, nw)
-        variable_storage(gm, nw)
+        variable_storage(gm, nw; use_nominal=use_nominal)
         variable_form_specific(gm, nw)
 
         for (i, junction) in ref(gm, :junction; nw=nw)
@@ -132,7 +126,7 @@ function build_ogf(gm::AbstractGasModel)
             constraint_compressor_ratio_value(gm, i; n=nw)
         end
 
-        for i in keys(bounded_compressors)
+        for i in ref(gm, :bounded_compressors; nw=nw)
             constraint_compressor_energy(gm, i; n=nw)
         end
 

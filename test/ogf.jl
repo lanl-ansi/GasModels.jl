@@ -95,12 +95,12 @@
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
             gm = GasModels.instantiate_model(data, WPGasModel, GasModels.build_ogf)
             solution_file = "../test/data/transient/case6_base_solution.json"
-            report = GasModels.primal_feasibility_report(gm, solution_file; atol = 1e-6)
+            report = GasModels.primal_feasibility_report(gm, solution_file; atol = 1e-6, skip_missing=true)
             @test isempty(report)
 
             solution = JSON.parsefile(solution_file)
             solution["solution"]["junction"]["1"]["psqr"] *= 0.95
-            report = GasModels.primal_feasibility_report(gm, solution; atol = 1e-6)
+            report = GasModels.primal_feasibility_report(gm, solution; atol = 1e-6, skip_missing=true)
             @test !isempty(report)
         end
 

@@ -1,14 +1,21 @@
 function ref_add_ne!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     refs_ng = refs[:it][gm_it_sym]
-    _ref_add_ne!(refs_ng[:nw], refs_ng[:base_length], refs_ng[:base_pressure],
-        refs_ng[:base_flow], refs_ng[:sound_speed])
+    _ref_add_ne!(refs_ng[:nw], get_base_length(refs), get_base_pressure(refs),
+        get_base_flow(refs), get_sound_speed(refs), get_specific_heat_capacity_ratio(refs), get_gas_specific_gravity(refs), get_temperature(refs))
 end
 
 
-function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
+function _ref_add_ne!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed, specific_heat_capacity_ratio, gas_specific_gravity, temperature)
     for (nw, ref) in nw_refs
         ref[:ne_pipe] = haskey(ref, :ne_pipe) ? Dict(x for x in ref[:ne_pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
         ref[:ne_compressor] = haskey(ref, :ne_compressor) ? Dict(x for x in ref[:ne_compressor] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
+
+        ref[:bounded_compressors_ne] = collect(i for (i, compressor) in ref[:ne_compressor] if _calc_is_compressor_energy_bounded(
+                specific_heat_capacity_ratio,
+                gas_specific_gravity,
+                temperature,
+                compressor
+            ))
 
         ref[:parallel_ne_pipes] = Dict()
         ref[:parallel_ne_compressors] = Dict()
@@ -69,7 +76,7 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
 
         for (i, pipe) in nw_ref[:pipe]
-            resistance = _calc_pipe_resistance_rho_phi_space(pipe, ref[:it][gm_it_sym][:base_length])
+            resistance = _calc_pipe_resistance_rho_phi_space(pipe, get_base_length(ref))
             fr_junction = nw_ref[:junction][pipe["fr_junction"]]
             to_junction = nw_ref[:junction][pipe["fr_junction"]]
             fr_p_min = fr_junction["p_min"]
@@ -146,70 +153,6 @@ function ref_add_transient!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 end
 
-"adjusts the capacity limits of deliveries, receipts and transfers to use nominal data rather than operating limits"
-function ref_nominal_flow_as_capacity!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
-
-    if _IM.ismultinetwork(data_it)
-        nws_data = data_it["nw"]
-    else
-        nws_data = Dict("0" => data_it)
-    end
-
-    for (n, nw_data) in nws_data
-        nw_id = parse(Int, n)
-        nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
-
-        for (i, delivery) in nw_ref[:delivery]           
-            if (delivery["withdrawal_nominal"] >= 0)           
-                delivery["withdrawal_max"] = delivery["withdrawal_nominal"]
-                delivery["withdrawal_min"] = max(0.0, delivery["withdrawal_min"])
-            else
-                delivery["withdrawal_max"] = min(0.0, delivery["withdrawal_max"]) 
-                delivery["withdrawal_min"] = delivery["withdrawal_nominal"]
-            end
-        end
-
-        for (i, receipt) in nw_ref[:receipt]
-            if (receipt["injection_nominal"] >= 0)
-                receipt["injection_max"] = receipt["injection_nominal"]
-                receipt["injection_min"] = max(0.0, receipt["injection_min"])
-            else
-                receipt["injection_max"] = min(0.0, receipt["injection_max"]) 
-                receipt["injection_min"] = receipt["injection_nominal"]
-            end
-        end
-
-        for (i, transfer) in nw_ref[:transfer]
-            if (transfer["withdrawal_nominal"] >= 0)
-                transfer["withdrawal_max"] = transfer["withdrawal_nominal"]
-                transfer["withdrawal_min"] = max(0.0, transfer["withdrawal_min"])
-            else
-                transfer["withdrawal_max"] = min(0.0, transfer["withdrawal_max"])
-                transfer["withdrawal_min"] = transfer["withdrawal_nominal"] 
-            end
-        end
-
-        for (i, storage) in nw_ref[:storage]
-            # force everything to be a withdrawal
-            if (storage["storage_nominal"] >= 0)
-                storage["flow_withdrawal_rate_max"] = storage["storage_nominal"]
-                storage["flow_withdrawal_rate_min"] = max(0.0, storage["flow_withdrawal_rate_min"])
-
-                storage["flow_injection_rate_max"]  = 0.0 
-                storage["flow_injection_rate_min"]  = 0.0 
-            else
-                storage["flow_injection_rate_max"]  = -storage["storage_nominal"] # need to flip the sign since injection is considered to be positive
-                storage["flow_injection_rate_min"]  = max(0.0, storage["flow_injection_rate_min"])
-
-                storage["flow_withdrawal_rate_max"] = 0.0 
-                storage["flow_withdrawal_rate_min"] = 0.0            
-            end
-        end
-
-    end
-end
-
 "adjusts energy parameters of a model so they are no longer considered"
 function ref_disregard_compressor_energy!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][gm_it_name] : data
@@ -220,21 +163,11 @@ function ref_disregard_compressor_energy!(ref::Dict{Symbol,<:Any}, data::Dict{St
         nws_data = Dict("0" => data_it)
     end
 
-    gamma = get_specific_heat_capacity_ratio(data)
-    G     = get_gas_specific_gravity(data)
-    T     = get_temperature(data)
-    work  = _calc_compressor_work(gamma, G, T)
-
     ref[:it][gm_it_sym][:economic_weighting] = 1.0    
     for (n, nw_data) in nws_data
-        nw_id = parse(Int, n)
-        nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
-
-        for (i, compressor) in nw_ref[:compressor] 
-            max_ratio               = compressor["c_ratio_max"]
-            f_max                   = max(abs(compressor["flow_max"]), abs(compressor["flow_min"]))
-            m                       = _calc_compressor_m_sqr(gamma, compressor)
-            compressor["power_max"] = max(compressor["power_max"], f_max * (max_ratio^2^m - 1) * work + 1.0)
-        end
+       nw_id = parse(Int, n)
+       nw_ref = ref[:it][gm_it_sym][:nw][nw_id]
+        nw_ref[:bounded_compressors_ne] = []
+        nw_ref[:bounded_compressors] = []
     end
 end

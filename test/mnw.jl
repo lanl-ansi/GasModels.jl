@@ -71,7 +71,7 @@ end
                                 time_step=864.0)
     
     settings = Dict("config" => Dict("networks" => parse.(Int, keys(mn_data["nw"]))))
-    result = GasModels.solve_ogf(mn_data, WPGasModel, nlp_solver, setting=settings)
+    result = GasModels.solve_ogf(mn_data, WPGasModel, nlp_solver; setting=settings)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -16876.54423, atol = 1e-3)
     
@@ -92,7 +92,7 @@ end
  
     for nw in keys(mn_data["nw"])
         settings = Dict("config" => Dict("networks" => [parse(Int,nw)]))
-        solution = GasModels.solve_ogf(mn_data, WPGasModel, ipopt_no_barrier, setting=settings)
+        solution = GasModels.solve_ogf(mn_data, WPGasModel, ipopt_no_barrier; setting=settings)
         @test solution["termination_status"] == LOCALLY_SOLVED
         result["solution"]["nw"][nw] = solution["solution"]["nw"][nw]
 
@@ -137,7 +137,7 @@ end
                                 "../test/data/transient/time-series-case-6a.csv", 
                                 time_step=864.0)
     settings = Dict("config" => Dict("networks" => parse.(Int, keys(mn_data["nw"]))))
-    result = GasModels.solve_ls(mn_data, WPGasModel, nlp_solver, setting=settings)
+    result = GasModels.solve_ls(mn_data, WPGasModel, nlp_solver; setting=settings)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], 2.525, atol = 1e-3)
     

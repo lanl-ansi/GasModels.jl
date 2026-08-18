@@ -1,10 +1,14 @@
 # GasModels.jl Change Log
 
+## staged 
+
+- Split steady-state transfer variables into two variables (the positive and negative component)
+
 ## v0.13.4
-- Breaking change: Renamed   solve_ogf_comp_power_unc to solve_ogf_comp_power_unconstrained
-- Merged ogf and ogf_comp_power_unc, with a ref function to reproduce ogf_comp_power_unc model in ogf
-- Merged ogf and ogf_comp_power_nominal, with a ref function to reproduce ogf_comp_power_nominal model in ogf
-- Add: Capability to choose arbitrary network(s) to solve with gf, ls, ne, nels, and ogf
+- Breaking change: Renamed `solve_ogf_comp_power_unc` to `solve_ogf_comp_power_unconstrained`
+- Merged `ogf` and `ogf_comp_power_unc`, with a ref function to `reproduce ogf_comp_power_unc` model in `ogf`
+- Merged `ogf` and `ogf_comp_power_nominal`, with a ref function to `reproduce ogf_comp_power_nominal` model in `ogf`
+- Add: Capability to choose arbitrary network(s) to solve with `gf`, `ls`, `ne`, `nels`, and `ogf`
 
 ## v0.13.3
 - Bug Fix: corrects unit conversion in `parse_separated_data` and the upstream function `apply_nominations`. The previous code, described in Issue #344, incorrectly applied a per-unit conversion to price data. 

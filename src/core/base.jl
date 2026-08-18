@@ -83,11 +83,11 @@ Some of the common keys include:
 """
 function ref_add_core!(refs::Dict{Symbol,<:Any})
     _ref_add_core!(
-        refs[:it][gm_it_sym][:nw], refs[:it][gm_it_sym][:base_length], refs[:it][gm_it_sym][:base_pressure],
-        refs[:it][gm_it_sym][:base_flow], refs[:it][gm_it_sym][:sound_speed])
+        refs[:it][gm_it_sym][:nw], get_base_length(refs), get_base_pressure(refs),
+        get_base_flow(refs), get_sound_speed(refs), get_specific_heat_capacity_ratio(refs), get_gas_specific_gravity(refs), get_temperature(refs))
 end
 
-function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed)
+function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, base_flow, sound_speed, specific_heat_capacity_ratio, gas_specific_gravity, temperature)
     for (nw, ref) in nw_refs
         ref[:junction] = haskey(ref, :junction) ? Dict(x for x in ref[:junction] if x.second["status"] == 1) : Dict()
         ref[:pipe] = haskey(ref, :pipe) ? Dict(x for x in ref[:pipe] if x.second["status"] == 1 && x.second["fr_junction"] in keys(ref[:junction]) && x.second["to_junction"] in keys(ref[:junction])) : Dict()
@@ -121,6 +121,14 @@ function _ref_add_core!(nw_refs::Dict{Int,<:Any}, base_length, base_pressure, ba
         ref[:nondispatchable_receipts_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
         ref[:nondispatchable_deliveries_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
         ref[:storages_in_junction] = Dict([(i, []) for (i, junction) in ref[:junction]])
+
+        # compressors that are power bound
+        ref[:bounded_compressors] = collect(i for (i, compressor) in ref[:compressor] if _calc_is_compressor_energy_bounded(
+                specific_heat_capacity_ratio,
+                gas_specific_gravity,
+                temperature,
+                compressor
+            ))
 
         _add_junction_map!(ref[:dispatchable_transfers_in_junction], ref[:dispatchable_transfer])
         _add_junction_map!(ref[:nondispatchable_transfers_in_junction], ref[:nondispatchable_transfer])
