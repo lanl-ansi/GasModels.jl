@@ -18,8 +18,6 @@ end
 
 "Constraint: Weymouth equation - Linear Relaxation"
 function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO why not applicable?
-
     pipe = ref(gm, n, :pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
@@ -44,6 +42,7 @@ end
 
 "Constraint: Inclined pipe pressure drop - Linear Relaxation"
 function constraint_inclined_pipe_pressure_drop(gm::AbstractLRWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pipe = ref(gm, n, :pipe, k)
     pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
@@ -59,7 +58,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractLRWPModel, n::Int, k
     elseif f_min == f_max
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min*abs(f_min)))
     else
-        _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == (f * abs(f)) / w))
+        _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == fmf_l / w))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
         partition = get_flow_partition(pipe, f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)

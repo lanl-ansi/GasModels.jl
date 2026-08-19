@@ -33,7 +33,6 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRDWP models"
 function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO why not applicable?
     pipe = ref(gm, n, :pipe, k)
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
@@ -64,6 +63,7 @@ end
 
 "Constraint: Inclined pipe pressure drop - Linear Relaxation"
 function constraint_inclined_pipe_pressure_drop(gm::AbstractLRDWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pipe = ref(gm, n, :pipe, k)
     pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
