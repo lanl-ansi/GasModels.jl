@@ -134,7 +134,7 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_defaul
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
 
-    if(rad2deg(abs(theta)) <= 5)
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
         w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
         constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
     else
@@ -154,7 +154,7 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int 
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
 
-    if(rad2deg(abs(theta)) <= 5)
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
         w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
         constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
     else
