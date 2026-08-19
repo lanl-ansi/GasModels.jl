@@ -54,25 +54,30 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default)
         )
     end
 
-    # Junction pressures (convert from per-unit Δπ to ΔP in Pa)
-    # Note: π = p², so for small deviations: Δπ ≈ 2p*·Δp
-    # More precisely: Δp = (sqrt(π* + Δπ) - sqrt(π*)) ≈ Δπ/(2*sqrt(π*))
+    # Junction pressures (convert from π = p² to p)
+    # Exact approach: convert to SI, apply bounds, take sqrt, compute deviation
     for (k, idx) in state_map[:junction_psqr]
-        π_star = _ia_fp_value(gm, n, :junction, k, "psqr")
-        p_star = sqrt(π_star) * base_pressure  # p* in Pa
+        π_star_pu = _ia_fp_value(gm, n, :junction, k, "psqr")
 
-        # Deviation in π (per-unit)
-        Δπ_minus_pu = ℓ_x_minus[idx]
-        Δπ_plus_pu = ℓ_x_plus[idx]
+        # Convert to SI
+        π_star_SI = π_star_pu * base_pressure^2
 
-        # Convert to pressure deviation (Pa)
-        # Δp ≈ Δπ · base_pressure² / (2·p*)
-        Δp_minus = Δπ_minus_pu * base_pressure^2 / (2 * p_star)
-        Δp_plus = Δπ_plus_pu * base_pressure^2 / (2 * p_star)
+        # Apply deviation bounds to get π range in SI
+        π_min_SI = π_star_SI - ℓ_x_minus[idx] * base_pressure^2
+        π_max_SI = π_star_SI + ℓ_x_plus[idx] * base_pressure^2
+
+        # Take sqrt to get p range
+        p_star_SI = sqrt(π_star_SI)
+        p_min_SI = sqrt(max(0.0, π_min_SI))  # Protect against negative
+        p_max_SI = sqrt(max(0.0, π_max_SI))
+
+        # Compute deviation from p*
+        Δp_lower = p_min_SI - p_star_SI
+        Δp_upper = p_max_SI - p_star_SI
 
         state_bounds[(:junction_psqr, k)] = (
-            lower = -Δp_minus,
-            upper = Δp_plus,
+            lower = Δp_lower,
+            upper = Δp_upper,
             unit = "Pa"
         )
     end
@@ -80,24 +85,28 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default)
     # Convert input bounds to SI units
     input_bounds = Dict()
 
-    # Compressor ratios (convert Δα to Δr)
-    # Note: α = r², so for small deviations: Δα ≈ 2r*·Δr, thus Δr ≈ Δα/(2r*)
+    # Compressor ratios (convert from α = r² to r)
+    # Exact approach: apply bounds to α, take sqrt, compute deviation
     for (k, idx) in input_map[:compressor_ratio]
         fp_comp = _ia_fixed_point(gm, n)["compressor"][string(k)]
         α_star = haskey(fp_comp, "rsqr") ? fp_comp["rsqr"] : fp_comp["r"]^2
+
+        # Apply deviation bounds to get α range
+        α_min = α_star - ℓ_u_minus[idx]
+        α_max = α_star + ℓ_u_plus[idx]
+
+        # Take sqrt to get r range
         r_star = sqrt(α_star)
+        r_min = sqrt(max(0.0, α_min))  # Protect against negative
+        r_max = sqrt(max(0.0, α_max))
 
-        # Deviation in α (per-unit, dimensionless)
-        Δα_minus = ℓ_u_minus[idx]
-        Δα_plus = ℓ_u_plus[idx]
-
-        # Convert to ratio deviation: Δr ≈ Δα / (2·r*)
-        Δr_minus = Δα_minus / (2 * r_star)
-        Δr_plus = Δα_plus / (2 * r_star)
+        # Compute deviation from r*
+        Δr_lower = r_min - r_star
+        Δr_upper = r_max - r_star
 
         input_bounds[(:compressor_ratio, k)] = (
-            lower = -Δr_minus,
-            upper = Δr_plus,
+            lower = Δr_lower,
+            upper = Δr_upper,
             unit = "dimensionless"
         )
     end
