@@ -34,31 +34,6 @@ function decompose_matrix_positive_negative(M::AbstractMatrix)
 end
 
 
-"""
-Compute residual bounds for Weymouth equation.
-γₑ(Δfₑ) = ωₑ(Δfₑ)² for f*>0 without reversal
-"""
-function compute_weymouth_residual_bounds(
-    f_star::Float64,
-    l_f_minus::Float64,
-    l_f_plus::Float64,
-    reversal_allowed::Bool
-)
-    if !reversal_allowed
-        if f_star > 0
-            return 0.0, max(l_f_minus^2, l_f_plus^2)
-        else
-            return -max(l_f_minus^2, l_f_plus^2), 0.0
-        end
-    else
-        # TODO: Use Section 1.4.2 bounds for flow reversal
-        return compute_weymouth_residual_bounds_with_reversal(
-            f_star, l_f_minus, l_f_plus
-        )
-    end
-end
-
-
 #=============================================================================
     [2] MATRIX ASSEMBLY FUNCTIONS
 =============================================================================#
