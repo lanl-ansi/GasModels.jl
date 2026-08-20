@@ -338,7 +338,7 @@ function _add_physical_bounds_constraints!(
         JuMP.@constraint(model, fg_star + ℓ_u_plus[receipt_idx] <= fg_max)
     end
 
-    # Transfer bounds
+    # Transfer bounds (non-slack only, slack transfers are handled as state variables)
     for k in sort(collect(keys(ref(gm, n, :transfer))))
         haskey(input_map[:transfer], k) || continue
         transfer = ref(gm, n, :transfer, k)
@@ -350,6 +350,39 @@ function _add_physical_bounds_constraints!(
 
         JuMP.@constraint(model, ft_star - ℓ_u_minus[transfer_idx] >= ft_min)
         JuMP.@constraint(model, ft_star + ℓ_u_plus[transfer_idx] <= ft_max)
+    end
+
+    # Slack receipt bounds (state variables, not inputs)
+    for (k, receipt_idx) in state_map[:slack_receipt]
+        receipt = ref(gm, n, :receipt, k)
+        fg_star = _ia_fp_value(gm, n, :receipt, k, "fg")
+        fg_min = receipt["injection_min"]
+        fg_max = receipt["injection_max"]
+
+        JuMP.@constraint(model, fg_star - ℓ_x_minus[receipt_idx] >= fg_min)
+        JuMP.@constraint(model, fg_star + ℓ_x_plus[receipt_idx] <= fg_max)
+    end
+
+    # Slack delivery bounds (state variables, not inputs)
+    for (k, delivery_idx) in state_map[:slack_delivery]
+        delivery = ref(gm, n, :delivery, k)
+        fd_star = _ia_fp_value(gm, n, :delivery, k, "fd")
+        fd_min = delivery["withdrawal_min"]
+        fd_max = delivery["withdrawal_max"]
+
+        JuMP.@constraint(model, fd_star - ℓ_x_minus[delivery_idx] >= fd_min)
+        JuMP.@constraint(model, fd_star + ℓ_x_plus[delivery_idx] <= fd_max)
+    end
+
+    # Slack transfer bounds (state variables, not inputs)
+    for (k, transfer_idx) in state_map[:slack_transfer]
+        transfer = ref(gm, n, :transfer, k)
+        ft_star = _ia_fp_value(gm, n, :transfer, k, "ft")
+        ft_min = transfer["withdrawal_min"]
+        ft_max = transfer["withdrawal_max"]
+
+        JuMP.@constraint(model, ft_star - ℓ_x_minus[transfer_idx] >= ft_min)
+        JuMP.@constraint(model, ft_star + ℓ_x_plus[transfer_idx] <= ft_max)
     end
 
     @info "Physical feasibility constraints added"

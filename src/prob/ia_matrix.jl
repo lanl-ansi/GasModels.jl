@@ -92,10 +92,12 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
     end
 
     # Mass balance: AΔf = BΔd
+    # Now includes mass balance at SLACK junctions to determine slack receipts/deliveries/transfers
     for k in sort(collect(keys(ref(gm, n, :junction))))
         junction = ref(gm, n, :junction, k)
-        junction["junction_type"] == 1 && continue  # Skip slack
+        is_slack = (junction["junction_type"] == 1)
 
+        # Flows leaving/entering
         for pipe_id in ref(gm, n, :pipes_fr, k)
             J[row, state_map[:pipe_flow][pipe_id]] = 1.0
         end
@@ -108,6 +110,24 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
         for comp_id in ref(gm, n, :compressors_to, k)
             J[row, state_map[:compressor_flow][comp_id]] = -1.0
         end
+
+        # At slack junctions, receipts/deliveries/transfers are STATE variables (in J, not R)
+        # At non-slack junctions, they are INPUT variables (in R, not J)
+        if is_slack
+            for receipt_id in ref(gm, n, :dispatchable_receipts_in_junction, k)
+                receipt_idx = get_state_index(state_map, :slack_receipt, receipt_id)
+                !isnothing(receipt_idx) && (J[row, receipt_idx] = 1.0)
+            end
+            for delivery_id in ref(gm, n, :dispatchable_deliveries_in_junction, k)
+                delivery_idx = get_state_index(state_map, :slack_delivery, delivery_id)
+                !isnothing(delivery_idx) && (J[row, delivery_idx] = -1.0)
+            end
+            for transfer_id in ref(gm, n, :dispatchable_transfers_in_junction, k)
+                transfer_idx = get_state_index(state_map, :slack_transfer, transfer_id)
+                !isnothing(transfer_idx) && (J[row, transfer_idx] = -1.0)
+            end
+        end
+
         row += 1
     end
 
