@@ -107,6 +107,9 @@ function _add_residual_bound_constraints!(
     row = 1
 
     # Weymouth residuals: γₑ(Δfₑ) = ωₑ(Δfₑ)²
+    # TODO: Add reversal_allowed parameter to function signature
+    reversal_allowed = false  # For now, no flow reversal in residual bounds
+
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
         f_star = _ia_fp_value(gm, n, :pipe, k, "f")
@@ -121,18 +124,33 @@ function _add_residual_bound_constraints!(
 
         flow_idx = state_map[:pipe_flow][k]
 
-        if f_star > 0
-            # Positive flow: r ∈ [0, ω·max(ℓ_f^-, ℓ_f^+)²]
-            JuMP.@constraint(model, r_minus[row] == 0.0)
-            # r^+ ≥ ω·(ℓ_f^-)² and r^+ ≥ ω·(ℓ_f^+)²
-            JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_minus[flow_idx]^2)
-            JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+        if !reversal_allowed
+            # Flow stays on same side of zero (enforced by physical bounds)
+            if f_star > 0
+                # Positive flow: r ∈ [0, ω·max(ℓ_f^-, ℓ_f^+)²]
+                JuMP.@constraint(model, r_minus[row] == 0.0)
+                # r^+ ≥ ω·(ℓ_f^-)² and r^+ ≥ ω·(ℓ_f^+)²
+                JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_minus[flow_idx]^2)
+                JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+            else
+                # Negative flow: r ∈ [-ω·max(ℓ_f^-, ℓ_f^+)², 0]
+                JuMP.@constraint(model, r_plus[row] == 0.0)
+                # -r^- ≥ ω·(ℓ_f^-)² and -r^- ≥ ω·(ℓ_f^+)²
+                JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_minus[flow_idx]^2)
+                JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+            end
         else
-            # Negative flow: r ∈ [-ω·max(ℓ_f^-, ℓ_f^+)², 0]
-            JuMP.@constraint(model, r_plus[row] == 0.0)
-            # -r^- ≥ ω·(ℓ_f^-)² and -r^- ≥ ω·(ℓ_f^+)²
-            JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_minus[flow_idx]^2)
-            JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+            # Flow reversal allowed: use conservative symmetric bounds
+            # Generic bound: r ∈ [-ω·max(ℓ²), +ω·max(ℓ²)]
+            # This is conservative but valid for any flow direction
+            # TODO: Implement tighter bounds from Section 1.4.2 of research document
+            max_delta_f_sqr = max(ℓ_x_minus[flow_idx]^2, ℓ_x_plus[flow_idx]^2)
+            max_residual = ω * max_delta_f_sqr
+
+            JuMP.@constraint(model, r_minus[row] <= max_residual)
+            JuMP.@constraint(model, r_plus[row] >= max_residual)
+            JuMP.@constraint(model, -r_minus[row] <= max_residual)
+            JuMP.@constraint(model, -r_plus[row] >= -max_residual)
         end
         row += 1
     end
@@ -259,18 +277,41 @@ function _add_physical_bounds_constraints!(
     @info "Adding physical feasibility constraints"
 
     # Pipe flow bounds
+    # TODO: Add reversal_allowed parameter to function signature and pass through
+    reversal_allowed = false  # For now, no flow reversal
+
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
         f_star = _ia_fp_value(gm, n, :pipe, k, "f")
         flow_idx = state_map[:pipe_flow][k]
 
-        # Physical limits
+        # Physical limits from data
         f_min = pipe["flow_min"]
         f_max = pipe["flow_max"]
 
-        # Deviation bounds must keep flow in [f_min, f_max]
-        JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
-        JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+        if !reversal_allowed
+            # No flow reversal: additional constraints to keep flow on same side of zero
+            if f_star > 0
+                # Flow must stay non-negative
+                JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= 0.0)
+                # Upper bound from data
+                JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+            elseif f_star < 0
+                # Flow must stay non-positive
+                JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= 0.0)
+                # Lower bound from data
+                JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
+            else
+                # f_star = 0: This is ambiguous, for now just use data bounds
+                # TODO: Handle f_star = 0 case properly when reversal_allowed is implemented
+                JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
+                JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+            end
+        else
+            # Flow reversal allowed: just use data bounds
+            JuMP.@constraint(model, f_star - ℓ_x_minus[flow_idx] >= f_min)
+            JuMP.@constraint(model, f_star + ℓ_x_plus[flow_idx] <= f_max)
+        end
     end
 
     # Compressor flow bounds
@@ -403,14 +444,14 @@ function _add_ia_objective!(
 )
     @info "Adding objective function"
 
-    # For convex optimization, use sum of half-widths as proxy
-    # (log formulation requires nonlinear solver)
+    # Maximize only input variable bounds (compressor ratios and dispatchable injections/withdrawals)
+    # State variables (pressures, flows) are determined by physics once inputs are fixed
+    # Maximizing state bounds can lead to inconsistent corners violating implicit coupling constraints
     JuMP.@objective(
         model,
         JuMP.MOI.MAX_SENSE,
-        sum(ℓ_x_plus[i] + ℓ_x_minus[i] for i in 1:n_states) +
         sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in 1:n_inputs)
     )
 
-    @info "Objective function added"
+    @info "Objective function added (input variables only)"
 end

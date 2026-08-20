@@ -150,6 +150,7 @@ module GasModels
     include("prob/transient_ogf_archived_storage.jl")
 
     # Inner Approximation
+    include("prob/ia_preprocessing.jl")
     include("prob/ia_topology.jl")
     include("prob/ia_matrix.jl")
     include("prob/ia_residuals.jl")
