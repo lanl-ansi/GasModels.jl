@@ -13,7 +13,7 @@ Self-mapping sufficient conditions:
 
 
 """
-    build_ia_model(gm, n; optimizer=nothing)
+    build_ia_model(gm, n; optimizer=nothing, reversal_allowed=false)
 
 Build the Inner Approximation optimization model.
 
@@ -24,12 +24,21 @@ Creates a JuMP model with:
 - Physical feasibility constraints
 - Objective: maximize polytope volume
 
+# Arguments
+- `gm::AbstractGasModel`: Gas model with fixed point attached
+- `n::Int`: Network ID (default: 0)
+- `optimizer`: JuMP optimizer (optional)
+- `reversal_allowed::Bool`: Allow flow direction changes (default: false)
+  * false: Tighter one-sided residual bounds, flow stays on same side of zero
+  * true: Symmetric residual bounds, allows flow reversals
+
 Returns: JuMP model
 """
 function build_ia_model(
     gm::AbstractGasModel,
     n::Int=nw_id_default;
-    optimizer=nothing
+    optimizer=nothing,
+    reversal_allowed::Bool=false
 )
     @info "Building IA optimization model"
 
@@ -66,7 +75,8 @@ function build_ia_model(
     _add_residual_bound_constraints!(
         model, gm, n, state_map, input_map,
         ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
-        r_plus, r_minus
+        r_plus, r_minus;
+        reversal_allowed=reversal_allowed
     )
 
     # Add self-mapping constraints
@@ -79,7 +89,8 @@ function build_ia_model(
     # Add physical feasibility constraints
     _add_physical_bounds_constraints!(
         model, gm, n, state_map, input_map,
-        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus;
+        reversal_allowed=reversal_allowed
     )
 
     # Add objective: maximize polytope volume
@@ -101,14 +112,13 @@ Uses two inequalities for max operations (as user requested).
 function _add_residual_bound_constraints!(
     model, gm, n, state_map, input_map,
     ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
-    r_plus, r_minus
+    r_plus, r_minus;
+    reversal_allowed::Bool=false
 )
-    @info "Adding residual bound constraints"
+    @info "Adding residual bound constraints (reversal_allowed=$reversal_allowed)"
     row = 1
 
     # Weymouth residuals: γₑ(Δfₑ) = ωₑ(Δfₑ)²
-    # TODO: Add reversal_allowed parameter to function signature
-    reversal_allowed = false  # For now, no flow reversal in residual bounds
 
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
@@ -269,16 +279,19 @@ Ensures state/input bounds respect physical limits:
 - Pressure: within allowed range
 - Flow: within capacity limits
 - Compressor ratio: within operational bounds
+
+# Arguments
+- `reversal_allowed::Bool`: If false (default), adds constraints to keep flow
+  on same side of zero. If true, allows flow direction changes.
 """
 function _add_physical_bounds_constraints!(
     model, gm, n, state_map, input_map,
-    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus;
+    reversal_allowed::Bool=false
 )
-    @info "Adding physical feasibility constraints"
+    @info "Adding physical feasibility constraints (reversal_allowed=$reversal_allowed)"
 
     # Pipe flow bounds
-    # TODO: Add reversal_allowed parameter to function signature and pass through
-    reversal_allowed = false  # For now, no flow reversal
 
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
