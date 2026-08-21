@@ -215,11 +215,9 @@ function _add_residual_bound_constraints!(
         row += 1
     end
 
-    # Mass balance residuals: always zero (linear)
+    # Mass balance residuals: always zero (linear equation, no approximation)
+    # This applies to ALL junctions (both slack and non-slack)
     for k in sort(collect(keys(ref(gm, n, :junction))))
-        junction = ref(gm, n, :junction, k)
-        junction["junction_type"] == 1 && continue
-
         JuMP.@constraint(model, r_minus[row] == 0.0)
         JuMP.@constraint(model, r_plus[row] == 0.0)
         row += 1
