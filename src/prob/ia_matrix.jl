@@ -178,26 +178,33 @@ function assemble_ia_input_matrix(gm::AbstractGasModel, n::Int=nw_id_default,
     end
 
     # Mass balance rows: input coefficients
+    # IMPORTANT: Must have a row for EVERY junction to match J matrix row ordering
+    # For slack junctions: R[row, :] = 0 (receipts/deliveries/transfers are states, not inputs)
+    # For non-slack junctions: R[row, input_cols] = coefficients (they are inputs)
     for k in sort(collect(keys(ref(gm, n, :junction))))
         junction = ref(gm, n, :junction, k)
-        junction["junction_type"] == 1 && continue
+        is_slack = (junction["junction_type"] == 1)
 
-        # At non-slack junctions, move receipts/deliveries/transfers to RHS
-        # From: f_in - f_out + f_g - f_d - f_t = 0
-        # To:   f_in - f_out = -f_g + f_d + f_t
-        # Convention: R_star = -∂g/∂u, so on RHS: receipts get -1, deliveries/transfers get +1
-        for receipt_id in ref(gm, n, :dispatchable_receipts_in_junction, k)
-            haskey(input_map[:receipt], receipt_id) &&
-                (R[row, input_map[:receipt][receipt_id]] = -1.0)
+        if !is_slack
+            # At non-slack junctions, move receipts/deliveries/transfers to RHS
+            # From: f_in - f_out + f_g - f_d - f_t = 0
+            # To:   f_in - f_out = -f_g + f_d + f_t
+            # Convention: R_star = -∂g/∂u, so on RHS: receipts get -1, deliveries/transfers get +1
+            for receipt_id in ref(gm, n, :dispatchable_receipts_in_junction, k)
+                haskey(input_map[:receipt], receipt_id) &&
+                    (R[row, input_map[:receipt][receipt_id]] = -1.0)
+            end
+            for delivery_id in ref(gm, n, :dispatchable_deliveries_in_junction, k)
+                haskey(input_map[:delivery], delivery_id) &&
+                    (R[row, input_map[:delivery][delivery_id]] = 1.0)
+            end
+            for transfer_id in ref(gm, n, :dispatchable_transfers_in_junction, k)
+                haskey(input_map[:transfer], transfer_id) &&
+                    (R[row, input_map[:transfer][transfer_id]] = 1.0)
+            end
         end
-        for delivery_id in ref(gm, n, :dispatchable_deliveries_in_junction, k)
-            haskey(input_map[:delivery], delivery_id) &&
-                (R[row, input_map[:delivery][delivery_id]] = 1.0)
-        end
-        for transfer_id in ref(gm, n, :dispatchable_transfers_in_junction, k)
-            haskey(input_map[:transfer], transfer_id) &&
-                (R[row, input_map[:transfer][transfer_id]] = 1.0)
-        end
+        # For slack junctions: R[row, :] remains all zeros (already initialized by spzeros)
+
         row += 1
     end
 
