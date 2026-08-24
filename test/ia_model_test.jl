@@ -34,7 +34,7 @@ GasModels._prepare_ia_fixed_point!(gm)
 
 # Compute and display matrices
 # Set π_scale here: 1.0 = no scaling, 200.0 = improved conditioning
-π_scale = 1.0
+π_scale = 200.0
 println("[3/5] Computing IA matrices (π_scale = $π_scale)...")
 matrices = GasModels.compute_ia_coefficient_matrices(gm, 0, π_scale=π_scale)
 
@@ -94,8 +94,8 @@ set_optimizer(model, Ipopt.Optimizer)
 set_optimizer_attribute(model, "print_level", 3)
 optimize!(model)
 
-if termination_status(model) in [MOI.LOCALLY_SOLVED, MOI.OPTIMAL]
-    println("\n✓ Optimization converged!")
+if termination_status(model) in [MOI.LOCALLY_SOLVED, MOI.OPTIMAL, MOI.ALMOST_LOCALLY_SOLVED]
+    println("\n✓ Optimization converged (status: ", termination_status(model), ")")
 
     # Extract and display solution in SI units
     solution = GasModels.extract_ia_solution(gm, model, 0, π_scale=π_scale)
