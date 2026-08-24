@@ -96,7 +96,9 @@ function build_ia_model(
     # Add objective: maximize polytope volume
     _add_ia_objective!(
         model, n_states, n_inputs,
-        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+        r_plus, r_minus,
+        input_map
     )
 
     @info "Model construction complete"
@@ -451,18 +453,22 @@ For numerical stability, maximize sum of logs instead:
 """
 function _add_ia_objective!(
     model, n_states, n_inputs,
-    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus
+    ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+    r_plus, r_minus,
+    input_map
 )
     @info "Adding objective function"
 
-    # Maximize only input variable bounds (compressor ratios and dispatchable injections/withdrawals)
-    # State variables (pressures, flows) are determined by physics once inputs are fixed
-    # Maximizing state bounds can lead to inconsistent corners violating implicit coupling constraints
+    # Maximize all input flexibility (compressor ratios + transfers)
+    # Also add small penalty to tighten residual bounds
+    penalty = 1e-6  # Small penalty to tighten residuals without dominating input flexibility
+
     JuMP.@objective(
         model,
         JuMP.MOI.MAX_SENSE,
-        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in 1:n_inputs)
+        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in 1:n_inputs) -
+        penalty * sum(r_plus[i] - r_minus[i] for i in 1:n_states)
     )
 
-    @info "Objective function added (input variables only)"
+    @info "Objective function added (all inputs with residual tightening penalty=$penalty)"
 end
