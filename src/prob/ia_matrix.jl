@@ -44,7 +44,7 @@ Assemble Jacobian J⋆ from linearized equations: J⋆Δx = R⋆Δu + r(Δx, Δu
 Row order: [Weymouth, Compressor boost, Mass balance]
 Col order: [pipe flows, compressor flows, junction psqr]
 """
-function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_map=nothing)
+function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_map=nothing; π_scale=1.0)
     if isnothing(state_map)
         state_map = build_ia_state_map(gm, n)
     end
@@ -54,6 +54,7 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
     row = 1
 
     # Weymouth: Δπᵢ - Δπⱼ - kₑΔfₑ = γₑ(Δfₑ) where kₑ = 2ωₑ|fₑ*|
+    # With scaling: Δπ̃ᵢ - Δπ̃ⱼ - (kₑ/π_scale)Δfₑ = γₑ(Δfₑ)/π_scale
     # NOTE: _calc_pipe_resistance returns w = 1/ω (reciprocal of resistance)
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
@@ -67,7 +68,8 @@ function assemble_ia_jacobian(gm::AbstractGasModel, n::Int=nw_id_default, state_
                                    gm.ref[:it][gm_it_sym][:sound_speed])
         k_e = 2 * abs(f_star) / w  # k_e = 2ω|f*| = 2|f*|/w since w = 1/ω
 
-        J[row, state_map[:pipe_flow][k]] = -k_e
+        # Scale k_e by pressure scaling factor
+        J[row, state_map[:pipe_flow][k]] = -k_e / π_scale
         pi_i_idx = get_state_index(state_map, :junction_psqr, i)
         !isnothing(pi_i_idx) && (J[row, pi_i_idx] = 1.0)
         pi_j_idx = get_state_index(state_map, :junction_psqr, j)
@@ -147,7 +149,7 @@ Assemble input matrix R⋆ = -J_u
 Input order: [compressor ratios, receipts, deliveries, transfers]
 """
 function assemble_ia_input_matrix(gm::AbstractGasModel, n::Int=nw_id_default,
-                                   state_map=nothing, input_map=nothing)
+                                   state_map=nothing, input_map=nothing; π_scale=1.0)
     if isnothing(state_map)
         state_map = build_ia_state_map(gm, n)
     end
@@ -166,13 +168,15 @@ function assemble_ia_input_matrix(gm::AbstractGasModel, n::Int=nw_id_default,
 
     # Compressor rows: R⋆[row, α_col] = πᵢ*
     # From linearization of πⱼ = α·πᵢ where α ≡ r²: Δπⱼ = α*Δπᵢ + πᵢ*Δα
+    # With scaling: Δπ̃ⱼ = α*Δπ̃ᵢ + (πᵢ*/π_scale)Δα
     for k in sort(collect(keys(ref(gm, n, :compressor))))
         comp = ref(gm, n, :compressor, k)
         i = comp["fr_junction"]
         pi_i_star = _ia_fp_value(gm, n, :junction, i, "psqr")
 
         if haskey(input_map[:compressor_ratio], k)
-            R[row, input_map[:compressor_ratio][k]] = pi_i_star
+            # Scale pi_i_star by pressure scaling factor
+            R[row, input_map[:compressor_ratio][k]] = pi_i_star / π_scale
         end
         row += 1
     end
@@ -217,7 +221,7 @@ end
 =============================================================================#
 
 """
-    compute_ia_coefficient_matrices(gm, n) → matrices
+    compute_ia_coefficient_matrices(gm, n; π_scale=1.0) → matrices
 
 **MAIN ENTRY POINT** - Computes all coefficient matrices for IA.
 
@@ -230,19 +234,30 @@ Steps:
 4. Compute PRODUCT M = J⋆^{-1}R⋆
 5. Decompose M = M⁺ - M⁻
 
+Arguments:
+- gm: Gas model
+- n: Network ID (default: 0)
+- π_scale: Pressure scaling factor for conditioning (default: 1.0 = no scaling)
+  Use π_scale ≈ 200 to improve conditioning when Jacobian has large k_e coefficients
+
 Returns named tuple with M_pos, M_neg, J_inv, state_map, input_map, J, R
 """
-function compute_ia_coefficient_matrices(gm::AbstractGasModel, n::Int=nw_id_default)
+function compute_ia_coefficient_matrices(gm::AbstractGasModel, n::Int=nw_id_default; π_scale::Float64=1.0)
     @info "Computing IA coefficient matrices"
+
+    if π_scale != 1.0
+        @info "Using pressure scaling: π_scale = $π_scale"
+    end
 
     # Step 1: Index maps
     state_map = build_ia_state_map(gm, n)
     input_map = build_ia_input_map(gm, n)
+    state_map[:π_scale] = π_scale  # Store for later use
     @info "Dimensions: state=$(state_map[:dim]), input=$(input_map[:dim])"
 
-    # Step 2: Assemble matrices
-    J = assemble_ia_jacobian(gm, n, state_map)
-    R = assemble_ia_input_matrix(gm, n, state_map, input_map)
+    # Step 2: Assemble matrices with scaling
+    J = assemble_ia_jacobian(gm, n, state_map, π_scale=π_scale)
+    R = assemble_ia_input_matrix(gm, n, state_map, input_map, π_scale=π_scale)
     @info "J⋆: $(size(J)), nnz=$(nnz(J))  |  R⋆: $(size(R)), nnz=$(nnz(R))"
 
     # Step 3: Invert J⋆

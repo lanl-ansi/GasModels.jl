@@ -13,7 +13,7 @@ Self-mapping sufficient conditions:
 
 
 """
-    build_ia_model(gm, n; optimizer=nothing, reversal_allowed=false)
+    build_ia_model(gm, n; optimizer=nothing, reversal_allowed=false, π_scale=1.0)
 
 Build the Inner Approximation optimization model.
 
@@ -31,6 +31,8 @@ Creates a JuMP model with:
 - `reversal_allowed::Bool`: Allow flow direction changes (default: false)
   * false: Tighter one-sided residual bounds, flow stays on same side of zero
   * true: Symmetric residual bounds, allows flow reversals
+- `π_scale::Float64`: Pressure scaling factor (default: 1.0 = no scaling)
+  Use π_scale ≈ 200 to improve conditioning
 
 Returns: JuMP model
 """
@@ -38,12 +40,13 @@ function build_ia_model(
     gm::AbstractGasModel,
     n::Int=nw_id_default;
     optimizer=nothing,
-    reversal_allowed::Bool=false
+    reversal_allowed::Bool=false,
+    π_scale::Float64=1.0
 )
     @info "Building IA optimization model"
 
     # Compute coefficient matrices
-    matrices = compute_ia_coefficient_matrices(gm, n)
+    matrices = compute_ia_coefficient_matrices(gm, n, π_scale=π_scale)
     M_pos = matrices.M_pos
     M_neg = matrices.M_neg
     N_pos = matrices.N_pos
@@ -118,9 +121,14 @@ function _add_residual_bound_constraints!(
     reversal_allowed::Bool=false
 )
     @info "Adding residual bound constraints (reversal_allowed=$reversal_allowed)"
+
+    # Get pressure scaling factor
+    π_scale = get(state_map, :π_scale, 1.0)
+
     row = 1
 
     # Weymouth residuals: γₑ(Δfₑ) = ωₑ(Δfₑ)²
+    # With scaling: r̃ = r/π_scale, so r̃ ∈ [ω·ℓ²/π_scale, ...]
 
     for k in sort(collect(keys(ref(gm, n, :pipe))))
         pipe = ref(gm, n, :pipe, k)
@@ -134,6 +142,9 @@ function _add_residual_bound_constraints!(
         )
         ω = 1.0 / w
 
+        # Scale ω for scaled residuals
+        ω_scaled = ω / π_scale
+
         flow_idx = state_map[:pipe_flow][k]
 
         if !reversal_allowed
@@ -141,15 +152,15 @@ function _add_residual_bound_constraints!(
             if f_star > 0
                 # Positive flow: r ∈ [0, ω·max(ℓ_f^-, ℓ_f^+)²]
                 JuMP.@constraint(model, r_minus[row] == 0.0)
-                # r^+ ≥ ω·(ℓ_f^-)² and r^+ ≥ ω·(ℓ_f^+)²
-                JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_minus[flow_idx]^2)
-                JuMP.@constraint(model, r_plus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+                # r^+ ≥ ω_scaled·(ℓ_f^-)² and r^+ ≥ ω_scaled·(ℓ_f^+)²
+                JuMP.@constraint(model, r_plus[row] >= ω_scaled * ℓ_x_minus[flow_idx]^2)
+                JuMP.@constraint(model, r_plus[row] >= ω_scaled * ℓ_x_plus[flow_idx]^2)
             else
                 # Negative flow: r ∈ [-ω·max(ℓ_f^-, ℓ_f^+)², 0]
                 JuMP.@constraint(model, r_plus[row] == 0.0)
-                # -r^- ≥ ω·(ℓ_f^-)² and -r^- ≥ ω·(ℓ_f^+)²
-                JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_minus[flow_idx]^2)
-                JuMP.@constraint(model, -r_minus[row] >= ω * ℓ_x_plus[flow_idx]^2)
+                # -r^- ≥ ω_scaled·(ℓ_f^-)² and -r^- ≥ ω_scaled·(ℓ_f^+)²
+                JuMP.@constraint(model, -r_minus[row] >= ω_scaled * ℓ_x_minus[flow_idx]^2)
+                JuMP.@constraint(model, -r_minus[row] >= ω_scaled * ℓ_x_plus[flow_idx]^2)
             end
         else
             # Flow reversal allowed: use conservative symmetric bounds
@@ -157,7 +168,7 @@ function _add_residual_bound_constraints!(
             # This is conservative but valid for any flow direction
             # TODO: Implement tighter bounds from Section 1.4.2 of research document
             max_delta_f_sqr = max(ℓ_x_minus[flow_idx]^2, ℓ_x_plus[flow_idx]^2)
-            max_residual = ω * max_delta_f_sqr
+            max_residual = ω_scaled * max_delta_f_sqr
 
             JuMP.@constraint(model, r_minus[row] <= max_residual)
             JuMP.@constraint(model, r_plus[row] >= max_residual)
@@ -341,6 +352,9 @@ function _add_physical_bounds_constraints!(
     end
 
     # Junction pressure bounds
+    # Get pressure scaling factor
+    π_scale = get(state_map, :π_scale, 1.0)
+
     for k in sort(collect(keys(ref(gm, n, :junction))))
         junction = ref(gm, n, :junction, k)
         junction["junction_type"] == 1 && continue  # Skip slack
@@ -353,8 +367,13 @@ function _add_physical_bounds_constraints!(
         pi_min = p_min^2
         pi_max = p_max^2
 
-        JuMP.@constraint(model, pi_star - ℓ_x_minus[pi_idx] >= pi_min)
-        JuMP.@constraint(model, pi_star + ℓ_x_plus[pi_idx] <= pi_max)
+        # Scale pressure bounds
+        pi_star_scaled = pi_star / π_scale
+        pi_min_scaled = pi_min / π_scale
+        pi_max_scaled = pi_max / π_scale
+
+        JuMP.@constraint(model, pi_star_scaled - ℓ_x_minus[pi_idx] >= pi_min_scaled)
+        JuMP.@constraint(model, pi_star_scaled + ℓ_x_plus[pi_idx] <= pi_max_scaled)
     end
 
     # Compressor ratio bounds

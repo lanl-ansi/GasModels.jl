@@ -6,9 +6,15 @@ Converts per-unit bounds to SI units for human-readable output.
 
 
 """
-    extract_ia_solution(gm, model)
+    extract_ia_solution(gm, model, n; π_scale=1.0)
 
 Extract IA solution from optimization model and convert to SI units.
+
+# Arguments
+- `gm::AbstractGasModel`: Gas model
+- `model`: JuMP model with solved IA optimization
+- `n::Int`: Network ID (default: 0)
+- `π_scale::Float64`: Pressure scaling factor used in optimization (default: 1.0)
 
 Returns a Dict with:
 - state_bounds: Dict mapping state indices to (lower, upper) in SI units
@@ -17,9 +23,9 @@ Returns a Dict with:
 - input_map: Input index mapping
 - objective_value: Objective function value
 """
-function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default)
+function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default; π_scale::Float64=1.0)
     # Get index maps from model (should be stored during build)
-    matrices = compute_ia_coefficient_matrices(gm, n)
+    matrices = compute_ia_coefficient_matrices(gm, n, π_scale=π_scale)
     state_map = matrices.state_map
     input_map = matrices.input_map
 
@@ -73,15 +79,18 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default)
 
     # Junction pressures (convert from π = p² to p)
     # Exact approach: convert to SI, apply bounds, take sqrt, compute deviation
+    # Account for pressure scaling
+    π_scale = get(state_map, :π_scale, 1.0)
+
     for (k, idx) in state_map[:junction_psqr]
         π_star_pu = _ia_fp_value(gm, n, :junction, k, "psqr")
 
         # Convert to SI
         π_star_SI = π_star_pu * base_pressure^2
 
-        # Apply deviation bounds to get π range in SI
-        π_min_SI = π_star_SI - ℓ_x_minus[idx] * base_pressure^2
-        π_max_SI = π_star_SI + ℓ_x_plus[idx] * base_pressure^2
+        # Apply deviation bounds (scaled back) to get π range in SI
+        π_min_SI = π_star_SI - ℓ_x_minus[idx] * π_scale * base_pressure^2
+        π_max_SI = π_star_SI + ℓ_x_plus[idx] * π_scale * base_pressure^2
 
         # Take sqrt to get p range
         p_star_SI = sqrt(π_star_SI)
