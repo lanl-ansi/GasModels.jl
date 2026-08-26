@@ -263,8 +263,7 @@ function constraint_compressor_ratio_value(gm::AbstractWPModel, n::Int, k, i, j,
             _add_constraint!(gm, n, :compressor_ratio_value4, k, JuMP.@constraint(gm.model, r * pj >= pi - y * i_pmax^2))
         end
     else
-        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi <= pj))
-        _add_constraint!(gm, n, :compressor_ratio_value2, k, JuMP.@constraint(gm.model, r * pi >= pj))
+        _add_constraint!(gm, n, :compressor_ratio_value1, k, JuMP.@constraint(gm.model, r * pi == pj))
     end
 end
 
