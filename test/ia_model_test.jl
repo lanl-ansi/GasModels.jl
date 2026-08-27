@@ -13,6 +13,7 @@ Run from GasModels.jl directory:
 """
 
 using GasModels, JSON, JuMP, Ipopt
+using KNITRO
 
 println("="^80)
 println("INNER APPROXIMATION - MODEL TEST")
@@ -21,14 +22,21 @@ println("="^80)
 # Load network data
 println("\n[1/5] Loading network data...")
 case6_file = joinpath(@__DIR__, "data", "matgas", "case-6.m")
-fp_file = joinpath(@__DIR__, "data", "transient", "case6_base_solution.json")
+# fp_file = joinpath(@__DIR__, "data", "transient", "case6_base_solution.json")
 
 data = GasModels.parse_file(case6_file)
-fp_solution = JSON.parsefile(fp_file)
-
+# data["transfer"]["1"]["withdrawal_max"] = data["transfer"]["1"]["withdrawal_max"]/2
+# data["transfer"]["2"]["withdrawal_max"] = data["transfer"]["2"]["withdrawal_max"]/2
+# data["transfer"]["3"]["withdrawal_max"] = data["transfer"]["3"]["withdrawal_max"]/2
+# fp_solution = JSON.parsefile(fp_file)
+result = solve_ogf(data, WPGasModel, Ipopt.Optimizer)
+fp_solution = result["solution"]
+# data["transfer"]["1"]["withdrawal_max"] = data["transfer"]["1"]["withdrawal_max"]*2
+# data["transfer"]["2"]["withdrawal_max"] = data["transfer"]["2"]["withdrawal_max"]*2
+# data["transfer"]["3"]["withdrawal_max"] = data["transfer"]["3"]["withdrawal_max"]*2
 # Instantiate gas model
 println("[2/5] Instantiating gas model...")
-gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_gf)
+gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_ogf)
 gm.ext[:fixed_point] = fp_solution
 GasModels._prepare_ia_fixed_point!(gm)
 
@@ -91,7 +99,7 @@ println("\n" * "="^80)
 println("SOLVING")
 println("="^80)
 set_optimizer(model, Ipopt.Optimizer)
-set_optimizer_attribute(model, "print_level", 3)
+# set_optimizer_attribute(model, "print_level", 3)
 optimize!(model)
 
 if termination_status(model) in [MOI.LOCALLY_SOLVED, MOI.OPTIMAL, MOI.ALMOST_LOCALLY_SOLVED]
