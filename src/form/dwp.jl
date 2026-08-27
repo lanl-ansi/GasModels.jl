@@ -54,7 +54,7 @@ function constraint_pipe_weymouth(gm::AbstractDWPModel, n::Int, k, i, j, f_min, 
 
     if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pii - pj == 0.0))
-    elseif w == 0.0
+    elseif is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pii - pj) >= f^2 - (1 - y) * (f_min^2 - w * pd_min)))
@@ -76,7 +76,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractDWPModel, n::Int, k,
     w = 1/(r_1 * (1 - exp(r_2)))
     if w == Inf
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, inc_pi - pj == 0.0))
-    elseif w == 0.0
+    elseif is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) >=  f^2 - (1 - y) * (f_min^2 - w * inc_pd_min)))
@@ -123,7 +123,7 @@ function constraint_resistor_darcy_weisbach(gm::AbstractDWPModel, n::Int, k, i, 
     f, y = var(gm, n, :f_resistor, k), var(gm, n, :y_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref; resistor = true)
         _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, p_i - p_j == 0.0))
     elseif w == Inf
         _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, f == 0.0))
@@ -189,7 +189,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractDWPModel, n::Int, k, i, j, w, f
     zp = var(gm, n, :zp, k)
     f = var(gm, n, :f_ne_pipe, k)
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
     elseif w == Inf || ((f_min == 0) && (f_max == 0))
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))

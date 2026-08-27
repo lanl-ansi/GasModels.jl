@@ -52,6 +52,17 @@ end
 "Returns the tolerance factor for numerical comparisons. Used to determine when physical parameters (diameter, length, drag, lambda, flows) should be treated as approximately zero."
 @inline get_zero_tolerance() = 1e-6
 
+"Returns the tolerance for determining when resistance is zero in SI units."
+@inline get_resistance_zero_tolerance() = 1e-15
+
+"Returns true when a normalized pipe resistance is zero in SI units."
+@inline function is_resistance_zero(w::Real, refs::Dict{Symbol, <:Any}; resistor::Bool = false)
+    base_pressure = get_base_pressure(refs)
+    base_flow = get_base_flow(refs)
+    resistance_si = resistor ? w * base_pressure / base_flow^2 : w * base_flow^2 / base_pressure^2
+    return isapprox(resistance_si, 0.0; atol = get_resistance_zero_tolerance())
+end
+
 "Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models."
 @inline get_inclined_pipe_threshold() = 5.0
 

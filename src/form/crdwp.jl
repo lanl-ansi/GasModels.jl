@@ -135,7 +135,7 @@ function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min
 
     if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, 0 == pj - pi))
-    elseif w == 0.0
+    elseif is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
@@ -207,7 +207,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, w,
     # Since the first term is nonnegative, all we need to is add in the largest value of w*l,
     # which is w * max(abs(pd_min),abs(pd_max))
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
     elseif w == Inf || ((f_min == 0) && (f_max == 0))
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
