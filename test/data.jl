@@ -105,6 +105,16 @@
             resistor_nonzero = 2.0e-15 * base_flow^2 / base_pressure
             @test GasModels.is_resistance_zero(resistor_zero, refs; resistor = true)
             @test !GasModels.is_resistance_zero(resistor_nonzero, refs; resistor = true)
+
+            flow_min = 0.0
+            flow_max = flow_min + 0.5e-6 / base_flow
+            flow_different = flow_min + 2.0e-6 / base_flow
+            @test GasModels.is_flow_fixed(flow_min, flow_max, refs)
+            @test !GasModels.is_flow_fixed(flow_min, flow_different, refs)
+            @test GasModels.is_flow_zero(0.0, refs)
+            @test !GasModels.is_flow_zero(2.0e-6 / base_flow, refs)
+            @test GasModels.is_flow_bounds_zero(0.0, 0.0, refs)
+            @test !GasModels.is_flow_bounds_zero(0.0, 2.0e-6 / base_flow, refs)
         end
 
         @testset "calc pipe resistance" begin

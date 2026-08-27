@@ -55,12 +55,37 @@ end
 "Returns the tolerance for determining when resistance is zero in SI units."
 @inline get_resistance_zero_tolerance() = 1e-15
 
+"Returns the strict tolerance for normalized flow comparisons."
+@inline get_strict_flow_tolerance() = 1e-15
+
 "Returns true when a normalized pipe resistance is zero in SI units."
 @inline function is_resistance_zero(w::Real, refs::Dict{Symbol, <:Any}; resistor::Bool = false)
     base_pressure = get_base_pressure(refs)
     base_flow = get_base_flow(refs)
     resistance_si = resistor ? w * base_pressure / base_flow^2 : w * base_flow^2 / base_pressure^2
     return isapprox(resistance_si, 0.0; atol = get_resistance_zero_tolerance())
+end
+
+"Returns true when the normalized flow bounds are equal in SI units."
+@inline function is_flow_fixed(f_min::Real, f_max::Real, refs::Dict{Symbol, <:Any})
+    base_flow = get_base_flow(refs)
+    return isapprox(f_min * base_flow, f_max * base_flow; atol = get_zero_tolerance())
+end
+
+"Returns true when flow bounds are equal without unit conversion."
+@inline is_flow_fixed(f_min::Real, f_max::Real) = isapprox(f_min, f_max; atol = get_strict_flow_tolerance())
+
+"Returns true when a normalized flow is zero in SI units."
+@inline function is_flow_zero(flow::Real, refs::Dict{Symbol, <:Any})
+    return isapprox(flow * get_base_flow(refs), 0.0; atol = get_zero_tolerance())
+end
+
+"Returns true when a flow is zero without unit conversion."
+@inline is_flow_zero(flow::Real) = isapprox(flow, 0.0; atol = get_strict_flow_tolerance())
+
+"Returns true when both normalized flow bounds are zero in SI units."
+@inline function is_flow_bounds_zero(f_min::Real, f_max::Real, refs::Dict{Symbol, <:Any})
+    return is_flow_zero(f_min, refs) && is_flow_zero(f_max, refs)
 end
 
 "Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models."
@@ -84,7 +109,7 @@ function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
         error("expected f_min <= f_max, got [$f_min, $f_max]")
     end
 
-    if f_min == f_max
+    if is_flow_fixed(f_min, f_max)
         return [float(f_min)]
     end
 
