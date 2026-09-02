@@ -86,6 +86,37 @@
 
 
     @testset "check resistance calculations" begin
+        @testset "resistance zero checks use SI units" begin
+            base_pressure = 100.0
+            base_flow = 20.0
+            refs = Dict{Symbol,Any}(:it => Dict{Symbol,Any}(
+                GasModels.gm_it_sym => Dict{Symbol,Any}(
+                    :base_pressure => base_pressure,
+                    :base_flow => base_flow,
+                ),
+            ))
+
+            pipe_zero = 0.5e-15 * base_pressure^2 / base_flow^2
+            pipe_nonzero = 2.0e-15 * base_pressure^2 / base_flow^2
+            @test GasModels.is_resistance_zero(pipe_zero, refs)
+            @test !GasModels.is_resistance_zero(pipe_nonzero, refs)
+
+            resistor_zero = 0.5e-15 * base_flow^2 / base_pressure
+            resistor_nonzero = 2.0e-15 * base_flow^2 / base_pressure
+            @test GasModels.is_resistance_zero(resistor_zero, refs; resistor = true)
+            @test !GasModels.is_resistance_zero(resistor_nonzero, refs; resistor = true)
+
+            flow_min = 0.0
+            flow_max = flow_min + 0.5e-6 / base_flow
+            flow_different = flow_min + 2.0e-6 / base_flow
+            @test GasModels.is_flow_fixed(flow_min, flow_max, refs)
+            @test !GasModels.is_flow_fixed(flow_min, flow_different, refs)
+            @test GasModels.is_flow_zero(0.0, refs)
+            @test !GasModels.is_flow_zero(2.0e-6 / base_flow, refs)
+            @test GasModels.is_flow_bounds_zero(0.0, 0.0, refs)
+            @test !GasModels.is_flow_bounds_zero(0.0, 2.0e-6 / base_flow, refs)
+        end
+
         @testset "calc pipe resistance" begin
             gas_file = "../test/data/matgas/A1.m"
             gas_data = GasModels.parse_file(gas_file)
