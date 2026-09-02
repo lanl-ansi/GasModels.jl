@@ -53,9 +53,9 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractLRWPModel, n::Int, k
 
     if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
-    elseif w == 0.0
+    elseif is_resistance_zero(w, gm.ref)
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
-    elseif f_min == f_max
+    elseif is_flow_fixed(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == fmf_l / w))

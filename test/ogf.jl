@@ -157,6 +157,26 @@
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275; atol = 1e-2)
         end
 
+        @testset "case 6 lrwp ogf elevation constraint" begin
+            @_info "Testing LRWP OGF Elevation Constraint"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+            result = solve_ogf(data, LRWPGasModel, lp_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 125.17; atol = 1e-2)
+        end
+
+        @testset "case 6 lrdwp ogf elevation constraint" begin
+            @_info "Testing LRDWP OGF Elevation Constraint"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+            result = solve_ogf(data, LRDWPGasModel, mip_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 125.17; atol = 1e-2)
+        end
+
         @testset "case 6 cwp ogf binding energy constraint" begin
             @_info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
