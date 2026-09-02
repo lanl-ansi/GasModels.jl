@@ -49,6 +49,48 @@ end
 @inline get_specific_heat_capacity_ratio(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "specific_heat_capacity_ratio", 0.6)), data; apply_to_subnetworks = false)
 @inline get_specific_heat_capacity_ratio(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:specific_heat_capacity_ratio, 0.6)
 
+"Returns the tolerance factor for numerical comparisons. Used to determine when physical parameters (diameter, length, drag, lambda, flows) should be treated as approximately zero."
+@inline get_zero_tolerance() = 1e-6
+
+"Returns the tolerance for determining when resistance is zero in SI units."
+@inline get_resistance_zero_tolerance() = 1e-15
+
+"Returns the strict tolerance for normalized flow comparisons."
+@inline get_strict_flow_tolerance() = 1e-15
+
+"Returns true when a normalized pipe resistance is zero in SI units."
+@inline function is_resistance_zero(w::Real, refs::Dict{Symbol, <:Any}; resistor::Bool = false)
+    base_pressure = get_base_pressure(refs)
+    base_flow = get_base_flow(refs)
+    resistance_si = resistor ? w * base_pressure / base_flow^2 : w * base_flow^2 / base_pressure^2
+    return isapprox(resistance_si, 0.0; atol = get_resistance_zero_tolerance())
+end
+
+"Returns true when the normalized flow bounds are equal in SI units."
+@inline function is_flow_fixed(f_min::Real, f_max::Real, refs::Dict{Symbol, <:Any})
+    base_flow = get_base_flow(refs)
+    return isapprox(f_min * base_flow, f_max * base_flow; atol = get_zero_tolerance())
+end
+
+"Returns true when flow bounds are equal without unit conversion."
+@inline is_flow_fixed(f_min::Real, f_max::Real) = isapprox(f_min, f_max; atol = get_strict_flow_tolerance())
+
+"Returns true when a normalized flow is zero in SI units."
+@inline function is_flow_zero(flow::Real, refs::Dict{Symbol, <:Any})
+    return isapprox(flow * get_base_flow(refs), 0.0; atol = get_zero_tolerance())
+end
+
+"Returns true when a flow is zero without unit conversion."
+@inline is_flow_zero(flow::Real) = isapprox(flow, 0.0; atol = get_strict_flow_tolerance())
+
+"Returns true when both normalized flow bounds are zero in SI units."
+@inline function is_flow_bounds_zero(f_min::Real, f_max::Real, refs::Dict{Symbol, <:Any})
+    return is_flow_zero(f_min, refs) && is_flow_zero(f_max, refs)
+end
+
+"Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models."
+@inline get_inclined_pipe_threshold() = 5.0
+
 @inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
 @inline get_gas_specific_gravity(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:gas_specific_gravity, 0.6)
 
@@ -67,7 +109,7 @@ function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
         error("expected f_min <= f_max, got [$f_min, $f_max]")
     end
 
-    if f_min == f_max
+    if is_flow_fixed(f_min, f_max)
         return [float(f_min)]
     end
 
@@ -1363,8 +1405,12 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     a_sqr = sound_speed^2
     A = pi * D^2 / 4.0 # cross sectional area
     resistance = ((D * A^2) / (lambda * L * a_sqr)) * (base_pressure^2 / base_flow^2) # second half is the non-dimensionalization
-    if lambda == 0.0 || D == 0.0 || L == 0.0
+
+    tol = get_zero_tolerance()
+    if isapprox(D, 0.0; atol = tol)
         resistance = 0.0
+    elseif isapprox(lambda, 0.0; atol = tol) || isapprox(L, 0.0; atol = tol)
+        resistance = Inf
     end
 
     return resistance
@@ -1641,8 +1687,20 @@ end
 
 "calculates resistor resistances as per Equation (2.30) in Evaluating Gas Network Capacities"
 function _calc_resistor_resistance(resistor::Dict{String,Any}, base_pressure::Float64, base_flow::Float64, density::Float64)
-    resistance = 8.0 * resistor["drag"] * inv(pi^2 * resistor["diameter"]^4) * inv(density)
-    return resistance * base_flow^2 * inv(base_pressure) # Nondimensionalization.
+    drag = resistor["drag"]
+    diameter = resistor["diameter"]
+
+    resistance = 8.0 * drag * inv(pi^2 * diameter^4) * inv(density)
+    resistance = resistance * base_flow^2 * inv(base_pressure) # Nondimensionalization.
+
+    tol = get_zero_tolerance()
+    if isapprox(diameter, 0.0; atol = tol)
+        resistance = Inf
+    elseif isapprox(drag, 0.0; atol = tol)
+        resistance = 0.0
+    end
+
+    return resistance
 end
 
 

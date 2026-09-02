@@ -41,9 +41,11 @@ function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min
     f = var(gm, n, :f_pipe, k)
     f2_l = var(gm, n, :f_square_l_pipe, k)
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == 0.0))
-    elseif f_min == f_max
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif is_flow_fixed(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) >= f2_l - (1 - y) * (f_min^2 - w * pd_min)))
@@ -69,9 +71,11 @@ function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
     f2_l = var(gm, n, :f_square_l_resistor, k)
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref; resistor = true)
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, (p_i - p_j) == 0.0))
-    elseif f_min == f_max
+    elseif w == Inf
+        _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif is_flow_fixed(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == f_min*abs(f_min)))
     else
         _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w)*(p_i - p_j) >= f2_l - (1.0 - y) * (f_min^2-(1.0/w)*pd_min)))
@@ -111,7 +115,9 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRDWPModel, n::Int, k, i, j, w,
 
     f2_l = JuMP.@variable(gm.model)
 
-    if (w == 0.0) || ((f_min == 0) && (f_max == 0))
+    if is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif (w == Inf) || is_flow_bounds_zero(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else

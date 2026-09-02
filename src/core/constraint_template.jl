@@ -133,17 +133,14 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_defaul
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
-    D = pipe["diameter"]
 
-    if(D!=0.0)
-        if(rad2deg(abs(theta)) <= 5)
-            w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
-            constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
-        else
-            r_1,r_2 = _calc_inclined_pipe_resistance(pipe,get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
-            inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
-            constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
-        end
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
+        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+        constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    else
+        r_1,r_2 = _calc_inclined_pipe_resistance(pipe,get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+        inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
+        constraint_inclined_pipe_pressure_drop(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
     end
 end
 
@@ -156,17 +153,14 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int 
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
-    D = pipe["diameter"]
 
-    if(D!=0.0)
-        if(rad2deg(abs(theta)) <= 5)
-            w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
-            constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
-        else
-            r_1,r_2 = _calc_inclined_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
-            inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
-            constraint_inclined_pipe_pressure_drop_linear_approx(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
-        end
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
+        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+        constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
+    else
+        r_1,r_2 = _calc_inclined_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+        inc_pd_min, inc_pd_max = _calc_inclined_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j),r_2)
+        constraint_inclined_pipe_pressure_drop_linear_approx(gm, n, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
     end
 end
 

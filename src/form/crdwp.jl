@@ -133,8 +133,10 @@ function constraint_pipe_weymouth(gm::AbstractCRDWPModel, n::Int, k, i, j, f_min
     # Since abs(f_min*f_max) >= abs(f_min,f), this makes the rhs >= 0. Since w*l <= f_max^2, adding another f_max^2
     # deactives the constraint
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, 0 == pj - pi))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, l >= pj - pi))
         _add_constraint!(gm, n, :weymouth2, k, JuMP.@constraint(gm.model, l >= pi - pj))
@@ -205,7 +207,9 @@ function constraint_pipe_weymouth_ne(gm::AbstractCRDWPModel, n::Int, k, i, j, w,
     # Since the first term is nonnegative, all we need to is add in the largest value of w*l,
     # which is w * max(abs(pd_min),abs(pd_max))
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf || is_flow_bounds_zero(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else

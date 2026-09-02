@@ -2,11 +2,13 @@ solution_file = "../test/data/transient/case6_ls_a_solution.json"
 elevation_solution_file = "../test/data/transient/case6elevationtr.json"
 
 # Ipopt solver without barrier initialization for sequential steady-state solves
+# Higher max_iter for tests with tighter constraints from inclined pipe fix
 ipopt_no_barrier = JuMP.optimizer_with_attributes(
     Ipopt.Optimizer,
     "print_level" => 0,
     "sb" => "yes",
     "acceptable_tol" => 1.0e-4,
+    "max_iter" => 10000,
 )
 
 @testset "confirm that changes occur in parse_multinetwork" begin
@@ -35,7 +37,7 @@ end
 @testset "test ls-priority case" begin
     mn_data = parse_multinetwork("../test/data/matgas/case-6-ls-priority.m", "../test/data/transient/time-series-case-6a.csv", time_step=864.0)
     add_solution_hints!(mn_data, solution_file)
-    result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
+    result = solve_transient_ogf(mn_data, WPGasModel, ipopt_no_barrier)
     @test result["termination_status"] == LOCALLY_SOLVED
     @test isapprox(result["objective"], -0.00023, atol = 1e-3) #
 end
@@ -53,14 +55,14 @@ end
 end
 
 @testset "test ls case" begin
-    mn_data = parse_multinetwork("../test/data/matgas/case-6-ls.m", 
-                                "../test/data/transient/time-series-case-6a.csv", 
+    mn_data = parse_multinetwork("../test/data/matgas/case-6-ls.m",
+                                "../test/data/transient/time-series-case-6a.csv",
                                 time_step=864.0)
-    
+
     add_solution_hints!(mn_data, solution_file)
-    result = solve_transient_ogf(mn_data, WPGasModel, nlp_solver)
+    result = solve_transient_ogf(mn_data, WPGasModel, ipopt_no_barrier)
     @test result["termination_status"] == LOCALLY_SOLVED
-    @test isapprox(result["objective"], -0.00023, atol = 1e-3) 
+    @test isapprox(result["objective"], -0.00023, atol = 1e-3)
 end
 
 @testset "test multi network as a set of n independent steady-states solved as one large OGF problem" begin

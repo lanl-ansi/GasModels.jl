@@ -135,15 +135,17 @@ function constraint_pipe_weymouth(gm::AbstractCWPModel, n::Int, k, i, j, f_min, 
     # Retrieve squared pressures at the 'from' and 'to' nodes
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
-    
+
     # Retrieve f for this pipe
     f_plus  = var(gm, n, :f_plus_pipe, k)
     f_minus = var(gm, n, :f_minus_pipe, k)
     f       = var(gm, n, :f_pipe, k)
     
-    if w == 0.0
+    if w == Inf
         # Degenerate case
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == 0.0))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, pi - pj == (f_plus^2 - f_minus^2) / w))    
     end
@@ -168,8 +170,10 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractCWPModel, n::Int, k,
 
     w = 1/(r_1 * (1 - exp(r_2)))
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == (f_plus^2 - f_minus^2) / w))
     end
@@ -198,7 +202,9 @@ function constraint_pipe_weymouth_ne(gm::AbstractCWPModel, n::Int, k, i, j, w, f
     aux = JuMP.@variable(gm.model)
     JuMP.@constraint(gm.model, aux == f_plus^2 - f_minus^2)
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf || is_flow_bounds_zero(f_min, f_max, gm.ref)
         # Degenerate case
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
@@ -213,4 +219,3 @@ function constraint_pipe_weymouth_ne(gm::AbstractCWPModel, n::Int, k, i, j, w, f
     #Relate the net flow variable f to f_plus and f_minus:
     _add_constraint!(gm, n, :weymouth_flow_relation, k, JuMP.@constraint(gm.model, f == f_plus - f_minus))
 end
-    

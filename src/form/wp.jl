@@ -25,8 +25,10 @@ function constraint_pipe_weymouth(gm::AbstractWPModel, n::Int, k, i, j, f_min, f
     pj = var(gm, n, :psqr, j)
     f = var(gm, n, :f_pipe, k)
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == 0.0))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, (pi - pj) == (f * abs(f)) / w))
     end
@@ -44,8 +46,10 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractWPModel, n::Int, k, 
     inc_pi = exp(r_2) * pii
     w = 1/(r_1 * (1 - exp(r_2)))
 
-    if w == 0.0
+    if w == Inf
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, inc_pi == pj))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
     else
         _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == (f * abs(f)) / w))
     end
@@ -61,7 +65,13 @@ function constraint_resistor_darcy_weisbach(gm::AbstractWPModel, n::Int, k, i, j
     f = var(gm, n, :f_resistor, k)
     p_i, p_j = var(gm, n, :p, i), var(gm, n, :p, j)
 
-    _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
+    if is_resistance_zero(w, gm.ref; resistor = true)
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, p_i - p_j == 0.0))
+    elseif w == Inf
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, f == 0.0))
+    else
+        _add_constraint!(gm, n, :darcy_weisbach_1, k, JuMP.@constraint(gm.model, (1.0/w) * (p_i - p_j) == f * abs(f)))
+    end
 end
 
 
@@ -104,7 +114,9 @@ function constraint_pipe_weymouth_ne(gm::AbstractWPModel, n::Int, k, i, j, w, f_
     aux = JuMP.@variable(gm.model)
     JuMP.@constraint(gm.model, aux == f * abs(f))
 
-    if w == 0.0
+    if is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif w == Inf || is_flow_bounds_zero(f_min, f_max, gm.ref)
         _add_constraint!(gm, n, :weymouth_ne1, k, JuMP.@constraint(gm.model, pi - pj <= (1 - zp) * pd_max))
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, pi - pj >= (1 - zp) * pd_min))
     else
