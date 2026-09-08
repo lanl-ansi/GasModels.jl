@@ -98,7 +98,7 @@ function build_ia_model(
 
     # Add objective: maximize polytope volume
     _add_ia_objective!(
-        model, n_states, n_inputs,
+        model, gm, n, n_states, n_inputs,
         ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
         r_plus, r_minus,
         input_map
@@ -471,23 +471,32 @@ For numerical stability, maximize sum of logs instead:
     max Σ log(ℓ_x^+ + ℓ_x^-) + Σ log(ℓ_u^+ + ℓ_u^-)
 """
 function _add_ia_objective!(
-    model, n_states, n_inputs,
+    model, gm::AbstractGasModel, n::Int, n_states, n_inputs,
     ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
     r_plus, r_minus,
     input_map
 )
     @info "Adding objective function"
 
-    # Maximize all input flexibility (compressor ratios + transfers)
-    # Also add small penalty to tighten residual bounds
-    penalty = 1e-6  # Small penalty to tighten residuals without dominating input flexibility
+    # Maximize flexibility of withdrawals only: deliveries + transfers that act
+    # in a withdrawal role (withdrawal_min >= 0). Transfers with withdrawal_min < 0
+    # can act as injections (sources) and are excluded.
+    # Excludes compressor ratios and receipts.
+    delivery_idxs = [
+        idx for (k, idx) in input_map[:delivery]
+        # if ref(gm, n, :delivery, k)["withdrawal_min"] >= 0
+    ]
+    transfer_idxs = [
+        idx for (k, idx) in input_map[:transfer]
+        if ref(gm, n, :transfer, k)["withdrawal_min"] >= 0
+    ]
+    target_idxs = vcat(delivery_idxs, transfer_idxs)
 
     JuMP.@objective(
         model,
         JuMP.MOI.MAX_SENSE,
-        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in 1:n_inputs) -
-        penalty * sum(r_plus[i] - r_minus[i] for i in 1:n_states)
+        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in target_idxs)
     )
 
-    @info "Objective function added (all inputs with residual tightening penalty=$penalty)"
+    @info "Objective function added (withdrawal-role deliveries + transfers only: $(length(target_idxs)) inputs)"
 end

@@ -12,7 +12,7 @@ Run from GasModels.jl directory:
     julia --project=. test/ia_model_test.jl
 """
 
-using GasModels, JSON, JuMP, Ipopt
+using GasModels, JSON, JuMP, Ipopt, SCIP
 using KNITRO
 
 println("="^80)
@@ -25,15 +25,16 @@ case6_file = joinpath(@__DIR__, "data", "matgas", "case-6.m")
 # fp_file = joinpath(@__DIR__, "data", "transient", "case6_base_solution.json")
 
 data = GasModels.parse_file(case6_file)
-# data["transfer"]["1"]["withdrawal_max"] = data["transfer"]["1"]["withdrawal_max"]/2
-# data["transfer"]["2"]["withdrawal_max"] = data["transfer"]["2"]["withdrawal_max"]/2
-# data["transfer"]["3"]["withdrawal_max"] = data["transfer"]["3"]["withdrawal_max"]/2
-# fp_solution = JSON.parsefile(fp_file)
 result = solve_ogf(data, WPGasModel, Ipopt.Optimizer)
 fp_solution = result["solution"]
-# data["transfer"]["1"]["withdrawal_max"] = data["transfer"]["1"]["withdrawal_max"]*2
-# data["transfer"]["2"]["withdrawal_max"] = data["transfer"]["2"]["withdrawal_max"]*2
-# data["transfer"]["3"]["withdrawal_max"] = data["transfer"]["3"]["withdrawal_max"]*2
+
+
+#Temporary data edits for debugging
+# for i in 2:6
+#     data["junction"][string(i)]["p_min"] =  data["junction"][string(i)]["p_min"]/(4)
+# end
+
+
 # Instantiate gas model
 println("[2/5] Instantiating gas model...")
 gm = GasModels.instantiate_model(data, GasModels.WPGasModel, GasModels.build_ogf)
@@ -98,7 +99,7 @@ end
 println("\n" * "="^80)
 println("SOLVING")
 println("="^80)
-set_optimizer(model, Ipopt.Optimizer)
+set_optimizer(model, SCIP.Optimizer)
 # set_optimizer_attribute(model, "print_level", 3)
 optimize!(model)
 
