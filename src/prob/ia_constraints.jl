@@ -13,7 +13,8 @@ Self-mapping sufficient conditions:
 
 
 """
-    build_ia_model(gm, n; optimizer=nothing, reversal_allowed=false, π_scale=1.0)
+    build_ia_model(gm, n; optimizer=nothing, reversal_allowed=false, π_scale=1.0,
+                   linear_only=false, ε_secondary=nothing)
 
 Build the Inner Approximation optimization model.
 
@@ -33,6 +34,16 @@ Creates a JuMP model with:
   * true: Symmetric residual bounds, allows flow reversals
 - `π_scale::Float64`: Pressure scaling factor (default: 1.0 = no scaling)
   Use π_scale ≈ 200 to improve conditioning
+- `linear_only::Bool`: If true, pin the residual terms r^+, r^- to zero instead
+  of bounding them from the Weymouth/bilinear curvature. This drops the
+  nonconvex residual-bound constraints entirely, giving a pure LP relaxation
+  of the self-mapping condition (default: false)
+- `ε_secondary::Union{Nothing,Real}`: If set, adds a small secondary objective
+  term (weight ε) that rewards flexibility on every other state/input variable
+  not already in the primary (withdrawal) objective. This breaks ties among
+  "don't-care" variables that are otherwise free at zero cost to the primary
+  objective, at the (typically negligible) cost of ε in primary objective value.
+  Default: `nothing` (no secondary term, matches original behavior).
 
 Returns: JuMP model
 """
@@ -41,9 +52,11 @@ function build_ia_model(
     n::Int=nw_id_default;
     optimizer=nothing,
     reversal_allowed::Bool=false,
-    π_scale::Float64=1.0
+    π_scale::Float64=1.0,
+    linear_only::Bool=false,
+    ε_secondary::Union{Nothing,Real}=nothing
 )
-    @info "Building IA optimization model"
+    @info "Building IA optimization model (linear_only=$linear_only, ε_secondary=$ε_secondary)"
 
     # Compute coefficient matrices
     matrices = compute_ia_coefficient_matrices(gm, n, π_scale=π_scale)
@@ -74,13 +87,20 @@ function build_ia_model(
 
     @info "Variables created: $(n_states) states, $(n_inputs) inputs"
 
-    # Add residual bound constraints
-    _add_residual_bound_constraints!(
-        model, gm, n, state_map, input_map,
-        ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
-        r_plus, r_minus;
-        reversal_allowed=reversal_allowed
-    )
+    if linear_only
+        # Pure linear self-mapping: ignore Weymouth/bilinear curvature entirely
+        JuMP.@constraint(model, r_plus .== 0)
+        JuMP.@constraint(model, r_minus .== 0)
+        @info "Linear-only mode: residuals pinned to zero (no curvature terms)"
+    else
+        # Add residual bound constraints
+        _add_residual_bound_constraints!(
+            model, gm, n, state_map, input_map,
+            ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
+            r_plus, r_minus;
+            reversal_allowed=reversal_allowed
+        )
+    end
 
     # Add self-mapping constraints
     _add_self_mapping_constraints!(
@@ -101,7 +121,8 @@ function build_ia_model(
         model, gm, n, n_states, n_inputs,
         ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
         r_plus, r_minus,
-        input_map
+        input_map;
+        ε_secondary=ε_secondary
     )
 
     @info "Model construction complete"
@@ -469,12 +490,25 @@ Uses product of half-widths: ∏(ℓ_x^+ + ℓ_x^-) × ∏(ℓ_u^+ + ℓ_u^-)
 
 For numerical stability, maximize sum of logs instead:
     max Σ log(ℓ_x^+ + ℓ_x^-) + Σ log(ℓ_u^+ + ℓ_u^-)
+
+If `ε_secondary` is provided, a secondary term is added with weight ε that
+rewards flexibility on every state and every input NOT already in the primary
+objective (compressor ratios, receipts, and any non-withdrawal-role transfers).
+This is a lexicographic tie-break: for small enough ε it leaves the primary
+optimum essentially unchanged, while pushing otherwise-"don't-care" variables
+(free at zero cost to the primary objective) outward instead of leaving them
+at an arbitrary interior value. Note this secondary term is itself a single
+summed objective across many variables, so it is subject to the same
+redistribution degeneracy as the primary term: any split that hits the same
+sum total is equally optimal, so ties among items in the secondary sum can be
+broken arbitrarily by the solver.
 """
 function _add_ia_objective!(
     model, gm::AbstractGasModel, n::Int, n_states, n_inputs,
     ℓ_x_plus, ℓ_x_minus, ℓ_u_plus, ℓ_u_minus,
     r_plus, r_minus,
-    input_map
+    input_map;
+    ε_secondary::Union{Nothing,Real}=nothing
 )
     @info "Adding objective function"
 
@@ -492,11 +526,16 @@ function _add_ia_objective!(
     ]
     target_idxs = vcat(delivery_idxs, transfer_idxs)
 
-    JuMP.@objective(
-        model,
-        JuMP.MOI.MAX_SENSE,
-        sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in target_idxs)
-    )
+    primary = sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in target_idxs)
 
-    @info "Objective function added (withdrawal-role deliveries + transfers only: $(length(target_idxs)) inputs)"
+    if isnothing(ε_secondary)
+        JuMP.@objective(model, JuMP.MOI.MAX_SENSE, primary)
+        @info "Objective function added (withdrawal-role deliveries + transfers only: $(length(target_idxs)) inputs)"
+    else
+        other_input_idxs = setdiff(1:n_inputs, target_idxs)
+        secondary = sum(ℓ_x_plus[i] + ℓ_x_minus[i] for i in 1:n_states) +
+                    sum(ℓ_u_plus[j] + ℓ_u_minus[j] for j in other_input_idxs)
+        JuMP.@objective(model, JuMP.MOI.MAX_SENSE, primary + ε_secondary * secondary)
+        @info "Objective function added (primary: $(length(target_idxs)) target inputs; ε_secondary=$(ε_secondary) over $(n_states) states + $(length(other_input_idxs)) other inputs)"
+    end
 end

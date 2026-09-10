@@ -13,7 +13,7 @@ Run from GasModels.jl directory:
 """
 
 using GasModels, JSON, JuMP, Ipopt, SCIP
-using KNITRO
+# using KNITRO
 
 println("="^80)
 println("INNER APPROXIMATION - MODEL TEST")
@@ -27,12 +27,6 @@ case6_file = joinpath(@__DIR__, "data", "matgas", "case-6.m")
 data = GasModels.parse_file(case6_file)
 result = solve_ogf(data, WPGasModel, Ipopt.Optimizer)
 fp_solution = result["solution"]
-
-
-#Temporary data edits for debugging
-# for i in 2:6
-#     data["junction"][string(i)]["p_min"] =  data["junction"][string(i)]["p_min"]/(4)
-# end
 
 
 # Instantiate gas model

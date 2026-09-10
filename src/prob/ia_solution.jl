@@ -181,12 +181,16 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default; 
         Δr_lower = r_min - r_star
         Δr_upper = r_max - r_star
 
+        compressor = ref(gm, n, :compressor, k)
+
         input_bounds[(:compressor_ratio, k)] = (
             deviation_lower = Δr_lower,
             deviation_upper = Δr_upper,
             actual_lower = r_min,
             actual_upper = r_max,
             fixed_point = r_star,
+            physical_min = compressor["c_ratio_min"],
+            physical_max = compressor["c_ratio_max"],
             unit = "dimensionless"
         )
     end
@@ -197,12 +201,16 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default; 
         Δfg_lower = -ℓ_u_minus[idx] * base_flow
         Δfg_upper = ℓ_u_plus[idx] * base_flow
 
+        receipt = ref(gm, n, :receipt, k)
+
         input_bounds[(:receipt, k)] = (
             deviation_lower = Δfg_lower,
             deviation_upper = Δfg_upper,
             actual_lower = fg_star + Δfg_lower,
             actual_upper = fg_star + Δfg_upper,
             fixed_point = fg_star,
+            physical_min = receipt["injection_min"] * base_flow,
+            physical_max = receipt["injection_max"] * base_flow,
             unit = "kg/s"
         )
     end
@@ -213,12 +221,16 @@ function extract_ia_solution(gm::AbstractGasModel, model, n::Int=nw_id_default; 
         Δft_lower = -ℓ_u_minus[idx] * base_flow
         Δft_upper = ℓ_u_plus[idx] * base_flow
 
+        transfer = ref(gm, n, :transfer, k)
+
         input_bounds[(:transfer, k)] = (
             deviation_lower = Δft_lower,
             deviation_upper = Δft_upper,
             actual_lower = ft_star + Δft_lower,
             actual_upper = ft_star + Δft_upper,
             fixed_point = ft_star,
+            physical_min = transfer["withdrawal_min"] * base_flow,
+            physical_max = transfer["withdrawal_max"] * base_flow,
             unit = "kg/s"
         )
     end
@@ -365,9 +377,10 @@ function print_ia_solution(solution; max_items=5)
             b = input_bounds[key]
             k = key[2]
             println("  Comp $k:")
-            println("    Fixed point: $(Printf.@sprintf("%6.4f", b.fixed_point)) $(b.unit)")
-            println("    Deviation:   [$(Printf.@sprintf("%6.4f", b.deviation_lower)), $(Printf.@sprintf("%6.4f", b.deviation_upper))] $(b.unit)")
-            println("    Actual range:[$(Printf.@sprintf("%6.4f", b.actual_lower)), $(Printf.@sprintf("%6.4f", b.actual_upper))] $(b.unit)")
+            println("    Fixed point:  $(Printf.@sprintf("%6.4f", b.fixed_point)) $(b.unit)")
+            println("    Deviation:    [$(Printf.@sprintf("%6.4f", b.deviation_lower)), $(Printf.@sprintf("%6.4f", b.deviation_upper))] $(b.unit)")
+            println("    Actual range: [$(Printf.@sprintf("%6.4f", b.actual_lower)), $(Printf.@sprintf("%6.4f", b.actual_upper))] $(b.unit)")
+            println("    Physical min/max: [$(Printf.@sprintf("%6.4f", b.physical_min)), $(Printf.@sprintf("%6.4f", b.physical_max))] $(b.unit)")
         end
     end
 
@@ -380,9 +393,10 @@ function print_ia_solution(solution; max_items=5)
             b = input_bounds[key]
             k = key[2]
             println("  Receipt $k:")
-            println("    Fixed point: $(Printf.@sprintf("%9.3f", b.fixed_point)) $(b.unit)")
-            println("    Deviation:   [$(Printf.@sprintf("%9.3f", b.deviation_lower)), $(Printf.@sprintf("%9.3f", b.deviation_upper))] $(b.unit)")
-            println("    Actual range:[$(Printf.@sprintf("%9.3f", b.actual_lower)), $(Printf.@sprintf("%9.3f", b.actual_upper))] $(b.unit)")
+            println("    Fixed point:  $(Printf.@sprintf("%9.3f", b.fixed_point)) $(b.unit)")
+            println("    Deviation:    [$(Printf.@sprintf("%9.3f", b.deviation_lower)), $(Printf.@sprintf("%9.3f", b.deviation_upper))] $(b.unit)")
+            println("    Actual range: [$(Printf.@sprintf("%9.3f", b.actual_lower)), $(Printf.@sprintf("%9.3f", b.actual_upper))] $(b.unit)")
+            println("    Physical min/max: [$(Printf.@sprintf("%9.3f", b.physical_min)), $(Printf.@sprintf("%9.3f", b.physical_max))] $(b.unit)")
         end
     end
 
@@ -395,9 +409,10 @@ function print_ia_solution(solution; max_items=5)
             b = input_bounds[key]
             k = key[2]
             println("  Transfer $k:")
-            println("    Fixed point: $(Printf.@sprintf("%9.3f", b.fixed_point)) $(b.unit)")
-            println("    Deviation:   [$(Printf.@sprintf("%9.3f", b.deviation_lower)), $(Printf.@sprintf("%9.3f", b.deviation_upper))] $(b.unit)")
-            println("    Actual range:[$(Printf.@sprintf("%9.3f", b.actual_lower)), $(Printf.@sprintf("%9.3f", b.actual_upper))] $(b.unit)")
+            println("    Fixed point:  $(Printf.@sprintf("%9.3f", b.fixed_point)) $(b.unit)")
+            println("    Deviation:    [$(Printf.@sprintf("%9.3f", b.deviation_lower)), $(Printf.@sprintf("%9.3f", b.deviation_upper))] $(b.unit)")
+            println("    Actual range: [$(Printf.@sprintf("%9.3f", b.actual_lower)), $(Printf.@sprintf("%9.3f", b.actual_upper))] $(b.unit)")
+            println("    Physical min/max: [$(Printf.@sprintf("%9.3f", b.physical_min)), $(Printf.@sprintf("%9.3f", b.physical_max))] $(b.unit)")
         end
     end
 
