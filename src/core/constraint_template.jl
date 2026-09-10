@@ -105,7 +105,7 @@ end
 "Template: Constraints on flow across an expansion pipe with on/off direction variables"
 function constraint_pipe_mass_flow_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref); pipe_zero_length_tolerance = get_pipe_zero_length_tolerance(gm), pipe_zero_lambda_tolerance = get_pipe_zero_lambda_tolerance(gm))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -134,8 +134,8 @@ function constraint_pipe_weymouth(gm::AbstractGasModel, k; n::Int = nw_id_defaul
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
 
-    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
-        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold(gm))
+        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref); pipe_zero_length_tolerance = get_pipe_zero_length_tolerance(gm), pipe_zero_lambda_tolerance = get_pipe_zero_lambda_tolerance(gm))
         constraint_pipe_weymouth(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
     else
         r_1,r_2 = _calc_inclined_pipe_resistance(pipe,get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
@@ -154,8 +154,8 @@ function constraint_pipe_weymouth_linear_approx(gm::AbstractGasModel, k; n::Int 
     f_max = pipe["flow_max"]
     theta = pipe["theta"]
 
-    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold())
-        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+    if(rad2deg(abs(theta)) <= get_inclined_pipe_threshold(gm))
+        w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref); pipe_zero_length_tolerance = get_pipe_zero_length_tolerance(gm), pipe_zero_lambda_tolerance = get_pipe_zero_lambda_tolerance(gm))
         constraint_pipe_weymouth_linear_approx(gm, n, k, i, j, f_min, f_max, w, pd_min, pd_max)
     else
         r_1,r_2 = _calc_inclined_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
@@ -167,7 +167,7 @@ end
 "Template: Constraint associatd with turning off flow depending on the status of expansion pipes"
 function constraint_pipe_ne(gm::AbstractGasModel, k; n::Int = nw_id_default)
     pipe = ref(gm, n, :ne_pipe, k)
-    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref); pipe_zero_length_tolerance = get_pipe_zero_length_tolerance(gm), pipe_zero_lambda_tolerance = get_pipe_zero_lambda_tolerance(gm))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]
 
@@ -180,7 +180,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractGasModel, k; n::Int = nw_id_def
     pipe = ref(gm, n, :ne_pipe, k)
     i = pipe["fr_junction"]
     j = pipe["to_junction"]
-    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref))
+    w = _calc_pipe_resistance(pipe, get_base_length(gm.ref), get_base_pressure(gm.ref), get_base_flow(gm.ref), get_sound_speed(gm.ref); pipe_zero_length_tolerance = get_pipe_zero_length_tolerance(gm), pipe_zero_lambda_tolerance = get_pipe_zero_lambda_tolerance(gm))
     pd_min_on, pd_max_on, pd_min_off, pd_max_off = _calc_ne_pipe_pd_bounds_sqr(pipe, ref(gm, n, :junction, i), ref(gm, n, :junction, j))
     f_min = pipe["flow_min"]
     f_max = pipe["flow_max"]

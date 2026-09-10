@@ -33,7 +33,6 @@ end
 
 "Constraint: Weymouth equation--not applicable for LRDWP models"
 function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
-    #TODO why not applicable?
     pipe = ref(gm, n, :pipe, k)
     y = var(gm, n, :y_pipe, k)
     pi = var(gm, n, :psqr, i)
@@ -62,6 +61,36 @@ function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min
 
 end
 
+"Constraint: Inclined pipe pressure drop - Linear Relaxation"
+function constraint_inclined_pipe_pressure_drop(gm::AbstractLRDWPModel, n::Int, k, i, j, r_1, r_2, f_min, f_max, inc_pd_min, inc_pd_max)
+    pipe = ref(gm, n, :pipe, k)
+    y = var(gm, n, :y_pipe, k)
+    pii = var(gm, n, :psqr, i) #using pii to differentiate between the constant pi
+    pj = var(gm, n, :psqr, j)
+    f = var(gm, n, :f_pipe, k)
+    f2_l = var(gm, n, :f_square_l_pipe, k)
+
+    inc_pi = exp(r_2) * pii
+
+    w = 1/(r_1 * (1 - exp(r_2)))
+    if w == Inf
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, inc_pi - pj == 0.0))
+    elseif is_resistance_zero(w, gm.ref)
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, f == 0.0))
+    elseif is_flow_fixed(f_min, f_max, gm.ref)
+        _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) == f_min*abs(f_min)))
+    else
+        _add_constraint!(gm, n, :inclined_weymouth1, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) >=  f2_l - (1 - y) * (f_min^2 - w * inc_pd_min)))
+        _add_constraint!(gm, n, :inclined_weymouth2, k, JuMP.@constraint(gm.model, w * (inc_pi - pj) <= f2_l))
+        _add_constraint!(gm, n, :inclined_weymouth3, k, JuMP.@constraint(gm.model, w * (pj - inc_pi) >= f2_l - y * (f_max^2 + w * inc_pd_max)))
+        _add_constraint!(gm, n, :inclined_weymouth4, k, JuMP.@constraint(gm.model, w * (pj -inc_pi) <= f2_l))
+        
+        #univariate relaxdation for f^2
+        partition = get_flow_partition(pipe, f_min, f_max)
+        construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
+    end
+
+end
 
 "Constraint: Darcy-Weisbach equation--not applicable for LRDWP models"
 function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max)
