@@ -22,6 +22,10 @@ The `output` key is used to specify settings for uncommon outputs for solutions 
 The `config` key is used to specify settings for for configuration of a model
 
 - `networks`: is the key used to identify the network keys to be used in populating an optimization model.  This is primarly used for specifying a network in the multi network structure to model with optimization.  While multiple network ids can be specified, this is generally ill advised as this will produce a single large decooupled optimization problem that is better solved individually. 
+- `use_nominal`: is the key used to switch load/production/storage variables from physical engineering bounds to nominal usage bounds (set automatically by `solve_ogf_nominal`).
+- `pipe_zero_length_tolerance`: is the key used to override the tolerance below which a pipe's length is treated as zero, forcing `p_i == p_j` instead of applying the Weymouth equation. Defaults to `1e-6`.
+- `pipe_zero_lambda_tolerance`: is the key used to override the tolerance below which a pipe's friction factor is treated as zero, forcing `p_i == p_j` instead of applying the Weymouth equation. Defaults to `1e-6`.
+- `inclined_pipe_threshold`: is the key used to override the incline angle (in degrees) above which a pipe switches from the horizontal Weymouth model to the inclined pressure-drop model. Defaults to `5.0`.
 
 The following is an example of solving all networks in a multi network in a single optimization problem
 
