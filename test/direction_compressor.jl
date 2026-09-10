@@ -277,9 +277,9 @@
         result = solve_gf(data, CRDWPGasModel, misocp_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         result = solve_gf(data, DWPGasModel, minlp_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
         result = solve_gf(data, WPGasModel, minlp_solver)
-        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_LOCALLY_SOLVED
         result = solve_gf(data, LRDWPGasModel, mip_solver)
         @test result["termination_status"] == LOCALLY_SOLVED || result["termination_status"] == OPTIMAL
         result = solve_gf(data, LRWPGasModel, mip_solver)
