@@ -219,5 +219,49 @@
 
             @test compare(result["solution"], result_base["solution"], rtol=1e-6)
         end
+
+        @testset "case 6 ogf pipe zero length/lambda tolerance setting" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+
+            result_default = solve_ogf(data, WPGasModel, nlp_solver)
+            @test result_default["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_default["solution"])
+            p_fr_default = result_default["solution"]["junction"]["5"]["p"]
+            p_to_default = result_default["solution"]["junction"]["2"]["p"]
+            @test !isapprox(p_fr_default, p_to_default; atol = 1.0)
+
+            length_settings = Dict("config" => Dict("pipe_zero_length_tolerance" => 1.0e5))
+            result_length = solve_ogf(data, WPGasModel, nlp_solver, setting = length_settings)
+            @test result_length["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_length["solution"])
+            p_fr_length = result_length["solution"]["junction"]["5"]["p"]
+            p_to_length = result_length["solution"]["junction"]["2"]["p"]
+            @test isapprox(p_fr_length, p_to_length; atol = 1.0)
+
+            lambda_settings = Dict("config" => Dict("pipe_zero_lambda_tolerance" => 2.0e-2))
+            result_lambda = solve_ogf(data, WPGasModel, nlp_solver, setting = lambda_settings)
+            @test result_lambda["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_lambda["solution"])
+            p_fr_lambda = result_lambda["solution"]["junction"]["5"]["p"]
+            p_to_lambda = result_lambda["solution"]["junction"]["2"]["p"]
+            @test isapprox(p_fr_lambda, p_to_lambda; atol = 1.0)
+        end
+
+        @testset "case 6 ogf inclined pipe threshold setting" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+
+            result_default = solve_ogf(data, WPGasModel, nlp_solver)
+            @test result_default["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_default["solution"])
+            p3_default = result_default["solution"]["junction"]["3"]["p"]
+
+            settings = Dict("config" => Dict("inclined_pipe_threshold" => 10.0))
+            result_custom = solve_ogf(data, WPGasModel, nlp_solver, setting = settings)
+            @test result_custom["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_custom["solution"])
+            p3_custom = result_custom["solution"]["junction"]["3"]["p"]
+
+            @test !isapprox(p3_default, p3_custom; atol = 1.0e3)
+        end
     end
 end

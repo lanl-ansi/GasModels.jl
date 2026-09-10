@@ -52,6 +52,12 @@ end
 "Returns the tolerance factor for numerical comparisons. Used to determine when physical parameters (diameter, length, drag, lambda, flows) should be treated as approximately zero."
 @inline get_zero_tolerance() = 1e-6
 
+"Returns the tolerance below which a pipe's length is treated as zero (forcing p_i == p_j instead of applying the Weymouth equation). Configurable via gm.setting[\"config\"][\"pipe_zero_length_tolerance\"], defaulting to get_zero_tolerance()."
+@inline get_pipe_zero_length_tolerance(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "pipe_zero_length_tolerance", get_zero_tolerance()) : get_zero_tolerance()
+
+"Returns the tolerance below which a pipe's friction factor is treated as zero (forcing p_i == p_j instead of applying the Weymouth equation). Configurable via gm.setting[\"config\"][\"pipe_zero_lambda_tolerance\"], defaulting to get_zero_tolerance()."
+@inline get_pipe_zero_lambda_tolerance(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "pipe_zero_lambda_tolerance", get_zero_tolerance()) : get_zero_tolerance()
+
 "Returns the tolerance for determining when resistance is zero in SI units."
 @inline get_resistance_zero_tolerance() = 1e-15
 
@@ -88,8 +94,8 @@ end
     return is_flow_zero(f_min, refs) && is_flow_zero(f_max, refs)
 end
 
-"Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models."
-@inline get_inclined_pipe_threshold() = 5.0
+"Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models. Configurable via gm.setting[\"config\"][\"inclined_pipe_threshold\"], defaulting to 5.0."
+@inline get_inclined_pipe_threshold(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "inclined_pipe_threshold", 5.0) : 5.0
 
 @inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
 @inline get_gas_specific_gravity(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:gas_specific_gravity, 0.6)
@@ -1397,7 +1403,7 @@ fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
 This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
-function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed)
+function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed; pipe_zero_length_tolerance::Real = get_zero_tolerance(), pipe_zero_lambda_tolerance::Real = get_zero_tolerance())
     lambda = pipe["friction_factor"]
     D = pipe["diameter"]
     L = pipe["length"] * base_length
@@ -1409,7 +1415,7 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     tol = get_zero_tolerance()
     if isapprox(D, 0.0; atol = tol)
         resistance = 0.0
-    elseif isapprox(lambda, 0.0; atol = tol) || isapprox(L, 0.0; atol = tol)
+    elseif isapprox(lambda, 0.0; atol = pipe_zero_lambda_tolerance) || isapprox(L, 0.0; atol = pipe_zero_length_tolerance)
         resistance = Inf
     end
 
