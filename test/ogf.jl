@@ -263,5 +263,25 @@
 
             @test !isapprox(p3_default, p3_custom; atol = 1.0e3)
         end
+
+        @testset "case 6 lrwp ogf num_flow_breakpoints setting" begin
+            @_info "Testing LRWP OGF num_flow_breakpoints Setting"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+
+            result_coarse = solve_ogf(data, LRWPGasModel, lp_solver, setting = Dict("config" => Dict("num_flow_breakpoints" => 1)))
+            @test result_coarse["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+
+            result_fine = solve_ogf(data, LRWPGasModel, lp_solver, setting = Dict("config" => Dict("num_flow_breakpoints" => 32)))
+            @test result_fine["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+
+            # more breakpoints tighten the piecewise-linear relaxation of this maximization problem, raising the objective bound
+            @test result_fine["objective"] > result_coarse["objective"] + 1e-2
+
+            nested_settings = Dict("config" => Dict("num_flow_breakpoints" => Dict("default" => 1, "pipe" => 32)))
+            result_nested = solve_ogf(data, LRWPGasModel, lp_solver, setting = nested_settings)
+            @test result_nested["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test isapprox(result_nested["objective"], result_fine["objective"]; atol = 1e-6)
+        end
     end
 end

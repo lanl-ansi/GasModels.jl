@@ -136,27 +136,37 @@ function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
 end
 
 
-function get_flow_partition(component::Dict{String, <:Any}, f_min::Real, f_max::Real)
-    num_breakpoints = get(component, "num_flow_breakpoints", f_min < 0 < f_max ? 1 : 0)
-    return build_flow_partition(f_min, f_max, num_breakpoints)
+"""
+Returns the number of flow partition breakpoints to use for `component` (of type
+`component_type`, e.g. `\"pipe\"`, `\"resistor\"`, `\"ne_pipe\"`), read entirely from
+`gm.setting[\"config\"][\"num_flow_breakpoints\"]`. That setting may be:
+  - unset, in which case the context-based default (`1` if `f_min < 0 < f_max`, else `0`) is used;
+  - an `Int`, applied uniformly to every component;
+  - a `Dict` with optional `\"default\"` (applied to everything), per-type entries keyed by
+    `component_type` (each either an `Int` applied to that whole type, or a `Dict` with its own
+    `\"default\"` plus per-id entries keyed by the component's `\"index\"`).
+Lookup order: id-specific -> type-wide default -> global default -> context-based default.
+"""
+function get_num_flow_breakpoints(gm::AbstractGasModel, component::Dict{String, <:Any}, component_type::String, f_min::Real, f_max::Real)
+    fallback = f_min < 0 < f_max ? 1 : 0
+    setting = haskey(gm.setting, "config") ? get(gm.setting["config"], "num_flow_breakpoints", nothing) : nothing
+
+    setting === nothing && return fallback
+    setting isa Integer && return setting
+
+    global_default = get(setting, "default", fallback)
+    type_setting = get(setting, component_type, nothing)
+
+    type_setting === nothing && return global_default
+    type_setting isa Integer && return type_setting
+
+    return get(type_setting, component["index"], get(type_setting, "default", global_default))
 end
 
-
-const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor"]
-
-
-function set_flow_partitions!(data::Dict{String, <:Any}, num_breakpoints::Int)
-    gm_data = get_gm_data(data)
-
-    num_breakpoints >= 0 || error("`num_breakpoints` must be nonnegative")
-
-    for component_type in _flow_partition_component_types
-        for (_, component) in get(gm_data, component_type, [])
-            component["num_flow_breakpoints"] = num_breakpoints
-        end
-    end
-
-    return data
+"Returns the flow partition breakpoints for `component` (of type `component_type`), resolving the breakpoint count entirely from `gm.setting[\"config\"][\"num_flow_breakpoints\"]` (see `get_num_flow_breakpoints`)."
+function get_flow_partition(gm::AbstractGasModel, component::Dict{String, <:Any}, component_type::String, f_min::Real, f_max::Real)
+    num_breakpoints = get_num_flow_breakpoints(gm, component, component_type, f_min, f_max)
+    return build_flow_partition(f_min, f_max, num_breakpoints)
 end
 
 "calculates base_pressure"

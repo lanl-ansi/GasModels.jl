@@ -53,7 +53,7 @@ function constraint_pipe_weymouth(gm::AbstractLRDWPModel, n::Int, k, i, j, f_min
         _add_constraint!(gm, n, :weymouth4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f2_l))
 
         #univariate relaxdation for f^2
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "pipe", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
     end
 
@@ -86,7 +86,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractLRDWPModel, n::Int, 
         _add_constraint!(gm, n, :inclined_weymouth4, k, JuMP.@constraint(gm.model, w * (pj -inc_pi) <= f2_l))
         
         #univariate relaxdation for f^2
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "pipe", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
     end
 
@@ -113,7 +113,7 @@ function constraint_resistor_darcy_weisbach(gm::AbstractLRDWPModel, n::Int, k, i
         _add_constraint!(gm, n, :darcy_weisbach_4, k, JuMP.@constraint(gm.model, (1.0/w)*(p_j - p_i) <= f2_l))
 
         # f2_l incorporates the univariate relaxation for f^2
-        partition = get_flow_partition(resistor, f_min, f_max)
+        partition = get_flow_partition(gm, resistor, "resistor", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a^2, f, f2_l, partition, true)
     end
 
@@ -156,7 +156,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRDWPModel, n::Int, k, i, j, w,
         _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, w * (pj - pi) <= f2_l - (1 - zp) * w * pd_min))
 
         # f2_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "ne_pipe", f_min, f_max)
 
         f2_max = (max(abs(f_min), abs(f_max)))^2
         _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, f2_l <= zp * f2_max))

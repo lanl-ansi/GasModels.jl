@@ -26,6 +26,18 @@ The `config` key is used to specify settings for for configuration of a model
 - `pipe_zero_length_tolerance`: is the key used to override the tolerance below which a pipe's length is treated as zero, forcing `p_i == p_j` instead of applying the Weymouth equation. Defaults to `1e-6`.
 - `pipe_zero_lambda_tolerance`: is the key used to override the tolerance below which a pipe's friction factor is treated as zero, forcing `p_i == p_j` instead of applying the Weymouth equation. Defaults to `1e-6`.
 - `inclined_pipe_threshold`: is the key used to override the incline angle (in degrees) above which a pipe switches from the horizontal Weymouth model to the inclined pressure-drop model. Defaults to `5.0`.
+- `num_flow_breakpoints`: is the key used to override the number of breakpoints used to build the piecewise-linear relaxations of `f*abs(f)`/`f^2` in `LRWPGasModel`/`LRDWPGasModel` (more breakpoints tighten the relaxation at the cost of added binary variables). The value may be a plain `Int` applied to every pipe/resistor/`ne_pipe`, or a `Dict` for finer control, with lookup order id-specific -> type-wide -> global default -> the built-in default (`1` if the flow range straddles zero, else `0`):
+```julia
+    settings = Dict("config" => Dict("num_flow_breakpoints" => Dict(
+        "default" => 2,             # applied to any component/type not listed below
+        "pipe" => Dict(
+            "default" => 5,         # applied to every pipe not listed below
+            1 => 10,                # pipe with index 1 gets 10 breakpoints
+        ),
+        "resistor" => 1,             # every resistor gets 1 breakpoint
+    )))
+    solve_ogf(data, LRWPGasModel, lp_solver, setting=settings)
+```
 
 The following is an example of solving all networks in a multi network in a single optimization problem
 

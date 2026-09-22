@@ -32,7 +32,7 @@ function constraint_pipe_weymouth(gm::AbstractLRWPModel, n::Int, k, i, j, f_min,
     else
         _add_constraint!(gm, n, :weymouth1, k, JuMP.@constraint(gm.model, w * (pi - pj) == fmf_l))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "pipe", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
     end
 
@@ -60,7 +60,7 @@ function constraint_inclined_pipe_pressure_drop(gm::AbstractLRWPModel, n::Int, k
     else
         _add_constraint!(gm, n, :inclined_pipe_pressure_drop, k, JuMP.@constraint(gm.model, inc_pi - pj == fmf_l / w))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "pipe", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
     end
 end
@@ -85,7 +85,7 @@ function constraint_resistor_darcy_weisbach(gm::AbstractLRWPModel, n::Int, k, i,
     else
         _add_constraint!(gm, n, :darcy_weisbach1, k, JuMP.@constraint(gm.model, w * (p_i - p_j) == fmf_l))
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(resistor, f_min, f_max)
+        partition = get_flow_partition(gm, resistor, "resistor", f_min, f_max)
         construct_univariate_relaxation!(gm.model, a -> a*(abs(a)), f, fmf_l, partition, false)
     end
 
@@ -239,7 +239,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, 
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, (pi - pj) >= fmf_l / w + (1 - zp) * pd_min))
 
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(pipe, f_min, f_max)
+        partition = get_flow_partition(gm, pipe, "ne_pipe", f_min, f_max)
 
         _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, fmf_l <= zp * f_max*abs(f_max)))
         _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, fmf_l >= zp * f_min*abs(f_min)))
