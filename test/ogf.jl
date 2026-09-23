@@ -230,7 +230,9 @@
             p_to_default = result_default["solution"]["junction"]["2"]["p"]
             @test !isapprox(p_fr_default, p_to_default; atol = 1.0)
 
-            length_settings = Dict("config" => Dict("pipe_zero_length_tolerance" => 1.0e5))
+            # only pipe 1 (fr=5, to=2) has length 50000; the rest have length 80000, so a
+            # tolerance between those isolates pipe 1 without collapsing the whole network
+            length_settings = Dict("config" => Dict("pipe_zero_length_tolerance" => 6.0e4))
             result_length = solve_ogf(data, WPGasModel, nlp_solver, setting = length_settings)
             @test result_length["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             GasModels.make_si_units!(result_length["solution"])
@@ -238,8 +240,12 @@
             p_to_length = result_length["solution"]["junction"]["2"]["p"]
             @test isapprox(p_fr_length, p_to_length; atol = 1.0)
 
-            lambda_settings = Dict("config" => Dict("pipe_zero_lambda_tolerance" => 2.0e-2))
-            result_lambda = solve_ogf(data, WPGasModel, nlp_solver, setting = lambda_settings)
+            # every pipe shares the same friction_factor (0.01), so a tolerance alone can't
+            # isolate a single pipe; shrink pipe 1's friction factor first so only it collapses
+            data_lambda = deepcopy(data)
+            data_lambda["pipe"]["1"]["friction_factor"] = 1.0e-4
+            lambda_settings = Dict("config" => Dict("pipe_zero_lambda_tolerance" => 1.0e-3))
+            result_lambda = solve_ogf(data_lambda, WPGasModel, nlp_solver, setting = lambda_settings)
             @test result_lambda["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
             GasModels.make_si_units!(result_lambda["solution"])
             p_fr_lambda = result_lambda["solution"]["junction"]["5"]["p"]
