@@ -221,7 +221,7 @@ end
 
 "Constraint: Weymouth equation"
 function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max)
-    pipe = ref(gm, n, :ne_pipe, k)
+    ne_pipe = ref(gm, n, :ne_pipe, k)
     pi = var(gm, n, :psqr, i)
     pj = var(gm, n, :psqr, j)
     zp = var(gm, n, :zp, k)
@@ -239,7 +239,7 @@ function constraint_pipe_weymouth_ne(gm::AbstractLRWPModel, n::Int, k, i, j, w, 
         _add_constraint!(gm, n, :weymouth_ne2, k, JuMP.@constraint(gm.model, (pi - pj) >= fmf_l / w + (1 - zp) * pd_min))
 
         # fmf_l incorporates the univariate relaxation for f*(abs(f))
-        partition = get_flow_partition(gm, pipe, "ne_pipe", f_min, f_max)
+        partition = get_flow_partition(gm, ne_pipe, "ne_pipe", f_min, f_max)
 
         _add_constraint!(gm, n, :weymouth_ne3, k, JuMP.@constraint(gm.model, fmf_l <= zp * f_max*abs(f_max)))
         _add_constraint!(gm, n, :weymouth_ne4, k, JuMP.@constraint(gm.model, fmf_l >= zp * f_min*abs(f_min)))
