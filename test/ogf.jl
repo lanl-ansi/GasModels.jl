@@ -157,6 +157,26 @@
             @test isapprox(result["solution"]["receipt"]["1"]["fg"], 69.27275; atol = 1e-2)
         end
 
+        @testset "case 6 lrwp ogf elevation constraint" begin
+            @_info "Testing LRWP OGF Elevation Constraint"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+            result = solve_ogf(data, LRWPGasModel, lp_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 125.17; atol = 1e-2)
+        end
+
+        @testset "case 6 lrdwp ogf elevation constraint" begin
+            @_info "Testing LRDWP OGF Elevation Constraint"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+            result = solve_ogf(data, LRDWPGasModel, mip_solver)
+            @test result["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result["solution"])
+            @test isapprox(result["solution"]["receipt"]["1"]["fg"], 125.17; atol = 1e-2)
+        end
+
         @testset "case 6 cwp ogf binding energy constraint" begin
             @_info "Testing OGF Binding Energy Cosntraint"
             data = GasModels.parse_file("../test/data/matgas/case-6.m")
@@ -198,6 +218,76 @@
             GasModels.make_per_unit!(result["solution"])
 
             @test compare(result["solution"], result_base["solution"], rtol=1e-6)
+        end
+
+        @testset "case 6 ogf pipe zero length/lambda tolerance setting" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6.m")
+
+            result_default = solve_ogf(data, WPGasModel, nlp_solver)
+            @test result_default["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_default["solution"])
+            p_fr_default = result_default["solution"]["junction"]["5"]["p"]
+            p_to_default = result_default["solution"]["junction"]["2"]["p"]
+            @test !isapprox(p_fr_default, p_to_default; atol = 1.0)
+
+            # only pipe 1 (fr=5, to=2) has length 50000; the rest have length 80000, so a
+            # tolerance between those isolates pipe 1 without collapsing the whole network
+            length_settings = Dict("config" => Dict("pipe_zero_length_tolerance" => 6.0e4))
+            result_length = solve_ogf(data, WPGasModel, nlp_solver, setting = length_settings)
+            @test result_length["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_length["solution"])
+            p_fr_length = result_length["solution"]["junction"]["5"]["p"]
+            p_to_length = result_length["solution"]["junction"]["2"]["p"]
+            @test isapprox(p_fr_length, p_to_length; atol = 1.0)
+
+            # every pipe shares the same friction_factor (0.01), so a tolerance alone can't
+            # isolate a single pipe; shrink pipe 1's friction factor first so only it collapses
+            data_lambda = deepcopy(data)
+            data_lambda["pipe"]["1"]["friction_factor"] = 1.0e-4
+            lambda_settings = Dict("config" => Dict("pipe_zero_lambda_tolerance" => 1.0e-3))
+            result_lambda = solve_ogf(data_lambda, WPGasModel, nlp_solver, setting = lambda_settings)
+            @test result_lambda["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_lambda["solution"])
+            p_fr_lambda = result_lambda["solution"]["junction"]["5"]["p"]
+            p_to_lambda = result_lambda["solution"]["junction"]["2"]["p"]
+            @test isapprox(p_fr_lambda, p_to_lambda; atol = 1.0)
+        end
+
+        @testset "case 6 ogf inclined pipe threshold setting" begin
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+
+            result_default = solve_ogf(data, WPGasModel, nlp_solver)
+            @test result_default["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_default["solution"])
+            p3_default = result_default["solution"]["junction"]["3"]["p"]
+
+            settings = Dict("config" => Dict("inclined_pipe_threshold" => 10.0))
+            result_custom = solve_ogf(data, WPGasModel, nlp_solver, setting = settings)
+            @test result_custom["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            GasModels.make_si_units!(result_custom["solution"])
+            p3_custom = result_custom["solution"]["junction"]["3"]["p"]
+
+            @test !isapprox(p3_default, p3_custom; atol = 1.0e3)
+        end
+
+        @testset "case 6 lrwp ogf num_flow_breakpoints setting" begin
+            @_info "Testing LRWP OGF num_flow_breakpoints Setting"
+            data = GasModels.parse_file("../test/data/matgas/case-6-elevation.m")
+            data["economic_weighting"] = 1.0
+
+            result_coarse = solve_ogf(data, LRWPGasModel, lp_solver, setting = Dict("config" => Dict("num_flow_breakpoints" => 1)))
+            @test result_coarse["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+
+            result_fine = solve_ogf(data, LRWPGasModel, lp_solver, setting = Dict("config" => Dict("num_flow_breakpoints" => 32)))
+            @test result_fine["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+
+            # more breakpoints tighten the piecewise-linear relaxation of this maximization problem, raising the objective bound
+            @test result_fine["objective"] > result_coarse["objective"] + 1e-2
+
+            nested_settings = Dict("config" => Dict("num_flow_breakpoints" => Dict("default" => 1, "pipe" => 32)))
+            result_nested = solve_ogf(data, LRWPGasModel, lp_solver, setting = nested_settings)
+            @test result_nested["termination_status"] in [LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED, OPTIMAL, :Suboptimal]
+            @test isapprox(result_nested["objective"], result_fine["objective"]; atol = 1e-6)
         end
     end
 end

@@ -52,6 +52,12 @@ end
 "Returns the tolerance factor for numerical comparisons. Used to determine when physical parameters (diameter, length, drag, lambda, flows) should be treated as approximately zero."
 @inline get_zero_tolerance() = 1e-6
 
+"Returns the tolerance below which a pipe's length is treated as zero (forcing p_i == p_j instead of applying the Weymouth equation). Configurable via gm.setting[\"config\"][\"pipe_zero_length_tolerance\"], defaulting to get_zero_tolerance()."
+@inline get_pipe_zero_length_tolerance(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "pipe_zero_length_tolerance", get_zero_tolerance()) : get_zero_tolerance()
+
+"Returns the tolerance below which a pipe's friction factor is treated as zero (forcing p_i == p_j instead of applying the Weymouth equation). Configurable via gm.setting[\"config\"][\"pipe_zero_lambda_tolerance\"], defaulting to get_zero_tolerance()."
+@inline get_pipe_zero_lambda_tolerance(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "pipe_zero_lambda_tolerance", get_zero_tolerance()) : get_zero_tolerance()
+
 "Returns the tolerance for determining when resistance is zero in SI units."
 @inline get_resistance_zero_tolerance() = 1e-15
 
@@ -88,8 +94,8 @@ end
     return is_flow_zero(f_min, refs) && is_flow_zero(f_max, refs)
 end
 
-"Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models."
-@inline get_inclined_pipe_threshold() = 5.0
+"Returns the threshold angle (in degrees) for switching between horizontal and inclined pipe models. Configurable via gm.setting[\"config\"][\"inclined_pipe_threshold\"], defaulting to 5.0."
+@inline get_inclined_pipe_threshold(gm::AbstractGasModel) = haskey(gm.setting, "config") ? get(gm.setting["config"], "inclined_pipe_threshold", 5.0) : 5.0
 
 @inline get_gas_specific_gravity(data::Dict{String, <:Any}) = get_data_gm((x -> return get(x, "gas_specific_gravity", 0.6)), data; apply_to_subnetworks = false)
 @inline get_gas_specific_gravity(refs::Dict{Symbol, <:Any}) = get(refs[:it][gm_it_sym],:gas_specific_gravity, 0.6)
@@ -130,27 +136,37 @@ function build_flow_partition(f_min::Real, f_max::Real, num_breakpoints::Int)
 end
 
 
-function get_flow_partition(component::Dict{String, <:Any}, f_min::Real, f_max::Real)
-    num_breakpoints = get(component, "num_flow_breakpoints", f_min < 0 < f_max ? 1 : 0)
-    return build_flow_partition(f_min, f_max, num_breakpoints)
+"""
+Returns the number of flow partition breakpoints to use for `component` (of type
+`component_type`, e.g. `\"pipe\"`, `\"resistor\"`, `\"ne_pipe\"`), read entirely from
+`gm.setting[\"config\"][\"num_flow_breakpoints\"]`. That setting may be:
+  - unset, in which case the context-based default (`1` if `f_min < 0 < f_max`, else `0`) is used;
+  - an `Int`, applied uniformly to every component;
+  - a `Dict` with optional `\"default\"` (applied to everything), per-type entries keyed by
+    `component_type` (each either an `Int` applied to that whole type, or a `Dict` with its own
+    `\"default\"` plus per-id entries keyed by the component's `\"index\"`).
+Lookup order: id-specific -> type-wide default -> global default -> context-based default.
+"""
+function get_num_flow_breakpoints(gm::AbstractGasModel, component::Dict{String, <:Any}, component_type::String, f_min::Real, f_max::Real)
+    fallback = f_min < 0 < f_max ? 1 : 0
+    setting = haskey(gm.setting, "config") ? get(gm.setting["config"], "num_flow_breakpoints", nothing) : nothing
+
+    setting === nothing && return fallback
+    setting isa Integer && return setting
+
+    global_default = get(setting, "default", fallback)
+    type_setting = get(setting, component_type, nothing)
+
+    type_setting === nothing && return global_default
+    type_setting isa Integer && return type_setting
+
+    return get(type_setting, component["index"], get(type_setting, "default", global_default))
 end
 
-
-const _flow_partition_component_types = ["pipe", "original_pipe", "ne_pipe", "resistor"]
-
-
-function set_flow_partitions!(data::Dict{String, <:Any}, num_breakpoints::Int)
-    gm_data = get_gm_data(data)
-
-    num_breakpoints >= 0 || error("`num_breakpoints` must be nonnegative")
-
-    for component_type in _flow_partition_component_types
-        for (_, component) in get(gm_data, component_type, [])
-            component["num_flow_breakpoints"] = num_breakpoints
-        end
-    end
-
-    return data
+"Returns the flow partition breakpoints for `component` (of type `component_type`), resolving the breakpoint count entirely from `gm.setting[\"config\"][\"num_flow_breakpoints\"]` (see `get_num_flow_breakpoints`)."
+function get_flow_partition(gm::AbstractGasModel, component::Dict{String, <:Any}, component_type::String, f_min::Real, f_max::Real)
+    num_breakpoints = get_num_flow_breakpoints(gm, component, component_type, f_min, f_max)
+    return build_flow_partition(f_min, f_max, num_breakpoints)
 end
 
 "calculates base_pressure"
@@ -1397,7 +1413,7 @@ fluids in pipelines–a review of theoretical and some experimental studies.
 International Journal of Heat and Fluid Flow, 8(1):3–15, 1987
 This is used in many of Zlotnik's papers
 This calculation expresses resistance in terms of mass flow equations"
-function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed)
+function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressure, base_flow, sound_speed; pipe_zero_length_tolerance::Real = get_zero_tolerance(), pipe_zero_lambda_tolerance::Real = get_zero_tolerance())
     lambda = pipe["friction_factor"]
     D = pipe["diameter"]
     L = pipe["length"] * base_length
@@ -1409,7 +1425,7 @@ function _calc_pipe_resistance(pipe::Dict{String,Any}, base_length, base_pressur
     tol = get_zero_tolerance()
     if isapprox(D, 0.0; atol = tol)
         resistance = 0.0
-    elseif isapprox(lambda, 0.0; atol = tol) || isapprox(L, 0.0; atol = tol)
+    elseif isapprox(lambda, 0.0; atol = pipe_zero_lambda_tolerance) || isapprox(L, 0.0; atol = pipe_zero_length_tolerance)
         resistance = Inf
     end
 
