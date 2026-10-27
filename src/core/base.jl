@@ -32,8 +32,28 @@ function run_model(data::Dict{String,<:Any}, model_type, optimizer, build_method
 
     result["model_type"] = model_type
     result["model_name"] = data["name"]
+    result["metadata"] = _build_metadata()
 
     return result
+end
+
+
+"returns a dictionary of software versions, run date, and hardware info for the current run"
+function _build_metadata()
+    cpus = Sys.cpu_info()
+    return Dict{String,Any}(
+        "julia_version" => string(VERSION),
+        "gasmodels_version" => string(pkgversion(@__MODULE__)),
+        "run_date" => string(Dates.now(Dates.UTC)),
+        "hardware" => Dict{String,Any}(
+            "os" => string(Sys.KERNEL),
+            "machine" => Sys.MACHINE,
+            "arch" => string(Sys.ARCH),
+            "cpu_model" => isempty(cpus) ? "unknown" : strip(cpus[1].model),
+            "cpu_threads" => Sys.CPU_THREADS,
+            "total_memory_gb" => round(Sys.total_memory() / 2^30; digits = 2),
+        ),
+    )
 end
 
 
