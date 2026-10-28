@@ -11,7 +11,7 @@ end
 
 ""
 function parse_json(io::IO)
-    gm_data = JSON.parse(io)
+    gm_data = JSON.parse(io; dicttype=Dict{String,Any})
 
     # Fix for existing json files that don't have "junction_i" or "index"
     for comp_type in _gm_component_types
