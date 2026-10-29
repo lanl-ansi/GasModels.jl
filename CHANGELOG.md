@@ -4,6 +4,9 @@
 
 - Split steady-state transfer variables into two variables (the positive and negative component)
 
+## v0.13.5
+- Fix: bug in JSON parser that caused `parse_file` to return a `JSON.Object` instead of `Dict`. 
+
 ## v0.13.4
 - Breaking change: Renamed `solve_ogf_comp_power_unc` to `solve_ogf_comp_power_unconstrained`
 - Merged `ogf` and `ogf_comp_power_unc`, with a ref function to `reproduce ogf_comp_power_unc` model in `ogf`
