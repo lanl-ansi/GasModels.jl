@@ -18,6 +18,28 @@
         @test occursin("Table: delivery", output)
     end
 
+    @testset "json round trip through parse_file" begin
+        gas_file = "../test/data/matgas/case-6.m"
+        raw_data = GasModels.parse_file(gas_file; skip_correct = true)
+        json_file = tempname() * ".json"
+        open(json_file, "w") do io
+            JSON.json(io, raw_data)
+        end
+
+        data = GasModels.parse_file(json_file)
+        rm(json_file)
+        @test data isa Dict{String,Any}
+
+        m_data = GasModels.parse_file(gas_file)
+        for comp_type in ["junction", "pipe", "compressor", "receipt", "delivery"]
+            @test data[comp_type] isa Dict{String,Any}
+            @test keys(data[comp_type]) == keys(m_data[comp_type])
+            @test all(c isa Dict{String,Any} for c in values(data[comp_type]))
+        end
+        @test data["pipe"]["1"]["length"] ≈ m_data["pipe"]["1"]["length"]
+        @test data["junction"]["1"]["p_max"] ≈ m_data["junction"]["1"]["p_max"]
+    end
+
     @testset "asset ID overflow" begin
         @test_throws OverflowError case=parse_files("../test/data/matgas/case-6-overflow.m", "../test/data/transient/time-series-case-6a.csv")
     end
