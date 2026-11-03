@@ -35,6 +35,9 @@ makedocs(
         ],
         "Developer" => "developer.md",
         "Examples" => "examples.md",
+        "Extensions" => [
+            "MathProgIncidence" => "mpin.md",
+        ]
     ],
 )
 
