@@ -3,6 +3,8 @@
 ## staged 
 
 - Split steady-state transfer variables into two variables (the positive and negative component)
+- Add: `DirectionalFlowLimitContingency`, which caps mass flow (kg/s) through an edge in a compass direction (north/south/east/west), mapped using junction `lat`/`lon`
+- Add: `dth_per_day_to_kgps` helper for converting Dth/d capacity limits to mass flow (default heating value 1037 Btu/scf)
 
 ## v0.13.5
 - Fix: bug in JSON parser that caused `parse_file` to return a `JSON.Object` instead of `Dict`. 

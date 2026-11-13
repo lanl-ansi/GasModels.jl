@@ -10,3 +10,5 @@ scip.set
 src/scratch
 
 Manifest.toml
+CLAUDE.md
+AGENTS.md

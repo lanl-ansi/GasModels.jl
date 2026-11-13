@@ -61,6 +61,48 @@ Compressor maximum compression ratio is scaled:
 
 This preserves feasibility while restricting compression capability.
 
+### `DirectionalFlowLimitContingency`
+```
+Base.@kwdef struct DirectionalFlowLimitContingency <: Contingency
+    asset_type::String     # pipe, compressor, short_pipe, resistor, loss_resistor, valve, regulator
+    asset_id::String
+    direction::String      # "north", "south", "east", or "west"
+    max_mass_flow::Float64 # kg/s
+end
+```
+
+Limits the mass flow through an edge when the gas travels in a given compass direction. Use this, for example, for a maintenance posting that caps a compressor station at different northbound and southbound capacities. To limit both directions, use two contingencies.
+
+**Coordinates are required.** The direction is mapped onto the edge's `fr_junction` → `to_junction` orientation using the great-circle bearing between the two junctions' `lat`/`lon`. If the forward bearing has a positive component in `direction`, forward flow is capped (`flow_max`); if it is negative, reverse flow is capped (`flow_min`). The contingency is not applied (returns `success = false`) if either junction lacks coordinates, or if the edge runs exactly perpendicular to `direction`. A diagonal edge counts as travelling in both of its compass components. For example, a north-east edge is limited by both a `"north"` and an `"east"` contingency.
+
+Effect on data dictionary:
+
+`flow_max = min(flow_max, cap)` or `flow_min = max(flow_min, -cap)`, where `cap` is `max_mass_flow` converted to the case's units (per-unit, SI, or English).
+
+Bounds are only ever tightened. Apply after `parse_file`, since parsing recomputes flow bounds. This is respected by all steady-state formulations:
+
+* **Continuous (WP, CWP, LRWP)**: the bound is a box bound on the flow variable. The problem stays continuous.
+* **Discrete (DWP, CRDWP, LRDWP)**: the bound also appears in the direction on/off constraints `(1-y)·f_min ≤ f ≤ y·f_max`, which tightens the relaxation. A cap of `0` fixes the direction binary.
+
+Transient formulations do not read `flow_min`/`flow_max` and ignore this contingency.
+
+#### Converting energy-based capacity
+Pipeline postings usually give capacity in Dth/d. `dth_per_day_to_kgps(dth_per_day, data; heating_value = 1037.0)` converts these to kg/s. It assumes a heating value in Btu/scf (default 1037, the approximate U.S. pipeline average) and uses the network's gas properties for standard density. See the function docstring for the full set of assumptions.
+
+```julia
+case = parse_file("network.m")
+scenario = ContingencyScenario(
+    name = "Compressor maintenance",
+    contingencies = [
+        DirectionalFlowLimitContingency(asset_type="compressor", asset_id="7", direction="north",
+                                        max_mass_flow=dth_per_day_to_kgps(255_000, case)),
+        DirectionalFlowLimitContingency(asset_type="compressor", asset_id="7", direction="south",
+                                        max_mass_flow=dth_per_day_to_kgps(285_000, case)),
+    ]
+)
+results = apply_contingency!(case, scenario)
+```
+
 ### `ContingencyScenario`
 ```
 Base.@kwdef struct ContingencyScenario
