@@ -5,6 +5,8 @@
 - Split steady-state transfer variables into two variables (the positive and negative component)
 - Add: `DirectionalFlowLimitContingency`, which caps mass flow (kg/s) through an edge in a compass direction (north/south/east/west), mapped using junction `lat`/`lon`
 - Add: `dth_per_day_to_kgps` helper for converting Dth/d capacity limits to mass flow (default heating value 1037 Btu/scf)
+- Fix: `write_matgas` wrote the per-unit flag under the key `mgc.per_unit`, but `parse_matgas` only ever read it back under `mgc.is_per_unit` (the key every real `.m` fixture uses), so a round-tripped per-unit `.m` file silently lost its `per_unit` flag. The writer now emits `mgc.is_per_unit`.
+- Fix: `write_matgas` never serialized `base_flow`, so a round-tripped `.m` file always had `base_flow` auto-derived from `base_pressure`/`sound_speed` instead of keeping the source case's value. For cases where that auto-derived value is far from the case's actual flow magnitude, this gave Ipopt a badly scaled per-unit problem and could prevent convergence on the `.m` copy even though the original case solved fine. `write_matgas`/`parse_matgas` now round-trip `base_flow` via `mgc.base_flow`.
 
 ## v0.13.5
 - Fix: bug in JSON parser that caused `parse_file` to return a `JSON.Object` instead of `Dict`. 

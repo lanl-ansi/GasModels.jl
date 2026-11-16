@@ -17,8 +17,10 @@ const _mg_data_names = Vector{String}([
     "mgc.gas_molar_mass",
     "mgc.base_pressure",
     "mgc.base_length",
+    "mgc.base_flow",
     "mgc.units",
     "mgc.per_unit",
+    "mgc.is_per_unit",
     "mgc.sources",
     "mgc.junction",
     "mgc.pipe",
@@ -401,6 +403,10 @@ This value will be auto-assigned based on the pressure limits provided in the da
     else
         @_warn string("no base_length found in .m file.
             This value will be auto-assigned based on the pipe data")
+    end
+
+    if haskey(matlab_data, "mgc.base_flow")
+        case["base_flow"] = matlab_data["mgc.base_flow"]
     end
 
     if haskey(matlab_data, "mgc.is_per_unit")
@@ -1046,8 +1052,9 @@ function write_matgas(io::IO, gm_data::Dict{String,<:Any}, precision::Int=6)
     _write_scalar_if_present(io, "mgc.gas_molar_mass", get(gm_data, "gas_molar_mass", nothing), precision)
     _write_scalar_if_present(io, "mgc.base_pressure", get(gm_data, "base_pressure", nothing), precision)
     _write_scalar_if_present(io, "mgc.base_length", get(gm_data, "base_length", nothing), precision)
+    _write_scalar_if_present(io, "mgc.base_flow", get(gm_data, "base_flow", nothing), precision)
     _write_scalar_if_present(io, "mgc.units", gm_data["units"], precision)
-    _write_scalar_if_present(io, "mgc.per_unit", get(gm_data, "per_unit", nothing), precision)
+    _write_scalar_if_present(io, "mgc.is_per_unit", get(gm_data, "per_unit", nothing), precision)
     _write_scalar_if_present(io, "mgc.economic_weighting", get(gm_data, "economic_weighting", nothing), precision)
     println(io)
 
